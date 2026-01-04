@@ -1,0 +1,481 @@
+{
+  "home": {
+    "topmoto": "Alat Analisis Data dan Dukungan Keputusan untuk Pembibitan Puyuh",
+    "botmoto": "Evaluasi efisiensi pakan, kondisi perumahan, dan kepadatan populasi untuk mengidentifikasi kinerja unggul dan memaksimalkan hasil per siklus.",
+    "what": "Apa itu QuailBreeder?",
+    "expl": "QuailBreeder adalah asisten digital all-in-one yang dirancang untuk mengelola dan mengoptimalkan produksi puyuh Anda. Ini secara akurat mencatat setiap langkah operasi Anda, dari telur hingga faktur.",
+    "flow": "Peta Alur",
+    "content": "Prosesnya terdiri dari langkah-langkah berikut:",
+    "get": "Mulai — cepat kok",
+    "botmototitel": "Isolasi faktor-faktor keberhasilan:"
+  },
+  "about": {
+    "cardIntro": {
+      "title": "QuailBreeder — asisten pertanian kecil dengan kepribadian besar",
+      "text": "Lahir di halaman belakang, dibesarkan dengan kopi dan TypeScript. Jika Anda memelihara puyuh (atau hanya menghargai pelacakan yang efisien dan sedikit humor pedesaan), Anda berada di rumah.",
+      "facts": "Fakta Singkat:",
+      "fact1": "Dibangun oleh seorang programmer yang terkena demam puyuh",
+      "fact2": "Melacak siklus, batch, dan kelangsungan hidup",
+      "fact3": "Mobile-first — tidak perlu saku penuh kertas",
+      "story": "Baca kisahnya"
+    },
+    "cardStory": {
+      "title": "Bagaimana QuailBreeder Muncul",
+      "text1": "Ada cerita yang cukup pribadi di balik aplikasi ini. Pada tahun 2012, saya meninggalkan Kyiv dan pindah ke pedesaan. Kebiasaan kota bertemu dengan realitas pedesaan — dan kekacauan menang, setidaknya untuk sementara.",
+      "text2": "Saya memulai peternakan puyuh kecil di halaman belakang saya untuk memproduksi daging. Dua tahun, kopi, dan banyak hitungan kemudian, saya mencapai ~50 kg daging puyuh per minggu. Ini berarti menyulap 14–15 batch yang tumpang tindih dan melacak lebih dari 3.000 burung. Catatan kertas berlipat ganda seperti puyuh.",
+      "text3": "Berdasarkan pelatihan, saya seorang programmer — jadi saya menulis aplikasi PC untuk melacak semuanya. Itu berfungsi, tetapi tidak mobile. Saya masih membawa kertas dan menyalin data di akhir setiap hari. Kemudian, cedera punggung memaksa saya untuk menutup peternakan dan fokus pada aplikasi — yang ternyata menjadi pivot terbaik: versi berikutnya menjadi mobile-first dan dikemas dengan bidang-bidang praktis seperti kelangsungan hidup, info transportasi, dan pengaturan waktu batch.",
+      "text4": "Singkatnya: QuailBreeder ada karena seseorang harus berhenti kehilangan telur dan mulai menghemat waktu. Jika Anda memelihara puyuh untuk daging, aplikasi ini mengumpulkan detail kecil yang Anda butuhkan — tanpa memaksa Anda untuk belajar SQL atau mengenakan jas lab.",
+      "button": "Lihat Fitur"
+    },
+    "cardFounder": {
+      "founder": "Tentang Pengembang",
+      "text": "Serhii Karavansky — programmer, petani halaman belakang, pendukung kopi.",
+      "funFacts": "Fakta menarik:",
+      "fact1": "Aplikasi asli dimulai sebagai utilitas Windows (ya, nostalgia).",
+      "fact2": "Bertahan dari cedera punggung, beberapa pembaruan perangkat lunak, dan terlalu banyak kulit telur.",
+      "fact3": "Nama «QuailBreeder» tidak disarankan oleh komite pemasaran — itu jujur."
+    },
+    "cardWhy": {
+      "title": "Mengapa Orang Menyukai QuailBreeder",
+      "reason1": {
+        "title": "Hemat waktu",
+        "text": "Input cepat, posting keepalive, dan lebih sedikit malam yang dihabiskan untuk menyalin catatan kertas."
+      },
+      "reason2": {
+        "title": "Lacak batch",
+        "text": "Rencanakan dan lacak siklus yang tumpang tindih, hari inkubasi, dan tingkat penetasan dengan mudah."
+      },
+      "reason3": {
+        "title": "Mobile-first",
+        "text": "Dirancang untuk bekerja dengan mulus di ponsel — karena tangan menjadi kotor di peternakan."
+      }
+    },
+    "cardPromo": {
+      "title": "Siap berhenti menyulap telur dan kertas?",
+      "text": "Coba QuailBreeder dan dapatkan kembali malam Anda.",
+      "button": "Mulai uji coba gratis",
+      "contact": "Hubungi Kami \n(Sistem pelacakan permintaan dukungan akan segera hadir.)"
+    }
+  },
+  "getStarted": {
+    "title": "Memulai dengan QuailBreeder",
+    "intro": "Untuk memulai, Anda perlu mengisi tiga katalog utama peralatan yang Anda gunakan.",
+    "stepsTitle": "Langkah-Langkah yang Harus Diambil",
+    "finalTitle": "Akhirnya",
+    "download": "Unduh aplikasi dan mulailah mengoptimalkan peternakan puyuh Anda!",
+    "step1": {
+      "title": "Inkubator",
+      "description": "Yang menyediakan penggunaan tiga jenis (Setter, Hatcher, dan Combination), serta jumlah nampan untuk setiap inkubator dan kapasitas telurnya."
+    },
+    "step2": {
+      "title": "Brooder (Penghangat Anak Puyuh)",
+      "description": "Di mana Anda perlu menentukan jumlah maksimum anak puyuh yang mungkin untuk setiap brooder."
+    },
+    "step3": {
+      "title": "Lokasi",
+      "description": "Lokasi adalah kelompok kandang untuk tugas tertentu. Contoh: untuk memelihara stok induk, untuk produksi telur, atau untuk produksi daging."
+    },
+    "final": {
+      "title": "Membuat Batch Baru",
+      "description": "Pilih 'Batch' di bilah tab, lalu masukkan jumlah telur dalam batch ini.\n• Anda memiliki kemampuan untuk membuat batch secara retrospektif; untuk melakukannya, klik tanggal di atas kuantitas. Perhatikan bahwa ini hanya mungkin sebelum menempatkan telur di inkubator.\n• Jika Anda menggunakan inkubator Setter, Anda juga perlu menentukan nampan di inkubator Hatcher.\n• Dengan mengklik 'Batalkan' (Undo) – Anda dapat menghapus tindakan terakhir.\n• Setelah Anda mengidentifikasi telur di nampan, tekan tombol 'Mulai' untuk memulai inkubasi.\n• Anda dapat mengatur 2 jenis pemberitahuan:\n  ○ Pemberitahuan Push\n  ○ Secara otomatis membuat catatan yang sesuai di kalender favorit Anda\n• Ini dapat dilakukan di 'Pengaturan' (Settings) pada tab 'Beranda' (Home)."
+    }
+  },
+  "process": {
+    "incubation": {
+      "title": "Inkubasi",
+      "desc": "Kelola dan pantau proses inkubasi telur puyuh, termasuk jadwal suhu, kelembaban, dan pemutaran. Dalam kasus penggunaan inkubator Setter, tentukan juga nampan Hatcher yang direncanakan. Faktor utama yang mempengaruhinya adalah usia burung yang bertelur untuk diinkubasi dan kualitas inkubator Anda (pertukaran udara segar saat embrio berada di telur, karena juga membutuhkan oksigen).",
+      "details": "Cangkangnya tidak kedap udara. Itu ditembus oleh ribuan pori-pori mikroskopis (dari 7.000 hingga 17.000) yang memungkinkan gas bergerak bebas antara bagian dalam telur dan lingkungan luar."
+    },
+    "hatching": {
+      "title": "Penetasan (Hatching)",
+      "desc": "Jangan lewatkan hari ajaib ini, keajaiban kelahiran kehidupan baru, dengan menghubungkan kalender favorit Anda dan/atau menerima pemberitahuan yang dipersonalisasi di perangkat Anda. Pilih inkubator dan nomor nampan. Masukkan jumlah anak puyuh yang menetas dan tunjukkan di brooder mana mereka akan ditempatkan.",
+      "details": "Pada tahap ini, Anda mendapatkan Indikator Kinerja Utama (KPI) pertama Anda. Persentase kelangsungan hidup dihitung sebagai rasio jumlah anak puyuh yang menetas terhadap jumlah telur yang dimasukkan untuk inkubasi."
+    },
+    "brooding": {
+      "title": "Pemeliharaan Brooder (Brooding)",
+      "desc": "Pelacakan harian tingkat kematian anak puyuh dan penyimpanan catatan serta catatan yang sesuai tentang perubahan nutrisi, iklim, dll., akan memudahkan identifikasi penyebabnya.",
+      "details": "Meningkatkan persentase kelangsungan hidup adalah tugas utama pada tahap ini. Perawatan dan pemantauan yang tepat akan membantu mencapai hal ini."
+    },
+    "feeding": {
+      "title": "Pemberian Pakan",
+      "desc": "Pilih 'Pemberian Pakan' dari daftar tugas batch. Kemudian tentukan lokasi dan isi kandang yang kosong pada hari itu.",
+      "details": "Pada titik ini, Anda juga dapat membuat catatan kelangsungan hidup."
+    },
+    "slaughter": {
+      "title": "Penyembelihan",
+      "desc": "Penting, kawanan siap untuk diproses di sini dalam waktu 50 hingga 60 hari. Prasyarat untuk memulai proses penyembelihan adalah membuat lembar penyembelihan (atau perintah pemrosesan). Perintah ini memiliki tujuan ganda: juga dapat digunakan sebagai perintah penjualan dan menjadi dasar untuk mengirimkan faktur yang dihasilkan template kepada pelanggan.",
+      "details": "Dengan menyelesaikan siklus dan memasukkan semua data yang relevan, Anda akan dapat menilai kualitas pakan, perumahan, dan kepadatan populasi di kandang, sehingga mengidentifikasi area di mana hasilnya tidak memuaskan dan di mana kinerjanya unggul."
+    },
+    "selling": {
+      "title": "Penjualan",
+      "desc": "Anda dapat mengedit template faktur yang mendukung tautan yang dapat diklik.",
+      "details": "Jika tidak ada lagi burung di batch, ia secara otomatis dipindahkan ke arsip."
+    }
+  },
+  "features": {
+    "title": "Fitur Utama",
+    "feat1": {
+      "title": "Skala Tanpa Batas:",
+      "text": "Kelola jumlah inkubator yang tidak terbatas dan sesuaikan pengaturan untuk hingga tiga jenis peralatan yang berbeda."
+    },
+    "feat2": {
+      "title": "Ikhtisar Kapasitas Real-Time:",
+      "text": "Visualisasikan secara instan beban saat ini dan ketersediaan semua peralatan penting (inkubator, brooder, dan kandang) untuk mengoptimalkan penjadwalan batch."
+    },
+    "feat3": {
+      "title": "Integrasi dan Pengingat yang Mulus:",
+      "text": "Sinkronkan tanggal dan tenggat waktu utama dengan kalender eksternal Anda yang ada (iCloud, Google Calendar) untuk memastikan tidak ada yang terlewatkan."
+    },
+    "feat4": {
+      "title": "Analisis Kematian yang Akurat:",
+      "text": "Catat dan analisis setiap kerugian berdasarkan tanggal, waktu, dan kandang/lokasi tertentu untuk identifikasi risiko kesehatan yang lebih cepat."
+    },
+    "feat5": {
+      "title": "Data Bersih dan Terorganisir:",
+      "text": "Secara otomatis arsipkan batch produksi yang sudah selesai, menjaga dasbor aktif Anda tetap bersih dan meningkatkan pengambilan data jangka panjang."
+    },
+    "feat6": {
+      "title": "Penagihan Profesional dan Cepat:",
+      "text": "Hasilkan faktur bermerek dan profesional secara instan menggunakan template yang sepenuhnya dapat disesuaikan."
+    }
+  },
+  "navbar": {
+    "about": "Kisah saya",
+    "get_started": "Memulai",
+    "terms": "Ketentuan Penggunaan",
+    "privacy": "Kebijakan Privasi",
+    "support": "Dukungan"
+  },
+  "praesentation": {
+    "intro": "Proyek ini adalah dasbor untuk manajemen dan pemantauan data studi.",
+    "technologiesTitle": "Teknologi",
+    "featuresTitle": "Fitur Utama",
+    "authTitle": "Otorisasi dan Keamanan",
+    "mssqlTitle": "Modul MSSQL",
+    "deploymentTitle": "Penyebaran dan Operasi",
+    "conclusionTitle": "Kesimpulan",
+    "table": {
+      "columnArea": "Area",
+      "columnTech": "Teknologi"
+    }
+  },
+  "seo": {
+    "home": {
+      "title": "QuailBreeder - Alat Analisis Data dan Dukungan Keputusan untuk Peternakan Burung Puyuh",
+      "description": "Asisten digital lengkap untuk mengelola dan mengoptimalkan produksi burung puyuh. Lacak setiap langkah dari telur hingga faktur dengan akuntansi akurat dan analisis kinerja."
+    },
+    "about": {
+      "title": "Promosi Diri yang Diterima Secara Sosial",
+      "description": "Bagaimana QuailBreeder Muncul. Asisten pertanian kecil dengan kepribadian besar"
+    },
+    "getStarted": {
+      "title": "Memulai",
+      "description": "Untuk memulai, Anda perlu mengisi tiga katalog utama peralatan yang Anda gunakan."
+    },
+    "privacyPolicy": {
+      "title": "Kebijakan Privasi",
+      "description": "Pelajari bagaimana kami mengumpulkan, menggunakan, dan melindungi informasi Anda saat menggunakan aplikasi manajemen peternakan burung puyuh kami."
+    },
+    "termsOfUse": {
+      "title": "Ketentuan Penggunaan",
+      "description": "Pahami syarat dan ketentuan yang mengatur penggunaan aplikasi manajemen pembiakan burung puyuh kami."
+    }
+  },
+  "routes": {
+    "about": "tentang",
+    "getStarted": "mulai",
+    "privacyPolicy": "kebijakan-privasi",
+    "termsOfUse": "ketentuan-penggunaan",
+    "support": "dukungan"
+  },
+  "policy": {
+    "title": "Kebijakan Privasi",
+    "intro": "Privasi Anda penting bagi kami. Kebijakan Privasi ini menjelaskan bagaimana Quail Breeder mengumpulkan, menggunakan, dan melindungi informasi Anda saat Anda menggunakan aplikasi kami.",
+    "dataCollection": {
+      "title": "Informasi Apa yang Kami Kumpulkan",
+      "confidential": {
+        "title": "Konten Rahasia",
+        "text": "Quail Breeder mengumpulkan dan menyimpan konten rahasia berikut yang Anda berikan:",
+        "item1": "Direktori peralatan (inkubator, brooder, dan lokasi)",
+        "item2": "Informasi batch penetasan",
+        "item3": "Detail direktori pelanggan",
+        "item4": "Catatan penjualan dan penyusutan"
+      },
+      "subscriber": {
+        "title": "Informasi Pelanggan Dasar",
+        "item1": "Alamat email",
+        "item2": "Data penggunaan dan analitik"
+      },
+      "notCollect": {
+        "title": "Apa yang Tidak Kami Kumpulkan",
+        "text": "Quail Breeder secara eksplisit TIDAK mengumpulkan:",
+        "item1": "Alamat IP",
+        "item2": "Informasi perangkat",
+        "item3": "Pengenal perangkat keras pribadi"
+      }
+    },
+    "dataUsage": {
+      "title": "Bagaimana Kami Menggunakan Informasi Anda",
+      "maintaining": {
+        "title": "Memelihara Layanan Kami",
+        "text": "Kami menggunakan informasi Anda untuk menyediakan dukungan pelanggan dan menjaga fungsionalitas aplikasi Quail Breeder."
+      },
+      "communicating": {
+        "title": "Berkomunikasi dengan Anda",
+        "text": "Kami dapat menggunakan informasi kontak Anda untuk memberi tahu Anda tentang fitur baru, pembaruan, dan penawaran terkait Quail Breeder."
+      },
+      "important": "Penting: Kami tidak berbisnis menjual atau menyewakan informasi Anda."
+    },
+    "userControl": {
+      "title": "Akses dan Kontrol Anda",
+      "text": "Anda memiliki kontrol penuh atas informasi Anda:",
+      "manage": {
+        "title": "Mengelola Informasi:",
+        "text": "Anda dapat masuk dan mengedit informasi Anda langsung di dalam aplikasi kapan saja."
+      },
+      "delete": {
+        "title": "Menghapus Konten:",
+        "text": "Anda dapat menghapus konten rahasia Anda kapan saja."
+      },
+      "stop": {
+        "title": "Berhenti Menggunakan:",
+        "text": "Anda dapat berhenti menggunakan aplikasi Quail Breeder kapan saja tanpa batasan."
+      },
+      "export": {
+        "title": "Ekspor Data:",
+        "text": "Fitur ekspor data direncanakan untuk versi mendatang, memungkinkan Anda mengunduh semua informasi Anda."
+      }
+    },
+    "customerSupport": {
+      "title": "Akses Dukungan Pelanggan",
+      "text": "Saat memecahkan masalah akun, tim dukungan pelanggan kami dapat meminta izin sementara untuk melihat konten tertentu di akun Anda.",
+      "note": "Catatan: Izin ini berakhir setelah masalah dukungan diselesaikan. Kami tidak akan pernah mengakses akun Anda tanpa izin eksplisit dari Anda."
+    },
+    "dataProtection": {
+      "title": "Komitmen Kami untuk Melindungi Data Anda",
+      "text": "Quail Breeder berkomitmen untuk melindungi informasi rahasia Anda:",
+      "item1": "Kami tidak akan mengungkapkan konten rahasia Anda kepada pihak ketiga mana pun tanpa persetujuan tertulis Anda sebelumnya.",
+      "item2": "Kami membatasi penggunaan informasi Anda secara eksklusif untuk hubungan bisnis dengan Anda sebagai pemilik akun.",
+      "item3": "Kami menerapkan langkah-langkah keamanan standar industri untuk melindungi data Anda dari akses tidak sah."
+    },
+    "changes": {
+      "title": "Perubahan pada Kebijakan Privasi Ini",
+      "text1": "Kami dapat memperbarui Kebijakan Privasi ini dari waktu ke waktu untuk mencerminkan perubahan pada praktik kami atau karena alasan operasional, hukum, atau peraturan lainnya.",
+      "text2": "Kami akan memberi tahu Anda tentang perubahan materi apa pun dengan memposting Kebijakan Privasi baru di halaman ini dan memperbarui tanggal \"Terakhir Diperbarui\" di bawah ini."
+    },
+    "contact": {
+      "title": "Hubungi Kami",
+      "text": "Jika Anda memiliki pertanyaan tentang Kebijakan Privasi ini atau praktik data kami, silakan hubungi kami:",
+      "email": "Email:"
+    },
+    "lastUpdated": "Terakhir Diperbarui: 30 November 2024",
+    "footer": "© 2024 QuailBreeder. Semua hak dilindungi undang-undang."
+  },
+  "terms": {
+    "title": "Ketentuan Penggunaan",
+    "intro": "Ketentuan Penggunaan ini mengatur penggunaan Anda atas aplikasi dan layanan Quail Breeder. Dengan menggunakan aplikasi kami, Anda setuju untuk terikat oleh ketentuan ini.",
+    "purpose": {
+      "title": "Tujuan Aplikasi",
+      "text": "Quail Breeder menyediakan alat akuntansi komprehensif untuk operasi peternakan puyuh, termasuk:",
+      "item1": "Manajemen inkubator dan pelacakan telur",
+      "item2": "Pemantauan proses penetasan",
+      "item3": "Pelacakan pemeliharaan brooder dan pertumbuhan",
+      "item4": "Pergerakan burung dan manajemen lokasi",
+      "item5": "Pencatatan penyembelihan dan penjualan"
+    },
+    "subscription": {
+      "title": "Langganan dan Pembayaran",
+      "text": "Quail Breeder memerlukan langganan bulanan berbayar yang diperbarui secara otomatis yang disebut",
+      "name": "LanggananQuailBreeder",
+      "important": "Penting: Pembayaran akan dibebankan ke Akun iTunes Anda pada konfirmasi pembelian. Langganan diperbarui secara otomatis kecuali perpanjangan otomatis dimatikan setidaknya 24 jam sebelum akhir periode berjalan."
+    },
+    "license": {
+      "title": "Lisensi dan Pembatasan",
+      "text": "Anda diberikan lisensi yang tidak dapat dialihkan untuk menggunakan Quail Breeder untuk penggunaan pribadi hanya pada perangkat Apple Anda.",
+      "prohibited": "Anda dilarang untuk:",
+      "item1": "Berbagi aplikasi dengan pihak ketiga",
+      "item2": "Rekayasa balik atau dekompilasi perangkat lunak",
+      "item3": "Memodifikasi atau membuat karya turunan",
+      "item4": "Mendistribusikan ulang atau menjual kembali aplikasi",
+      "item5": "Menghapus atau mengubah pemberitahuan kepemilikan apa pun"
+    },
+    "responsibilities": {
+      "title": "Tanggung Jawab Pengguna",
+      "age": {
+        "title": "Persyaratan Usia",
+        "text": "Pengguna harus berusia minimal 13 tahun dengan izin orang tua atau 18 tahun untuk menggunakan aplikasi ini."
+      },
+      "defect": {
+        "title": "Pelaporan Cacat",
+        "text": "Anda harus memeriksa aplikasi segera setelah instalasi dan melaporkan setiap cacat dalam waktu 30 hari ke"
+      },
+      "backup": {
+        "title": "Cadangan Data",
+        "text": "Anda bertanggung jawab untuk memelihara salinan cadangan data Anda untuk mencegah kehilangan data."
+      }
+    },
+    "liability": {
+      "title": "Batasan Tanggung Jawab",
+      "text": "Tanggung jawab pemberi lisensi terbatas pada kasus tindakan yang disengaja dan kelalaian berat.",
+      "note": "Kami mengecualikan tanggung jawab atas kerusakan yang diakibatkan oleh pelanggaran tugas hati-hati. Pengguna harus menjaga salinan cadangan mereka sendiri untuk mencegah kehilangan data."
+    },
+    "intellectual": {
+      "title": "Hak Kekayaan Intelektual",
+      "text": "Pengembang mempertahankan semua hak atas:",
+      "item1": "Hak Cipta (Copyrights)",
+      "item2": "Merek Dagang (Trademarks)",
+      "item3": "Paten (Patents)",
+      "item4": "Rahasia Dagang (Trade secrets)",
+      "item5": "Semua hak kekayaan intelektual lainnya",
+      "important": "Penting: Anda tidak boleh mempublikasikan hasil, tangkapan layar, atau konten apa pun dari aplikasi tanpa persetujuan tertulis sebelumnya dari pengembang."
+    },
+    "termination": {
+      "title": "Pengakhiran",
+      "text1": "Salah satu pihak dapat mengakhiri perjanjian ini kapan saja.",
+      "text2": "Setelah pengakhiran, Anda harus:",
+      "item1": "Segera menghentikan penggunaan aplikasi",
+      "item2": "Menghapus semua salinan perangkat lunak dari perangkat Anda",
+      "item3": "Berhenti mengakses layanan terkait apa pun"
+    },
+    "governing": {
+      "title": "Hukum yang Mengatur dan Yurisdiksi",
+      "text1": "Ketentuan Penggunaan ini diatur oleh hukum Ukraina.",
+      "text2": "Semua perselisihan yang timbul dari atau terkait dengan ketentuan ini akan diselesaikan secara eksklusif di pengadilan Ukraina."
+    },
+    "contact": {
+      "title": "Informasi Kontak",
+      "text": "Jika Anda memiliki pertanyaan tentang Ketentuan Penggunaan ini, silakan hubungi kami:",
+      "email": "Email"
+    },
+    "lastUpdated": "Terakhir Diperbarui: 30 November 2024",
+    "footer": "© 2024 QuailBreeder. Semua hak dilindungi undang-undang."
+  },
+  "auth": {
+    "welcome": "Selamat datang di QuailBreeder",
+    "signInToAccess": "Masuk untuk mengakses dukungan",
+    "continueWithGoogle": "Lanjutkan dengan Google",
+    "continueWithApple": "Lanjutkan dengan Apple",
+    "byContinuing": "Dengan melanjutkan, Anda menyetujui",
+    "termsOfUse": "Ketentuan Penggunaan",
+    "and": "dan",
+    "privacyPolicy": "Kebijakan Privasi",
+    "signingOut": "Keluar...",
+    "pleaseWait": "Harap tunggu",
+    "confirmSignOut": "Keluar",
+    "close": "Tutup"
+  },
+  "support": {
+    "title": "Pusat Dukungan",
+    "signOut": "Keluar",
+    "createTicket": "Buat Tiket Dukungan",
+    "description": "Mengalami masalah atau membutuhkan bantuan? Beri tahu kami dan kami akan menghubungi Anda sesegera mungkin.",
+    "beforeSubmitting": "Sebelum mengirim tiket",
+    "tip1": "Periksa FAQ dan dokumentasi kami untuk masalah umum",
+    "tip2": "Sertakan sebanyak mungkin detail untuk membantu kami menyelesaikan masalah Anda lebih cepat",
+    "tip3": "Tangkapan layar atau pesan kesalahan sangat membantu",
+    "form": {
+      "subject": "Subjek",
+      "subjectPlaceholder": "Deskripsi singkat masalah Anda",
+      "subjectRequired": "Subjek wajib diisi",
+      "category": "Kategori",
+      "categoryPlaceholder": "Pilih kategori",
+      "categoryRequired": "Kategori wajib diisi",
+      "categoryTechnical": "Masalah Teknis",
+      "categoryBilling": "Penagihan & Akun",
+      "categoryFeature": "Permintaan Fitur",
+      "categoryData": "Masalah Data & Sinkronisasi",
+      "categoryOther": "Lainnya",
+      "priority": "Prioritas",
+      "priorityPlaceholder": "Pilih prioritas",
+      "priorityRequired": "Prioritas wajib diisi",
+      "priorityLow": "Rendah – Pertanyaan umum atau masalah kecil",
+      "priorityMedium": "Sedang – Masalah yang memengaruhi fungsionalitas",
+      "priorityHigh": "Tinggi – Masalah kritis yang menghambat pekerjaan",
+      "description": "Deskripsi",
+      "descriptionPlaceholder": "Harap jelaskan masalah Anda secara rinci. Sertakan pesan kesalahan, langkah-langkah untuk mereproduksi, dan apa yang Anda harapkan terjadi.",
+      "descriptionRequired": "Deskripsi wajib diisi",
+      "descriptionMinLength": "Harap berikan lebih banyak detail (setidaknya 20 karakter)",
+      "submit": "Kirim Tiket",
+      "submitting": "Mengirim...",
+      "successTitle": "Tiket berhasil dikirim!",
+      "successMessage": "Kami akan menghubungi Anda di {email} sesegera mungkin.",
+      "errorTitle": "Gagal mengirim tiket",
+      "errorMessage": "Silakan coba lagi atau hubungi kami secara langsung."
+    }
+  },
+  "sla": {
+    "hero": {
+      "title": "Dukungan yang Memahami Tantangan Anda",
+      "description": "Punya pertanyaan tentang perhitungan inkubasi atau pengaturan program? Kami di sini untuk Anda. Tujuan kami adalah menjaga quailbreeder.net tetap berjalan untuk kesuksesan Anda 24/7.",
+      "button": "Pergi ke tiket saya"
+    },
+    "commitment": {
+      "title": "Bantuan Terjamin dalam 24 Jam",
+      "description": "Kami menghargai kepercayaan Anda. Baik Anda menggunakan bulan percobaan gratis atau sudah berlangganan seharga $5, kami menjamin tanggapan atas permintaan Anda dalam 24 jam.",
+      "whyImportant": "Mengapa ini penting: Dalam peternakan unggas, tidak ada pertanyaan sekunder. Kami memberikan umpan balik cepat untuk memastikan proses Anda terus berjalan lancar."
+    },
+    "howItWorks": {
+      "title": "Cara Kerjanya",
+      "step1": {
+        "title": "Buat tiket",
+        "description": "Jelaskan masalah atau saran Anda di akun pribadi Anda."
+      },
+      "step2": {
+        "title": "Dapatkan pemberitahuan",
+        "description": "Segera setelah pengembang merespons, Anda akan menerima email."
+      },
+      "step3": {
+        "title": "Selesaikan masalah",
+        "description": "Lanjutkan percakapan sampai tugas sepenuhnya terselesaikan. Semua riwayat korespondensi disimpan selamanya."
+      }
+    },
+    "benefits": {
+      "title": "Mengapa Tiket Lebih Baik Daripada Email",
+      "benefit1": {
+        "title": "Komunikasi langsung dengan pengembang",
+        "description": "Anda berbicara dengan pembuat proyek, bukan operator pusat panggilan."
+      },
+      "benefit2": {
+        "title": "Tidak ada spam",
+        "description": "Permintaan Anda tidak akan hilang di filter email."
+      },
+      "benefit3": {
+        "title": "Prioritas komunitas",
+        "description": "Langganan memungkinkan kami mengalokasikan sumber daya untuk analisis kasus individual dan mengimplementasikan ide-ide Anda dalam pembaruan program."
+      }
+    },
+    "cta": {
+      "title": "Belum bergabung dengan kami?",
+      "description": "Coba semua fitur sistem, termasuk dukungan pribadi, gratis selama 30 hari.",
+      "button": "Coba 1 bulan gratis"
+    },
+    "badge": "Respon dalam 24 jam",
+    "guaranteeTitle": "Bantuan Terjamin",
+    "guaranteeDesc": "Bahkan di paket gratis atau langganan $5",
+    "ctaButton": "Coba 30 hari gratis",
+    "step1Short": {
+      "title": "Tiket",
+      "desc": "Jelaskan masalah Anda di dasbor"
+    },
+    "step2Short": {
+      "title": "Email",
+      "desc": "Dapatkan notifikasi balasan di kotak masuk Anda"
+    },
+    "step3Short": {
+      "title": "Solusi",
+      "desc": "Dialog hingga masalah terselesaikan"
+    },
+    "benefit1Short": {
+      "title": "Kontak Langsung dengan Pengembang",
+      "desc": "Berkomunikasi dengan pembuat proyek, bukan agen dukungan"
+    },
+    "benefit2Short": {
+      "title": "Tanpa Spam",
+      "desc": "Permintaan Anda tidak pernah hilang dalam filter"
+    },
+    "benefit3Short": {
+      "title": "Prioritas Komunitas",
+      "desc": "Langganan Anda memungkinkan kami menerapkan ide-ide Anda"
+    }
+  }
+}

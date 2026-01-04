@@ -1,0 +1,481 @@
+{
+  "home": {
+    "topmoto": "Bıldırcın Çiftçiliği İçin Veri Analizi ve Karar Destek Aracı",
+    "botmoto": "Üstün performansı belirlemek ve döngü başına verimi en üst düzeye çıkarmak için yem verimliliğini, barınma koşullarını ve stok yoğunluğunu değerlendirin.",
+    "what": "QuailBreeder Nedir?",
+    "expl": "QuailBreeder, bıldırcın üretiminizi yönetmek ve optimize etmek için tasarlanmış hepsi bir arada dijital bir asistandır. İşleminizin her adımını, yumurtadan faturaya kadar doğru bir şekilde kaydeder.",
+    "flow": "Akış Haritası",
+    "content": "Süreç aşağıdaki adımlardan oluşur:",
+    "get": "Başlayın — çok hızlı",
+    "botmototitel": "Başarı faktörlerini izole edin:"
+  },
+  "about": {
+    "cardIntro": {
+      "title": "QuailBreeder — büyük bir kişiliğe sahip küçük çiftlik asistanı",
+      "text": "Bir arka bahçede doğdu, kahve ve TypeScript ile büyüdü. Eğer bıldırcın yetiştiriyorsanız (veya sadece verimli takibi ve biraz kırsal mizahı takdir ediyorsanız), doğru yerdesiniz.",
+      "facts": "Kısa Bilgiler:",
+      "fact1": "Bıldırcın ateşine tutulan bir programcı tarafından yapıldı",
+      "fact2": "Döngüleri, partileri ve yaşayabilirliği takip eder",
+      "fact3": "Mobil uyumlu — cepte kağıt dolu notlara gerek yok",
+      "story": "Hikayeyi Oku"
+    },
+    "cardStory": {
+      "title": "QuailBreeder Nasıl Ortaya Çıktı",
+      "text1": "Bu uygulamanın arkasında oldukça kişisel bir hikaye var. 2012'de Kyiv'den ayrıldım ve kırsala taşındım. Şehir alışkanlıkları kırsal gerçeklikle buluştu — ve en azından bir süre için kaos kazandı.",
+      "text2": "Et üretmek için arka bahçemde küçük bir bıldırcın çiftliği kurdum. İki yıl, kahve ve çok sayıda sayım sonrasında haftada ~50 kg bıldırcın etine ulaştım. Bu, 14–15 örtüşen parti ile hokkabazlık yapmak ve 3.000'den fazla kuşu takip etmek demekti. Kağıt notlar bıldırcınlar gibi çoğalıyordu.",
+      "text3": "Eğitimim gereği programcıyım, bu yüzden her şeyi takip etmek için bir PC uygulaması yazdım. Çalıştı ama mobil değildi. Hala kağıt taşıyor ve her günün sonunda verileri transkribe ediyordum. Ardından, bir sırt sakatlığı beni çiftliği kapatmaya ve uygulamaya odaklanmaya zorladı — bu da mümkün olan en iyi pivot oldu: bir sonraki sürüm mobil öncelikli hale geldi ve yaşayabilirlik, nakliye bilgileri ve parti zamanlaması gibi pratik alanlarla doluydu.",
+      "text4": "Uzun lafın kısası: QuailBreeder, birinin yumurta kaybetmeyi durdurması ve zaman kazanmaya başlaması gerektiği için var oldu. Eğer et için bıldırcın yetiştiriyorsanız, bu uygulama ihtiyacınız olan küçük detayları toplar — size SQL öğrenmeyi veya laboratuvar önlüğü giymeyi zorunlu kılmaz.",
+      "button": "Özellikleri Gör"
+    },
+    "cardFounder": {
+      "founder": "Geliştirici Hakkında",
+      "text": "Serhii Karavansky — programcı, arka bahçe çiftçisi, kahve destekçisi.",
+      "funFacts": "Eğlenceli bilgiler:",
+      "fact1": "Orijinal uygulama bir Windows yardımcı programı olarak başladı (evet, nostalji).",
+      "fact2": "Bir sırt sakatlığından, birkaç yazılım güncellemesinden ve çok fazla yumurta kabuğundan sağ çıktı.",
+      "fact3": "«QuailBreeder» ismi bir pazarlama komitesi tarafından önerilmedi — dürüsttü."
+    },
+    "cardWhy": {
+      "title": "İnsanlar QuailBreeder'ı Neden Seviyor",
+      "reason1": {
+        "title": "Zaman kazanın",
+        "text": "Hızlı giriş, keepalive gönderimi ve kağıt notları kopyalayarak geçirilen daha az akşam."
+      },
+      "reason2": {
+        "title": "Partileri takip edin",
+        "text": "Örtüşen döngüleri, kuluçka günlerini ve çıkım oranlarını kolaylıkla planlayın ve takip edin."
+      },
+      "reason3": {
+        "title": "Mobil öncelikli",
+        "text": "Telefonda kusursuz çalışacak şekilde tasarlandı — çünkü çiftlikte eller kirlenir."
+      }
+    },
+    "cardPromo": {
+      "title": "Yumurtalar ve kağıtlarla hokkabazlık yapmayı bırakmaya hazır mısınız?",
+      "text": "QuailBreeder'ı deneyin ve akşamlarınızı geri kazanın.",
+      "button": "Ücretsiz denemeyi başlat",
+      "contact": "Bize Ulaşın \n(Yakında bir destek talep takip sistemi olacaktır.)"
+    }
+  },
+  "getStarted": {
+    "title": "QuailBreeder ile Başlarken",
+    "intro": "Başlamak için, kullandığınız ekipmanın üç ana kataloğunu doldurmanız gerekir.",
+    "stepsTitle": "İzlenecek Adımlar",
+    "finalTitle": "Sonuç",
+    "download": "Uygulamayı indirin ve bıldırcın çiftçiliğinizi optimize etmeye başlayın!",
+    "step1": {
+      "title": "Kuluçka Makineleri (Incubators)",
+      "description": "Üç tip (Setter, Hatcher ve Kombinasyon) kullanımını, ayrıca her kuluçka makinesi için tepsi sayısını ve bunların yumurta kapasitesini sağlar."
+    },
+    "step2": {
+      "title": "Civciv Büyütme Alanları (Brooders)",
+      "description": "Burada, her büyütme alanı için mümkün olan maksimum civciv sayısını belirtmek gereklidir."
+    },
+    "step3": {
+      "title": "Konumlar (Locations)",
+      "description": "Konumlar, belirli bir görev için kafes gruplarıdır. Örneğin: ebeveyn stoğu tutmak, yumurta üretimi veya et üretimi için."
+    },
+    "final": {
+      "title": "Yeni Bir Parti Oluşturma",
+      "description": "Sekme çubuğunda Parti'yi (Batch) seçin, ardından bu partideki yumurta miktarını girin.\n• Geriye dönük parti oluşturma yeteneğine sahipsiniz; bunu yapmak için, miktarın üzerindeki tarihe tıklayın. Lütfen bunun yalnızca yumurtaları kuluçka makinesine yerleştirmeden önce mümkün olduğunu unutmayın.\n• Bir Setter kuluçka makinesi kullanıyorsanız, Hatcher kuluçka makinesindeki tepsileri de tanımlamanız gerekir.\n• Geri Al (Undo) düğmesine tıklayarak son eylemi silebilirsiniz.\n• Yumurtaları tepsilerde belirlediğinizde, kuluçkaya başlamak için Başlat düğmesine basın.\n• 2 tür bildirim ayarlayabilirsiniz:\n  ○ Anlık bildirimler (Push notifications)\n  ○ Favori takviminizde otomatik olarak ilgili kayıtları oluşturma\n• Bu, Ana Sayfa (Home) sekmesindeki Ayarlar'da (Settings) yapılabilir."
+    }
+  },
+  "process": {
+    "incubation": {
+      "title": "Kuluçka",
+      "desc": "Sıcaklık, nem ve çevirme programları dahil olmak üzere bıldırcın yumurtalarının kuluçka sürecini yönetin ve izleyin. Setter kuluçka makinesi kullanılması durumunda, planlanan Hatcher tepsilerini de belirtin. Bunu etkileyen ana faktörler, kuluçkalık yumurtayı bırakan kuşun yaşı ve kuluçka makinelerinizin kalitesidir (embriyo yumurtadayken temiz hava değişimi, çünkü oksijene de ihtiyaç duyar).",
+      "details": "Kabuk hava geçirmez değildir. Yumurtanın içi ile dış ortam arasında gazların serbestçe hareket etmesini sağlayan binlerce mikroskobik gözenek (7.000 ila 17.000 arasında) ile kaplıdır."
+    },
+    "hatching": {
+      "title": "Çıkım (Hatching)",
+      "desc": "Favori takviminizi bağlayarak ve/veya cihazınızda kişiselleştirilmiş bildirimler alarak yeni bir yaşamın doğuş mucizesi olan bu sihirli günü kaçırmayın. Bir kuluçka makinesi ve tepsi numarası seçin. Çıkan yavru sayısını girin ve hangi büyütme alanına yerleştirileceklerini belirtin.",
+      "details": "Bu aşamada, ilk Temel Performans Göstergenizi (KPI) elde edersiniz. Canlılık yüzdesi, kuluçkaya alınan yumurta sayısına göre çıkan yavru sayısının oranı olarak hesaplanır."
+    },
+    "brooding": {
+      "title": "Büyütme (Brooding)",
+      "desc": "Yavruların günlük ölüm oranını takip etmek ve beslenme, iklim vb. değişikliklere ilişkin uygun kayıtları ve notları tutmak, nedenini belirlemeyi kolaylaştıracaktır.",
+      "details": "Canlılık yüzdesini artırmak bu aşamada ana görevdir. Doğru bakım ve izleme buna yardımcı olacaktır."
+    },
+    "feeding": {
+      "title": "Besleme",
+      "desc": "Parti görevleri listesinden Besleme'yi seçin. Ardından konumu belirtin ve o gün boş olan kafesleri doldurun.",
+      "details": "Bu noktada, hayatta kalma kayıtları da oluşturabilirsiniz."
+    },
+    "slaughter": {
+      "title": "Kesim",
+      "desc": "En önemlisi, sürü 50 ila 60 gün içinde burada işlenmeye hazırdır. Kesim sürecini başlatmanın ön koşulu, bir kesim listesi (veya işleme emri) oluşturmaktır. Bu emir çift amaçlıdır: satış emri olarak da kullanılabilir ve şablonla oluşturulan faturanın müşteriye gönderilmesi için temel oluşturur.",
+      "details": "Döngüyü tamamlayarak ve ilgili tüm verileri girerek, yem, barınma ve kafeslerdeki stok yoğunluğunun kalitesini değerlendirebilecek, böylece sonuçların düşük olduğu alanları ve performansın üstün olduğu yerleri belirleyebileceksiniz."
+    },
+    "selling": {
+      "title": "Satış",
+      "desc": "Tıklanabilir bağlantıları destekleyen bir fatura şablonunu düzenleyebilirsiniz.",
+      "details": "Partide daha fazla kuş kalmazsa, otomatik olarak arşive aktarılır."
+    }
+  },
+  "features": {
+    "title": "Temel Özellikler",
+    "feat1": {
+      "title": "Sınırsız Ölçeklendirme:",
+      "text": "Sınırsız sayıda kuluçka makinesini yönetin ve üç farklı ekipman türüne kadar ayarları özelleştirin."
+    },
+    "feat2": {
+      "title": "Gerçek Zamanlı Kapasiteye Genel Bakış:",
+      "text": "Kritik tüm ekipmanların (kuluçka makineleri, büyütme alanları ve kafesler) mevcut yükünü ve kullanılabilirliğini anında görselleştirerek parti planlamasını optimize edin."
+    },
+    "feat3": {
+      "title": "Kusursuz Entegrasyon ve Hatırlatıcılar:",
+      "text": "Hiçbir şeyin kaçırılmaması için önemli tarihleri ve son teslim tarihlerini mevcut harici takviminizle (iCloud, Google Takvim) senkronize edin."
+    },
+    "feat4": {
+      "title": "Hassas Ölüm Analizi:",
+      "text": "Sağlık risklerinin daha hızlı tespiti için her kaybı tarih, saat ve belirli kafes/konuma göre kaydedin ve analiz edin."
+    },
+    "feat5": {
+      "title": "Temiz ve Düzenli Veriler:",
+      "text": "Tamamlanmış üretim partilerini otomatik olarak arşivleyin, böylece aktif kontrol panelinizi temiz tutun ve uzun vadeli veri alımını iyileştirin."
+    },
+    "feat6": {
+      "title": "Profesyonel ve Hızlı Faturalandırma:",
+      "text": "Tamamen özelleştirilebilir şablonları kullanarak anında profesyonel, markalı faturalar oluşturun."
+    }
+  },
+  "navbar": {
+    "about": "Hikayem",
+    "get_started": "Başlayın",
+    "terms": "Kullanım Şartları",
+    "privacy": "Gizlilik Politikası",
+    "support": "Destek"
+  },
+  "praesentation": {
+    "intro": "Proje, çalışma verilerinin yönetimi ve izlenmesi için bir kontrol panelidir.",
+    "technologiesTitle": "Teknolojiler",
+    "featuresTitle": "Temel Özellikler",
+    "authTitle": "Yetkilendirme ve Güvenlik",
+    "mssqlTitle": "MSSQL Modülü",
+    "deploymentTitle": "Dağıtım ve Operasyonlar",
+    "conclusionTitle": "Sonuç",
+    "table": {
+      "columnArea": "Alan",
+      "columnTech": "Teknoloji"
+    }
+  },
+  "seo": {
+    "home": {
+      "title": "QuailBreeder - Bıldırcın Yetiştiriciliği için Veri Analizi ve Karar Destek Aracı",
+      "description": "Bıldırcın üretimini yönetmek ve optimize etmek için hepsi bir arada dijital asistan. Yumurtadan faturaya kadar her adımı doğru muhasebe ve performans analiziyle takip edin."
+    },
+    "about": {
+      "title": "Sosyal Olarak Kabul Edilebilir Kendi Kendini Tanıtma",
+      "description": "QuailBreeder Nasıl Ortaya Çıktı. Büyük bir kişiliğe sahip küçük çiftlik asistanı"
+    },
+    "getStarted": {
+      "title": "Başlayın",
+      "description": "Başlamak için, kullandığınız ekipmanın üç ana kataloğunu doldurmanız gerekir."
+    },
+    "privacyPolicy": {
+      "title": "Gizlilik Politikası",
+      "description": "Bıldırcın çiftliği yönetim uygulamamızı kullanırken bilgilerinizi nasıl topladığımızı, kullandığımızı ve koruduğumuzu öğrenin."
+    },
+    "termsOfUse": {
+      "title": "Kullanım Şartları",
+      "description": "Bıldırcın yetiştirme yönetim uygulamamızın kullanımını düzenleyen şart ve koşulları anlayın."
+    }
+  },
+  "routes": {
+    "about": "hakkinda",
+    "getStarted": "baslarken",
+    "privacyPolicy": "gizlilik-politikasi",
+    "termsOfUse": "kullanim-sartlari",
+    "support": "destek"
+  },
+  "policy": {
+    "title": "Gizlilik Politikası",
+    "intro": "Gizliliğiniz bizim için önemlidir. Bu Gizlilik Politikası, Quail Breeder'ın uygulamamızı kullandığınızda bilgilerinizi nasıl topladığını, kullandığını ve koruduğunu açıklar.",
+    "dataCollection": {
+      "title": "Hangi Bilgileri Topluyoruz",
+      "confidential": {
+        "title": "Gizli İçerik",
+        "text": "Quail Breeder, sağladığınız aşağıdaki gizli içeriği toplar ve depolar:",
+        "item1": "Ekipman dizinleri (kuluçka makineleri, büyütme alanları ve konumlar)",
+        "item2": "Çıkım parti bilgileri",
+        "item3": "Müşteri dizin detayları",
+        "item4": "Satış ve amortisman kayıtları"
+      },
+      "subscriber": {
+        "title": "Temel Abone Bilgileri",
+        "item1": "E-posta adresleri",
+        "item2": "Kullanım verileri ve analitikler"
+      },
+      "notCollect": {
+        "title": "Toplamadığımız Bilgiler",
+        "text": "Quail Breeder açıkça şunları toplamaz:",
+        "item1": "IP adresleri",
+        "item2": "Cihaz bilgileri",
+        "item3": "Kişisel donanım tanımlayıcıları"
+      }
+    },
+    "dataUsage": {
+      "title": "Bilgilerinizi Nasıl Kullanıyoruz",
+      "maintaining": {
+        "title": "Hizmetlerimizi Sürdürme",
+        "text": "Bilgilerinizi müşteri desteği sağlamak ve Quail Breeder uygulamasının işlevselliğini sürdürmek için kullanırız."
+      },
+      "communicating": {
+        "title": "Sizinle İletişim Kurma",
+        "text": "Sizinle Quail Breeder ile ilgili yeni özellikler, güncellemeler ve teklifler hakkında bilgi vermek için iletişim bilgilerinizi kullanabiliriz."
+      },
+      "important": "Önemli: Bilgilerinizi satma veya kiralamayı iş edinmiyoruz."
+    },
+    "userControl": {
+      "title": "Erişiminiz ve Kontrolünüz",
+      "text": "Bilgileriniz üzerinde tam kontrole sahipsiniz:",
+      "manage": {
+        "title": "Bilgileri Yönetme:",
+        "text": "İstediğiniz zaman uygulamaya giriş yapabilir ve bilgilerinizi doğrudan düzenleyebilirsiniz."
+      },
+      "delete": {
+        "title": "İçeriği Silme:",
+        "text": "Gizli içeriğinizi istediğiniz zaman silebilirsiniz."
+      },
+      "stop": {
+        "title": "Kullanmayı Durdurma:",
+        "text": "Quail Breeder uygulamasını istediğiniz zaman kısıtlama olmaksızın kullanmayı bırakabilirsiniz."
+      },
+      "export": {
+        "title": "Veri Dışa Aktarımı:",
+        "text": "Verilerinizi indirmenize olanak tanıyan bir veri dışa aktarma özelliği gelecek sürümler için planlanmıştır."
+      }
+    },
+    "customerSupport": {
+      "title": "Müşteri Desteği Erişimi",
+      "text": "Hesap sorunlarını giderirken, müşteri destek ekibimiz hesabınızdaki belirli içeriği geçici olarak görüntülemek için izin isteyebilir.",
+      "note": "Not: Bu izin, destek sorunu çözüldüğünde sona erer. Açık izniniz olmadan hesabınıza asla erişmeyeceğiz."
+    },
+    "dataProtection": {
+      "title": "Verilerinizi Korumaya Yönelik Taahhütlerimiz",
+      "text": "Quail Breeder, gizli bilgilerinizi korumayı taahhüt eder:",
+      "item1": "Gizli içeriğinizi önceden yazılı izniniz olmadan üçüncü taraflara ifşa etmeyeceğiz.",
+      "item2": "Bilgilerinizin kullanımını yalnızca hesap sahibi olarak sizinle olan ticari ilişkilere özel tutarız.",
+      "item3": "Verilerinizi yetkisiz erişime karşı korumak için endüstri standardı güvenlik önlemlerini uygularız."
+    },
+    "changes": {
+      "title": "Bu Gizlilik Politikasındaki Değişiklikler",
+      "text1": "Uygulamalarımızdaki değişiklikleri veya diğer operasyonel, yasal veya düzenleyici nedenleri yansıtmak için bu Gizlilik Politikasını zaman zaman güncelleyebiliriz.",
+      "text2": "Önemli değişiklikleri, bu sayfada yeni Gizlilik Politikasını yayınlayarak ve aşağıdaki \"Son Güncelleme\" tarihini güncelleyerek size bildireceğiz."
+    },
+    "contact": {
+      "title": "Bize Ulaşın",
+      "text": "Bu Gizlilik Politikası veya veri uygulamalarımız hakkında herhangi bir sorunuz varsa, lütfen bize ulaşın:",
+      "email": "E-posta:"
+    },
+    "lastUpdated": "Son Güncelleme: 30 Kasım 2024",
+    "footer": "© 2024 QuailBreeder. Tüm hakları saklıdır."
+  },
+  "terms": {
+    "title": "Kullanım Şartları",
+    "intro": "Bu Kullanım Şartları, Quail Breeder uygulaması ve hizmetlerini kullanımınızı yönetir. Uygulamamızı kullanarak, bu şartlara bağlı kalmayı kabul etmiş olursunuz.",
+    "purpose": {
+      "title": "Uygulama Amacı",
+      "text": "Quail Breeder, aşağıdakileri içeren bıldırcın çiftliği operasyonları için kapsamlı muhasebe araçları sağlar:",
+      "item1": "Kuluçka makinesi yönetimi ve yumurta takibi",
+      "item2": "Çıkım sürecinin izlenmesi",
+      "item3": "Büyütme ve büyüme takibi",
+      "item4": "Kuş hareketleri ve konum yönetimi",
+      "item5": "Kesim ve satış kaydı"
+    },
+    "subscription": {
+      "title": "Abonelik ve Ödeme",
+      "text": "Quail Breeder, şu adla anılan ücretli, aylık otomatik yenilenen bir abonelik gerektirir:",
+      "name": "QuailBreederAboneliği",
+      "important": "Önemli: Ödeme, satın alma onayı üzerine iTunes Hesabınıza tahsil edilecektir. Abonelikler, cari dönemin bitiminden en az 24 saat önce otomatik yenileme kapatılmadığı sürece otomatik olarak yenilenir."
+    },
+    "license": {
+      "title": "Lisans ve Kısıtlamalar",
+      "text": "Quail Breeder'ı yalnızca Apple cihazlarınızda kişisel kullanım için devredilemez bir lisans alırsınız.",
+      "prohibited": "Aşağıdakiler yasaktır:",
+      "item1": "Uygulamayı üçüncü taraflarla paylaşmak",
+      "item2": "Yazılımı tersine mühendislik yapmak veya kaynak koduna dönüştürmek",
+      "item3": "Değiştirmek veya türev eserler oluşturmak",
+      "item4": "Uygulamayı yeniden dağıtmak veya yeniden satmak",
+      "item5": "Herhangi bir tescilli bildirimi kaldırmak veya değiştirmek"
+    },
+    "responsibilities": {
+      "title": "Kullanıcı Sorumlulukları",
+      "age": {
+        "title": "Yaş Gereksinimleri",
+        "text": "Kullanıcıların bu uygulamayı kullanmak için ebeveyn izniyle en az 13 yaşında veya 18 yaşında olması gerekir."
+      },
+      "defect": {
+        "title": "Hata Bildirimi",
+        "text": "Uygulamayı kurulumdan hemen sonra incelemeli ve 30 gün içinde herhangi bir hatayı şu adrese bildirmelisiniz:"
+      },
+      "backup": {
+        "title": "Veri Yedekleme",
+        "text": "Veri kaybını önlemek için verilerinizin yedek kopyalarını saklamaktan siz sorumlusunuz."
+      }
+    },
+    "liability": {
+      "title": "Sorumluluğun Sınırlandırılması",
+      "text": "Lisans verenin sorumluluğu kasıtlı eylemler ve ağır ihmal durumlarıyla sınırlıdır.",
+      "note": "İhlal edilen özen yükümlülüklerinden kaynaklanan zararlar için sorumluluğu hariç tutuyoruz. Kullanıcılar, veri kaybını önlemek için kendi yedek kopyalarını tutmalıdır."
+    },
+    "intellectual": {
+      "title": "Fikri Mülkiyet Hakları",
+      "text": "Geliştirici, aşağıdaki tüm hakları saklı tutar:",
+      "item1": "Telif Hakları (Copyrights)",
+      "item2": "Ticari Markalar (Trademarks)",
+      "item3": "Patentler (Patents)",
+      "item4": "Ticari Sırlar (Trade secrets)",
+      "item5": "Diğer tüm fikri mülkiyet hakları",
+      "important": "Önemli: Geliştiriciden önceden yazılı izin almadan sonuçları, ekran görüntülerini veya uygulamadaki herhangi bir içeriği yayınlayamazsınız."
+    },
+    "termination": {
+      "title": "Fesih",
+      "text1": "Her iki taraf da bu sözleşmeyi herhangi bir zamanda feshedebilir.",
+      "text2": "Fesihten sonra, şunları yapmalısınız:",
+      "item1": "Uygulamayı kullanmayı derhal bırakın",
+      "item2": "Yazılımın tüm kopyalarını cihazlarınızdan silin",
+      "item3": "İlgili tüm hizmetlere erişimi durdurun"
+    },
+    "governing": {
+      "title": "Yürürlükteki Hukuk ve Yargı Yetkisi",
+      "text1": "Bu Kullanım Şartları, Ukrayna yasalarına tabidir.",
+      "text2": "Bu şartlardan kaynaklanan veya bunlarla ilgili tüm anlaşmazlıklar yalnızca Ukrayna mahkemelerinde çözümlenecektir."
+    },
+    "contact": {
+      "title": "İletişim Bilgileri",
+      "text": "Bu Kullanım Şartları hakkında herhangi bir sorunuz varsa, lütfen bize ulaşın:",
+      "email": "E-posta"
+    },
+    "lastUpdated": "Son Güncelleme: 30 Kasım 2024",
+    "footer": "© 2024 QuailBreeder. Tüm hakları saklıdır."
+  },
+  "auth": {
+    "welcome": "QuailBreeder'a Hoş Geldiniz",
+    "signInToAccess": "Destek almak için giriş yapın",
+    "continueWithGoogle": "Google ile devam et",
+    "continueWithApple": "Apple ile devam et",
+    "byContinuing": "Devam ederek şunları kabul etmiş olursunuz:",
+    "termsOfUse": "Kullanım Şartları",
+    "and": "ve",
+    "privacyPolicy": "Gizlilik Politikası",
+    "signingOut": "Çıkış yapılıyor...",
+    "pleaseWait": "Lütfen bekleyin",
+    "confirmSignOut": "Çıkış Yap",
+    "close": "Kapat"
+  },
+  "support": {
+    "title": "Destek Merkezi",
+    "signOut": "Çıkış Yap",
+    "createTicket": "Destek Talebi Oluştur",
+    "description": "Bir sorun mu yaşıyorsunuz veya yardıma mı ihtiyacınız var? Bize bildirin, en kısa sürede size geri döneceğiz.",
+    "beforeSubmitting": "Talep göndermeden önce",
+    "tip1": "Sık karşılaşılan sorunlar için SSS ve dokümantasyonumuzu kontrol edin",
+    "tip2": "Sorununuzu daha hızlı çözebilmemiz için mümkün olduğunca fazla detay ekleyin",
+    "tip3": "Ekran görüntüleri veya hata mesajları çok faydalıdır",
+    "form": {
+      "subject": "Konu",
+      "subjectPlaceholder": "Sorununuzun kısa açıklaması",
+      "subjectRequired": "Konu zorunludur",
+      "category": "Kategori",
+      "categoryPlaceholder": "Bir kategori seçin",
+      "categoryRequired": "Kategori zorunludur",
+      "categoryTechnical": "Teknik Sorun",
+      "categoryBilling": "Faturalandırma ve Hesap",
+      "categoryFeature": "Özellik Talebi",
+      "categoryData": "Veri ve Senkronizasyon Sorunları",
+      "categoryOther": "Diğer",
+      "priority": "Öncelik",
+      "priorityPlaceholder": "Öncelik seçin",
+      "priorityRequired": "Öncelik zorunludur",
+      "priorityLow": "Düşük — Genel soru veya küçük bir sorun",
+      "priorityMedium": "Orta — İşlevselliği etkileyen sorun",
+      "priorityHigh": "Yüksek — Çalışmayı engelleyen kritik sorun",
+      "description": "Açıklama",
+      "descriptionPlaceholder": "Lütfen sorununuzu ayrıntılı olarak açıklayın. Hata mesajlarını, yeniden oluşturma adımlarını ve beklediğiniz sonucu ekleyin.",
+      "descriptionRequired": "Açıklama zorunludur",
+      "descriptionMinLength": "Lütfen daha fazla ayrıntı sağlayın (en az 20 karakter)",
+      "submit": "Talebi Gönder",
+      "submitting": "Gönderiliyor...",
+      "successTitle": "Talep başarıyla gönderildi!",
+      "successMessage": "En kısa sürede {email} adresi üzerinden sizinle iletişime geçeceğiz.",
+      "errorTitle": "Talep gönderilemedi",
+      "errorMessage": "Lütfen tekrar deneyin veya bizimle doğrudan iletişime geçin."
+    }
+  },
+  "sla": {
+    "hero": {
+      "title": "Zorluklarınızı Anlayan Destek",
+      "description": "Kuluçka hesaplaması veya program kurulumu hakkında bir sorunuz mu var? Biz buradayız. Amacımız, quailbreeder.net'i başarınız için 7/24 çalışır durumda tutmaktır.",
+      "button": "Biletlerime Git"
+    },
+    "commitment": {
+      "title": "24 Saat İçinde Garantili Yardım",
+      "description": "Güveninize değer veriyoruz. İster ücretsiz deneme ayını kullanın, ister zaten 5$ karşılığında abone olun, talebinize 24 saat içinde yanıt garantisi veriyoruz.",
+      "whyImportant": "Neden önemli: Kanatlı hayvan yetiştiriciliğinde ikincil soru yoktur. Süreçlerinizin sorunsuz devam etmesini sağlamak için hızlı geri bildirim sağlıyoruz."
+    },
+    "howItWorks": {
+      "title": "Nasıl Çalışır",
+      "step1": {
+        "title": "Bilet oluştur",
+        "description": "Kişisel hesabınızda sorununuzu veya önerinizi açıklayın."
+      },
+      "step2": {
+        "title": "Bildirim al",
+        "description": "Geliştirici yanıt verir vermez bir e-posta alacaksınız."
+      },
+      "step3": {
+        "title": "Sorunu çöz",
+        "description": "Görev tamamen çözülene kadar görüşmeye devam edin. Tüm yazışma geçmişi kalıcı olarak kaydedilir."
+      }
+    },
+    "benefits": {
+      "title": "Biletler Neden E-postadan Daha İyi",
+      "benefit1": {
+        "title": "Geliştiriciyle doğrudan iletişim",
+        "description": "Bir çağrı merkezi operatörüyle değil, projenin yaratıcısıyla konuşuyorsunuz."
+      },
+      "benefit2": {
+        "title": "Spam yok",
+        "description": "Talepleriniz e-posta filtrelerinde kaybolmayacak."
+      },
+      "benefit3": {
+        "title": "Topluluk önceliği",
+        "description": "Abonelik, bireysel vaka analizleri için kaynak ayırmamıza ve fikirlerinizi program güncellemelerine entegre etmemize olanak tanır."
+      }
+    },
+    "cta": {
+      "title": "Hala aramızda değil misiniz?",
+      "description": "Kişisel destek dahil tüm sistem özelliklerini 30 gün boyunca ücretsiz deneyin.",
+      "button": "1 Ay Ücretsiz Dene"
+    },
+    "badge": "24 Saat İçinde Yanıt",
+    "guaranteeTitle": "Garantili Destek",
+    "guaranteeDesc": "Ücretsiz plan veya 5$ abonelikte bile",
+    "ctaButton": "30 Gün Ücretsiz Dene",
+    "step1Short": {
+      "title": "Destek Talebi",
+      "desc": "Sorununuzu kontrol panelinde açıklayın"
+    },
+    "step2Short": {
+      "title": "E-posta",
+      "desc": "Gelen kutunuzda yanıt bildirimi alın"
+    },
+    "step3Short": {
+      "title": "Çözüm",
+      "desc": "Sorun tamamen çözülene kadar diyalog"
+    },
+    "benefit1Short": {
+      "title": "Doğrudan Geliştirici İletişimi",
+      "desc": "Bir operatörle değil, proje geliştiricisiyle iletişim kurun"
+    },
+    "benefit2Short": {
+      "title": "Spam Yok",
+      "desc": "Talepleriniz asla filtrelerde kaybolmaz"
+    },
+    "benefit3Short": {
+      "title": "Topluluk Önceliği",
+      "desc": "Aboneliğiniz, fikirlerinizi hayata geçirmemizi sağlar"
+    }
+  }
+}

@@ -1,0 +1,481 @@
+{
+  "home": {
+    "topmoto": "Datenanalyse und Steuerung für die Wachtelzucht",
+    "botmoto": "Bewerten Sie Futterverwertung, Haltungsbedingungen und Besatzdichte, um überlegene Leistung zu identifizieren und den Ertrag pro Zyklus zu maximieren.",
+    "what": "Was ist QuailBreeder?",
+    "expl": "QuailBreeder ist Ihr digitales All-in-One-Werkzeug, das speziell zur Verwaltung und Optimierung Ihrer Wachtelzucht entwickelt wurde. Es erfasst präzise jeden Schritt Ihres Betriebs – vom Ei bis zur Rechnung.",
+    "flow": "Flussdiagramm",
+    "content": "Der Prozess besteht aus den folgenden Schritten:",
+    "get": "Loslegen — es ist schnell",
+    "botmototitel": "Erfolgsfaktoren isolieren:"
+  },
+  "about": {
+    "cardIntro": {
+      "title": "QuailBreeder — der kleine Farm-Assistent mit großer Persönlichkeit",
+      "text": "Geboren im Hinterhof, aufgezogen mit Kaffee und TypeScript. Wenn Sie Wachteln züchten (oder einfach effiziente Nachverfolgung und eine Prise ländlichen Humor schätzen), sind Sie hier richtig.",
+      "facts": "Kurze Fakten:",
+      "fact1": "Erstellt von einem Programmierer, der vom Wachtel-Fieber gebissen wurde",
+      "fact2": "Verfolgt Zyklen, Chargen und die Lebensfähigkeit",
+      "fact3": "Mobilfähig — keine Taschen voller Papier mehr nötig",
+      "story": "Lesen Sie die Geschichte"
+    },
+    "cardStory": {
+      "title": "Wie QuailBreeder entstanden ist",
+      "text1": "Hinter dieser App steckt eine ziemlich persönliche Geschichte. Im Jahr 2012 verließ ich Kyiw und zog aufs Land. Städtische Gewohnheiten treffen auf ländliche Realität — und das Chaos gewinnt, zumindest für eine Weile.",
+      "text2": "Ich begann in meinem Hinterhof mit einer kleinen Wachtelfarm zur Fleischproduktion. Zwei Jahre, Kaffee und viel Zählen später erreichte ich ~50 kg Wachtelfleisch pro Woche. Das bedeutete, 14–15 überlappende Chargen zu jonglieren und über 3.000 Vögel zu verfolgen. Papierzettel vermehrten sich wie Wachteln.",
+      "text3": "Von Haus aus bin ich Programmierer — also schrieb ich eine PC-Anwendung, um alles zu verfolgen. Sie funktionierte, war aber nicht mobil. Ich trug immer noch Papier bei mir und übertrug die Daten am Ende des Tages. Dann zwang mich eine Rückenverletzung, die Farm zu schließen und mich auf die App zu konzentrieren — was sich als die bestmögliche Wende erwies: Die nächste Version wurde mobile-first und vollgepackt mit praktischen Feldern wie Lebensfähigkeit, Transportinformationen und Chargen-Timing.",
+      "text4": "Kurz gesagt: QuailBreeder existiert, weil jemand aufhören musste, Eier zu verlieren, und anfangen musste, Zeit zu sparen. Wenn Sie Wachteln zur Fleischproduktion halten, sammelt diese App die winzigen Details, die Sie benötigen — ohne dass Sie SQL lernen oder einen Laborkittel tragen müssen.",
+      "button": "Funktionen ansehen"
+    },
+    "cardFounder": {
+      "founder": "Über den Entwickler",
+      "text": "Serhii Karavansky — Programmierer, Hinterhofbauer, Kaffee-Unterstützer.",
+      "funFacts": "Wissenswertes:",
+      "fact1": "Die ursprüngliche App begann als Windows-Utility (ja, Nostalgie).",
+      "fact2": "Sie überlebte eine Rückenverletzung, mehrere Software-Updates und etwas zu viele Eierschalen.",
+      "fact3": "Der Name „QuailBreeder“ wurde nicht von einem Marketing-Komitee vorgeschlagen — er war ehrlich."
+    },
+    "cardWhy": {
+      "title": "Warum Nutzer QuailBreeder lieben",
+      "reason1": {
+        "title": "Zeit sparen",
+        "text": "Schnelle Eingabe, Keepalive-Posting und weniger Abende, die mit dem Übertragen von Papiernotizen verbracht werden."
+      },
+      "reason2": {
+        "title": "Chargen verfolgen",
+        "text": "Planen und verfolgen Sie überlappende Zyklen, Brutzeiten und Schlupfraten mit Leichtigkeit."
+      },
+      "reason3": {
+        "title": "Mobile-first",
+        "text": "Perfekt für das Smartphone entwickelt — denn auf der Farm werden die Hände schmutzig."
+      }
+    },
+    "cardPromo": {
+      "title": "Bereit, nicht mehr Eier und Papier jonglieren zu müssen?",
+      "text": "Testen Sie QuailBreeder und gewinnen Sie Ihre Abende zurück.",
+      "button": "Kostenlose Testversion starten",
+      "contact": "Kontaktieren Sie uns"
+    }
+  },
+  "getStarted": {
+    "title": "Wie Sie mit der Nutzung der App beginnen",
+    "intro": "Um zu starten, müssen Sie die drei Hauptkataloge der von Ihnen verwendeten Ausrüstung ausfüllen. Gehen Sie dazu wie folgt vor: Wählen Sie in der Tableiste „Startseite“ (Home) und anschließend „Einstellungen“ (Settings) aus, um die Ausrüstung in der Anwendung zu konfigurieren.",
+    "stepsTitle": "Vorbereitung der Kataloge:",
+    "finalTitle": "Endlich",
+    "download": "Laden Sie die App herunter und beginnen Sie mit der Optimierung Ihrer Wachtelzucht!",
+    "step1": {
+      "title": "Brutmaschinen (Inkubatoren)",
+      "description": "Hier legen Sie die drei Typen (Vorbrüter/Setter, Schlupfbrüter/Hatcher und Kombi), sowie die Anzahl der Horden für jeden Inkubator und deren Eikapazität fest."
+    },
+    "step2": {
+      "title": "Kükenställe (Brooder)",
+      "description": "Hier muss die maximal mögliche Anzahl an Küken für jeden Kükenstall angegeben werden."
+    },
+    "step3": {
+      "title": "Standorte (Locations)",
+      "description": "Standorte sind Gruppen von Käfigen für eine bestimmte Aufgabe. Zum Beispiel: zur Haltung von Elterntieren, zur Eierproduktion oder zur Fleischproduktion."
+    },
+    "final": {
+      "title": "Erstellung einer neuen Charge",
+      "description": "Wählen Sie 'Charge' (Batch) in der Tableiste und geben Sie dann die Eieranzahl für diese Charge ein.\n• Sie können Chargen rückwirkend erstellen; klicken Sie dazu auf das Datum über der Menge. Beachten Sie, dass dies nur möglich ist, bevor die Eier in den Inkubator gelegt werden.\n• Wenn Sie einen Vorbrüter (Setter) verwenden, müssen Sie auch die Horden im Schlupfbrüter (Hatcher) definieren.\n• Durch Klicken auf 'Rückgängig' (Undo) können Sie die letzte Aktion löschen.\n• Wenn Sie die Eier den Horden zugewiesen haben, drücken Sie die Schaltfläche 'Start', um die Brut zu beginnen.\n• Sie können zwei Arten von Benachrichtigungen einrichten:\n  ○ Push-Benachrichtigungen\n  ○ Automatisches Erstellen entsprechender Einträge in Ihrem bevorzugten Kalender\n• Dies kann in den 'Einstellungen' (Settings) auf dem Reiter 'Startseite' (Home) erfolgen."
+    }
+  },
+  "process": {
+    "incubation": {
+      "title": "Inkubation",
+      "desc": "Verwalten und überwachen Sie den Inkubationsprozess von Wachteleiern, einschließlich Temperatur, Luftfeuchtigkeit und Wendeplänen. Bei Verwendung eines Setter-Inkubators geben Sie auch die geplanten Hatcher-Schalen an. Die Hauptfaktoren, die dies beeinflussen, sind das Alter des Vogels, der das Brutei legt, und die Qualität Ihrer Inkubatoren (Frischluftzufuhr während der Embryo im Ei ist, da er auch Sauerstoff benötigt).",
+      "details": "Die Schale ist nicht luftdicht. Sie ist von Tausenden mikroskopisch kleiner Poren (zwischen 7.000 und 17.000) durchsetzt, die einen freien Gasaustausch zwischen dem Inneren des Eies und der Außenumgebung ermöglichen."
+    },
+    "hatching": {
+      "title": "Schlüpfen",
+      "desc": "Verpassen Sie nicht diesen magischen Tag, das Wunder einer neuen Lebensgeburt, indem Sie Ihren bevorzugten Kalender verbinden und/oder personalisierte Benachrichtigungen auf Ihrem Gerät erhalten. Wählen Sie einen Inkubator und eine Schalennummer. Geben Sie die Anzahl der geschlüpften Küken ein und geben Sie an, in welchen Aufzuchtkasten sie gesetzt werden.",
+      "details": "In dieser Phase erhalten Sie Ihren ersten Key Performance Indicator (KPI). Der Vitalitätsprozentsatz wird als Verhältnis der geschlüpften Küken zur Anzahl der zur Inkubation eingelegten Eier berechnet."
+    },
+    "brooding": {
+      "title": "Aufzucht",
+      "desc": "Die tägliche Erfassung der Sterblichkeit von Küken und die Führung entsprechender Aufzeichnungen und Notizen über Änderungen bei Ernährung, Klima usw. erleichtern die Ursachenermittlung.",
+      "details": "Die Steigerung des Vitalitätsprozentsatzes ist die Hauptaufgabe in dieser Phase. Richtige Pflege und Überwachung helfen, dies zu erreichen."
+    },
+    "feeding": {
+      "title": "Mast",
+      "desc": "Wählen Sie Mast aus der Liste der Stapelaufgaben. Geben Sie dann den Standort an und füllen Sie die Käfige, die an diesem Tag frei sind.",
+      "details": "An diesem Punkt können Sie auch Überlebensaufzeichnungen erstellen."
+    },
+    "slaughter": {
+      "title": "Schlachtung",
+      "desc": "Entscheidend ist, dass die Herde hier innerhalb von 50 bis 60 Tagen schlachtreif ist. Die Voraussetzung für die Einleitung des Schlachtprozesses ist die Erstellung eines Schlachtblatts (oder Verarbeitungsauftrags). Dieser Auftrag erfüllt einen doppelten Zweck: Er kann auch als Verkaufsauftrag verwendet werden und bildet die Grundlage für den Versand der vorlagengenerierten Rechnung an den Kunden.",
+      "details": "Durch den Abschluss des Zyklus und die Eingabe aller relevanten Daten können Sie die Qualität des Futters, der Haltung und der Besatzdichte in den Käfigen bewerten und so Bereiche identifizieren, in denen die Ergebnisse unterdurchschnittlich waren und wo die Leistung überlegen war."
+    },
+    "selling": {
+      "title": "Verkauf",
+      "desc": "Sie können eine Rechnungsvorlage bearbeiten, die anklickbare Links unterstützt.",
+      "details": "Wenn sich keine Vögel mehr im Stapel befinden, wird dieser automatisch ins Archiv übertragen."
+    }
+  },
+  "features": {
+    "title": "Hauptfunktionen",
+    "feat1": {
+      "title": "Skalierung ohne Grenzen:",
+      "text": "Verwalten Sie eine unbegrenzte Anzahl von Inkubatoren und passen Sie die Einstellungen für bis zu drei verschiedene Gerätetypen an."
+    },
+    "feat2": {
+      "title": "Echtzeit-Kapazitätsübersicht:",
+      "text": "Visualisieren Sie sofort die aktuelle Auslastung und Verfügbarkeit aller kritischen Geräte (Inkubatoren, Aufzuchtkästen und Käfige), um die Stapelplanung zu optimieren."
+    },
+    "feat3": {
+      "title": "Nahtlose Integration & Erinnerungen:",
+      "text": "Synchronisieren Sie wichtige Daten und Fristen mit Ihrem bestehenden externen Kalender (iCloud, Google Kalender), um sicherzustellen, dass nichts verpasst wird."
+    },
+    "feat4": {
+      "title": "Präzise Sterblichkeitsanalyse:",
+      "text": "Protokollieren und analysieren Sie jeden Verlust nach Datum, Uhrzeit und spezifischem Käfig/Standort, um Gesundheitsrisiken schneller zu identifizieren."
+    },
+    "feat5": {
+      "title": "Saubere & organisierte Daten:",
+      "text": "Archivieren Sie automatisch abgeschlossene Produktionschargen, halten Sie Ihr aktives Dashboard sauber und verbessern Sie die langfristige Datenabrufbarkeit."
+    },
+    "feat6": {
+      "title": "Professionelle & schnelle Abrechnung:",
+      "text": "Erstellen Sie professionelle, gebrandete Rechnungen sofort mit vollständig anpassbaren Vorlagen."
+    }
+  },
+  "navbar": {
+    "about": "Meine Geschichte",
+    "get_started": "Jetzt starten",
+    "terms": "Nutzungsbedingungen",
+    "privacy": "Datenschutz",
+    "support": "Hilfe"
+  },
+  "praesentation": {
+    "intro": "Das Projekt ist ein Dashboard für Management und Monitoring von Studiendaten.",
+    "technologiesTitle": "Technologien",
+    "featuresTitle": "Wichtige Features",
+    "authTitle": "Authorization & Sicherheit",
+    "mssqlTitle": "MSSQL-Modul im Projekt",
+    "deploymentTitle": "Deployment & Betrieb",
+    "conclusionTitle": "Fazit",
+    "table": {
+      "columnArea": "Bereich",
+      "columnTech": "Technologie"
+    }
+  },
+  "seo": {
+    "home": {
+      "title": "QuailBreeder - Datenanalyse und Entscheidungsunterstützung für Wachtelfarm",
+      "description": "Alles-in-einem digitaler Assistent zur Verwaltung und Optimierung der Wachtelproduktion. Verfolgen Sie jeden Schritt vom Ei bis zur Rechnung mit präziser Buchhaltung und Leistungsanalyse."
+    },
+    "about": {
+      "title": "Sozial akzeptable Selbstvermarktung",
+      "description": "Wie QuailBreeder entstanden ist. Der kleine Farm-Assistent mit großer Persönlichkeit"
+    },
+    "getStarted": {
+      "title": "Jetzt starten",
+      "description": "Um loszulegen, müssen Sie die drei Hauptkataloge der von Ihnen verwendeten Ausrüstung ausfüllen."
+    },
+    "privacyPolicy": {
+      "title": "Datenschutzerklärung",
+      "description": "Erfahren Sie, wie wir Ihre Informationen sammeln, verwenden und schützen, wenn Sie unsere Wachtelfarm-Management-Anwendung nutzen."
+    },
+    "termsOfUse": {
+      "title": "Nutzungsbedingungen",
+      "description": "Verstehen Sie die Allgemeinen Geschäftsbedingungen für die Nutzung unserer Wachtelzucht-Management-Anwendung."
+    }
+  },
+  "routes": {
+    "about": "ueber-uns",
+    "getStarted": "erste-schritte",
+    "privacyPolicy": "datenschutz",
+    "termsOfUse": "nutzungsbedingungen",
+    "support": "hilfe"
+  },
+  "policy": {
+    "title": "Datenschutzerklärung",
+    "intro": "Ihre Privatsphäre ist uns wichtig. Diese Datenschutzerklärung erläutert, wie Quail Breeder Ihre Informationen sammelt, verwendet und schützt, wenn Sie unsere Anwendung nutzen.",
+    "dataCollection": {
+      "title": "Welche Informationen wir sammeln",
+      "confidential": {
+        "title": "Vertrauliche Inhalte",
+        "text": "Quail Breeder sammelt und speichert die folgenden vertraulichen Inhalte, die Sie bereitstellen:",
+        "item1": "Geräteverzeichnisse (Inkubatoren, Aufzuchtkästen und Standorte)",
+        "item2": "Informationen zu Schlupfchargen",
+        "item3": "Kundenstammdetails",
+        "item4": "Verkaufs- und Abschreibungsunterlagen"
+      },
+      "subscriber": {
+        "title": "Grundlegende Abonnenteninformationen",
+        "item1": "E-Mail-Adressen",
+        "item2": "Nutzungsdaten und Analysen"
+      },
+      "notCollect": {
+        "title": "Was wir NICHT sammeln",
+        "text": "Quail Breeder sammelt ausdrücklich NICHT:",
+        "item1": "IP-Adressen",
+        "item2": "Geräteinformationen",
+        "item3": "Persönliche Hardware-Identifikatoren"
+      }
+    },
+    "dataUsage": {
+      "title": "Wie wir Ihre Informationen verwenden",
+      "maintaining": {
+        "title": "Aufrechterhaltung unserer Dienste",
+        "text": "Wir verwenden Ihre Informationen, um Kundensupport bereitzustellen und die Funktionalität der Quail Breeder-Anwendung aufrechtzuerhalten."
+      },
+      "communicating": {
+        "title": "Kommunikation mit Ihnen",
+        "text": "Wir können Ihre Kontaktinformationen verwenden, um Sie über neue Funktionen, Updates und Angebote im Zusammenhang mit Quail Breeder zu informieren."
+      },
+      "important": "Wichtig: Wir verkaufen oder vermieten Ihre Informationen nicht."
+    },
+    "userControl": {
+      "title": "Ihr Zugriff und Ihre Kontrolle",
+      "text": "Sie haben die volle Kontrolle über Ihre Informationen:",
+      "manage": {
+        "title": "Informationen verwalten:",
+        "text": "Sie können sich jederzeit anmelden und Ihre Informationen direkt in der Anwendung bearbeiten."
+      },
+      "delete": {
+        "title": "Inhalte löschen:",
+        "text": "Sie können Ihre vertraulichen Inhalte jederzeit löschen."
+      },
+      "stop": {
+        "title": "Nutzung beenden:",
+        "text": "Sie können die Verwendung der Quail Breeder-Anwendung jederzeit ohne Einschränkungen beenden."
+      },
+      "export": {
+        "title": "Datenexport:",
+        "text": "Eine Datenexportfunktion ist für zukünftige Versionen geplant, mit der Sie alle Ihre Informationen herunterladen können."
+      }
+    },
+    "customerSupport": {
+      "title": "Kundensupport-Zugriff",
+      "text": "Bei der Fehlerbehebung von Kontoproblemen kann unser Kundensupport-Team eine vorübergehende Erlaubnis anfordern, um bestimmte Inhalte in Ihrem Konto anzuzeigen.",
+      "note": "Hinweis: Diese Berechtigung erlischt, sobald das Support-Problem gelöst ist. Wir werden niemals ohne Ihre ausdrückliche Erlaubnis auf Ihr Konto zugreifen."
+    },
+    "dataProtection": {
+      "title": "Unsere Verpflichtungen zum Schutz Ihrer Daten",
+      "text": "Quail Breeder verpflichtet sich, Ihre vertraulichen Informationen zu schützen:",
+      "item1": "Wir werden Ihre vertraulichen Inhalte ohne Ihre vorherige schriftliche Zustimmung nicht an Dritte weitergeben.",
+      "item2": "Wir beschränken die Verwendung Ihrer Informationen ausschließlich auf Geschäftsbeziehungen mit Ihnen als Kontoinhaber.",
+      "item3": "Wir implementieren branchenübliche Sicherheitsmaßnahmen, um Ihre Daten vor unbefugtem Zugriff zu schützen."
+    },
+    "changes": {
+      "title": "Änderungen an dieser Datenschutzerklärung",
+      "text1": "Wir können diese Datenschutzerklärung von Zeit zu Zeit aktualisieren, um Änderungen in unseren Praktiken oder aus anderen betrieblichen, rechtlichen oder regulatorischen Gründen widerzuspiegeln.",
+      "text2": "Wir werden Sie über wesentliche Änderungen informieren, indem wir die neue Datenschutzerklärung auf dieser Seite veröffentlichen und das Datum \"Zuletzt aktualisiert\" unten aktualisieren."
+    },
+    "contact": {
+      "title": "Kontaktieren Sie uns",
+      "text": "Wenn Sie Fragen zu dieser Datenschutzerklärung oder unseren Datenpraktiken haben, kontaktieren Sie uns bitte:",
+      "email": "E-Mail:"
+    },
+    "lastUpdated": "Zuletzt aktualisiert: 30. November 2024",
+    "footer": "© 2024 QuailBreeder. Alle Rechte vorbehalten."
+  },
+  "terms": {
+    "title": "Nutzungsbedingungen",
+    "intro": "Diese Nutzungsbedingungen regeln Ihre Nutzung der Quail Breeder-Anwendung und -Dienste. Durch die Nutzung unserer Anwendung stimmen Sie diesen Bedingungen zu.",
+    "purpose": {
+      "title": "Zweck der Anwendung",
+      "text": "Quail Breeder bietet umfassende Buchhaltungstools für den Betrieb von Wachtelfarmen, einschließlich:",
+      "item1": "Inkubatorverwaltung und Eierverfolgung",
+      "item2": "Überwachung des Schlupfprozesses",
+      "item3": "Aufzucht- und Wachstumsverfolgung",
+      "item4": "Vogelbewegung und Standortverwaltung",
+      "item5": "Schlachtung und Verkaufsaufzeichnung"
+    },
+    "subscription": {
+      "title": "Abonnement und Zahlung",
+      "text": "Quail Breeder erfordert ein kostenpflichtiges monatliches Abonnement mit automatischer Verlängerung namens",
+      "name": "QuailBreederSubscription",
+      "important": "Wichtig: Die Zahlung wird Ihrem iTunes-Konto bei Kaufbestätigung belastet. Abonnements verlängern sich automatisch, es sei denn, die automatische Verlängerung wird mindestens 24 Stunden vor Ende des aktuellen Zeitraums deaktiviert."
+    },
+    "license": {
+      "title": "Lizenz und Einschränkungen",
+      "text": "Sie erhalten eine nicht übertragbare Lizenz zur Nutzung von Quail Breeder ausschließlich für den persönlichen Gebrauch auf Ihren Apple-Geräten.",
+      "prohibited": "Es ist Ihnen untersagt:",
+      "item1": "Die Anwendung mit Dritten zu teilen",
+      "item2": "Die Software zurückzuentwickeln oder zu dekompilieren",
+      "item3": "Die Software zu modifizieren oder abgeleitete Werke zu erstellen",
+      "item4": "Die Anwendung weiterzuverteilen oder weiterzuverkaufen",
+      "item5": "Eigentumshinweise zu entfernen oder zu ändern"
+    },
+    "responsibilities": {
+      "title": "Benutzerpflichten",
+      "age": {
+        "title": "Altersanforderungen",
+        "text": "Benutzer müssen mindestens 13 Jahre alt sein (mit Zustimmung der Eltern) oder 18 Jahre alt sein, um diese Anwendung zu nutzen."
+      },
+      "defect": {
+        "title": "Fehlermeldung",
+        "text": "Sie müssen die Anwendung unmittelbar nach der Installation überprüfen und etwaige Mängel innerhalb von 30 Tagen melden an"
+      },
+      "backup": {
+        "title": "Datensicherung",
+        "text": "Sie sind dafür verantwortlich, Sicherungskopien Ihrer Daten zu erstellen, um Datenverlust zu vermeiden."
+      }
+    },
+    "liability": {
+      "title": "Haftungsbeschränkung",
+      "text": "Die Haftung des Lizenzgebers ist auf Fälle von Vorsatz und grober Fahrlässigkeit beschränkt.",
+      "note": "Wir schließen die Haftung für Schäden aus, die sich aus der Verletzung von Sorgfaltspflichten ergeben. Benutzer müssen eigene Sicherungskopien erstellen, um Datenverlust zu vermeiden."
+    },
+    "intellectual": {
+      "title": "Geistige Eigentumsrechte",
+      "text": "Der Entwickler behält alle Rechte an:",
+      "item1": "Urheberrechten",
+      "item2": "Markenzeichen",
+      "item3": "Patenten",
+      "item4": "Geschäftsgeheimnissen",
+      "item5": "Allen anderen geistigen Eigentumsrechten",
+      "important": "Wichtig: Sie dürfen ohne vorherige schriftliche Zustimmung des Entwicklers keine Ergebnisse, Screenshots oder andere Inhalte aus der Anwendung veröffentlichen."
+    },
+    "termination": {
+      "title": "Beendigung",
+      "text1": "Jede Partei kann diese Vereinbarung jederzeit kündigen.",
+      "text2": "Bei Beendigung müssen Sie:",
+      "item1": "Die Nutzung der Anwendung sofort einstellen",
+      "item2": "Alle Kopien der Software von Ihren Geräten löschen",
+      "item3": "Den Zugriff auf alle zugehörigen Dienste beenden"
+    },
+    "governing": {
+      "title": "Anwendbares Recht und Gerichtsstand",
+      "text1": "Diese Nutzungsbedingungen unterliegen den Gesetzen der Ukraine.",
+      "text2": "Alle Streitigkeiten, die sich aus oder im Zusammenhang mit diesen Bedingungen ergeben, werden ausschließlich vor ukrainischen Gerichten beigelegt."
+    },
+    "contact": {
+      "title": "Kontaktinformationen",
+      "text": "Wenn Sie Fragen zu diesen Nutzungsbedingungen haben, kontaktieren Sie uns bitte:",
+      "email": "E-Mail"
+    },
+    "lastUpdated": "Zuletzt aktualisiert: 30. November 2024",
+    "footer": "© 2024 QuailBreeder. Alle Rechte vorbehalten."
+  },
+  "auth": {
+    "welcome": "Willkommen bei QuailBreeder",
+    "signInToAccess": "Melden Sie sich an, um den Support zu nutzen",
+    "continueWithGoogle": "Mit Google fortfahren",
+    "continueWithApple": "Mit Apple fortfahren",
+    "byContinuing": "Indem Sie fortfahren, stimmen Sie unseren",
+    "termsOfUse": "Nutzungsbedingungen",
+    "and": "und",
+    "privacyPolicy": "Datenschutzbestimmungen",
+    "signingOut": "Abmeldung läuft...",
+    "pleaseWait": "Bitte warten",
+    "confirmSignOut": "Abmelden",
+    "close": "Schließen"
+  },
+  "support": {
+    "title": "Support-Center",
+    "signOut": "Abmelden",
+    "createTicket": "Support-Ticket erstellen",
+    "description": "Haben Sie ein Problem oder benötigen Sie Unterstützung? Teilen Sie uns dies mit, und wir melden uns so schnell wie möglich bei Ihnen.",
+    "beforeSubmitting": "Vor dem Absenden eines Tickets",
+    "tip1": "Überprüfen Sie unsere FAQs und die Dokumentation auf häufige Probleme",
+    "tip2": "Geben Sie möglichst viele Details an, damit wir Ihr Problem schneller lösen können",
+    "tip3": "Screenshots oder Fehlermeldungen sind sehr hilfreich",
+    "form": {
+      "subject": "Betreff",
+      "subjectPlaceholder": "Kurze Beschreibung Ihres Anliegens",
+      "subjectRequired": "Der Betreff ist erforderlich",
+      "category": "Kategorie",
+      "categoryPlaceholder": "Kategorie auswählen",
+      "categoryRequired": "Kategorie ist erforderlich",
+      "categoryTechnical": "Technisches Problem",
+      "categoryBilling": "Abrechnung & Konto",
+      "categoryFeature": "Funktionsanfrage",
+      "categoryData": "Daten- & Synchronisationsprobleme",
+      "categoryOther": "Sonstiges",
+      "priority": "Priorität",
+      "priorityPlaceholder": "Priorität auswählen",
+      "priorityRequired": "Priorität ist erforderlich",
+      "priorityLow": "Niedrig – Allgemeine Frage oder geringfügiges Problem",
+      "priorityMedium": "Mittel – Problem beeinträchtigt die Funktionalität",
+      "priorityHigh": "Hoch – Kritisches Problem blockiert die Arbeit",
+      "description": "Beschreibung",
+      "descriptionPlaceholder": "Bitte beschreiben Sie Ihr Problem ausführlich. Geben Sie Fehlermeldungen, Schritte zur Reproduktion und das erwartete Ergebnis an.",
+      "descriptionRequired": "Beschreibung ist erforderlich",
+      "descriptionMinLength": "Bitte geben Sie mehr Details an (mindestens 20 Zeichen)",
+      "submit": "Ticket absenden",
+      "submitting": "Wird gesendet...",
+      "successTitle": "Ticket erfolgreich übermittelt!",
+      "successMessage": "Wir melden uns so schnell wie möglich unter {email} bei Ihnen.",
+      "errorTitle": "Ticket konnte nicht gesendet werden",
+      "errorMessage": "Bitte versuchen Sie es erneut oder kontaktieren Sie uns direkt."
+    }
+  },
+  "sla": {
+    "hero": {
+      "title": "Support, der Ihre Herausforderungen versteht",
+      "description": "Eine Frage zur Inkubationsberechnung oder Programmeinrichtung? Wir sind für Sie da. Unser Ziel ist es, quailbreeder.net 24/7 für Ihren Erfolg am Laufen zu halten.",
+      "button": "Zu meinen Tickets"
+    },
+    "commitment": {
+      "title": "Garantierte Hilfe innerhalb von 24 Stunden",
+      "description": "Wir schätzen Ihr Vertrauen. Egal, ob Sie den kostenlosen Testmonat nutzen oder bereits für 5$ abonniert haben – wir garantieren eine Antwort auf Ihre Anfrage innerhalb von 24 Stunden.",
+      "whyImportant": "Warum das wichtig ist: In der Geflügelhaltung gibt es keine zweitrangigen Fragen. Wir bieten schnelles Feedback, um sicherzustellen, dass Ihre Prozesse reibungslos weiterlaufen."
+    },
+    "howItWorks": {
+      "title": "So funktioniert's",
+      "step1": {
+        "title": "Ticket erstellen",
+        "description": "Beschreiben Sie Ihr Problem oder Ihren Vorschlag in Ihrem persönlichen Konto."
+      },
+      "step2": {
+        "title": "Benachrichtigung erhalten",
+        "description": "Sobald der Entwickler antwortet, erhalten Sie eine E‑Mail."
+      },
+      "step3": {
+        "title": "Problem lösen",
+        "description": "Führen Sie die Konversation fort, bis die Aufgabe vollständig gelöst ist. Der gesamte Korrespondenzverlauf wird dauerhaft gespeichert."
+      }
+    },
+    "benefits": {
+      "title": "Warum Tickets besser sind als E‑Mail",
+      "benefit1": {
+        "title": "Direkte Kommunikation mit dem Entwickler",
+        "description": "Sie sprechen mit dem Projektgründer, nicht mit einem Call‑Center‑Mitarbeiter."
+      },
+      "benefit2": {
+        "title": "Kein Spam",
+        "description": "Ihre Anfragen gehen nicht in E‑Mail‑Filtern verloren."
+      },
+      "benefit3": {
+        "title": "Community‑Priorität",
+        "description": "Das Abonnement ermöglicht es uns, Ressourcen für individuelle Fallanalysen bereitzustellen und Ihre Ideen in Programm‑Updates umzusetzen."
+      }
+    },
+    "cta": {
+      "title": "Noch nicht dabei?",
+      "description": "Testen Sie alle Systemfunktionen – inklusive persönlichem Support – 30 Tage lang kostenlos.",
+      "button": "1 Monat kostenlos testen"
+    },
+    "badge": "Antwort innerhalb von 24 Stunden",
+    "guaranteeTitle": "Garantierte Hilfe",
+    "guaranteeDesc": "Sogar im kostenlosen Plan oder dem 5$ Abonnement",
+    "ctaButton": "30 Tage kostenlos testen",
+    "step1Short": {
+      "title": "Ticket",
+      "desc": "Beschreiben Sie Ihr Anliegen im Dashboard"
+    },
+    "step2Short": {
+      "title": "E-Mail",
+      "desc": "Erhalten Sie eine Antwort-Benachrichtigung in Ihrem Posteingang"
+    },
+    "step3Short": {
+      "title": "Lösung",
+      "desc": "Dialog bis zur vollständigen Lösung"
+    },
+    "benefit1Short": {
+      "title": "Direkter Entwickler-Kontakt",
+      "desc": "Kommunizieren Sie mit dem Projektautor, nicht mit einem Support-Mitarbeiter"
+    },
+    "benefit2Short": {
+      "title": "Kein Spam",
+      "desc": "Ihre Anfragen gehen niemals in Filtern verloren"
+    },
+    "benefit3Short": {
+      "title": "Community-Priorität",
+      "desc": "Ihr Abonnement ermöglicht es uns, Ihre Ideen umzusetzen"
+    }
+  }
+}

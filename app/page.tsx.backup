@@ -1,0 +1,180 @@
+import { headers } from 'next/headers'
+import Negotiator from 'negotiator'
+import { match } from '@formatjs/intl-localematcher'
+import { allLocales, supportedLocales, defaultLocale } from '@/config/locales'
+import type { SupportedLocale } from '@/config/locales'
+import { getDictionary } from '@/config/dictionaries'
+import { Metadata } from 'next'
+import { Providers } from '@/components/Providers'
+import Navbar from '@/components/Navbar'
+import Footer from '@/components/Footer'
+import HomeClient from './[lang]/HomeClient'
+import Script from 'next/script'
+import { Partytown } from '@qwik.dev/partytown/react'
+import { LanguageSync } from '@/components/LanguageSync'
+
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://quailbreeder.net'
+
+// Маппинг языков в локали OpenGraph
+const localeMap: Record<string, string> = {
+  en: 'en_US',
+  de: 'de_DE',
+  es: 'es_ES',
+  fr: 'fr_FR',
+  id: 'id_ID',
+  ja: 'ja_JP',
+  pt: 'pt_PT',
+  ru: 'ru_RU',
+  tr: 'tr_TR',
+  uk: 'uk_UA',
+}
+
+function getLocaleFromHeaders(acceptLanguage: string): SupportedLocale {
+  const negotiator = new Negotiator({
+    headers: { 'accept-language': acceptLanguage },
+  } as any)
+  const languages = negotiator.languages()
+
+  let matchedLocale: string
+  try {
+    matchedLocale = match(languages, [...allLocales], defaultLocale)
+  } catch {
+    matchedLocale = defaultLocale
+  }
+
+  if (!supportedLocales.includes(matchedLocale as any)) {
+    return defaultLocale as SupportedLocale
+  }
+
+  return matchedLocale as SupportedLocale
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const headersList = await headers()
+  const acceptLanguage = headersList.get('accept-language') || ''
+  const detectedLang = getLocaleFromHeaders(acceptLanguage)
+
+  const dict = await getDictionary(detectedLang)
+
+  // Генерируем hreflang для всех языков
+  const languages: Record<string, string> = {}
+  supportedLocales.forEach((locale) => {
+    languages[locale] = `${baseUrl}/${locale}`
+  })
+  languages['x-default'] = `${baseUrl}/`
+
+  return {
+    metadataBase: new URL(baseUrl),
+    title: dict.seo.home.title,
+    description: dict.seo.home.description,
+    alternates: {
+      canonical: `${baseUrl}/`, // Self-referencing canonical - корневая страница каноническая для себя
+      languages,
+    },
+    icons: {
+      icon: '/hatching-quail-icon.webp',
+    },
+    openGraph: {
+      type: 'website',
+      locale: localeMap[detectedLang] || 'en_US',
+      url: baseUrl,
+      siteName: 'QuailBreeder',
+      title: dict.seo.home.title,
+      description: dict.seo.home.description,
+      images: [
+        {
+          url: '/flow_map_quail_breeder_sm.webp',
+          width: 1200,
+          height: 630,
+          alt: 'QuailBreeder Application Interface',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: dict.seo.home.title,
+      description: dict.seo.home.description,
+      images: ['/flow_map_quail_breeder_sm.webp'],
+    },
+    keywords: [
+      'quail breeding',
+      'poultry management',
+      'incubation tracking',
+      'farm management',
+      'quail farm software',
+      'hatching management',
+      'brooding tracking',
+    ],
+    authors: [{ name: 'Serhii Karavanskyi' }],
+    creator: 'QuailBreeder',
+    publisher: 'QuailBreeder',
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+  }
+}
+
+export default async function RootPage() {
+  const isProduction = process.env.NODE_ENV === 'production'
+  const headersList = await headers()
+  const acceptLanguage = headersList.get('accept-language') || ''
+  const detectedLang = getLocaleFromHeaders(acceptLanguage)
+
+  const dictionary = await getDictionary(detectedLang)
+
+  return (
+    <html lang={detectedLang}>
+      <head>
+        {/* Content-Language meta tag */}
+        <meta httpEquiv="content-language" content={detectedLang} />
+
+        {/* Partytown for offloading scripts to web worker */}
+        {isProduction && <Partytown debug={false} forward={['dataLayer.push']} />}
+
+        {/* Google Analytics - only in production */}
+        {isProduction && (
+          <>
+            <Script
+              src="https://www.googletagmanager.com/gtag/js?id=G-3SPK1FFQN1"
+              type="text/partytown"
+              strategy="worker"
+            />
+            <Script id="google-analytics" type="text/partytown" strategy="worker">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', 'G-3SPK1FFQN1');
+              `}
+            </Script>
+          </>
+        )}
+      </head>
+      <body>
+        <Providers
+          themeProps={{ attribute: 'class', defaultTheme: 'dark' }}
+          dictionary={dictionary}
+        >
+          <LanguageSync />
+          {/* Navbar */}
+          <div style={{ position: 'relative', zIndex: 9999 }}>
+            <Navbar />
+          </div>
+          <HomeClient />
+          {/* Footer */}
+          <div style={{ position: 'relative', zIndex: 9999 }}>
+            <Footer />
+          </div>
+        </Providers>
+      </body>
+    </html>
+  )
+}

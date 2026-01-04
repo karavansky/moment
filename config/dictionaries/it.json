@@ -1,0 +1,481 @@
+{
+  "home": {
+    "topmoto": "Strumento di Analisi Dati e Supporto Decisionale per l'Allevamento di Quaglie",
+    "botmoto": "valuta l'efficienza del mangime, le condizioni di stabulazione e la densità di allevamento per individuare le performance superiori e massimizzare la resa per ciclo.",
+    "what": "Che cos'è Quail Breeder?",
+    "expl": "Quail Breeder è un assistente digitale completo progettato per gestire e ottimizzare la tua produzione di quaglie. Tiene conto con precisione di ogni fase della tua operazione, dall'uovo alla fattura.",
+    "flow": "Mappa del Flusso",
+    "content": "Il processo consiste nei seguenti passaggi:",
+    "get": "Inizia — è veloce",
+    "botmototitel": "Isolare i fattori di successo:"
+  },
+  "about": {
+    "cardIntro": {
+      "title": "QuailBreeder — il piccolo assistente di fattoria con una grande personalità",
+      "text": "Nato in un cortile, cresciuto con caffè e TypeScript. Se allevi quaglie (o semplicemente apprezzi il monitoraggio efficiente e un pizzico di umorismo rurale), sei a casa.",
+      "facts": "Fatti rapidi:",
+      "fact1": "Costruito da un programmatore colpito dalla febbre delle quaglie",
+      "fact2": "Traccia cicli, lotti e vitalità",
+      "fact3": "Pronto per mobile — niente tasche piene di carta",
+      "story": "Leggi la storia"
+    },
+    "cardStory": {
+      "title": "Come è nato QuailBreeder",
+      "text1": "C'è una storia abbastanza personale dietro questa app. Nel 2012 ho lasciato Kyiv e mi sono trasferito in campagna. Abitudini cittadine incontrano la realtà rurale — e il caos vince, almeno per un po'.",
+      "text2": "Ho iniziato un piccolo allevamento di quaglie nel mio cortile per produrre carne. Due anni, caffè e un sacco di conteggi dopo, ho raggiunto circa ~50 kg di carne di quaglia a settimana. Questo significava gestire 14-15 lotti sovrapposti e tracciare oltre 3.000 uccelli. Gli appunti di carta si moltiplicavano come le quaglie.",
+      "text3": "Per formazione sono un programmatore — così ho scritto un'app per PC per tracciare tutto. Funzionava, ma non era mobile. Continuavo a portare carta e trascrivevo i dati alla fine di ogni giornata. Poi un infortunio alla schiena mi ha costretto a chiudere l'allevamento e concentrarmi sull'app — il che si è rivelato il miglior pivot possibile: la versione successiva è diventata mobile-first e piena di campi pratici come vitalità, informazioni sul trasporto e tempistica dei lotti.",
+      "text4": "Per farla breve: QuailBreeder esiste perché qualcuno doveva smetterla di perdere uova e iniziare a risparmiare tempo. Se allevi quaglie per la carne, questa app raccoglie i piccoli dettagli di cui hai bisogno — senza costringerti a imparare SQL o indossare un camice da laboratorio.",
+      "button": "Vedi le funzionalità"
+    },
+    "cardFounder": {
+      "founder": "Informazioni sullo Sviluppatore",
+      "text": "Serhii Karavansky — programmatore, allevatore amatoriale, sostenitore del caffè.",
+      "funFacts": "Fatti divertenti:",
+      "fact1": "L'app originale è iniziata come un'utility Windows (sì, nostalgia).",
+      "fact2": "È sopravvissuta a un infortunio alla schiena, diversi aggiornamenti software e qualche guscio d'uovo di troppo.",
+      "fact3": "Il nome «QuailBreeder» non è stato suggerito da un comitato marketing — era onesto."
+    },
+    "cardWhy": {
+      "title": "Perché le persone amano QuailBreeder",
+      "reason1": {
+        "title": "Risparmia tempo",
+        "text": "Inserimento rapido, registrazione KeepAlive e meno serate trascritte da appunti di carta."
+      },
+      "reason2": {
+        "title": "Tieni traccia dei lotti",
+        "text": "Pianifica e traccia cicli sovrapposti, giorni di incubazione e tassi di schiusa con facilità."
+      },
+      "reason3": {
+        "title": "Mobile-first",
+        "text": "Progettato per funzionare perfettamente su telefono — perché in fattoria le mani si sporcano."
+      }
+    },
+    "cardPromo": {
+      "title": "Pronto a smetterla di destreggiarti tra uova e carta?",
+      "text": "Prova QuailBreeder e riprenditi le tue serate.",
+      "button": "Inizia la prova gratuita",
+      "contact": "Contattaci \n(Presto sarà disponibile un sistema di tracciamento richieste di supporto.)"
+    }
+  },
+  "getStarted": {
+    "title": "Iniziare con QuailBreeder",
+    "intro": "Per iniziare, devi compilare i tre cataloghi principali delle attrezzature che utilizzi.",
+    "stepsTitle": "Passaggi da Seguire",
+    "finalTitle": "Infine",
+    "download": "Scarica l'app e inizia a ottimizzare il tuo allevamento di quaglie!",
+    "step1": {
+      "title": "Incubatrici",
+      "description": "Che prevede l'uso di tre tipi (Setter, Hatcher e Combinazione), così come il numero di vassoi per ogni incubatrice e la loro capienza in uova."
+    },
+    "step2": {
+      "title": "Brooders (Nidiadi)",
+      "description": "Dove è necessario specificare il numero massimo possibile di pulcini per ogni brooder."
+    },
+    "step3": {
+      "title": "Ubicazioni",
+      "description": "Le ubicazioni sono gruppi di gabbie per un compito specifico. Ad esempio: per il mantenimento del ceppo parentale, per la produzione di uova o per la produzione di carne."
+    },
+    "final": {
+      "title": "Creazione di un Nuovo Lotto",
+      "description": "Seleziona Lotto nella barra delle schede, poi inserisci la quantità di uova in questo lotto.\n• Hai la possibilità di creare lotti retroattivamente; per farlo, clicca sulla data sopra la quantità. Nota che ciò è possibile solo prima di posizionare le uova nell'incubatrice.\n• Se utilizzi un'incubatrice Setter, devi anche definire i vassoi nell'incubatrice Hatcher.\n• Cliccando Annulla – puoi eliminare l'ultima azione.\n• Quando hai identificato le uova nei vassoi, premi il pulsante Avvia per iniziare l'incubazione.\n• Puoi impostare 2 tipi di notifiche:\n  ○ Notifiche push\n  ○ Crea automaticamente i relativi record nel tuo calendario preferito\n• Questo può essere fatto nelle Impostazioni nella scheda Home."
+    }
+  },
+  "process": {
+    "incubation": {
+      "title": "Incubazione",
+      "desc": "Gestisci e monitora il processo di incubazione delle uova di quaglia, inclusa temperatura, umidità e programmi di voltatura. In caso di utilizzo di un'incubatrice Setter, specifica anche i vassoi Hatcher pianificati. I fattori principali che lo influenzano sono l'età dell'uccello che depone l'uovo da cova e la qualità delle tue incubatrici (ricambio d'aria mentre l'embrione è nell'uovo, poiché richiede anche ossigeno).",
+      "details": "Il guscio non è ermetico. È attraversato da migliaia di pori microscopici (da 7.000 a 17.000) che consentono ai gas di muoversi liberamente tra l'interno dell'uovo e l'ambiente esterno."
+    },
+    "hatching": {
+      "title": "Schiusa",
+      "desc": "Non perdere questo giorno magico, il miracolo della nascita di una nuova vita, collegando il tuo calendario preferito e/o ricevendo notifiche personalizzate sul tuo dispositivo. Seleziona un'incubatrice e il numero del vassoio. Inserisci la quantità di pulcini schiusi e indica in quale brooder saranno posizionati.",
+      "details": "In questa fase, ottieni il tuo primo Indicatore Chiave di Prestazione (KPI). La percentuale di vitalità è calcolata come il rapporto tra pulcini schiusi e il numero di uova messe in incubazione."
+    },
+    "brooding": {
+      "title": "Allevamento dei Pulcini (Brooding)",
+      "desc": "Tracciare la mortalità dei pulcini su base giornaliera e tenere registrazioni e note appropriate sui cambiamenti nella nutrizione, clima, ecc. renderà più semplice identificare la causa.",
+      "details": "Aumentare la percentuale di vitalità è il compito principale in questa fase. Cura e monitoraggio adeguati aiuteranno a raggiungere questo obiettivo."
+    },
+    "feeding": {
+      "title": "Alimentazione",
+      "desc": "Seleziona Alimentazione dall'elenco delle attività del lotto. Poi indica l'ubicazione e riempi le gabbie che sono libere in quel giorno.",
+      "details": "A questo punto, puoi anche creare record di sopravvivenza."
+    },
+    "slaughter": {
+      "title": "Macellazione",
+      "desc": "Fondamentalmente, qui il gruppo è pronto per la lavorazione entro 50-60 giorni. Il prerequisito per avviare il processo di macellazione è creare un foglio di abbattimento (o ordine di lavorazione). Questo ordine serve a un duplice scopo: può anche essere usato come ordine di vendita e costituisce la base per inviare la fattura generata dal modello al cliente.",
+      "details": "Completando il ciclo e inserendo tutti i dati rilevanti, sarai in grado di valutare la qualità del mangime, dell'alloggio e della densità di allevamento nelle gabbie, identificando così le aree in cui i risultati erano scarsi e dove le prestazioni erano superiori."
+    },
+    "selling": {
+      "title": "Vendita",
+      "desc": "Puoi modificare un modello di fattura che supporta link cliccabili.",
+      "details": "Se non ci sono più uccelli nel lotto, viene trasferito automaticamente all'archivio."
+    }
+  },
+  "features": {
+    "title": "Funzionalità Chiave",
+    "feat1": {
+      "title": "Scala senza Limiti:",
+      "text": "Gestisci un numero illimitato di incubatrici e personalizza le impostazioni per fino a tre tipi distinti di attrezzature."
+    },
+    "feat2": {
+      "title": "Panoramica della Capacità in Tempo Reale:",
+      "text": "Visualizza istantaneamente il carico corrente e la disponibilità di tutte le attrezzature critiche (incubatrici, brooders e gabbie) per ottimizzare la pianificazione dei lotti."
+    },
+    "feat3": {
+      "title": "Integrazione Senza Interruzioni & Promemoria:",
+      "text": "Sincronizza date chiave e scadenze con il tuo calendario esterno esistente (iCloud, Google Calendar) per assicurarti che nulla venga dimenticato."
+    },
+    "feat4": {
+      "title": "Analisi di Mortalità Precisa:",
+      "text": "Registra e analizza ogni perdita per data, ora e specifica gabbia/ubicazione per un'identificazione più rapida dei rischi per la salute."
+    },
+    "feat5": {
+      "title": "Dati Puliti & Organizzati:",
+      "text": "Archivia automaticamente i lotti di produzione completati, mantenendo la tua dashboard attiva pulita e migliorando il recupero dei dati a lungo termine."
+    },
+    "feat6": {
+      "title": "Fatturazione Professionale & Veloce:",
+      "text": "Genera fatture professionali e personalizzate istantaneamente utilizzando modelli completamente personalizzabili."
+    }
+  },
+  "navbar": {
+    "about": "La mia storia",
+    "get_started": "Inizia",
+    "terms": "Termini di Utilizzo",
+    "privacy": "Politica sulla Privacy",
+    "support": "Supporto"
+  },
+  "praesentation": {
+    "intro": "Il progetto è una dashboard per la gestione e il monitoraggio dei dati di studio.",
+    "technologiesTitle": "Tecnologie",
+    "featuresTitle": "Funzionalità Chiave",
+    "authTitle": "Autorizzazione & Sicurezza",
+    "mssqlTitle": "Modulo MSSQL",
+    "deploymentTitle": "Distribuzione & Operazioni",
+    "conclusionTitle": "Conclusione",
+    "table": {
+      "columnArea": "Area",
+      "columnTech": "Tecnologia"
+    }
+  },
+  "seo": {
+    "home": {
+      "title": "QuailBreeder - Strumento di Analisi Dati e Supporto Decisionale per l'Allevamento di Quaglie",
+      "description": "Assistente digitale completo per gestire e ottimizzare la produzione di quaglie. Traccia ogni passaggio dall'uovo alla fattura con contabilità precisa e analisi delle prestazioni."
+    },
+    "about": {
+      "title": "Autopromozione Socialmente Accettabile",
+      "description": "Come è nato QuailBreeder. Il piccolo assistente di fattoria con una grande personalità"
+    },
+    "getStarted": {
+      "title": "Inizia",
+      "description": "Per iniziare, devi compilare i tre cataloghi principali delle attrezzature che utilizzi."
+    },
+    "privacyPolicy": {
+      "title": "Politica sulla Privacy",
+      "description": "Scopri come raccogliamo, usiamo e proteggiamo le tue informazioni quando usi la nostra app di gestione dell'allevamento di quaglie."
+    },
+    "termsOfUse": {
+      "title": "Termini di Utilizzo",
+      "description": "Comprendi i termini e le condizioni che regolano l'uso della nostra applicazione di gestione dell'allevamento di quaglie."
+    }
+  },
+  "routes": {
+    "about": "informazioni",
+    "getStarted": "inizia",
+    "privacyPolicy": "politica-sulla-privacy",
+    "termsOfUse": "termini-di-utilizzo",
+    "support": "supporto"
+  },
+  "policy": {
+    "title": "Politica sulla Privacy",
+    "intro": "La tua privacy è importante per noi. Questa Politica sulla Privacy spiega come Quail Breeder raccoglie, utilizza e protegge le tue informazioni quando usi la nostra applicazione.",
+    "dataCollection": {
+      "title": "Quali Informazioni Raccogliamo",
+      "confidential": {
+        "title": "Contenuti Riservati",
+        "text": "Quail Breeder raccoglie e memorizza i seguenti contenuti riservati che fornisci:",
+        "item1": "Cataloghi attrezzature (incubatrici, brooders e ubicazioni)",
+        "item2": "Informazioni sui lotti di schiusa",
+        "item3": "Dettagli del catalogo clienti",
+        "item4": "Record di vendite e storni"
+      },
+      "subscriber": {
+        "title": "Informazioni Base dell'Abbonato",
+        "item1": "Indirizzi email",
+        "item2": "Dati di utilizzo e analisi"
+      },
+      "notCollect": {
+        "title": "Cosa Non Raccogliamo",
+        "text": "Quail Breeder esplicitamente NON raccoglie:",
+        "item1": "Indirizzi IP",
+        "item2": "Informazioni sul dispositivo",
+        "item3": "Identificatori hardware personali"
+      }
+    },
+    "dataUsage": {
+      "title": "Come Utilizziamo le Tue Informazioni",
+      "maintaining": {
+        "title": "Manutenzione dei Nostri Servizi",
+        "text": "Utilizziamo le tue informazioni per fornire supporto clienti e mantenere la funzionalità dell'applicazione Quail Breeder."
+      },
+      "communicating": {
+        "title": "Comunicare con Te",
+        "text": "Potremmo usare le tue informazioni di contatto per informarti su nuove funzionalità, aggiornamenti e offerte relative a Quail Breeder."
+      },
+      "important": "Importante: Non siamo nel business di vendere o affittare le tue informazioni."
+    },
+    "userControl": {
+      "title": "Il Tuo Accesso e Controllo",
+      "text": "Hai il pieno controllo sulle tue informazioni:",
+      "manage": {
+        "title": "Gestisci Informazioni:",
+        "text": "Puoi accedere e modificare le tue informazioni direttamente all'interno dell'applicazione in qualsiasi momento."
+      },
+      "delete": {
+        "title": "Elimina Contenuto:",
+        "text": "Puoi eliminare i tuoi contenuti riservati in qualsiasi momento."
+      },
+      "stop": {
+        "title": "Smetti di Utilizzare:",
+        "text": "Puoi smettere di usare l'applicazione Quail Breeder in qualsiasi momento senza restrizioni."
+      },
+      "export": {
+        "title": "Esportazione Dati:",
+        "text": "Una funzionalità di esportazione dati è pianificata per le future versioni, permettendoti di scaricare tutte le tue informazioni."
+      }
+    },
+    "customerSupport": {
+      "title": "Accesso al Supporto Clienti",
+      "text": "Durante la risoluzione di problemi con l'account, il nostro team di supporto clienti potrebbe richiedere un permesso temporaneo per visualizzare contenuti specifici nel tuo account.",
+      "note": "Nota: Questo permesso termina una volta risolto il problema di supporto. Non accederemo mai al tuo account senza il tuo esplicito permesso."
+    },
+    "dataProtection": {
+      "title": "I Nostri Impegni per Proteggere i Tuoi Dati",
+      "text": "Quail Breeder si impegna a proteggere le tue informazioni riservate:",
+      "item1": "Non divulgheremo i tuoi contenuti riservati a terze parti senza il tuo preventivo consenso scritto.",
+      "item2": "Limitiamo l'uso delle tue informazioni esclusivamente alle relazioni commerciali con te in quanto proprietario dell'account.",
+      "item3": "Implementiamo misure di sicurezza standard del settore per proteggere i tuoi dati da accessi non autorizzati."
+    },
+    "changes": {
+      "title": "Modifiche a Questa Politica sulla Privacy",
+      "text1": "Potremmo aggiornare questa Politica sulla Privacy di volta in volta per riflettere cambiamenti nelle nostre pratiche o per altri motivi operativi, legali o normativi.",
+      "text2": "Ti informeremo di eventuali modifiche sostanziali pubblicando la nuova Politica sulla Privacy su questa pagina e aggiornando la data \"Ultimo Aggiornamento\" di seguito."
+    },
+    "contact": {
+      "title": "Contattaci",
+      "text": "Se hai domande su questa Politica sulla Privacy o sulle nostre pratiche sui dati, per favore contattaci:",
+      "email": "Email:"
+    },
+    "lastUpdated": "Ultimo Aggiornamento: 30 Novembre 2024",
+    "footer": "© 2024 QuailBreeder. Tutti i diritti riservati."
+  },
+  "terms": {
+    "title": "Termini di Utilizzo",
+    "intro": "Questi Termini di Utilizzo regolano il tuo uso dell'applicazione e dei servizi Quail Breeder. Utilizzando la nostra applicazione, accetti di essere vincolato da questi termini.",
+    "purpose": {
+      "title": "Scopo dell'Applicazione",
+      "text": "Quail Breeder fornisce strumenti contabili completi per le operazioni di allevamento di quaglie, inclusi:",
+      "item1": "Gestione incubatrici e tracciamento uova",
+      "item2": "Monitoraggio del processo di schiusa",
+      "item3": "Tracciamento allevamento pulcini e crescita",
+      "item4": "Gestione movimenti uccelli e ubicazioni",
+      "item5": "Registrazione macellazione e vendite"
+    },
+    "subscription": {
+      "title": "Abbonamento e Pagamento",
+      "text": "Quail Breeder richiede un abbonamento a pagamento con rinnovo automatico mensile chiamato",
+      "name": "QuailBreederSubscription",
+      "important": "Importante: Il pagamento verrà addebitato sul tuo account iTunes alla conferma dell'acquisto. Gli abbonamenti si rinnovano automaticamente a meno che il rinnovo automatico non venga disattivato almeno 24 ore prima della fine del periodo corrente."
+    },
+    "license": {
+      "title": "Licenza e Restrizioni",
+      "text": "Ricevi una licenza non trasferibile per utilizzare Quail Breeder per uso personale solo sui tuoi dispositivi Apple.",
+      "prohibited": "Ti è proibito:",
+      "item1": "Condividere l'applicazione con terze parti",
+      "item2": "Ingegneria inversa o decompilazione del software",
+      "item3": "Modificare o creare opere derivate",
+      "item4": "Ridistribuire o rivendere l'applicazione",
+      "item5": "Rimuovere o alterare qualsiasi avviso di proprietà"
+    },
+    "responsibilities": {
+      "title": "Responsabilità dell'Utente",
+      "age": {
+        "title": "Requisiti di Età",
+        "text": "Gli utenti devono avere almeno 13 anni con il consenso dei genitori o 18 anni per utilizzare questa applicazione."
+      },
+      "defect": {
+        "title": "Segnalazione Difetti",
+        "text": "Devi ispezionare l'applicazione immediatamente dopo l'installazione e segnalare eventuali difetti entro 30 giorni a"
+      },
+      "backup": {
+        "title": "Backup Dati",
+        "text": "Sei responsabile di mantenere copie di backup dei tuoi dati per evitare la perdita di dati."
+      }
+    },
+    "liability": {
+      "title": "Limitazione di Responsabilità",
+      "text": "La responsabilità del licenziante è limitata ai casi di atti intenzionali e negligenza grave.",
+      "note": "Escludiamo la responsabilità per danni risultanti da doveri di diligenza violati. Gli utenti devono mantenere le proprie copie di backup per prevenire la perdita di dati."
+    },
+    "intellectual": {
+      "title": "Diritti di Proprietà Intellettuale",
+      "text": "Lo sviluppatore conserva tutti i diritti su:",
+      "item1": "Copyright",
+      "item2": "Marchi",
+      "item3": "Breveti",
+      "item4": "Segreti commerciali",
+      "item5": "Tutti gli altri diritti di proprietà intellettuale",
+      "important": "Importante: Non puoi pubblicare risultati, screenshot o qualsiasi contenuto dell'applicazione senza il previo consenso scritto dello sviluppatore."
+    },
+    "termination": {
+      "title": "Risoluzione",
+      "text1": "Ciascuna delle parti può risolvere questo accordo in qualsiasi momento.",
+      "text2": "Alla risoluzione, devi:",
+      "item1": "Cessare immediatamente l'uso dell'applicazione",
+      "item2": "Eliminare tutte le copie del software dai tuoi dispositivi",
+      "item3": "Smettere di accedere a qualsiasi servizio correlato"
+    },
+    "governing": {
+      "title": "Legge Applicabile e Giurisdizione",
+      "text1": "Questi Termini di Utilizzo sono governati dalle leggi dell'Ucraina.",
+      "text2": "Tutte le controversie derivanti o relative a questi termini saranno risolte esclusivamente nei tribunali ucraini."
+    },
+    "contact": {
+      "title": "Informazioni di Contatto",
+      "text": "Se hai domande su questi Termini di Utilizzo, per favore contattaci:",
+      "email": "Email"
+    },
+    "lastUpdated": "Ultimo Aggiornamento: 30 Novembre 2024",
+    "footer": "© 2024 QuailBreeder. Tutti i diritti riservati."
+  },
+  "auth": {
+    "welcome": "Benvenuto in QuailBreeder",
+    "signInToAccess": "Accedi per accedere al supporto",
+    "continueWithGoogle": "Continua con Google",
+    "continueWithApple": "Continua con Apple",
+    "byContinuing": "Continuando, accetti i nostri",
+    "termsOfUse": "Termini di Utilizzo",
+    "and": "e",
+    "privacyPolicy": "Politica sulla Privacy",
+    "signingOut": "Disconnessione in corso...",
+    "pleaseWait": "Attendere prego",
+    "confirmSignOut": "Esci",
+    "close": "Chiudi"
+  },
+  "support": {
+    "title": "Centro Supporto",
+    "signOut": "Esci",
+    "createTicket": "Crea Ticket di Supporto",
+    "description": "Hai un problema o hai bisogno di assistenza? Faccelo sapere e ti risponderemo il prima possibile.",
+    "beforeSubmitting": "Prima di inviare un ticket",
+    "tip1": "Controlla le nostre FAQ e documentazione per problemi comuni",
+    "tip2": "Includi quanti più dettagli possibile per aiutarci a risolvere il tuo problema più velocemente",
+    "tip3": "Screenshot o messaggi di errore sono molto utili",
+    "form": {
+      "subject": "Oggetto",
+      "subjectPlaceholder": "Breve descrizione del tuo problema",
+      "subjectRequired": "L'oggetto è obbligatorio",
+      "category": "Categoria",
+      "categoryPlaceholder": "Seleziona una categoria",
+      "categoryRequired": "La categoria è obbligatoria",
+      "categoryTechnical": "Problema Tecnico",
+      "categoryBilling": "Fatturazione & Account",
+      "categoryFeature": "Richiesta Funzionalità",
+      "categoryData": "Problemi Dati & Sincronizzazione",
+      "categoryOther": "Altro",
+      "priority": "Priorità",
+      "priorityPlaceholder": "Seleziona priorità",
+      "priorityRequired": "La priorità è obbligatoria",
+      "priorityLow": "Bassa - Domanda generale o problema minore",
+      "priorityMedium": "Media - Problema che influenza la funzionalità",
+      "priorityHigh": "Alta - Problema critico che blocca il lavoro",
+      "description": "Descrizione",
+      "descriptionPlaceholder": "Descrivi il tuo problema in dettaglio. Includi eventuali messaggi di errore, passaggi per riprodurlo e cosa ti aspettavi accadesse.",
+      "descriptionRequired": "La descrizione è obbligatoria",
+      "descriptionMinLength": "Per favore fornisci maggiori dettagli (almeno 20 caratteri)",
+      "submit": "Invia Ticket",
+      "submitting": "Invio in corso...",
+      "successTitle": "Ticket inviato con successo!",
+      "successMessage": "Ti risponderemo a {email} il prima possibile.",
+      "errorTitle": "Invio ticket fallito",
+      "errorMessage": "Per favore riprova o contattaci direttamente."
+    }
+  },
+  "sla": {
+    "hero": {
+      "title": "Supporto che comprende le tue sfide",
+      "description": "Hai una domanda sul calcolo dell'incubazione o sulla configurazione del programma? Siamo qui per te. Il nostro obiettivo è mantenere quailbreeder.net operativo per il tuo successo 24 ore su 24, 7 giorni su 7.",
+      "button": "Vai ai miei ticket"
+    },
+    "commitment": {
+      "title": "Aiuto garantito entro 24 ore",
+      "description": "Diamo valore alla tua fiducia. Che tu stia utilizzando il mese di prova gratuito o sia già abbonato a 5$, garantiamo una risposta alla tua richiesta entro 24 ore.",
+      "whyImportant": "Perché è importante: Nell'avicoltura non ci sono domande secondarie. Forniamo feedback rapidi per garantire che i tuoi processi continuino a funzionare senza intoppi."
+    },
+    "howItWorks": {
+      "title": "Come funziona",
+      "step1": {
+        "title": "Crea un ticket",
+        "description": "Descrivi il tuo problema o suggerimento nel tuo account personale."
+      },
+      "step2": {
+        "title": "Ricevi notifica",
+        "description": "Non appena lo sviluppatore risponderà, riceverai un'email."
+      },
+      "step3": {
+        "title": "Risolvi il problema",
+        "description": "Continua la conversazione fino a quando l'attività non sarà completamente risolta. Tutta la cronologia della corrispondenza viene salvata per sempre."
+      }
+    },
+    "benefits": {
+      "title": "Perché i ticket sono migliori delle email",
+      "benefit1": {
+        "title": "Comunicazione diretta con lo sviluppatore",
+        "description": "Parli con il creatore del progetto, non con un operatore di call center."
+      },
+      "benefit2": {
+        "title": "Niente spam",
+        "description": "Le tue richieste non andranno perse nei filtri email."
+      },
+      "benefit3": {
+        "title": "Priorità della comunità",
+        "description": "L'abbonamento ci consente di allocare risorse per l'analisi di casi individuali e di implementare le tue idee negli aggiornamenti del programma."
+      }
+    },
+    "cta": {
+      "title": "Non sei ancora con noi?",
+      "description": "Prova tutte le funzionalità del sistema, incluso il supporto personalizzato, gratuitamente per 30 giorni.",
+      "button": "Prova 1 mese gratis"
+    },
+    "badge": "Risposta entro 24 ore",
+    "guaranteeTitle": "Assistenza Garantita",
+    "guaranteeDesc": "Anche nel piano gratuito o nell'abbonamento da $5",
+    "ctaButton": "Prova 30 giorni gratuitamente",
+    "step1Short": {
+      "title": "Ticket",
+      "desc": "Descrivi la tua richiesta nella dashboard"
+    },
+    "step2Short": {
+      "title": "Email",
+      "desc": "Ricevi una notifica di risposta nella tua casella di posta"
+    },
+    "step3Short": {
+      "title": "Soluzione",
+      "desc": "Dialogo fino alla risoluzione completa"
+    },
+    "benefit1Short": {
+      "title": "Contatto Diretto con lo Sviluppatore",
+      "desc": "Comunica con l'autore del progetto, non con un operatore"
+    },
+    "benefit2Short": {
+      "title": "Niente Spam",
+      "desc": "Le tue richieste non si perdono mai nei filtri"
+    },
+    "benefit3Short": {
+      "title": "Priorità della Comunità",
+      "desc": "Il tuo abbonamento ci permette di implementare le tue idee"
+    }
+  }
+}

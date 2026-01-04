@@ -1,0 +1,52 @@
+=== HTTP/3 Permanently Disabled ===
+
+The diagnostic showed that HTTP/3 (QUIC) is incompatible with the Nginx → Next.js proxy setup.
+HTTP/3 connections were causing 400 Bad Request errors while HTTP/2 works perfectly.
+
+Configuration updated in: /etc/nginx/sites-available/default
+- Commented out: listen 443 quic reuseport
+- Commented out: Alt-Svc header
+- Commented out: ssl_early_data
+
+To apply the changes, run these commands:
+
+1. Test configuration:
+   sudo nginx -t
+
+2. If test passes, reload Nginx:
+   sudo systemctl reload nginx
+
+3. Verify HTTP/3 is disabled (should show no UDP listeners):
+   sudo ss -ulnp | grep ":443"
+
+4. Test the site works:
+   curl -I https://quailbreeder.net/
+
+Expected result:
+- Site returns HTTP 200 OK
+- No Alt-Svc header in response
+- No UDP listener on port 443
+- HTTP/2 works perfectly in all browsers
+
+=== Why HTTP/3 was disabled ===
+
+Diagnostic results from debug-quic-request.sh showed:
+✅ Direct Next.js access: HTTP 200 OK
+✅ Nginx HTTP/1.1 proxy: HTTP 200 OK
+✅ Nginx HTTP/2 proxy: HTTP 200 OK
+❌ Nginx HTTP/3 (QUIC) proxy: HTTP 400 Bad Request
+
+Root cause: Nginx 1.29.3 QUIC implementation has compatibility issues when
+proxying to Next.js. The QUIC → HTTP/1.1 translation layer is causing
+malformed requests that Next.js rejects with 400 errors.
+
+HTTP/2 provides excellent performance without these issues:
+- Multiplexing (multiple requests over one connection)
+- Header compression
+- Binary protocol
+- Server push support
+- Wide browser support (>98%)
+- Battle-tested stability
+
+HTTP/3 advantages are marginal for most use cases, and not worth the
+compatibility problems observed in this setup.

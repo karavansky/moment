@@ -1,0 +1,481 @@
+{
+  "home": {
+    "topmoto": "Narzędzie do Analizy Danych i Wspomagania Decyzji w Hodowli Przepiórek",
+    "botmoto": "Oceń efektywność paszy, warunki utrzymania i zagęszczenie, aby wskazać lepsze wyniki i zmaksymalizować wydajność na cykl.",
+    "what": "Czym jest Quail Breeder?",
+    "expl": "Quail Breeder to wszechstronny asystent cyfrowy zaprojektowany do zarządzania i optymalizacji Twojej produkcji przepiórek. Precyzyjnie rozlicza każdy etap Twojej działalności, od jaja do faktury.",
+    "flow": "Mapa Procesu",
+    "content": "Proces składa się z następujących kroków:",
+    "get": "Rozpocznij — to szybkie",
+    "botmototitel": "Wyizoluj czynniki sukcesu:"
+  },
+  "about": {
+    "cardIntro": {
+      "title": "QuailBreeder — mały asystent hodowlany z dużą osobowością",
+      "text": "Urodzony na podwórku, wychowany na kawie i TypeScripcie. Jeśli hodujesz przepiórki (lub po prostu doceniasz efektywne śledzenie i odrobinę wiejskiego humoru), jesteś w domu.",
+      "facts": "Szybkie fakty:",
+      "fact1": "Stworzony przez programistę, którego ugryzł wirus przepiórczej gorączki",
+      "fact2": "Śledzi cykle, partie i przeżywalność",
+      "fact3": "Gotowy na mobilne — bez kieszeni pełnych papieru",
+      "story": "Przeczytaj historię"
+    },
+    "cardStory": {
+      "title": "Jak powstał QuailBreeder",
+      "text1": "Za tą aplikacją stoi dość osobista historia. W 2012 roku opuściłem Kijów i przeniosłem się na wieś. Miejskie nawyki spotykają się z wiejską rzeczywistością — i chaos wygrywa, przynajmniej na jakiś czas.",
+      "text2": "Założyłem małą hodowlę przepiórek na swoim podwórku, aby produkować mięso. Dwa lata, kawa i wiele liczenia później, osiągnąłem ~50 kg mięsa przepiórczego tygodniowo. To oznaczało żonglowanie 14–15 nakładających się partii i śledzenie ponad 3000 ptaków. Notatki na papierze mnożyły się jak przepiórki.",
+      "text3": "Z wykształcenia jestem programistą — więc napisałem aplikację PC, aby wszystko śledzić. Działała, ale nie była mobilna. Wciąż nosiłem ze sobą papier i przepisywałem dane na koniec każdego dnia. Potem kontuzja pleców zmusiła mnie do zamknięcia hodowli i skupienia się na aplikacji — co okazało się najlepszym możliwym zwrotem: kolejna wersja stała się mobilna i wyposażona w praktyczne pola, takie jak przeżywalność, informacje o transporcie i czasowanie partii.",
+      "text4": "Krótko mówiąc: QuailBreeder istnieje, ponieważ ktoś musiał przestać tracić jaja i zacząć oszczędzać czas. Jeśli hodujesz przepiórki na mięso, ta aplikacja zbiera drobne szczegóły, których potrzebujesz — bez zmuszania Cię do nauki SQL czy zakładania fartucha laboratoryjnego.",
+      "button": "Zobacz funkcje"
+    },
+    "cardFounder": {
+      "founder": "O Deweloperze",
+      "text": "Serhii Karavansky — programista, hodowca przydomowy, entuzjasta kawy.",
+      "funFacts": "Ciekawe fakty:",
+      "fact1": "Oryginalna aplikacja zaczęła się jako narzędzie Windows (tak, nostalgia).",
+      "fact2": "Przetrwała kontuzję pleców, kilka aktualizacji oprogramowania i za dużo skorupek jaj.",
+      "fact3": "Nazwa «QuailBreeder» nie została zasugerowana przez komitet marketingowy — była szczera."
+    },
+    "cardWhy": {
+      "title": "Dlaczego ludzie kochają QuailBreeder",
+      "reason1": {
+        "title": "Oszczędzaj czas",
+        "text": "Szybkie wprowadzanie danych, rejestrowanie KeepAlive i mniej wieczorów spędzonych na przepisywaniu papierowych notatek."
+      },
+      "reason2": {
+        "title": "Śledź partie",
+        "text": "Łatwo planuj i śledź nakładające się cykle, dni inkubacji i wskaźniki wylęgu."
+      },
+      "reason3": {
+        "title": "Mobilność przede wszystkim",
+        "text": "Zaprojektowany, aby bezbłędnie działać na telefonie — bo na farmie ręce się brudzą."
+      }
+    },
+    "cardPromo": {
+      "title": "Gotowy, żeby przestać żonglować jajami i papierem?",
+      "text": "Wypróbuj QuailBreeder i odzyskaj swoje wieczory.",
+      "button": "Rozpocznij darmowy okres próbny",
+      "contact": "Skontaktuj się z nami \n(Wkrótce będzie dostępny system śledzenia zgłoszeń wsparcia.)"
+    }
+  },
+  "getStarted": {
+    "title": "Rozpoczęcie pracy z QuailBreeder",
+    "intro": "Aby rozpocząć, musisz wypełnić trzy główne katalogi używanego sprzętu.",
+    "stepsTitle": "Kroki do wykonania",
+    "finalTitle": "Na koniec",
+    "download": "Pobierz aplikację i zacznij optymalizować swoją hodowlę przepiórek!",
+    "step1": {
+      "title": "Inkubatory",
+      "description": "Który przewiduje użycie trzech typów (Setter, Hatcher i Kombinowany), a także liczbę tacek dla każdego inkubatora i ich pojemność jajową."
+    },
+    "step2": {
+      "title": "Broodery (Kwatery dla piskląt)",
+      "description": "Gdzie wymagane jest określenie maksymalnej możliwej liczby piskląt dla każdego brodera."
+    },
+    "step3": {
+      "title": "Lokalizacje",
+      "description": "Lokalizacje to grupy klatek przeznaczonych do konkretnego zadania. Na przykład: do utrzymania stada rodzicielskiego, do produkcji jaj lub do produkcji mięsa."
+    },
+    "final": {
+      "title": "Tworzenie Nowej Partii",
+      "description": "Wybierz Partię na pasku kart, a następnie wprowadź liczbę jaj w tej partii.\n• Masz możliwość tworzenia partii wstecznie, w tym celu kliknij na datę nad ilością. Pamiętaj, że jest to możliwe tylko przed umieszczeniem jaj w inkubatorze.\n• Jeśli używasz inkubatora Setter, musisz również zdefiniować tace w inkubatorze Hatcher.\n• Klikając Cofnij – możesz usunąć ostatnią akcję.\n• Gdy zidentyfikujesz jaja na tackach, naciśnij przycisk Start, aby rozpocząć inkubację.\n• Możesz skonfigurować 2 rodzaje powiadomień:\n  ○ Powiadomienia push\n  ○ Automatyczne tworzenie odpowiednich wpisów w Twoim ulubionym kalendarzu\n• Można to zrobić w Ustawieniach na karcie Głównej."
+    }
+  },
+  "process": {
+    "incubation": {
+      "title": "Inkubacja",
+      "desc": "Zarządzaj i monitoruj proces inkubacji jaj przepiórczych, włączając temperaturę, wilgotność i harmonikami przewracania. W przypadku użycia inkubatora Setter, określ również planowane tace Hatcher. Główne czynniki na to wpływające to wiek ptaka znoszącego jajo wylęgowe i jakość Twoich inkubatorów (wymiana świeżego powietrza, gdy zarodek jest w jaju, ponieważ on również wymaga tlenu).",
+      "details": "Skorupka nie jest szczelna. Przenikają ją tysiące mikroskopijnych porów (od 7 000 do 17 000), które umożliwiają swobodny przepływ gazów między wnętrzem jaja a środowiskiem zewnętrznym."
+    },
+    "hatching": {
+      "title": "Wylęg",
+      "desc": "Nie przegap tego magicznego dnia, cudu narodzin nowego życia, łącząc swój ulubiony kalendarz i/lub otrzymując spersonalizowane powiadomienia na swoim urządzeniu. Wybierz inkubator i numer tacki. Wprowadź liczbę wyklutych piskląt i wskaż, do którego brodera zostaną umieszczone.",
+      "details": "Na tym etapie otrzymujesz swój pierwszy Kluczowy Wskaźnik Efektywności (KPI). Procent przeżywalności jest obliczany jako stosunek wyklutych piskląt do liczby jaj poddanych inkubacji."
+    },
+    "brooding": {
+      "title": "Odchów piskląt (Brooding)",
+      "desc": "Śledzenie śmiertelności piskląt na bieżąco, dzień po dniu, oraz prowadzenie odpowiednich zapisów i notatek o zmianach w żywieniu, klimacie itp., ułatwi identyfikację przyczyny.",
+      "details": "Zwiększenie procentu przeżywalności jest głównym zadaniem na tym etapie. Właściwa opieka i monitoring pomogą to osiągnąć."
+    },
+    "feeding": {
+      "title": "Żywienie",
+      "desc": "Wybierz Żywienie z listy zadań partii. Następnie wskaż lokalizację i wypełnij klatki, które są wolne w tym dniu.",
+      "details": "W tym momencie możesz również tworzyć zapisy o przeżywalności."
+    },
+    "slaughter": {
+      "title": "Ubój",
+      "desc": "Kluczowe jest, że stado jest tutaj gotowe do przetwórstwa w ciągu 50 do 60 dni. Warunkiem wstępnym rozpoczęcia procesu uboju jest utworzenie karty uboju (lub zlecenia przetwórczego). To zlecenie służy podwójnemu celowi: może być również użyte jako zamówienie sprzedaży i stanowi podstawę do wysłania klientowi faktury wygenerowanej z szablonu.",
+      "details": "Kończąc cykl i wprowadzając wszystkie istotne dane, będziesz w stanie ocenić jakość paszy, warunki utrzymania i zagęszczenie w klatkach, identyfikując w ten sposób obszary, w których wyniki były słabe, a gdzie wydajność była lepsza."
+    },
+    "selling": {
+      "title": "Sprzedaż",
+      "desc": "Możesz edytować szablon faktury obsługujący klikalne linki.",
+      "details": "Jeśli w partii nie ma już ptaków, jest ona automatycznie przenoszona do archiwum."
+    }
+  },
+  "features": {
+    "title": "Kluczowe Funkcje",
+    "feat1": {
+      "title": "Skaluj bez Limitów:",
+      "text": "Zarządzaj nieograniczoną liczbą inkubatorów i dostosowuj ustawienia dla nawet trzech różnych typów sprzętu."
+    },
+    "feat2": {
+      "title": "Przegląd Pojemności w Czasie Rzeczywistym:",
+      "text": "Natychmiast wizualizuj bieżące obciążenie i dostępność wszystkich krytycznych urządzeń (inkubatory, broodery i klatki), aby zoptymalizować planowanie partii."
+    },
+    "feat3": {
+      "title": "Bezproblemowa Integracja i Przypomnienia:",
+      "text": "Synchronizuj kluczowe daty i terminy z istniejącym zewnętrznym kalendarzem (iCloud, Kalendarz Google), aby mieć pewność, że nic nie zostanie przeoczone."
+    },
+    "feat4": {
+      "title": "Precyzyjna Analiza Śmiertelności:",
+      "text": "Rejestruj i analizuj każdą stratę według daty, czasu i konkretnej klatki/lokalizacji, aby szybciej identyfikować ryzyka zdrowotne."
+    },
+    "feat5": {
+      "title": "Czyste i Uporządkowane Dane:",
+      "text": "Automatycznie archiwizuj zakończone partie produkcyjne, utrzymując aktywny pulpit w czystości i poprawiając długoterminowe pobieranie danych."
+    },
+    "feat6": {
+      "title": "Profesjonalne i Szybkie Fakturowanie:",
+      "text": "Generuj profesjonalne, brandowane faktury błyskawicznie, korzystając z w pełni konfigurowalnych szablonów."
+    }
+  },
+  "navbar": {
+    "about": "Moja historia",
+    "get_started": "Rozpocznij",
+    "terms": "Warunki Użytkowania",
+    "privacy": "Polityka Prywatności",
+    "support": "Wsparcie"
+  },
+  "praesentation": {
+    "intro": "Projekt to pulpit nawigacyjny do zarządzania i monitorowania danych badawczych.",
+    "technologiesTitle": "Technologie",
+    "featuresTitle": "Kluczowe Funkcje",
+    "authTitle": "Autoryzacja i Bezpieczeństwo",
+    "mssqlTitle": "Moduł MSSQL",
+    "deploymentTitle": "Wdrożenie i Działanie",
+    "conclusionTitle": "Podsumowanie",
+    "table": {
+      "columnArea": "Obszar",
+      "columnTech": "Technologia"
+    }
+  },
+  "seo": {
+    "home": {
+      "title": "QuailBreeder - Narzędzie do Analizy Danych i Wspomagania Decyzji w Hodowli Przepiórek",
+      "description": "Wszechstronny asystent cyfrowy do zarządzania i optymalizacji produkcji przepiórek. Śledź każdy krok od jaja do faktury z precyzyjną księgowością i analizą wydajności."
+    },
+    "about": {
+      "title": "Społecznie Akceptowalna Autopromocja",
+      "description": "Jak powstał QuailBreeder. Mały asystent hodowlany z dużą osobowością"
+    },
+    "getStarted": {
+      "title": "Rozpocznij",
+      "description": "Aby rozpocząć, musisz wypełnić trzy główne katalogi używanego sprzętu."
+    },
+    "privacyPolicy": {
+      "title": "Polityka Prywatności",
+      "description": "Dowiedz się, jak zbieramy, wykorzystujemy i chronimy Twoje informacje podczas korzystania z naszej aplikacji do zarządzania hodowlą przepiórek."
+    },
+    "termsOfUse": {
+      "title": "Warunki Użytkowania",
+      "description": "Zrozum warunki i regulacje dotyczące korzystania z naszej aplikacji do zarządzania hodowlą przepiórek."
+    }
+  },
+  "routes": {
+    "about": "informacje",
+    "getStarted": "rozpocznij",
+    "privacyPolicy": "polityka-prywatnosci",
+    "termsOfUse": "warunki-uzytkowania",
+    "support": "wsparcie"
+  },
+  "policy": {
+    "title": "Polityka Prywatności",
+    "intro": "Twoja prywatność jest dla nas ważna. Ta Polityka Prywatności wyjaśnia, w jaki sposób Quail Breeder zbiera, wykorzystuje i chroni Twoje informacje podczas korzystania z naszej aplikacji.",
+    "dataCollection": {
+      "title": "Jakie Informacje Zbieramy",
+      "confidential": {
+        "title": "Zawartość Poufna",
+        "text": "Quail Breeder zbiera i przechowuje następującą poufną treść, którą podajesz:",
+        "item1": "Katalogi sprzętu (inkubatory, broodery i lokalizacje)",
+        "item2": "Informacje o partiach wylęgu",
+        "item3": "Szczegóły katalogu klientów",
+        "item4": "Zapisy sprzedaży i odpisów"
+      },
+      "subscriber": {
+        "title": "Podstawowe Informacje o Subskrybencie",
+        "item1": "Adresy e-mail",
+        "item2": "Dane o użytkowaniu i analityka"
+      },
+      "notCollect": {
+        "title": "Czego Nie Zbieramy",
+        "text": "Quail Breeder wyraźnie NIE zbiera:",
+        "item1": "Adresów IP",
+        "item2": "Informacji o urządzeniu",
+        "item3": "Osobistych identyfikatorów sprzętowych"
+      }
+    },
+    "dataUsage": {
+      "title": "Jak Wykorzystujemy Twoje Informacje",
+      "maintaining": {
+        "title": "Utrzymanie Naszych Usług",
+        "text": "Wykorzystujemy Twoje informacje do zapewnienia wsparcia klientom i utrzymania funkcjonalności aplikacji Quail Breeder."
+      },
+      "communicating": {
+        "title": "Komunikacja z Tobą",
+        "text": "Możemy wykorzystać Twoje dane kontaktowe, aby informować Cię o nowych funkcjach, aktualizacjach i ofertach związanych z Quail Breeder."
+      },
+      "important": "Ważne: Nie zajmujemy się sprzedażą ani wynajmem Twoich informacji."
+    },
+    "userControl": {
+      "title": "Twój Dostęp i Kontrola",
+      "text": "Masz pełną kontrolę nad swoimi informacjami:",
+      "manage": {
+        "title": "Zarządzaj Informacjami:",
+        "text": "Możesz się zalogować i edytować swoje informacje bezpośrednio w aplikacji w dowolnym momencie."
+      },
+      "delete": {
+        "title": "Usuń Zawartość:",
+        "text": "Możesz usunąć swoją poufną treść w dowolnym momencie."
+      },
+      "stop": {
+        "title": "Zaprzestań Używania:",
+        "text": "Możesz przestać korzystać z aplikacji Quail Breeder w dowolnym momencie bez ograniczeń."
+      },
+      "export": {
+        "title": "Eksport Danych:",
+        "text": "Funkcja eksportu danych jest planowana w przyszłych wersjach, umożliwiając pobranie wszystkich Twoich informacji."
+      }
+    },
+    "customerSupport": {
+      "title": "Dostęp do Wsparcia Klienta",
+      "text": "Podczas rozwiązywania problemów z kontem nasz zespół wsparcia klienta może poprosić o tymczasowe pozwolenie na przeglądanie określonej zawartości na Twoim koncie.",
+      "note": "Uwaga: To pozwolenie wygasa po rozwiązaniu problemu. Nigdy nie uzyskamy dostępu do Twojego konta bez Twojej wyraźnej zgody."
+    },
+    "dataProtection": {
+      "title": "Nasze Zobowiązania do Ochrony Twoich Danych",
+      "text": "Quail Breeder zobowiązuje się do ochrony Twoich poufnych informacji:",
+      "item1": "Nie ujawnimy Twojej poufnej treści żadnej stronie trzeciej bez Twojej uprzedniej pisemnej zgody.",
+      "item2": "Ograniczamy wykorzystanie Twoich informacji wyłącznie do relacji biznesowych z Tobą jako właścicielem konta.",
+      "item3": "Wdrażamy standardowe środki bezpieczeństwa branży, aby chronić Twoje dane przed nieautoryzowanym dostępem."
+    },
+    "changes": {
+      "title": "Zmiany w Polityce Prywatności",
+      "text1": "Możemy aktualizować tę Politykę Prywatności od czasu do czasu, aby odzwierciedlić zmiany w naszych praktykach lub z innych operacyjnych, prawnych lub regulacyjnych powodów.",
+      "text2": "Powiadomimy Cię o wszelkich istotnych zmianach, publikując nową Politykę Prywatności na tej stronie i aktualizując datę „Ostatniej Aktualizacji” poniżej."
+    },
+    "contact": {
+      "title": "Skontaktuj Się z Nami",
+      "text": "Jeśli masz jakiekolwiek pytania dotyczące tej Polityki Prywatności lub naszych praktyk dotyczących danych, skontaktuj się z nami:",
+      "email": "Email:"
+    },
+    "lastUpdated": "Ostatnia Aktualizacja: 30 listopada 2024",
+    "footer": "© 2024 QuailBreeder. Wszelkie prawa zastrzeżone."
+  },
+  "terms": {
+    "title": "Warunki Użytkowania",
+    "intro": "Niniejsze Warunki Użytkowania regulują korzystanie z aplikacji i usług Quail Breeder. Korzystając z naszej aplikacji, zgadzasz się być związany tymi warunkami.",
+    "purpose": {
+      "title": "Cel Aplikacji",
+      "text": "Quail Breeder zapewnia kompleksowe narzędzia księgowe do operacji hodowli przepiórek, w tym:",
+      "item1": "Zarządzanie inkubatorami i śledzenie jaj",
+      "item2": "Monitorowanie procesu wylęgu",
+      "item3": "Śledzenie odchowu piskląt i wzrostu",
+      "item4": "Zarządzanie przemieszczaniem ptaków i lokalizacjami",
+      "item5": "Rejestracja uboju i sprzedaży"
+    },
+    "subscription": {
+      "title": "Subskrypcja i Płatność",
+      "text": "Quail Breeder wymaga płatnej, automatycznie odnawiającej się subskrypcji miesięcznej o nazwie",
+      "name": "QuailBreederSubscription",
+      "important": "Ważne: Płatność zostanie obciążona Twoje konto iTunes po potwierdzeniu zakupu. Subskrypcje odnawiają się automatycznie, chyba że auto-odnawianie zostanie wyłączone co najmniej 24 godziny przed końcem bieżącego okresu."
+    },
+    "license": {
+      "title": "Licencja i Ograniczenia",
+      "text": "Otrzymujesz nieprzenoszalną licencję na korzystanie z Quail Breeder do użytku osobistego wyłącznie na swoich urządzeniach Apple.",
+      "prohibited": "Jest Ci zabronione:",
+      "item1": "Udostępnianie aplikacji osobom trzecim",
+      "item2": "Inżynieria wsteczna lub dekompilacja oprogramowania",
+      "item3": "Modyfikowanie lub tworzenie dzieł pochodnych",
+      "item4": "Redystrybucja lub odsprzedaż aplikacji",
+      "item5": "Usuwanie lub zmiana jakichkolwiek zastrzeżeń własności"
+    },
+    "responsibilities": {
+      "title": "Odpowiedzialność Użytkownika",
+      "age": {
+        "title": "Wymagania Wiekowe",
+        "text": "Użytkownicy muszą mieć co najmniej 13 lat za zgodą rodziców lub 18 lat, aby korzystać z tej aplikacji."
+      },
+      "defect": {
+        "title": "Zgłaszanie Wad",
+        "text": "Musisz sprawdzić aplikację natychmiast po instalacji i zgłosić wszelkie wady w ciągu 30 dni do"
+      },
+      "backup": {
+        "title": "Kopia Zapasowa Danych",
+        "text": "Jesteś odpowiedzialny za utrzymywanie kopii zapasowych swoich danych, aby uniknąć ich utraty."
+      }
+    },
+    "liability": {
+      "title": "Ograniczenie Odpowiedzialności",
+      "text": "Odpowiedzialność Licencjodawcy jest ograniczona do przypadków działań umyślnych i rażącego niedbalstwa.",
+      "note": "Wykluczamy odpowiedzialność za szkody wynikające z naruszenia obowiązków należytej staranności. Użytkownicy muszą utrzymywać własne kopie zapasowe, aby zapobiec utracie danych."
+    },
+    "intellectual": {
+      "title": "Prawa Własności Intelektualnej",
+      "text": "Deweloper zachowuje wszystkie prawa do:",
+      "item1": "Praw autorskich",
+      "item2": "Znaków towarowych",
+      "item3": "Patentów",
+      "item4": "Tajemnic handlowych",
+      "item5": "Wszystkich innych praw własności intelektualnej",
+      "important": "Ważne: Nie możesz publikować wyników, zrzutów ekranu ani żadnej treści z aplikacji bez uprzedniej pisemnej zgody dewelopera."
+    },
+    "termination": {
+      "title": "Zakończenie",
+      "text1": "Każda ze stron może wypowiedzieć tę umowę w dowolnym momencie.",
+      "text2": "Po zakończeniu musisz:",
+      "item1": "Natychmiast zaprzestać korzystania z aplikacji",
+      "item2": "Usunąć wszystkie kopie oprogramowania ze swoich urządzeń",
+      "item3": "Zaprzestać dostępu do wszelkich powiązanych usług"
+    },
+    "governing": {
+      "title": "Prawo Właściwe i Jurysdykcja",
+      "text1": "Niniejsze Warunki Użytkowania podlegają prawu Ukrainy.",
+      "text2": "Wszystkie spory wynikające z niniejszych warunków lub związane z nimi będą rozstrzygane wyłącznie przez sądy ukraińskie."
+    },
+    "contact": {
+      "title": "Dane Kontaktowe",
+      "text": "Jeśli masz jakiekolwiek pytania dotyczące tych Warunków Użytkowania, skontaktuj się z nami:",
+      "email": "Email"
+    },
+    "lastUpdated": "Ostatnia Aktualizacja: 30 listopada 2024",
+    "footer": "© 2024 QuailBreeder. Wszelkie prawa zastrzeżone."
+  },
+  "auth": {
+    "welcome": "Witamy w QuailBreeder",
+    "signInToAccess": "Zaloguj się, aby uzyskać dostęp do wsparcia",
+    "continueWithGoogle": "Kontynuuj przez Google",
+    "continueWithApple": "Kontynuuj przez Apple",
+    "byContinuing": "Kontynuując, zgadzasz się na nasze",
+    "termsOfUse": "Warunki Użytkowania",
+    "and": "oraz",
+    "privacyPolicy": "Politykę Prywatności",
+    "signingOut": "Wylogowywanie...",
+    "pleaseWait": "Proszę czekać",
+    "confirmSignOut": "Wyloguj",
+    "close": "Zamknij"
+  },
+  "support": {
+    "title": "Centrum Wsparcia",
+    "signOut": "Wyloguj się",
+    "createTicket": "Utwórz Zgłoszenie Wsparcia",
+    "description": "Masz problem lub potrzebujesz pomocy? Daj nam znać, a skontaktujemy się z Tobą tak szybko, jak to możliwe.",
+    "beforeSubmitting": "Przed przesłaniem zgłoszenia",
+    "tip1": "Sprawdź nasze FAQ i dokumentację dotyczące typowych problemów",
+    "tip2": "Dołącz jak najwięcej szczegółów, aby pomóc nam szybciej rozwiązać Twój problem",
+    "tip3": "Zrzuty ekranu lub komunikaty o błędach są bardzo pomocne",
+    "form": {
+      "subject": "Temat",
+      "subjectPlaceholder": "Krótki opis problemu",
+      "subjectRequired": "Temat jest wymagany",
+      "category": "Kategoria",
+      "categoryPlaceholder": "Wybierz kategorię",
+      "categoryRequired": "Kategoria jest wymagana",
+      "categoryTechnical": "Problem Techniczny",
+      "categoryBilling": "Rozliczenia i Konto",
+      "categoryFeature": "Żądanie Funkcji",
+      "categoryData": "Problemy z Danymi i Synchronizacją",
+      "categoryOther": "Inne",
+      "priority": "Priorytet",
+      "priorityPlaceholder": "Wybierz priorytet",
+      "priorityRequired": "Priorytet jest wymagany",
+      "priorityLow": "Niski - Ogólne pytanie lub drobny problem",
+      "priorityMedium": "Średni - Problem wpływający na funkcjonalność",
+      "priorityHigh": "Wysoki - Krytyczny problem blokujący pracę",
+      "description": "Opis",
+      "descriptionPlaceholder": "Opisz swój problem szczegółowo. Dołącz wszelkie komunikaty o błędach, kroki do odtworzenia oraz to, czego się spodziewałeś.",
+      "descriptionRequired": "Opis jest wymagany",
+      "descriptionMinLength": "Podaj więcej szczegółów (co najmniej 20 znaków)",
+      "submit": "Wyślij Zgłoszenie",
+      "submitting": "Wysyłanie...",
+      "successTitle": "Zgłoszenie wysłane pomyślnie!",
+      "successMessage": "Skontaktujemy się z Tobą na {email} tak szybko, jak to możliwe.",
+      "errorTitle": "Nie udało się wysłać zgłoszenia",
+      "errorMessage": "Spróbuj ponownie lub skontaktuj się z nami bezpośrednio."
+    }
+  },
+  "sla": {
+    "hero": {
+      "title": "Wsparcie, które rozumie Twoje wyzwania",
+      "description": "Masz pytanie dotyczące obliczeń inkubacji lub konfiguracji programu? Jesteśmy tutaj dla Ciebie. Naszym celem jest utrzymanie quailbreeder.net w działaniu dla Twojego sukcesu 24/7.",
+      "button": "Przejdź do moich zgłoszeń"
+    },
+    "commitment": {
+      "title": "Gwarantowana pomoc w ciągu 24 godzin",
+      "description": "Cenimy Twoje zaufanie. Niezależnie od tego, czy korzystasz z darmowego miesiąca próbnego, czy już subskrybujesz za 5$, gwarantujemy odpowiedź na Twoje zapytanie w ciągu 24 godzin.",
+      "whyImportant": "Dlaczego to ważne: W drobiarstwie nie ma pytań drugorzędnych. Zapewniamy szybką informację zwrotną, aby Twoje procesy działały płynnie."
+    },
+    "howItWorks": {
+      "title": "Jak to działa",
+      "step1": {
+        "title": "Utwórz zgłoszenie",
+        "description": "Opisz swój problem lub sugestię w swoim koncie osobistym."
+      },
+      "step2": {
+        "title": "Otrzymaj powiadomienie",
+        "description": "Gdy tylko developer odpowie, otrzymasz e-mail."
+      },
+      "step3": {
+        "title": "Rozwiąż problem",
+        "description": "Kontynuuj rozmowę, aż zadanie zostanie w pełni rozwiązane. Cała historia korespondencji jest zapisywana na zawsze."
+      }
+    },
+    "benefits": {
+      "title": "Dlaczego zgłoszenia są lepsze niż e-mail",
+      "benefit1": {
+        "title": "Bezpośrednia komunikacja z developerem",
+        "description": "Rozmawiasz z twórcą projektu, a nie z operatorem call center."
+      },
+      "benefit2": {
+        "title": "Brak spamu",
+        "description": "Twoje zapytania nie zginą w filtrach e-mail."
+      },
+      "benefit3": {
+        "title": "Priorytet społeczności",
+        "description": "Subskrypcja pozwala nam przeznaczać zasoby na analizę indywidualnych przypadków i wdrażać Twoje pomysły w aktualizacjach programu."
+      }
+    },
+    "cta": {
+      "title": "Jeszcze nie jesteś z nami?",
+      "description": "Wypróbuj wszystkie funkcje systemu, w tym osobiste wsparcie, za darmo przez 30 dni.",
+      "button": "Wypróbuj 1 miesiąc za darmo"
+    },
+    "badge": "Odpowiedź w ciągu 24 godzin",
+    "guaranteeTitle": "Gwarantowana pomoc",
+    "guaranteeDesc": "Nawet w darmowym planie lub subskrypcji za 5 $",
+    "ctaButton": "Wypróbuj 30 dni za darmo",
+    "step1Short": {
+      "title": "Zgłoszenie",
+      "desc": "Opisz swój problem w panelu"
+    },
+    "step2Short": {
+      "title": "E-mail",
+      "desc": "Otrzymaj powiadomienie o odpowiedzi na swoją skrzynkę"
+    },
+    "step3Short": {
+      "title": "Rozwiązanie",
+      "desc": "Dialog aż do pełnego rozwiązania"
+    },
+    "benefit1Short": {
+      "title": "Bezpośredni kontakt z deweloperem",
+      "desc": "Komunikacja z autorem projektu, a nie z operatorem"
+    },
+    "benefit2Short": {
+      "title": "Zero spamu",
+      "desc": "Twoje zgłoszenia nigdy nie giną w filtrach"
+    },
+    "benefit3Short": {
+      "title": "Priorytet społeczności",
+      "desc": "Subskrypcja pozwala nam wdrażać Twoje pomysły"
+    }
+  }
+}

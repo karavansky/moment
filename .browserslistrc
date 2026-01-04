@@ -1,0 +1,19 @@
+# Browsers that we support
+
+# Modern browsers (ES2017+)
+last 2 Chrome versions
+last 2 Firefox versions
+last 2 Safari versions
+last 2 Edge versions
+
+# Exclude old browsers
+not IE 11
+not dead
+not op_mini all
+
+# Support browsers with >0.2% market share
+> 0.2%
+
+# Explicitly support modern features
+supports es6-module
+supports async-functions

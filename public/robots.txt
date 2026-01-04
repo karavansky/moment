@@ -1,0 +1,32 @@
+# Allow all legitimate bots
+User-agent: *
+Allow: /
+
+# Allow all language versions
+Allow: /en/
+Allow: /de/
+Allow: /es/
+Allow: /fr/
+Allow: /id/
+Allow: /ja/
+Allow: /pt/
+Allow: /ru/
+Allow: /tr/
+Allow: /uk/
+Allow: /it/
+Allow: /pl/
+
+# Disallow common attack paths
+Disallow: /api/
+Disallow: /wp-admin/
+Disallow: /wp-includes/
+Disallow: /wp-content/
+Disallow: /wordpress/
+Disallow: /xmlrpc.php
+
+# Disallow Next.js internal paths
+Disallow: /_next/static/
+Disallow: /_next/image
+
+# Sitemap (includes all language versions)
+Sitemap: https://quailbreeder.net/sitemap.xml

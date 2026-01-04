@@ -1,0 +1,115 @@
+'use client'
+
+import { useAuth } from './AuthProvider'
+import { signOut as nextAuthSignOut } from 'next-auth/react'
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem,  Button } from '@heroui/react'
+import { useRouter, usePathname } from 'next/navigation'
+
+// Protected routes that require authentication
+const PROTECTED_ROUTES = ['/tickets', '/admin']
+
+interface NavbarAuthLinksProps {
+  lang: string
+}
+
+export default function NavbarAuthLinks({ lang }: NavbarAuthLinksProps) {
+  const { session, status } = useAuth()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  if (status !== 'authenticated') {
+    return null
+  } else {
+    if (session?.user) {
+      console.log('[NavbarAuthLinks] Authenticated user:', session.user.isAdmin)
+    }
+  }
+
+  // Check if current route is protected
+  const isProtectedRoute = () => {
+    if (!pathname) return false
+    return PROTECTED_ROUTES.some(route => pathname.includes(route))
+  }
+
+  const handleMenu = async (key: string) => {
+    switch (key) {
+      case 'my-tickets':
+        router.push(`/${lang}/tickets`)
+        break
+      case 'admin-panel':
+        router.push(`/${lang}/admin/tickets`)
+        break
+      case 'logout':
+        // If on protected route, redirect to home. Otherwise stay on current page
+        const callbackUrl = isProtectedRoute() ? `/${lang}` : pathname || `/${lang}`
+        await nextAuthSignOut({ callbackUrl })
+        break
+      default:
+    }
+  }
+
+  return (
+    <Dropdown>
+      <DropdownTrigger>
+        <Button
+          variant="light"
+          size="sm"
+          className="min-w-unit-16 h-8 rounded-xl text-sand-200 hover:text-sand-100 dark:text-gray-300 dark:hover:text-white data-[hover=true]:bg-earth-800/50 dark:data-[hover=true]:bg-gray-700/50 gap-1.5 flex flex-row items-center"
+        >
+          <User
+            avatarProps={{
+              src: session?.user?.image || undefined,
+              size: 'sm',
+            }}
+            name={session?.user?.name?.split(' ')[0] || 'User'}
+            className="min-w-unit-16 h-8 rounded-xl text-sand-200 hover:text-sand-50 dark:text-gray-300 dark:hover:text-white data-[hover=true]:bg-earth-100/50 dark:data-[hover=true]:bg-gray-700/50 gap-1.5 flex flex-row items-center"
+          />
+        </Button>
+      </DropdownTrigger>
+      <DropdownMenu
+        aria-label="User menu"
+        onAction={key => handleMenu(key as string)}
+        className="max-h-100 rounded-xl overflow-y-auto bg-earth-900/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg border border-earth-700 dark:border-gray-700"
+        itemClasses={{
+          base: [
+            'rounded-md',
+            'text-sand-200',
+            'dark:text-gray-300',
+            'transition-all',
+            'data-[hover=true]:bg-earth-600/70',
+            'dark:data-[hover=true]:bg-gray-700/70',
+            'data-[hover=true]:text-sand-100',
+            'dark:data-[hover=true]:text-white',
+            'data-[pressed=true]:opacity-70',
+          ],
+        }}
+      >
+        <DropdownItem key="my-tickets">My Tickets</DropdownItem>
+        {session?.user.isAdmin === true ? (
+          <DropdownItem key="admin-panel">Admin Panel</DropdownItem>
+        ) : null}
+        <DropdownItem key="logout">Logout</DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+  )
+  /*
+  return (
+    <>
+      <Link
+        href={`/${lang}/tickets`}
+        className="text-sand-200 hover:text-sand-100 transition-colors text-sm font-medium text-right"
+      >
+        My Tickets
+      </Link>
+      {session?.user?.email === 'karavansky@gmail.com' && (
+        <Link
+          href={`/${lang}/admin/tickets`}
+          className="text-yellow-300 hover:text-yellow-200 transition-colors text-sm font-medium text-right"
+        >
+          Admin Panel
+        </Link>
+      )}
+    </>
+  )
+    */
+}

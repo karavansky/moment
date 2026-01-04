@@ -1,0 +1,482 @@
+{
+  "home": {
+    "topmoto": "Data Analysis and Decision Support Tool for Quail Farming",
+    "botmoto": "Evaluate feed efficiency, housing conditions, and stocking density to pinpoint superior performance and maximize yield per cycle.",
+    "what": "What is Quail Breeder?",
+    "expl": "Quail Breeder is an all-in-one digital assistant designed to manage and optimize your quail production. It accurately accounts for every step of your operation, from egg to invoice.",
+    "flow": "Flow Map",
+    "content": "The process consists of the following steps:",
+    "get": "Get started — it’s quick",
+    "botmototitel": "Isolate success factors:"
+  },
+  "about": {
+    "cardIntro": {
+      "title": "QuailBreeder — the tiny farm assistant with a big personality",
+      "text": "Born in a backyard, raised with coffee and TypeScript. If you breed quails (or simply appreciate efficient tracking and a dash of rural humor), you’re home.",
+      "facts": "Quick facts:",
+      "fact1": "Built by a programmer who got bitten by quail-fever",
+      "fact2": "Tracks cycles, batches and viability",
+      "fact3": "Mobile-ready — no pocket full of paper required",
+      "story": "Read the story"
+    },
+    "cardStory": {
+      "title": "How QuailBreeder came to be",
+      "text1": "There’s a fairly personal tale behind this app. In 2012 I left Kyiv and moved to the countryside. City habits meet rural reality — and chaos wins, at least for a while.",
+      "text2": "I started a tiny quail farm in my backyard to produce meat. Two years, coffee, and a lot of counting later, I reached ~50 kg of quail meat per week. That meant juggling 14–15 overlapping batches and tracking 3,000+ birds. Paper notes multiplied like quails.",
+      "text3": "By training I’m a programmer — so I wrote a PC app to track everything. It worked, but it wasn’t mobile. I still carried paper and transcribed data at the end of each day. Then a back injury forced me to close the farm and focus on the app — which turned out to be the best possible pivot: the next version became mobile-first and packed with practical fields like viability, transport info, and batch timing.",
+      "text4": "Long story short: QuailBreeder exists because someone had to stop losing eggs and start saving time. If you raise quails for meat, this app collects the tiny details you need — without making you learn SQL or wear a lab coat.",
+      "button": "See features"
+    },
+    "cardFounder": {
+      "founder": "About the Developer",
+      "text": "Serhii Karavansky — programmer, backyard farmer, coffee supporter.",
+      "funFacts": "Fun facts:",
+      "fact1": "The original app started as a Windows utility (yep, nostalgia).",
+      "fact2": "It survived a back injury, several software updates, and a few too many eggshells.",
+      "fact3": "The name «QuailBreeder» was not suggested by a marketing committee — it was honest."
+    },
+    "cardWhy": {
+      "title": "Why people love QuailBreeder",
+      "reason1": {
+        "title": "Save time",
+        "text": "Fast entry, keepalive posting, and fewer evenings spent transcribing paper notes."
+      },
+      "reason2": {
+        "title": "Keep track of batches",
+        "text": "Plan and track overlapping cycles, incubation days and hatch rates with ease."
+      },
+      "reason3": {
+        "title": "Mobile-first",
+        "text": "Designed to work flawlessly on a phone — because hands get dirty on the farm."
+      }
+    },
+    "cardPromo": {
+      "title": "Ready to stop juggling eggs and paper?",
+      "text": "Try QuailBreeder and get your evenings back.",
+      "button": "Start free trial",
+      "contact": "Contact us \n(There will soon be a support request tracking system.)"
+    }
+  },
+  "getStarted": {
+    "title": "Getting Started with QuailBreeder",
+    "intro": "To get started, you have to fill out the three main catalogs of the equipment you are using.",
+    "stepsTitle": "Steps to Follow",
+    "finalTitle": "Finally",
+    "download": "Download the app and start optimizing your quail farming!",
+    "step1": {
+      "title": "Incubators",
+      "description": "Which provides for the use of three types (Setter, Hatcher and Combination), as well as the number of trays for each incubator and their egg capacity."
+    },
+    "step2": {
+      "title": "Brooders",
+      "description": "Where it is required to specify the maximum possible number of chicks for each brooder."
+    },
+    "step3": {
+      "title": "Locations",
+      "description": "Locations are groups of cages for a specific task. For example: for keeping parent stock, for egg production or for meat production."
+    },
+    "final": {
+      "title": "Creation of a New Batch",
+      "description": "Select Batch on the tab bar, then input quantity of eggs at this batch.\n• You have the ability to create batches retroactively, to do this, click on the date above the quantity. Please note that this is only possible before placing the eggs in the incubator.\n• If you are using a Setter incubator, you also need to define the trays in the Hatcher incubator.\n• By clicking Undo – you can delete the last action.\n• When you have identified the eggs in the trays, press the Start button to begin incubation.\n• You can set up 2 kind of notifications:\n  ○ Push notifications\n  ○ Automatically create corresponding records in your favorite calendar\n• This can be done in the Settings on the Home tab."
+    }
+  },
+  "process": {
+    "incubation": {
+      "title": "Incubation",
+      "desc": "Manage and monitor the incubation process of quail eggs, including temperature, humidity, and turning schedules. In case of using a Setter incubator, also specify the planned Hatcher trays. The main factors influencing it are the age of the bird laying the hatching egg and the quality of your incubators (fresh air exchange while the embryo is in the egg, as it also requires oxygen).",
+      "details": "The shell is not airtight. It is permeated by thousands of microscopic pores (from 7,000 to 17,000) that allow gases to move freely between the interior of the egg and the external environment."
+    },
+    "hatching": {
+      "title": "Hatching",
+      "desc": "Don't miss this magical day, the miracle of a new life being born, by connecting your favorite calendar and/or receiving personalized notifications on your device. Select an incubator and tray number. Enter the quantity  of hatched nestlings and indicate which brooder they will be placed in.",
+      "details": "At this stage, you get your first Key Performance Indicator (KPI).  The vitality percentage is calculated as the ratio of hatched nestlings to the number of eggs set for incubation."
+    },
+    "brooding": {
+      "title": "Brooding",
+      "desc": "Tracking mortality of nestlings on a daily basis and keeping appropriate records and notes of changes in nutrition, climate, etc. will make it easier to identify the cause.",
+      "details": "Increasing the vitality percentage is the main task at this stage. Proper care and monitoring will help achieve this."
+    },
+    "feeding": {
+      "title": "Feeding",
+      "desc": "Select Feeding from the list of batch tasks. Then indicate the location and fill in the cages that are free at that the day.",
+      "details": "At this point, you can also create survival records."
+    },
+    "slaughter": {
+      "title": "Slaughter",
+      "desc": "Crucially, the flock is ready for processing here within 50 to 60 days. The prerequisite for initiating the slaughter process is to create a kill sheet (or processing order). This order serves a dual purpose: it can also be used as a sales order, and forms the basis for sending the template-generated invoice to the customer.",
+      "details": "By completing the cycle and entering all relevant data, you will be able to assess the quality of the feed, housing, and stocking density in the cages, thereby identifying areas where the results were subpar and where the performance was superior."
+    },
+    "selling": {
+      "title": "Selling",
+      "desc": "You can edit an invoice template that supports clickable links.",
+      "details": "If there are no more birds in the batch, it is automatically transferred to the archive."
+    }
+  },
+  "features": {
+    "title": "Key Features",
+    "feat1": {
+      "title": "Scale Without Limits:",
+      "text": "Manage an unlimited number of incubators and customize settings for up to three distinct types of equipment."
+    },
+    "feat2": {
+      "title": "Real-time Capacity Overview:",
+      "text": "Instantly visualize the current load and availability of all critical equipment (incubators, brooders, and cages) to optimize batch scheduling."
+    },
+    "feat3": {
+      "title": "Seamless Integration & Reminders:",
+      "text": "Sync key dates and deadlines with your existing external calendar (iCloud, Google Calendar) to ensure nothing is missed."
+    },
+    "feat4": {
+      "title": "Precise Mortality Analysis:",
+      "text": "Log and analyze every loss by date, time, and specific cage/location for faster identification of health risks."
+    },
+    "feat5": {
+      "title": "Clean & Organized Data:",
+      "text": "Automatically archive completed production batches, keeping your active dashboard clean and improving long-term data retrieval."
+    },
+    "feat6": {
+      "title": "Professional & Fast Billing:",
+      "text": "Generate professional, branded invoices instantly using fully customizable templates."
+    }
+  },
+  "navbar": {
+    "about": "My Story",
+    "get_started": "Get Started",
+    "terms": "Terms of Use",
+    "privacy": "Privacy Policy",
+    "support": "Support"
+  },
+  "praesentation": {
+    "intro": "The project is a dashboard for management and monitoring of study data.",
+    "technologiesTitle": "Technologies",
+    "featuresTitle": "Key Features",
+    "authTitle": "Authorization & Security",
+    "mssqlTitle": "MSSQL Module",
+    "deploymentTitle": "Deployment & Operations",
+    "conclusionTitle": "Conclusion",
+    "table": {
+      "columnArea": "Area",
+      "columnTech": "Technology"
+    }
+  },
+  "seo": {
+    "home": {
+      "title": "QuailBreeder - Data Analysis and Decision Support Tool for Quail Farming",
+      "description": "All-in-one digital assistant to manage and optimize quail production. Track every step from egg to invoice with accurate accounting and performance analysis."
+    },
+    "about": {
+      "title": "Socially Acceptable Self-Promotion",
+      "description": "How QuailBreeder came to be. The tiny farm assistant with a big personality"
+    },
+    "getStarted": {
+      "title": "Get started",
+      "description": "To get started, you have to fill out the three main catalogs of the equipment you are using."
+    },
+    "privacyPolicy": {
+      "title": "Privacy Policy",
+      "description": "Learn how we collect, use, and protect your information when you use our quail farm management application."
+    },
+    "termsOfUse": {
+      "title": "Terms of Use",
+      "description": "Understand the terms and conditions governing the use of our quail breeding management application."
+    }
+  },
+  "routes": {
+    "about": "about",
+    "getStarted": "get-started",
+    "privacyPolicy": "privacy-policy",
+    "termsOfUse": "terms-of-use",
+    "support": "support"
+  },
+  "policy": {
+    "title": "Privacy Policy",
+    "intro": "Your privacy is important to us. This Privacy Policy explains how Quail Breeder collects, uses, and protects your information when you use our application.",
+    "dataCollection": {
+      "title": "What Information We Collect",
+      "confidential": {
+        "title": "Confidential Content",
+        "text": "Quail Breeder collects and stores the following confidential content that you provide:",
+        "item1": "Equipment directories (incubators, brooders, and locations)",
+        "item2": "Hatching batch information",
+        "item3": "Customer directory details",
+        "item4": "Sales and write-off records"
+      },
+      "subscriber": {
+        "title": "Basic Subscriber Information",
+        "item1": "Email addresses",
+        "item2": "Usage data and analytics"
+      },
+      "notCollect": {
+        "title": "What We Don't Collect",
+        "text": "Quail Breeder explicitly does NOT collect:",
+        "item1": "IP addresses",
+        "item2": "Device information",
+        "item3": "Personal hardware identifiers"
+      }
+    },
+    "dataUsage": {
+      "title": "How We Use Your Information",
+      "maintaining": {
+        "title": "Maintaining Our Services",
+        "text": "We use your information to provide customer support and maintain the functionality of the Quail Breeder application."
+      },
+      "communicating": {
+        "title": "Communicating With You",
+        "text": "We may use your contact information to inform you about new features, updates, and offerings related to Quail Breeder."
+      },
+      "important": "Important: We are not in the business of selling or renting your information."
+    },
+    "userControl": {
+      "title": "Your Access and Control",
+      "text": "You have full control over your information:",
+      "manage": {
+        "title": "Manage Information:",
+        "text": "You can log in and edit your information directly within the application at any time."
+      },
+      "delete": {
+        "title": "Delete Content:",
+        "text": "You can delete your confidential content at any time."
+      },
+      "stop": {
+        "title": "Stop Using:",
+        "text": "You can stop using the Quail Breeder application at any time without restrictions."
+      },
+      "export": {
+        "title": "Data Export:",
+        "text": "A data export feature is planned for future releases, allowing you to download all your information."
+      }
+    },
+    "customerSupport": {
+      "title": "Customer Support Access",
+      "text": "When troubleshooting account issues, our customer support team may request temporary permission to view specific content in your account.",
+      "note": "Note: This permission terminates once the support issue is resolved. We will never access your account without your explicit permission."
+    },
+    "dataProtection": {
+      "title": "Our Commitments to Protect Your Data",
+      "text": "Quail Breeder is committed to protecting your confidential information:",
+      "item1": "We will not disclose your confidential content to any third party without your prior written consent.",
+      "item2": "We restrict the use of your information exclusively to business relations with you as the account owner.",
+      "item3": "We implement industry-standard security measures to protect your data from unauthorized access."
+    },
+    "changes": {
+      "title": "Changes to This Privacy Policy",
+      "text1": "We may update this Privacy Policy from time to time to reflect changes in our practices or for other operational, legal, or regulatory reasons.",
+      "text2": "We will notify you of any material changes by posting the new Privacy Policy on this page and updating the \"Last Updated\" date below."
+    },
+    "contact": {
+      "title": "Contact Us",
+      "text": "If you have any questions about this Privacy Policy or our data practices, please contact us:",
+      "email": "Email:"
+    },
+    "lastUpdated": "Last Updated: November 30, 2024",
+    "footer": "© 2024 QuailBreeder. All rights reserved."
+  },
+  "terms": {
+    "title": "Terms of Use",
+    "intro": "These Terms of Use govern your use of the Quail Breeder application and services. By using our application, you agree to be bound by these terms.",
+    "purpose": {
+      "title": "Application Purpose",
+      "text": "Quail Breeder provides comprehensive accounting tools for quail farm operations, including:",
+      "item1": "Incubator management and egg tracking",
+      "item2": "Hatching process monitoring",
+      "item3": "Brooding and growth tracking",
+      "item4": "Bird movement and location management",
+      "item5": "Slaughter and sales recording"
+    },
+    "subscription": {
+      "title": "Subscription and Payment",
+      "text": "Quail Breeder requires a paid monthly auto-renewing subscription called",
+      "name": "QuailBreederSubscription",
+      "important": "Important: Payment will be charged to your iTunes Account upon confirmation of purchase. Subscriptions automatically renew unless auto-renew is turned off at least 24 hours before the end of the current period."
+    },
+    "license": {
+      "title": "License and Restrictions",
+      "text": "You receive a non-transferable license to use Quail Breeder for personal use on your Apple devices only.",
+      "prohibited": "You are prohibited from:",
+      "item1": "Sharing the application with third parties",
+      "item2": "Reverse engineering or decompiling the software",
+      "item3": "Modifying or creating derivative works",
+      "item4": "Redistributing or reselling the application",
+      "item5": "Removing or altering any proprietary notices"
+    },
+    "responsibilities": {
+      "title": "User Responsibilities",
+      "age": {
+        "title": "Age Requirements",
+        "text": "Users must be at least 13 years old with parental consent or 18 years old to use this application."
+      },
+      "defect": {
+        "title": "Defect Reporting",
+        "text": "You must inspect the application immediately after installation and report any defects within 30 days to"
+      },
+      "backup": {
+        "title": "Data Backup",
+        "text": "You are responsible for maintaining backup copies of your data to avoid data loss."
+      }
+    },
+    "liability": {
+      "title": "Limitation of Liability",
+      "text": "The licensor's liability is limited to cases of intentional acts and gross negligence.",
+      "note": "We exclude liability for damages resulting from breached duties of care. Users must maintain their own backup copies to prevent data loss."
+    },
+    "intellectual": {
+      "title": "Intellectual Property Rights",
+      "text": "The developer retains all rights to:",
+      "item1": "Copyrights",
+      "item2": "Trademarks",
+      "item3": "Patents",
+      "item4": "Trade secrets",
+      "item5": "All other intellectual property rights",
+      "important": "Important: You may not publish results, screenshots, or any content from the application without prior written consent from the developer."
+    },
+    "termination": {
+      "title": "Termination",
+      "text1": "Either party may terminate this agreement at any time.",
+      "text2": "Upon termination, you must:",
+      "item1": "Immediately cease using the application",
+      "item2": "Delete all copies of the software from your devices",
+      "item3": "Stop accessing any related services"
+    },
+    "governing": {
+      "title": "Governing Law and Jurisdiction",
+      "text1": "These Terms of Use are governed by the laws of Ukraine.",
+      "text2": "All disputes arising from or relating to these terms shall be resolved exclusively in Ukrainian courts."
+    },
+    "contact": {
+      "title": "Contact Information",
+      "text": "If you have any questions about these Terms of Use, please contact us:",
+      "email": "Email"
+    },
+    "lastUpdated": "Last Updated: November 30, 2024",
+    "footer": "© 2024 QuailBreeder. All rights reserved."
+  },
+  "auth": {
+    "welcome": "Welcome to QuailBreeder",
+    "signInToAccess": "Sign in to access support",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithApple": "Continue with Apple",
+    "byContinuing": "By continuing, you agree to our",
+    "termsOfUse": "Terms of Use",
+    "and": "and",
+    "privacyPolicy": "Privacy Policy",
+    "signingOut": "Signing out...",
+    "pleaseWait": "Please wait",
+    "confirmSignOut": "Sign Out",
+    "close": "Close"
+  },
+  "support": {
+    "menuItem": "Support",
+    "title": "Support Center",
+    "signOut": "Sign Out",
+    "createTicket": "Create Support Ticket",
+    "description": "Having an issue or need assistance? Let us know and we'll get back to you as soon as possible.",
+    "beforeSubmitting": "Before submitting a ticket",
+    "tip1": "Check our FAQs and documentation for common issues",
+    "tip2": "Include as much detail as possible to help us resolve your issue faster",
+    "tip3": "Screenshots or error messages are very helpful",
+    "form": {
+      "subject": "Subject",
+      "subjectPlaceholder": "Brief description of your issue",
+      "subjectRequired": "Subject is required",
+      "category": "Category",
+      "categoryPlaceholder": "Select a category",
+      "categoryRequired": "Category is required",
+      "categoryTechnical": "Technical Issue",
+      "categoryBilling": "Billing & Account",
+      "categoryFeature": "Feature Request",
+      "categoryData": "Data & Sync Issues",
+      "categoryOther": "Other",
+      "priority": "Priority",
+      "priorityPlaceholder": "Select priority",
+      "priorityRequired": "Priority is required",
+      "priorityLow": "Low - General question or minor issue",
+      "priorityMedium": "Medium - Issue affecting functionality",
+      "priorityHigh": "High - Critical issue blocking work",
+      "description": "Description",
+      "descriptionPlaceholder": "Please describe your issue in detail. Include any error messages, steps to reproduce, and what you expected to happen.",
+      "descriptionRequired": "Description is required",
+      "descriptionMinLength": "Please provide more details (at least 20 characters)",
+      "submit": "Submit Ticket",
+      "submitting": "Submitting...",
+      "successTitle": "Ticket submitted successfully!",
+      "successMessage": "We'll get back to you at {email} as soon as possible.",
+      "errorTitle": "Failed to submit ticket",
+      "errorMessage": "Please try again or contact us directly."
+    }
+  },
+  "sla": {
+    "hero": {
+      "title": "Support that understands your challenges",
+      "description": "Have a question about incubation calculation or program setup? We're here for you. Our goal is to keep quailbreeder.net working for your success 24/7.",
+      "button": "Go to my tickets"
+    },
+    "commitment": {
+      "title": "Guaranteed help within 24 hours",
+      "description": "We value your trust. Whether you're using the free trial month or have already subscribed for $5, we guarantee a response to your request within 24 hours.",
+      "whyImportant": "Why it matters: In poultry farming, there are no secondary questions. We provide fast feedback to ensure your processes keep running smoothly."
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "step1": {
+        "title": "Create a ticket",
+        "description": "Describe your problem or suggestion in your personal account."
+      },
+      "step2": {
+        "title": "Get notified",
+        "description": "As soon as the developer responds, you will receive an email."
+      },
+      "step3": {
+        "title": "Solve the issue",
+        "description": "Continue the conversation until the task is fully resolved. All correspondence history is saved forever."
+      }
+    },
+    "benefits": {
+      "title": "Why tickets are better than email",
+      "benefit1": {
+        "title": "Direct communication with the developer",
+        "description": "You're talking to the project creator, not a call center operator."
+      },
+      "benefit2": {
+        "title": "No spam",
+        "description": "Your requests won't get lost in email filters."
+      },
+      "benefit3": {
+        "title": "Community priority",
+        "description": "The subscription allows us to allocate resources for individual case analysis and implement your ideas into program updates."
+      }
+    },
+    "cta": {
+      "title": "Not with us yet?",
+      "description": "Try all system features, including personal support, free for 30 days.",
+      "button": "Try 1 month free"
+    },
+    "badge": "Response within 24 hours",
+    "guaranteeTitle": "Guaranteed Help",
+    "guaranteeDesc": "Even on the free plan or $5 subscription",
+    "ctaButton": "Try 30 days free",
+    "step1Short": {
+      "title": "Ticket",
+      "desc": "Describe your issue in the dashboard"
+    },
+    "step2Short": {
+      "title": "Email",
+      "desc": "Get a reply notification in your inbox"
+    },
+    "step3Short": {
+      "title": "Solution",
+      "desc": "Dialogue until the issue is resolved"
+    },
+    "benefit1Short": {
+      "title": "Direct Developer Contact",
+      "desc": "Communicate with the project author, not a support agent"
+    },
+    "benefit2Short": {
+      "title": "No Spam",
+      "desc": "Your requests never get lost in filters"
+    },
+    "benefit3Short": {
+      "title": "Community Priority",
+      "desc": "Subscription allows us to implement your ideas"
+    }
+  }
+}

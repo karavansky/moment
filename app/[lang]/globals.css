@@ -1,0 +1,129 @@
+@import 'tailwindcss';
+@import '@heroui/styles';
+/*
+ @plugin '../../hero.ts';
+*/
+@source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+@custom-variant dark (&:is(.dark *));
+/*
+@theme {
+  --breakpoint-xs: 320px;
+}
+*/
+@layer base {
+  :root {
+    /* Dynamic viewport height - updates on scroll/resize */
+    --vh: 1vh;
+  }
+
+  html {
+    position: relative;
+    height: 100%;
+    /* Prevent bounce/overscroll on iOS */
+    overscroll-behavior-y: none;
+    /* Prevent horizontal overflow */
+    overflow-x: hidden;
+  }
+
+  body {
+    /* Use dynamic viewport height instead of fixed 100vh */
+    min-height: 100vh;
+    min-height: calc(var(--vh, 1vh) * 100);
+    /* iOS Safari viewport height fix */
+    min-height: -webkit-fill-available;
+    position: relative;
+    /* Prevent bounce/overscroll on iOS */
+    overscroll-behavior-y: none;
+    /* Prevent horizontal overflow */
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+}
+
+@layer utilities {
+  /* Dynamic viewport height utilities - adapts when mobile browser chrome shows/hides */
+  .min-h-screen-dynamic {
+    min-height: 100vh;
+    min-height: calc(var(--vh, 1vh) * 100);
+  }
+
+  .h-screen-dynamic {
+    height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 1s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.8s ease-out forwards;
+  }
+
+  .animate-slide-in-left {
+    animation: slideInLeft 0.6s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.5s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      transform: translateY(-100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slide-down {
+    animation: slideDown 0.5s ease-out forwards;
+  }
+}

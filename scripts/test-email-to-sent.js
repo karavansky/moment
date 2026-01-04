@@ -1,0 +1,202 @@
+#!/usr/bin/env node
+
+/**
+ * Test sending email and saving to IMAP Sent folder
+ * Usage: node scripts/test-email-to-sent.js
+ */
+
+const nodemailer = require('nodemailer');
+const Imap = require('imap');
+const fs = require('fs');
+const path = require('path');
+
+function readEnvFile() {
+  const envPath = path.join(__dirname, '..', '.env');
+  const envContent = fs.readFileSync(envPath, 'utf8');
+  const envVars = {};
+
+  envContent.split('\n').forEach(line => {
+    const match = line.match(/^([^#=]+)=(.*)$/);
+    if (match) {
+      const key = match[1].trim();
+      let value = match[2].trim();
+      if ((value.startsWith('"') && value.endsWith('"')) ||
+          (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+      envVars[key] = value;
+    }
+  });
+
+  return envVars;
+}
+
+function buildRawMessage(mailOptions) {
+  const { from, to, subject, text, html } = mailOptions;
+  const date = new Date().toUTCString();
+  const messageId = `<${Date.now()}.${Math.random().toString(36).substring(2, 11)}@${from.split('@')[1]}>`;
+
+  let rawMessage = '';
+  rawMessage += `From: ${from}\r\n`;
+  rawMessage += `To: ${to}\r\n`;
+  rawMessage += `Subject: ${subject}\r\n`;
+  rawMessage += `Date: ${date}\r\n`;
+  rawMessage += `Message-ID: ${messageId}\r\n`;
+  rawMessage += `MIME-Version: 1.0\r\n`;
+
+  if (html && text) {
+    const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+    rawMessage += `Content-Type: multipart/alternative; boundary="${boundary}"\r\n`;
+    rawMessage += `\r\n`;
+    rawMessage += `--${boundary}\r\n`;
+    rawMessage += `Content-Type: text/plain; charset=UTF-8\r\n`;
+    rawMessage += `Content-Transfer-Encoding: 7bit\r\n`;
+    rawMessage += `\r\n`;
+    rawMessage += `${text}\r\n`;
+    rawMessage += `\r\n`;
+    rawMessage += `--${boundary}\r\n`;
+    rawMessage += `Content-Type: text/html; charset=UTF-8\r\n`;
+    rawMessage += `Content-Transfer-Encoding: 7bit\r\n`;
+    rawMessage += `\r\n`;
+    rawMessage += `${html}\r\n`;
+    rawMessage += `\r\n`;
+    rawMessage += `--${boundary}--\r\n`;
+  } else if (html) {
+    rawMessage += `Content-Type: text/html; charset=UTF-8\r\n`;
+    rawMessage += `Content-Transfer-Encoding: 7bit\r\n`;
+    rawMessage += `\r\n`;
+    rawMessage += `${html}\r\n`;
+  } else {
+    rawMessage += `Content-Type: text/plain; charset=UTF-8\r\n`;
+    rawMessage += `Content-Transfer-Encoding: 7bit\r\n`;
+    rawMessage += `\r\n`;
+    rawMessage += `${text || ''}\r\n`;
+  }
+
+  return rawMessage;
+}
+
+async function saveToSent(rawMessage, env) {
+  return new Promise((resolve, reject) => {
+    const imap = new Imap({
+      user: env.SMTP_USER,
+      password: env.SMTP_PASSWORD,
+      host: env.SMTP_HOST,
+      port: parseInt(env.IMAP_PORT || '993'),
+      tls: env.IMAP_TLS !== 'false',
+      tlsOptions: {
+        rejectUnauthorized: false,
+      },
+    });
+
+    imap.once('ready', () => {
+      const sentFolderNames = ['Sent', 'INBOX.Sent', '[Gmail]/Sent Mail', 'Sent Items'];
+
+      const tryNextFolder = (index) => {
+        if (index >= sentFolderNames.length) {
+          imap.end();
+          reject(new Error('Could not find Sent folder'));
+          return;
+        }
+
+        imap.openBox(sentFolderNames[index], false, (err) => {
+          if (err) {
+            tryNextFolder(index + 1);
+            return;
+          }
+
+          imap.append(rawMessage, { mailbox: sentFolderNames[index] }, (appendErr) => {
+            imap.end();
+
+            if (appendErr) {
+              reject(new Error(`Failed to append: ${appendErr.message}`));
+            } else {
+              console.log(`✅ Message saved to "${sentFolderNames[index]}" folder`);
+              resolve();
+            }
+          });
+        });
+      };
+
+      tryNextFolder(0);
+    });
+
+    imap.once('error', (err) => {
+      reject(err);
+    });
+
+    imap.connect();
+  });
+}
+
+async function testEmailToSent() {
+  const env = readEnvFile();
+
+  console.log('📧 Testing Email + IMAP Sent Folder Integration...');
+  console.log('');
+
+  // Create SMTP transporter
+  const transporter = nodemailer.createTransport({
+    host: env.SMTP_HOST,
+    port: parseInt(env.SMTP_PORT || '587'),
+    secure: env.SMTP_SECURE === 'true',
+    auth: {
+      user: env.SMTP_USER,
+      pass: env.SMTP_PASSWORD,
+    },
+    tls: {
+      rejectUnauthorized: false,
+    },
+  });
+
+  const testEmail = {
+    from: env.SMTP_FROM || env.SMTP_USER,
+    to: 'quailbreeding@gmail.com',
+    subject: `🧪 Test Email - ${new Date().toLocaleString()}`,
+    text: `This is a test email sent at ${new Date().toISOString()}\n\nTesting IMAP Sent folder integration.`,
+    html: `
+      <h2>🧪 Test Email</h2>
+      <p>This is a test email sent at <strong>${new Date().toISOString()}</strong></p>
+      <p>Testing IMAP Sent folder integration.</p>
+      <hr>
+      <p style="color: #666; font-size: 12px;">
+        This email was generated by the test script: scripts/test-email-to-sent.js
+      </p>
+    `,
+  };
+
+  try {
+    // Step 1: Send via SMTP
+    console.log('📤 Step 1: Sending email via SMTP...');
+    console.log(`   From: ${testEmail.from}`);
+    console.log(`   To: ${testEmail.to}`);
+    console.log(`   Subject: ${testEmail.subject}`);
+    console.log('');
+
+    const info = await transporter.sendMail(testEmail);
+    console.log('✅ Email sent successfully!');
+    console.log(`   Message ID: ${info.messageId}`);
+    console.log('');
+
+    // Step 2: Save to IMAP Sent folder
+    console.log('💾 Step 2: Saving to IMAP Sent folder...');
+    const rawMessage = buildRawMessage(testEmail);
+    await saveToSent(rawMessage, env);
+    console.log('');
+
+    // Step 3: Verify
+    console.log('🎉 SUCCESS! Email workflow complete:');
+    console.log('   ✅ Email sent to recipient via SMTP');
+    console.log('   ✅ Copy saved to Sent folder via IMAP');
+    console.log('');
+    console.log('📬 Check your email client to verify both:');
+    console.log('   1. Recipient received the email');
+    console.log(`   2. Copy exists in "${env.SMTP_USER}" Sent folder`);
+
+  } catch (error) {
+    console.error('❌ Test failed:', error.message);
+    process.exit(1);
+  }
+}
+
+testEmailToSent();
