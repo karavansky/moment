@@ -53,25 +53,28 @@ function AppointmentCard({
     return 'accent'
   }, [hasReport, appointment.date])
 
-  const handleDragStart = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    if (!isDraggable) {
-      e.preventDefault()
-      return
-    }
+  const handleDragStart = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      if (!isDraggable) {
+        e.preventDefault()
+        return
+      }
 
-    e.dataTransfer.effectAllowed = 'move'
-    e.dataTransfer.setData(
-      'application/json',
-      JSON.stringify({
-        appointmentId: appointment.id,
-        sourceDate: appointment.date.toISOString(),
-      })
-    )
+      e.dataTransfer.effectAllowed = 'move'
+      e.dataTransfer.setData(
+        'application/json',
+        JSON.stringify({
+          appointmentId: appointment.id,
+          sourceDate: appointment.date.toISOString(),
+        })
+      )
 
-    if (e.currentTarget) {
-      e.currentTarget.style.opacity = '0.5'
-    }
-  }, [isDraggable, appointment.id, appointment.date])
+      if (e.currentTarget) {
+        e.currentTarget.style.opacity = '0.5'
+      }
+    },
+    [isDraggable, appointment.id, appointment.date]
+  )
 
   const handleDragEnd = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     if (e.currentTarget) {
@@ -83,12 +86,14 @@ function AppointmentCard({
   const tooltipContent = (
     <div className="space-y-1 min-w-50">
       <div className="font-semibold text-sm border-b border-gray-700 pb-1">
-        {appointment.client?.clientName || 'Unknown Client'}
+        {appointment.client
+          ? appointment.client.surname + ' ' + appointment.client.name
+          : 'Unknown Client'}
       </div>
 
       <div className="flex items-center gap-1.5 text-xs">
         <User className="w-3 h-3 shrink-0" />
-        <span>{appointment.worker?.workerName || 'Unknown Worker'}</span>
+        <span>{appointment.worker ? appointment.worker.workerName : 'Unknown Worker'}</span>
       </div>
 
       <div className="flex items-center gap-1.5 text-xs">
@@ -146,12 +151,12 @@ function AppointmentCard({
       <Card
         className={`${forceDesktopView ? 'block' : 'hidden lg:block'} hover:scale-[1.02] transition-transform mb-2 shadow-xl rounded-md p-1!`}
       >
-        <Card.Content >
+        <Card.Content>
           <div className="flex flex-col gap-1.5 p-1">
             {/* Header: Client name + Report indicator */}
             <div className="flex items-start justify-between gap-2">
               <h4 className="text-sm font-semibold text-foreground truncate flex-1">
-                {appointment.client?.clientName || 'Unknown Client'}
+                        {appointment.client ? appointment.client.surname + ' ' + appointment.client.name : 'Unknown Client'}
               </h4>
               {hasReport && <CheckCircle className="w-4 h-4 text-success shrink-0" />}
               {isPastWithoutReport && <CircleAlert className="w-4 h-4 text-danger shrink-0" />}
@@ -206,12 +211,11 @@ function AppointmentCard({
       <div
         className={`${forceDesktopView ? 'hidden' : 'lg:hidden'} mb-0.5 px-0.5 flex justify-center min-w-0`}
       >
-
-          <TruncatedChip size="sm" color={chipColor} variant="primary">
-            <span className="truncate block min-w-0">
-              {appointment.client?.clientName || 'Unknown Client'}
-            </span>
-          </TruncatedChip>
+        <TruncatedChip size="sm" color={chipColor} variant="primary">
+          <span className="truncate block min-w-0">
+            {appointment.client ? appointment.client.surname : 'Unknown Client'}
+          </span>
+        </TruncatedChip>
       </div>
     </div>
   )

@@ -94,7 +94,7 @@ function CalendarView({ weeks, today = new Date(), selectedDate }: CalendarViewP
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
       {/* Заголовки дней недели */}
-      <div className="z-10 bg-background/95 backdrop-blur-sm border-b border-divider shadow-sm shrink-0">
+      <div className="z-10 bg-background/95 backdrop-blur-sm border-b border-divider rounded-2xl shadow-sm shrink-0">
         <div className="grid grid-cols-7 gap-0">
           {WEEKDAY_HEADERS_SHORT.map((dayShort, index) => (
             <div

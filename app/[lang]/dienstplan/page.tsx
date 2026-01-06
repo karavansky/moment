@@ -6,8 +6,6 @@ import DienstplanView from '@/components/scheduling/DienstplanView';
 
 export default function DienstplanPage() {
   return (
-    <SchedulingProvider>
       <DienstplanView />
-    </SchedulingProvider>
   );
 }

@@ -1,9 +1,11 @@
 'use client'
 
-import { memo, useState, useEffect } from 'react'
+import { memo } from 'react'
 import Navbar from './Navbar'
 import { LanguageSync } from './LanguageSync'
 import Sidebar from './Sidebar'
+import { SchedulingProvider } from '@/contexts/SchedulingContext'
+import { useSidebar } from '@/contexts/SidebarContext'
 
 interface LayoutClientProps {
   children: React.ReactNode
@@ -11,30 +13,25 @@ interface LayoutClientProps {
 
 // Мемоизируем весь клиентский layout для предотвращения ре-рендеров
 function LayoutClientComponent({ children }: LayoutClientProps) {
-  // isOpen - состояние mobile drawer (открыт/закрыт)
-  // ВАЖНО: На мобильном всегда начинаем с false (закрыт)
-  // Не сохраняем в localStorage - drawer должен закрываться при каждой навигации
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true)
+  const { toggleOpen, isExpanded, isHydrated } = useSidebar()
 
   return (
     <>
       <LanguageSync />
 
-      {/* Sidebar - всегда рендерим, но на мобильном он будет drawer */}
-      <Sidebar
-        isOpen={isSidebarOpen}
-        onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-        onExpandChange={setIsSidebarExpanded}
-      />
+      {/* Sidebar - получает состояние из контекста */}
+      <Sidebar />
 
       {/* Основной контент с Navbar */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar
-          onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-          sidebarExpanded={isSidebarExpanded}
+          onMenuToggle={toggleOpen}
+          sidebarExpanded={isExpanded}
+          isHydrated={isHydrated}
         />
-        {children}
+        <SchedulingProvider>
+          {children}
+        </SchedulingProvider>
       </div>
     </>
   )

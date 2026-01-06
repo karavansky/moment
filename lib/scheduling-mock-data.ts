@@ -204,7 +204,9 @@ export const getAllSampleObjects = () => {
   const client_1: Client = {
     id: generateId(),
     firmaID: firmaID,
-    clientName: 'Wagner',
+    name: 'Lena',
+    surname: 'Wagner',
+    email: 'lena.wagner@example.com',
     strasse: 'Burgstarsse',
     plz: '53177',
     ort: 'München',
@@ -218,7 +220,9 @@ export const getAllSampleObjects = () => {
   const client_2: Client = {
     id: generateId(),
     firmaID: firmaID,
-    clientName: 'Zimmermann',
+    name: 'Max',
+    surname: 'Zimmermann',
+    email: 'max.zimmermann@example.com',
     strasse: 'Karl-Friedrich-Schinkel-Str',
     plz: '53127',
     ort: 'Bonn-Ippendorf',
@@ -242,10 +246,10 @@ export const getAllSampleObjects = () => {
   // Добавляем больше дат для следующих месяцев
   const appointmentDate_9 = addDays(currentDate, 7);   // через неделю
   const appointmentDate_10 = addDays(currentDate, 10); // через 10 дней
-  const appointmentDate_11 = addDays(currentDate, 14); // через 2 недели
+  const appointmentDate_11 = addDays(currentDate, -14); // через 2 недели
   const appointmentDate_12 = addDays(currentDate, 20); // через 20 дней
   const appointmentDate_13 = addDays(currentDate, 25); // через 25 дней
-  const appointmentDate_14 = addDays(currentDate, 30); // через месяц
+  const appointmentDate_14 = addDays(currentDate, -30); // через месяц
   const appointmentDate_15 = addDays(currentDate, 35); // через 35 дней
   const appointmentDate_16 = addDays(currentDate, 40); // через 40 дней
   const appointmentDate_17 = addDays(currentDate, 45); // через 45 дней

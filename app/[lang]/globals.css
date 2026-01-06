@@ -126,4 +126,105 @@
   .animate-slide-down {
     animation: slideDown 0.5s ease-out forwards;
   }
+
+  /* Sidebar hydration flash prevention */
+  .sidebar-main {
+    width: 14rem; /* w-56 - по умолчанию развернут */
+    overflow: hidden;
+  }
+
+  /* Transition только ПОСЛЕ гидратации */
+  .sidebar-hydrated .sidebar-main {
+    transition: width 300ms ease-in-out;
+  }
+
+  .sidebar-collapsed .sidebar-main {
+    width: 4rem !important; /* w-16 */
+  }
+
+  /* Logo контейнер - по умолчанию большой (48px) */
+  .sidebar-logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* В свернутом состоянии уменьшаем лого с 48px до 36px */
+  .sidebar-collapsed .sidebar-logo-container {
+    transform: scale(0.75); /* 36/48 = 0.75 */
+    transform-origin: center;
+  }
+
+  /* Заголовок по умолчанию виден */
+  .sidebar-title {
+    display: block;
+  }
+
+  /* В свернутом состоянии скрываем заголовок */
+  .sidebar-collapsed .sidebar-title {
+    display: none !important;
+  }
+
+  /* Toggle button icons - управление видимостью до гидратации */
+  .toggle-icon-collapse {
+    opacity: 1;
+    transition: opacity 200ms;
+  }
+
+  .toggle-icon-expand {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms;
+  }
+
+  /* В свернутом состоянии меняем видимость иконок */
+  .sidebar-collapsed .toggle-icon-collapse {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .sidebar-collapsed .toggle-icon-expand {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Section headers - по умолчанию видны */
+  .section-header {
+    display: block;
+  }
+
+  .section-separator {
+    display: none;
+  }
+
+  /* В свернутом состоянии скрываем заголовки секций и показываем разделители */
+  .sidebar-collapsed .section-header {
+    display: none !important;
+  }
+
+  .sidebar-collapsed .section-separator {
+    display: block !important;
+  }
+
+  /* Menu labels - control visibility during hydration */
+  .sidebar-label {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  /* Hide labels in collapsed state immediately via CSS to prevent flash */
+  .sidebar-collapsed .sidebar-label {
+    display: none !important;
+  }
+
+  /* Footer - по умолчанию виден */
+  .sidebar-footer {
+    display: block;
+  }
+
+  /* В свернутом состоянии скрываем footer */
+  .sidebar-collapsed .sidebar-footer {
+    display: none !important;
+  }
 }

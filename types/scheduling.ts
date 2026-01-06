@@ -13,7 +13,9 @@ export interface Category {
 export interface Client {
   id: string;
   firmaID: string;
-  clientName: string;
+  name: string;
+  surname: string;
+  email: string;
   strasse: string;
   plz: string;
   ort: string;
@@ -24,7 +26,6 @@ export interface Client {
   category?: Category;
   appointments?: Appointment[];
 }
-
 // Команда работников
 export interface Team {
   id: string;

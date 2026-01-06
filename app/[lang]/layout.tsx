@@ -1,7 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import Script from 'next/script'
 import './globals.css'
-import Footer from '@/components/Footer'
 import { getDictionary, hasLocale } from '@/config/dictionaries'
 import { notFound } from 'next/navigation'
 import { Providers } from '@/components/Providers'
@@ -9,6 +7,7 @@ import { LayoutClient } from '@/components/LayoutClient'
 import { supportedLocales } from '@/config/locales'
 import { WebVitals } from '@/components/WebVitals'
 import { GoogleAnalytics } from '@next/third-parties/google'
+import { getSidebarState } from '@/lib/sidebar-actions'
 
 const baseUrl =
   process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL || 'http://localhost:3000'
@@ -156,28 +155,43 @@ export default async function RootLayout({
 
   const dictionary = await getDictionary(lang as any)
 
+  // Читаем начальное состояние Sidebar из cookie (SSR)
+  const initialSidebarExpanded = await getSidebarState()
+
   return (
     <html lang={lang} suppressHydrationWarning>
       <head>
         {/* Content-Language meta tag */}
         <meta httpEquiv="content-language" content={lang} />
 
-        {/* Prevent theme flash - apply theme before React hydrates */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              try {
-                const theme = localStorage.getItem('theme') || 'dark';
-                document.documentElement.classList.add(theme);
-              } catch (e) {}
-            `,
-          }}
-        />
-
         {/* Google Analytics */}
         {isProduction && <GoogleAnalytics gaId="G-3SPK1FFQN1" />}
       </head>
       <body suppressHydrationWarning className="h-dvh overflow-hidden">
+        {/* Blocking script to prevent flash - executes BEFORE any rendering */}
+        <script
+          // Без defer/async - блокирующий скрипт, выполнится немедленно
+          dangerouslySetInnerHTML={{
+            __html: `
+              const theme = localStorage.getItem('theme') || 'dark';
+              document.documentElement.classList.add(theme);
+
+              // Читаем состояние из localStorage (приоритет) или используем SSR значение
+              const sidebarExpanded = localStorage.getItem('sidebar-expanded');
+              const initialExpanded = ${JSON.stringify(initialSidebarExpanded)};
+
+              // Если в localStorage нет значения, используем SSR cookie
+              const isExpanded = sidebarExpanded !== null
+                ? sidebarExpanded === 'true'
+                : initialExpanded;
+
+              // Применяем класс если sidebar свернут
+              if (!isExpanded) {
+                document.documentElement.classList.add('sidebar-collapsed');
+              }
+            `,
+          }}
+        />
         <WebVitals />
         <Providers
           themeProps={{
@@ -188,6 +202,7 @@ export default async function RootLayout({
           }}
           dictionary={dictionary}
           lang={lang}
+          initialSidebarExpanded={initialSidebarExpanded}
         >
           <div className="flex h-dvh overflow-hidden">
             <LayoutClient>

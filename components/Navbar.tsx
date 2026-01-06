@@ -15,9 +15,10 @@ import { SupportButtons } from './SupportButtons'
 interface NavbarProps {
   onMenuToggle?: () => void
   sidebarExpanded?: boolean
+  isHydrated?: boolean
 }
 
-export default function Navbar({ onMenuToggle, sidebarExpanded = true }: NavbarProps) {
+export default function Navbar({ onMenuToggle, sidebarExpanded = true, isHydrated = false }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { t } = useTranslation()
@@ -77,9 +78,10 @@ export default function Navbar({ onMenuToggle, sidebarExpanded = true }: NavbarP
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-40 bg-transparent transition-all duration-300 ${
-        sidebarExpanded ? 'md:left-56' : 'md:left-16'
-      }`}
+      suppressHydrationWarning
+      className={`fixed top-0 left-0 right-0 z-40 bg-transparent ${
+        isHydrated ? 'transition-all duration-300' : ''
+      } ${sidebarExpanded ? 'md:left-56' : 'md:left-16'}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-end h-16">

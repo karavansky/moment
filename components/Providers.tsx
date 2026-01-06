@@ -1,18 +1,19 @@
 'use client'
 
-import { ParallaxProvider } from 'react-scroll-parallax'
 import { HeroUIProvider } from '@heroui/system'
 import { ThemeProvider as NextThemesProvider, ThemeProviderProps, useTheme } from 'next-themes'
-import React, { createContext, useContext, useEffect, useState, useMemo } from 'react'
+import React, { createContext, useContext, useMemo } from 'react'
 import { SessionProvider } from 'next-auth/react'
 import { AuthProvider } from './AuthProvider'
 import { useRouter } from 'next/navigation'
+import { SidebarProvider } from '@/contexts/SidebarContext'
 
 export interface ProvidersProps {
   children: React.ReactNode
   themeProps?: ThemeProviderProps
   dictionary?: Record<string, any>
   lang?: string
+  initialSidebarExpanded?: boolean
 }
 export const DictionaryContext = createContext<Record<string, any> | undefined>(undefined)
 
@@ -60,7 +61,9 @@ function HeroUIThemeWrapper({ children }: { children: React.ReactNode }) {
   return <HeroUIProvider navigate={router.push}>{children}</HeroUIProvider>
 }
 
-export function Providers({ children, themeProps, dictionary, lang }: ProvidersProps) {
+export function Providers({ children, themeProps, dictionary, lang, initialSidebarExpanded }: ProvidersProps) {
+  console.log('🎁 Providers RENDER, lang:', lang)
+
   // Мемоизируем dictionary чтобы контекст не менялся при каждой навигации
   // ВАЖНО: используем dictionary как зависимость, а не lang!
   // Если словарь обновляется, мы должны передать новое значение в контекст
@@ -69,7 +72,7 @@ export function Providers({ children, themeProps, dictionary, lang }: ProvidersP
   return (
     <SessionProvider>
       <AuthProvider>
-        <ParallaxProvider>
+        <SidebarProvider initialExpanded={initialSidebarExpanded}>
           <NextThemesProvider {...themeProps}>
             <HeroUIThemeWrapper>
               <DictionaryContext.Provider value={memoizedDictionary}>
@@ -77,7 +80,7 @@ export function Providers({ children, themeProps, dictionary, lang }: ProvidersP
               </DictionaryContext.Provider>
             </HeroUIThemeWrapper>
           </NextThemesProvider>
-        </ParallaxProvider>
+        </SidebarProvider>
       </AuthProvider>
     </SessionProvider>
   )

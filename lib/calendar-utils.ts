@@ -126,7 +126,7 @@ export const generateCalendarWeeks = (appointments: Appointment[]): CalendarWeek
     const monthName = getMonthName(currentMonthDate);
     const daysInMonth = getDaysInMonth(currentMonthDate);
 
-    console.log('Processing month:', monthName, 'days:', daysInMonth);
+   // console.log('Processing month:', monthName, 'days:', daysInMonth);
 
     // Итерируем по дням месяца
     for (let dayNum = 0; dayNum < daysInMonth; dayNum++) {

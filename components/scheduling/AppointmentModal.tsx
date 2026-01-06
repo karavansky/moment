@@ -189,7 +189,7 @@ export default function AppointmentModal({
     })
     alert('Form submitted successfully!')
   }
-  console.log('Rendering AppointmentModal with formData:', formData, 'and errors:', errors)
+  //console.log('Rendering AppointmentModal with formData:', formData, 'and errors:', errors)
   return (
     <Modal>
       <Modal.Backdrop
@@ -244,10 +244,10 @@ export default function AppointmentModal({
                         {clients.map(client => (
                           <ListBox.Item
                             key={client.id}
-                            textValue={client.clientName}
+                            textValue={client.name}
                             id={client.id}
                           >
-                            {client.clientName}
+                            {client.surname} {client.name} 
                             <ListBox.ItemIndicator />
                           </ListBox.Item>
                         ))}

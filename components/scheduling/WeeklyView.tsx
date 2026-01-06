@@ -506,28 +506,34 @@ export default function WeeklyView() {
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
       {/* Header with current date */}
-      <div className="shrink-0 bg-background border-b border-divider pb-3">
+      <div className="shrink-0 bg-background border-b rounded-2xl border-divider pb-3">
         <div className="flex items-center justify-between gap-2 px-2 sm:px-4 mb-3">
-          <button
-            onClick={handlePrevWeek}
-            className="p-2 hover:bg-default-100 rounded-lg transition-colors shrink-0"
-            aria-label="Previous week"
+          <Button
+            onClick={handleNextWeek}
+            className=""
+            aria-label="Next week"
+            variant='ghost'
+            isIconOnly
+            size='lg'
           >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
+            <ChevronLeft className='w-6 h-6' />
+          </Button>
 
           <div className="flex items-center gap-2">
             <CalendarIcon className="w-5 h-5 text-primary" />
             <h2 className="text-lg sm:text-xl font-bold">{getWeekRangeString()}</h2>
           </div>
 
-          <button
+          <Button
             onClick={handleNextWeek}
-            className="p-2 hover:bg-default-100 rounded-lg transition-colors shrink-0"
+            className=""
             aria-label="Next week"
+            variant='ghost'
+            isIconOnly
+            size='lg'
           >
-            <ChevronRight className="w-5 h-5" />
-          </button>
+            <ChevronRight className='w-6 h-6' />
+          </Button>
         </div>
 
         {/* Week days header - Desktop version (≥1024px, static, full names) */}

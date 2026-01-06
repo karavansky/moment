@@ -14,7 +14,8 @@ type ViewMode = 'month' | 'week'
 
 function DienstplanView() {
   const lang = useLanguage()
-  const { appointments, isLoading, selectedDate, selectedAppointment, setSelectedAppointment } = useScheduling()
+  const { appointments, isLoading, selectedDate, selectedAppointment, setSelectedAppointment } =
+    useScheduling()
   const [viewMode, setViewMode] = useState<ViewMode>('month')
   const [isModalOpen, setIsModalOpen] = useState(false)
 
@@ -75,31 +76,31 @@ function DienstplanView() {
             <CalendarIcon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             <h1 className="text-lg sm:text-2xl font-bold text-foreground">Dienstplan</h1>
           </div>
-        {/* View mode switcher */}
-        <div className="flex gap-2">
-          <button onClick={handleSetMonthMode}>
-            <Chip
-              color={viewMode === 'month' ? 'accent' : 'default'}
-              variant={viewMode === 'month' ? 'primary' : 'soft'}
-              size="md"
-              className="cursor-pointer"
-            >
-              <CalendarIcon className="w-3 h-3 mr-1" />
-              Месяц
-            </Chip>
-          </button>
-          <button onClick={handleSetWeekMode}>
-            <Chip
-              color={viewMode === 'week' ? 'accent' : 'default'}
-              variant={viewMode === 'week' ? 'primary' : 'soft'}
-              size="md"
-              className="cursor-pointer"
-            >
-              <CalendarDays className="w-3 h-3 mr-1" />
-              Неделя
-            </Chip>
-          </button>
-        </div>
+          {/* View mode switcher */}
+          <div className="flex gap-2">
+            <button onClick={handleSetMonthMode}>
+              <Chip
+                color={viewMode === 'month' ? 'accent' : 'default'}
+                variant={viewMode === 'month' ? 'primary' : 'soft'}
+                size="md"
+                className="cursor-pointer"
+              >
+                <CalendarIcon className="w-3 h-3 mr-1" />
+                Месяц
+              </Chip>
+            </button>
+            <button onClick={handleSetWeekMode}>
+              <Chip
+                color={viewMode === 'week' ? 'accent' : 'default'}
+                variant={viewMode === 'week' ? 'primary' : 'soft'}
+                size="md"
+                className="cursor-pointer"
+              >
+                <CalendarDays className="w-3 h-3 mr-1" />
+                Неделя
+              </Chip>
+            </button>
+          </div>
           <div className="flex items-center gap-2 sm:gap-4">
             {/* Статистика - скрываем на мобильных */}
             <div className="hidden sm:block text-sm text-default-600">
@@ -107,30 +108,18 @@ function DienstplanView() {
             </div>
 
             {/* Кнопка добавления */}
-            <Button
-              variant="primary"
-              size="sm"
-              onPress={handleAddNew}
-              className="gap-1"
-            >
+            <Button variant="primary" size="sm" onPress={handleAddNew} className="gap-1">
               <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Neu</span>
             </Button>
 
             {/* Кнопка обновления */}
-            <Button
-              variant="tertiary"
-              size="sm"
-              onPress={handleRefresh}
-              className="gap-1"
-            >
+            <Button variant="tertiary" size="sm" onPress={handleRefresh} className="gap-1">
               <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Обновить</span>
             </Button>
           </div>
         </div>
-
-
       </div>
 
       {/* Calendar - занимает оставшееся пространство */}
@@ -165,10 +154,12 @@ function DienstplanView() {
                   >
                     <div className="flex flex-col justify-center gap-1 flex-1">
                       <div className="text-sm font-semibold truncate">
-                        {appointment.client?.clientName || 'Unknown Client'}
+                        {appointment.client
+                          ? appointment.client.surname + ' ' + appointment.client.name
+                          : 'Unknown Client'}
                       </div>
                       <div className="text-xs text-default-500">
-                        {appointment.worker?.workerName || 'Unknown Worker'}
+                        {appointment.worker ? appointment.worker.workerName : 'Unknown Worker'}
                       </div>
                       <div className="text-xs text-default-400">
                         {appointment.date.toLocaleDateString('de-DE')} •{' '}
@@ -189,7 +180,11 @@ function DienstplanView() {
         onClose={handleCloseModal}
         appointment={selectedAppointment}
         defaultDate={selectedDate}
-        readOnly={selectedAppointment ? (selectedAppointment.reports && selectedAppointment.reports.length > 0) : false}
+        readOnly={
+          selectedAppointment
+            ? selectedAppointment.reports && selectedAppointment.reports.length > 0
+            : false
+        }
       />
     </div>
   )
