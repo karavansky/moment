@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@heroui/react'
@@ -19,63 +19,14 @@ interface NavbarProps {
 }
 
 export default function Navbar({ onMenuToggle, sidebarExpanded = true, isHydrated = false }: NavbarProps) {
-  const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { t } = useTranslation()
   const lang = useLanguage()
-
-  // Отслеживаем что вызывает ре-рендер Navbar
-  const prevValuesRef = useRef({ isScrolled, isMobileMenuOpen, lang })
-
-  // console.log('[Navbar] RENDER', {
-  //   lang,
-  //   WHY_NAVBAR_RERENDER: {
-  //     isScrolledChanged: prevValuesRef.current.isScrolled !== isScrolled,
-  //     isMobileMenuOpenChanged: prevValuesRef.current.isMobileMenuOpen !== isMobileMenuOpen,
-  //     langChanged: prevValuesRef.current.lang !== lang
-  //   }
-  // })
-
-  prevValuesRef.current = { isScrolled, isMobileMenuOpen, lang }
-
-  // Мемоизируем t функцию - она пересоздаётся при каждом рендере
-  // Но её содержимое одинаково для одного языка
-  const memoizedT = useMemo(() => t, [lang])
 
   // Мемоизируем callback для предотвращения ре-рендеров SupportButtons
   const handleSupportAction = useCallback(() => {
     setIsMobileMenuOpen(false)
   }, [])
-
-  useEffect(() => {
-    let rafId: number | null = null
-    let lastScrollY = window.scrollY
-
-    const handleScroll = () => {
-      if (rafId !== null) return
-
-      rafId = requestAnimationFrame(() => {
-        const currentScrollY = window.scrollY
-        const shouldBeScrolled = currentScrollY > 20
-        const wasScrolled = lastScrollY > 20
-
-        // Обновляем состояние только если произошло пересечение порога
-        if (shouldBeScrolled !== wasScrolled) {
-          setIsScrolled(shouldBeScrolled)
-        }
-
-        lastScrollY = currentScrollY
-        rafId = null
-      })
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-      if (rafId !== null) cancelAnimationFrame(rafId)
-    }
-  }, [])
-
   return (
     <nav
       suppressHydrationWarning
@@ -89,7 +40,7 @@ export default function Navbar({ onMenuToggle, sidebarExpanded = true, isHydrate
 
           {/* Mobile Center Section: App Store Badge + Language Switcher + Sidebar Menu Button */}
           <div className="lg:hidden flex items-center gap-3">
-            <SupportButtons lang={lang} onAction={handleSupportAction} t={memoizedT} />
+            <SupportButtons lang={lang} onAction={handleSupportAction} t={t} />
             <div className="flex items-center">
               <LanguageSwitcher currentLang={lang} />
             </div>
@@ -132,7 +83,7 @@ export default function Navbar({ onMenuToggle, sidebarExpanded = true, isHydrate
             >
               {t("navbar.privacy")}
             </Link> */}
-            <SupportButtons lang={lang} onAction={handleSupportAction} t={memoizedT} />
+            <SupportButtons lang={lang} onAction={handleSupportAction} t={t} />
             <div className="shrink-0">
               <LanguageSwitcher currentLang={lang} />
             </div>

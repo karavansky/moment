@@ -50,11 +50,11 @@ function DienstplanView() {
     setSelectedAppointment(null)
   }, [setSelectedAppointment])
 
+  // Логируем только mount/unmount, без зависимостей от данных
   useEffect(() => {
     console.log('DienstplanView mounted')
-    console.log('Appointments:', appointments.length)
-    console.log('Calendar weeks:', calendarWeeks.length)
-  }, [appointments, calendarWeeks])
+    return () => console.log('DienstplanView unmounted')
+  }, [])
 
   if (isLoading) {
     return (

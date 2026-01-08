@@ -12,7 +12,8 @@ export function useLanguage(): SupportedLocale {
   const segments = pathname?.split('/').filter(Boolean) || []
   const firstSegment = segments[0]
 
-  // На клиенте определяем язык браузера один раз
+  // На клиенте определяем язык браузера только если это необходимо (корневой маршрут)
+  // Используем пустой массив зависимостей, чтобы выполнить только один раз
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const lang = navigator.language.split('-')[0]

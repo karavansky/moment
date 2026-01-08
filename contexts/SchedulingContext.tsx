@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
 import {
   Appointment,
   Worker,
@@ -105,8 +105,8 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   };
 
-  // Действия для управления состоянием
-  const actions: SchedulingActions = {
+  // Действия для управления состоянием - мемоизированы для предотвращения лишних ре-рендеров
+  const actions: SchedulingActions = useMemo(() => ({
     setSelectedWorker: (worker) => {
       setState((prev) => ({ ...prev, selectedWorker: worker }));
     },
@@ -189,12 +189,13 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     refreshData: () => {
       loadMockData();
     },
-  };
+  }), []); // Без зависимостей, так как все функции используют setState с функциональным обновлением
 
-  const contextValue: SchedulingContextType = {
+  // Мемоизируем contextValue для предотвращения лишних ре-рендеров потребителей контекста
+  const contextValue: SchedulingContextType = useMemo(() => ({
     ...state,
     ...actions,
-  };
+  }), [state, actions]);
 
   return (
     <SchedulingContext.Provider value={contextValue}>

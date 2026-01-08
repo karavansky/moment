@@ -1,18 +1,15 @@
 'use client'
 
-import { memo } from 'react'
 import Navbar from './Navbar'
 import { LanguageSync } from './LanguageSync'
 import Sidebar from './Sidebar'
-import { SchedulingProvider } from '@/contexts/SchedulingContext'
 import { useSidebar } from '@/contexts/SidebarContext'
 
 interface LayoutClientProps {
   children: React.ReactNode
 }
 
-// Мемоизируем весь клиентский layout для предотвращения ре-рендеров
-function LayoutClientComponent({ children }: LayoutClientProps) {
+export function LayoutClient({ children }: LayoutClientProps) {
   const { toggleOpen, isExpanded, isHydrated } = useSidebar()
 
   return (
@@ -29,12 +26,8 @@ function LayoutClientComponent({ children }: LayoutClientProps) {
           sidebarExpanded={isExpanded}
           isHydrated={isHydrated}
         />
-        <SchedulingProvider>
-          {children}
-        </SchedulingProvider>
+        {children}
       </div>
     </>
   )
 }
-
-export const LayoutClient = memo(LayoutClientComponent)

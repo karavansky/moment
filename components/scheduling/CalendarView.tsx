@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect, useRef, memo } from 'react';
+import { useMemo, useLayoutEffect, useRef, memo } from 'react';
 import { ScrollShadow } from '@heroui/react';
 import { CalendarWeek, isSameDate } from '@/lib/calendar-utils';
 import WeekView from './WeekView';
@@ -51,8 +51,8 @@ function CalendarView({ weeks, today = new Date(), selectedDate }: CalendarViewP
   const WEEKDAY_HEADERS_FULL = useMemo(() => getWeekdayFullNames(lang), [lang])
   const WEEKDAY_HEADERS_SHORT = useMemo(() => getWeekdayShortNames(lang), [lang])
 
-  // Автоскролл к текущей неделе после рендера
-  useEffect(() => {
+  // Автоскролл к текущей неделе СИНХРОННО до отрисовки (без мигания)
+  useLayoutEffect(() => {
     if (weeks.length === 0 || !scrollContainerRef.current) return
 
     // Находим индекс недели с текущим днем
@@ -66,20 +66,15 @@ function CalendarView({ weeks, today = new Date(), selectedDate }: CalendarViewP
     const weekElement = weekRefs.current.get(currentWeek.id)
 
     if (weekElement && scrollContainerRef.current) {
-      // Небольшая задержка для корректного рендера
-      setTimeout(() => {
-        const container = scrollContainerRef.current
-        if (!container) return
+      const container = scrollContainerRef.current
+      const containerHeight = container.clientHeight
+      const weekTop = weekElement.offsetTop
+      const weekHeight = weekElement.clientHeight
 
-        const containerHeight = container.clientHeight
-        const weekTop = weekElement.offsetTop
-        const weekHeight = weekElement.clientHeight
+      // Прокручиваем так, чтобы неделя была примерно посередине
+      const scrollTo = weekTop - (containerHeight / 2) + (weekHeight / 2)
 
-        // Прокручиваем так, чтобы неделя была примерно посередине
-        const scrollTo = weekTop - (containerHeight / 2) + (weekHeight / 2)
-
-        container.scrollTop = Math.max(0, scrollTo)
-      }, 100)
+      container.scrollTop = Math.max(0, scrollTo)
     }
   }, [weeks, today])
 

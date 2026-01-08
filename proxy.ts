@@ -29,8 +29,14 @@ const RATE_LIMIT = {
 }
 
 function getLocale(request: NextRequest): string {
-  // Определяем язык ТОЛЬКО по заголовку Accept-Language браузера
-  // Этот заголовок автоматически обновляется при изменении языка в настройках браузера
+  // ПРИОРИТЕТ 1: Проверяем cookie preferred-language (установлен пользователем)
+  const cookies = request.cookies.get('preferred-language')?.value;
+  if (cookies && supportedLocales.includes(cookies as any)) {
+    console.log(`[getLocale] Using preferred language from cookie: ${cookies}`);
+    return cookies;
+  }
+
+  // ПРИОРИТЕТ 2: Определяем язык по заголовку Accept-Language браузера
   const acceptLanguage = request.headers.get("accept-language") || "";
   console.log(`[getLocale] Accept-Language header: ${acceptLanguage}`);
 
@@ -47,7 +53,7 @@ function getLocale(request: NextRequest): string {
     matchedLocale = defaultLocale;
   }
 
-  console.log(`[getLocale] Matched locale: ${matchedLocale}`);
+  console.log(`[getLocale] Matched locale from browser: ${matchedLocale}`);
 
   // Если найденная локаль не поддерживается (нет словаря), используем дефолтную
   if (!supportedLocales.includes(matchedLocale as any)) {

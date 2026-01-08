@@ -7,6 +7,7 @@ import { SessionProvider } from 'next-auth/react'
 import { AuthProvider } from './AuthProvider'
 import { useRouter } from 'next/navigation'
 import { SidebarProvider } from '@/contexts/SidebarContext'
+import { SchedulingProvider } from '@/contexts/SchedulingContext'
 
 export interface ProvidersProps {
   children: React.ReactNode
@@ -25,8 +26,8 @@ export const useDictionary = () => {
 export const useTranslation = () => {
   const dict = useDictionary()
 
-  const t = React.useCallback(
-    (path: string, fallback = 'Localization failed') => {
+  const t = React.useMemo(
+    () => (path: string, fallback = 'Localization failed') => {
       const parts = path.split('.')
       let cur: any = dict
 
@@ -62,25 +63,25 @@ function HeroUIThemeWrapper({ children }: { children: React.ReactNode }) {
 }
 
 export function Providers({ children, themeProps, dictionary, lang, initialSidebarExpanded }: ProvidersProps) {
-  console.log('🎁 Providers RENDER, lang:', lang)
-
   // Мемоизируем dictionary чтобы контекст не менялся при каждой навигации
-  // ВАЖНО: используем dictionary как зависимость, а не lang!
-  // Если словарь обновляется, мы должны передать новое значение в контекст
-  const memoizedDictionary = useMemo(() => dictionary, [dictionary, lang])
+  // ВАЖНО: используем только dictionary как зависимость, а не lang!
+  // Словарь меняется только когда действительно приходит новый объект
+  const memoizedDictionary = useMemo(() => dictionary, [dictionary])
 
   return (
     <SessionProvider>
       <AuthProvider>
-        <SidebarProvider initialExpanded={initialSidebarExpanded}>
-          <NextThemesProvider {...themeProps}>
+        <NextThemesProvider {...themeProps}>
+          <SidebarProvider initialExpanded={initialSidebarExpanded}>
             <HeroUIThemeWrapper>
               <DictionaryContext.Provider value={memoizedDictionary}>
-                <div className="min-h-screen flex flex-col">{children}</div>
+                <SchedulingProvider>
+                  <div className="min-h-screen flex flex-col">{children}</div>
+                </SchedulingProvider>
               </DictionaryContext.Provider>
             </HeroUIThemeWrapper>
-          </NextThemesProvider>
-        </SidebarProvider>
+          </SidebarProvider>
+        </NextThemesProvider>
       </AuthProvider>
     </SessionProvider>
   )

@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useLayoutEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useLayoutEffect, useMemo, useCallback, ReactNode } from 'react'
 import { setSidebarState } from '@/lib/sidebar-actions'
 
 interface SidebarContextType {
@@ -39,44 +39,32 @@ export function SidebarProvider({
 
     // Клиент: читаем из localStorage (приоритет), затем используем SSR cookie
     const saved = localStorage.getItem('sidebar-expanded')
-    const value = saved !== null ? saved === 'true' : (initialExpanded ?? true)
-
-    console.log('🎯 Initial isExpanded from localStorage:', saved, '| SSR cookie:', initialExpanded, '| final:', value)
-    return value
+    return saved !== null ? saved === 'true' : (initialExpanded ?? true)
   })
 
   // Флаг гидратации - используем useLayoutEffect для синхронной установки
   const [isHydrated, setIsHydrated] = useState(false)
 
   useLayoutEffect(() => {
-    console.log('🚀 SidebarProvider MOUNTED, isExpanded:', isExpanded)
-    console.log('📊 HTML classes before:', document.documentElement.className)
-
     // После гидратации React берет управление на себя
     setIsHydrated(true)
 
     // Синхронно применяем CSS класс сразу после гидратации
     // Это предотвращает мерцание, так как класс уже установлен inline script'ом
     if (isExpanded) {
-      console.log('➡️ Removing sidebar-collapsed class')
       document.documentElement.classList.remove('sidebar-collapsed')
     } else {
-      console.log('➡️ Adding sidebar-collapsed class')
       document.documentElement.classList.add('sidebar-collapsed')
     }
-
-    console.log('📊 HTML classes after:', document.documentElement.className)
 
     // Включаем transitions ПОСЛЕ установки начального состояния
     // requestAnimationFrame гарантирует, что transition не сработает при первом рендере
     const rafId = requestAnimationFrame(() => {
-      console.log('🎨 Adding sidebar-hydrated class for transitions')
       document.documentElement.classList.add('sidebar-hydrated')
     })
 
     // Cleanup при размонтировании (важно для Strict Mode)
     return () => {
-      console.log('🧹 SidebarProvider UNMOUNTING')
       cancelAnimationFrame(rafId)
       // НЕ удаляем классы при размонтировании, чтобы избежать flash
     }
@@ -90,9 +78,7 @@ export function SidebarProvider({
       localStorage.setItem('sidebar-expanded', String(isExpanded))
 
       // Асинхронная запись в cookie (для SSR)
-      setSidebarState(isExpanded).catch(err => {
-        console.error('Failed to sync sidebar state to cookie:', err)
-      })
+      setSidebarState(isExpanded)
 
       // Управляем CSS классом для sidebar синхронно
       if (isExpanded) {
@@ -103,24 +89,29 @@ export function SidebarProvider({
     }
   }, [isExpanded, isHydrated])
 
-  const toggleOpen = () => setIsOpen(prev => !prev)
-  const toggleExpanded = () => {
-    console.log('🔀 toggleExpanded called, current:', isExpanded)
+  // Мемоизируем callbacks чтобы они не пересоздавались при каждом рендере
+  const toggleOpen = useCallback(() => setIsOpen(prev => !prev), [])
+  const toggleExpanded = useCallback(() => {
     setIsExpanded(prev => !prev)
-  }
+  }, [])
+
+  // Мемоизируем context value для предотвращения лишних ре-рендеров
+  // toggleOpen и toggleExpanded не включаем в зависимости так как они стабильные через useCallback
+  const contextValue = useMemo(
+    () => ({
+      isOpen,
+      setIsOpen,
+      toggleOpen,
+      isExpanded,
+      setIsExpanded,
+      toggleExpanded,
+      isHydrated,
+    }),
+    [isOpen, isExpanded, isHydrated]
+  )
 
   return (
-    <SidebarContext.Provider
-      value={{
-        isOpen,
-        setIsOpen,
-        toggleOpen,
-        isExpanded,
-        setIsExpanded,
-        toggleExpanded,
-        isHydrated,
-      }}
-    >
+    <SidebarContext.Provider value={contextValue}>
       {children}
     </SidebarContext.Provider>
   )

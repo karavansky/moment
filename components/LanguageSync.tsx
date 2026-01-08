@@ -23,7 +23,6 @@ export function LanguageSync() {
       const isTestBot = /PageSpeed|lighthouse|gtmetrix|pingdom/i.test(userAgent);
 
       if (isTestBot) {
-        console.log(`[LanguageSync] Test bot detected (${userAgent}), skipping language redirect`);
         hasChecked.current = true;
         return;
       }
@@ -38,11 +37,14 @@ export function LanguageSync() {
       // 1. Нет сохранённого языка в cookie (первый визит)
       // 2. И текущий язык в URL не совпадает с языком браузера
       const savedLang = getLanguageCookie();
+      console.log('[LanguageSync] Checking savedLang from cookie:', savedLang)
+      console.log('[LanguageSync] Current locale from URL:', currentLocale)
+      console.log('[LanguageSync] All cookies:', document.cookie)
 
       // Если есть сохранённый язык в cookie, значит пользователь уже выбрал язык
       // Не перенаправляем его автоматически - он сам знает куда идёт
       if (savedLang) {
-        console.log('[LanguageSync] User has saved language preference, skipping auto-redirect')
+        console.log('[LanguageSync] Found saved language in cookie, skipping redirect')
         hasChecked.current = true
         return
       }
@@ -51,6 +53,7 @@ export function LanguageSync() {
       const browserLang = navigator.language.split("-")[0];
       // Маппим язык браузера на поддерживаемую локаль
       const browserMappedLang = localeMapping[browserLang] || "en";
+      console.log('[LanguageSync] Browser language:', browserLang, '-> mapped to:', browserMappedLang)
 
       // НЕ перенаправляем на защищённых страницах
       const isProtectedRoute = pathSegments.some(segment =>
@@ -58,13 +61,18 @@ export function LanguageSync() {
       )
 
       if (isProtectedRoute) {
-        console.log('[LanguageSync] Protected route detected, skipping redirect')
         hasChecked.current = true
         return
       }
 
       // Перенаправляем ТОЛЬКО если это первый визит (нет cookie)
       // И текущий язык в URL не совпадает с языком браузера
+      console.log('[LanguageSync] Should redirect?', {
+        isValidLocale: supportedLocales.includes(currentLocale as any),
+        currentLocale,
+        browserMappedLang,
+        shouldRedirect: currentLocale !== browserMappedLang
+      })
       if (supportedLocales.includes(currentLocale as any) && currentLocale !== browserMappedLang) {
         // Получаем остальную часть пути (после языка)
         const restOfPath = pathSegments.slice(1);
@@ -86,9 +94,7 @@ export function LanguageSync() {
           }
         }
 
-        console.log(`[LanguageSync] First visit! Redirecting from ${currentLocale} to ${browserMappedLang}`);
-        console.log(`[LanguageSync] New path: ${newPath}`);
-
+        console.log('[LanguageSync] Redirecting to:', newPath)
         // Используем Next.js router для клиентского перехода без перезагрузки страницы
         hasChecked.current = true;
         router.replace(newPath);

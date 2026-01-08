@@ -49,31 +49,33 @@ function SupportButtonsComponent({ lang, onAction, t }: SupportButtonsProps) {
   }
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
 
-  // КРИТИЧНО: Инициализируем кеш СИНХРОННО при создании компонента
-  // Это предотвращает мигание при навигации
+  // Инициализируем кеш как null для SSR/CSR согласованности
   const [cachedAuthState, setCachedAuthState] = useState<
     'authenticated' | 'unauthenticated' | null
-  >(() => {
-    if (typeof window === 'undefined') return null
+  >(null)
+
+  const [cachedSession, setCachedSession] = useState<typeof session | null>(null)
+
+  // Читаем из localStorage только на клиенте после монтирования
+  useEffect(() => {
     try {
       const cached = localStorage.getItem('auth_state')
-      //console.log('[SupportButtons INIT] Cached auth state:', cached)
-      return cached === 'authenticated' || cached === 'unauthenticated' ? cached : null
+      if (cached === 'authenticated' || cached === 'unauthenticated') {
+        setCachedAuthState(cached)
+      }
     } catch {
-      return null
+      // Ignore localStorage errors
     }
-  })
 
-  const [cachedSession, setCachedSession] = useState<typeof session | null>(() => {
-    if (typeof window === 'undefined') return null
     try {
       const cached = localStorage.getItem('auth_session')
-      //console.log('[SupportButtons INIT] Cached session:', cached ? 'EXISTS' : 'EMPTY')
-      return cached ? JSON.parse(cached) : null
+      if (cached) {
+        setCachedSession(JSON.parse(cached))
+      }
     } catch {
-      return null
+      // Ignore localStorage errors
     }
-  })
+  }, [])
 
   // Сохраняем предыдущее состояние для предотвращения мигания
   const prevStatusRef = useRef(status)

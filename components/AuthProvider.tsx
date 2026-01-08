@@ -15,14 +15,10 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  console.log('🎨 AuthProvider RENDER')
   const { data: session, status } = useSession()
-  const [isClient, setIsClient] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
-
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
 
   // КРИТИЧНО: Используем useRef для pathname чтобы избежать пересоздания callbacks
   const pathnameRef = useRef(pathname)
@@ -65,11 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
   }), [session, status, signIn, signOut])
 
-  // Предотвращаем гидратацию на стороне сервера
-  if (!isClient) {
-    return <>{children}</>
-  }
-
+  // Всегда рендерим Provider, но передаем isClient флаг в контекст если нужно
   return (
     <AuthContext.Provider value={value}>
       {children}
