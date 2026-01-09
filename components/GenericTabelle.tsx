@@ -29,6 +29,7 @@ interface GenericTabelleProps {
   initialVisibleColumns?: string[]
   sortDescriptor?: SortDescriptor
   onRowClick?: (id: string) => void
+  isShowColumns?: boolean
 }
 
 export const statusOptions = [
@@ -37,6 +38,7 @@ export const statusOptions = [
 ]
 
 const GenericTabelle = function GenericTabelle(props: GenericTabelleProps) {
+  const { isShowColumns = false } = props
   const list = React.useMemo(() => {
     return props.list.map((el, idx) => ({ ...el, _id: (el as any)._id ?? idx + 1 }))
   }, [props.list])
@@ -223,7 +225,7 @@ const GenericTabelle = function GenericTabelle(props: GenericTabelleProps) {
                 items={columns}
               >
                 {(column: any) => (
-                  <Dropdown.Item key={column.uid} id={column.name} className="capitalize">
+                  <Dropdown.Item key={column.uid} id={column.uid} className="capitalize">
                     {column.name}
                     <Dropdown.ItemIndicator />
                   </Dropdown.Item>
@@ -308,9 +310,10 @@ const GenericTabelle = function GenericTabelle(props: GenericTabelleProps) {
   if (!isMounted) {
     return null
   }
+
   return (
     <div className="flex flex-col gap-4">
-      {topContent}
+      {isShowColumns && topContent}
       <div className="border-[0.5px] border-gray-300 rounded-2xl overflow-hidden bg-transparent shadow-sm">
         <div className="min-h-105 overflow-auto max-h-[calc(100vh-200px)]">
           <table className="w-full text-left border-collapse">

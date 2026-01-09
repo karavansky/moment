@@ -1,20 +1,15 @@
-import type { Metadata, Viewport } from 'next'
+import type { Viewport } from 'next'
 import './[lang]/globals.css'
-import { supportedLocales } from '@/config/locales'
-import { getDictionary, hasLocale } from '@/config/dictionaries'
-import { notFound } from 'next/navigation'
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'auto',
 }
-const baseUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL || 'http://localhost:3000'
 
-
-
-// Minimal root layout for the root page
+// Minimal root layout - just returns children
+// The actual HTML structure is in /app/page.tsx for root route
+// and /app/[lang]/layout.tsx for language routes
 export default function RootLayout({
   children,
 }: {

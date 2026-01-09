@@ -1,6 +1,6 @@
-import DienstplanPage from './dienstplan/page'
+import HomeClient from './HomeClient'
 import { createPageMetadata } from '@/lib/seo/metadata'
-import { getDictionary, hasLocale } from '@/config/dictionaries'
+import { getDictionary, hasLocale, type Locale } from '@/config/dictionaries'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
@@ -28,5 +28,8 @@ export async function generateMetadata({
 }
 
 export default function Home() {
-  return <DienstplanPage />
+  return <HomeClient />
 }
+
+
+//

@@ -65,16 +65,14 @@ export default function LanguageSwitcher({ currentLang }: LanguageSwitcherProps)
     setSelected(new Set([effectiveLang]))
   }, [effectiveLang])
 
-  // Sync cookie with current language (only on client after mount)
+  // Sync cookie with current language (only on client)
   useEffect(() => {
-    if (mounted) {
-      console.log('[LanguageSwitcher] Setting language cookie:', effectiveLang)
-      setLanguageCookie(effectiveLang)
-      // Verify cookie was set
-      const savedCookie = document.cookie.split(';').find(c => c.trim().startsWith('preferred-language='))
-      console.log('[LanguageSwitcher] Cookie after set:', savedCookie)
-    }
-  }, [effectiveLang, mounted])
+    console.log('[LanguageSwitcher] Setting language cookie:', effectiveLang)
+    setLanguageCookie(effectiveLang)
+    // Verify cookie was set
+    const savedCookie = document.cookie.split(';').find(c => c.trim().startsWith('preferred-language='))
+    console.log('[LanguageSwitcher] Cookie after set:', savedCookie)
+  }, [effectiveLang])
 
   // Функция расчета пути (Memoized для производительности)
   // Вычисляет пути для ВСЕХ языков сразу, чтобы вставить их в href
@@ -115,6 +113,15 @@ export default function LanguageSwitcher({ currentLang }: LanguageSwitcherProps)
   }, [pathname, effectiveLang])
 
   const slots = linkVariants({ underline: 'none' })
+
+  // Don't render until mounted on client to avoid hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="w-22 h-10" suppressHydrationWarning>
+        {/* Placeholder to prevent layout shift */}
+      </div>
+    )
+  }
 
   return (
     <div suppressHydrationWarning>

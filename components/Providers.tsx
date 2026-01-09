@@ -16,6 +16,14 @@ export interface ProvidersProps {
   lang?: string
   initialSidebarExpanded?: boolean
 }
+
+// Language context for SSR-detected language (for root route only)
+const ServerLanguageContext = createContext<string | undefined>(undefined)
+
+export const useServerLanguage = () => {
+  return useContext(ServerLanguageContext)
+}
+
 export const DictionaryContext = createContext<Record<string, any> | undefined>(undefined)
 
 export const useDictionary = () => {
@@ -74,11 +82,13 @@ export function Providers({ children, themeProps, dictionary, lang, initialSideb
         <NextThemesProvider {...themeProps}>
           <SidebarProvider initialExpanded={initialSidebarExpanded}>
             <HeroUIThemeWrapper>
-              <DictionaryContext.Provider value={memoizedDictionary}>
-                <SchedulingProvider>
-                  <div className="min-h-screen flex flex-col">{children}</div>
-                </SchedulingProvider>
-              </DictionaryContext.Provider>
+              <ServerLanguageContext.Provider value={lang}>
+                <DictionaryContext.Provider value={memoizedDictionary}>
+                  <SchedulingProvider>
+                    <div className="min-h-screen flex flex-col">{children}</div>
+                  </SchedulingProvider>
+                </DictionaryContext.Provider>
+              </ServerLanguageContext.Provider>
             </HeroUIThemeWrapper>
           </SidebarProvider>
         </NextThemesProvider>

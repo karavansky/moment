@@ -1,39 +1,28 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { supportedLocales, defaultLocale, SupportedLocale, localeMapping } from '@/config/locales'
+import { supportedLocales, defaultLocale, SupportedLocale } from '@/config/locales'
+import { useServerLanguage } from '@/components/Providers'
 
 export function useLanguage(): SupportedLocale {
   const pathname = usePathname()
-  const [browserLang, setBrowserLang] = useState<SupportedLocale | null>(null)
+  const serverLang = useServerLanguage()
 
   // Извлекаем язык из pathname (например, /de/about -> de)
   const segments = pathname?.split('/').filter(Boolean) || []
   const firstSegment = segments[0]
 
-  // На клиенте определяем язык браузера только если это необходимо (корневой маршрут)
-  // Используем пустой массив зависимостей, чтобы выполнить только один раз
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const lang = navigator.language.split('-')[0]
-      const mapped = localeMapping[lang] || defaultLocale
-      setBrowserLang(mapped as SupportedLocale)
-    }
-  }, [])
-
-  // Проверяем, является ли первый сегмент поддерживаемым языком
+  // ПРИОРИТЕТ 1: Проверяем, является ли первый сегмент поддерживаемым языком
   if (firstSegment && supportedLocales.includes(firstSegment as SupportedLocale)) {
-    //console.log('[useLanguage] Extracted from pathname:', { pathname, firstSegment })
     return firstSegment as SupportedLocale
   }
 
-  // Если pathname = "/" (корневой маршрут), используем язык браузера вместо дефолтного
-  if (pathname === '/' && browserLang) {
-    //console.log('[useLanguage] Root path, using browser language:', { pathname, browserLang })
-    return browserLang
+  // ПРИОРИТЕТ 2: Для корневого маршрута "/" используем язык с сервера (SSR)
+  // Это гарантирует, что сервер и клиент рендерят одинаковый язык
+  if (serverLang && supportedLocales.includes(serverLang as SupportedLocale)) {
+    return serverLang as SupportedLocale
   }
 
-  //console.log('[useLanguage] Using default locale:', { pathname, firstSegment, defaultLocale })
+  // ПРИОРИТЕТ 3: возвращаем defaultLocale
   return defaultLocale
 }
