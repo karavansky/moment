@@ -13,14 +13,17 @@ import {
 } from '@heroui/react'
 import { Client } from '@/types/scheduling'
 import { Mail } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, memo } from 'react'
 
 interface ClientAdressProps {
   client: Client
   className?: string
 }
 
-export function ClientContacts({ client, className }: ClientAdressProps) {
+export const ClientContacts = memo(function ClientContacts({
+  client,
+  className,
+}: ClientAdressProps) {
   const [formData, setFormData] = useState({
     name: client.name || '',
     surname: client.surname || '',
@@ -37,17 +40,18 @@ export function ClientContacts({ client, className }: ClientAdressProps) {
     })
   }, [client])
 
-  const handleChange = (field: string, value: string) => {
+  const handleChange = useCallback((field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
-  }
-  const handleReset = () => {
+  }, [])
+
+  const handleReset = useCallback(() => {
     setFormData({
       name: client.name || '',
       surname: client.surname || '',
       email: client.email || '',
       phone: client.phone || '',
     })
-  }
+  }, [client])
 
   const isChanged =
     formData.name !== (client.name || '') ||
@@ -55,7 +59,7 @@ export function ClientContacts({ client, className }: ClientAdressProps) {
     formData.email !== (client.email || '') ||
     formData.phone !== (client.phone || '')
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
     const data: Record<string, string> = {}
@@ -66,7 +70,7 @@ export function ClientContacts({ client, className }: ClientAdressProps) {
     })
 
     alert('Form submitted successfully!')
-  }
+  }, [])
 
   return (
     <Card className="w-full max-w-md border border-gray-200 dark:border-gray-700">
@@ -149,4 +153,4 @@ export function ClientContacts({ client, className }: ClientAdressProps) {
       </Form>
     </Card>
   )
-}
+})

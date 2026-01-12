@@ -258,7 +258,7 @@ export const getAllSampleObjects = () => {
     name: 'Petra',
     surname: 'Muller',
     email: 'petra.muller@example.com',
-    street: 'Burgstrasse',
+    street: 'Burgstraße',
     postalCode: '53177',
     city: 'Bonn',
     houseNumber: '156',

@@ -1,8 +1,8 @@
 'use client'
 
+import React, { useDeferredValue, useEffect, useState, useCallback, memo } from 'react'
 import { Button, Card, ComboBox, Form, Input, Label, ListBox, TextField } from '@heroui/react'
 import { Client } from '@/types/scheduling'
-import { useDeferredValue, useEffect, useState } from 'react'
 import { CountriesHelper } from '@/lib/countries'
 import dynamic from 'next/dynamic'
 
@@ -14,7 +14,7 @@ interface ClientAdressProps {
   className?: string
 }
 
-export function ClientAdress({ client, className }: ClientAdressProps) {
+export const ClientAdress = memo(function ClientAdress({ client, className }: ClientAdressProps) {
   const [addressData, setAddressData] = useState({
     street: client.street || '',
     city: client.city || '',
@@ -29,7 +29,9 @@ export function ClientAdress({ client, className }: ClientAdressProps) {
   const [streetQuery, setStreetQuery] = useState(client.street || '')
 
   // Состояние для координат адреса
-  const [addressCoordinates, setAddressCoordinates] = useState<{ lat: number; lng: number } | null>(null)
+  const [addressCoordinates, setAddressCoordinates] = useState<{ lat: number; lng: number } | null>(
+    null
+  )
 
   // Получаем код страны из названия или напрямую из кода
   // Если пользователь ввёл код (de, DE), конвертируем в название
@@ -42,31 +44,43 @@ export function ClientAdress({ client, className }: ClientAdressProps) {
   const deferredStreet = useDeferredValue(streetQuery)
 
   const [cities, setCities] = useState<any[]>([])
-  const [streets, setStreets] = useState<Array<{ id: number; street: string; district: string }>>([])
+  const [streets, setStreets] = useState<Array<{ id: number; street: string; district: string }>>(
+    []
+  )
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const onSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
 
-    // Собираем все данные адреса
-    const addressToSave = {
-      country,
-      city: addressData.city,
-      postalCode: addressData.zipCode,
-      street: addressData.street,
-      houseNumber: addressData.houseNumber,
-      district: addressData.district,
-    }
+      // Собираем все данные адреса
+      const addressToSave = {
+        country,
+        city: addressData.city,
+        postalCode: addressData.zipCode,
+        street: addressData.street,
+        houseNumber: addressData.houseNumber,
+        district: addressData.district,
+      }
 
-    console.log('Address to save:', addressToSave)
+      console.log('Address to save:', addressToSave)
 
-    // TODO: Отправить данные на сервер
-    // await updateClientAddress(client.id, addressToSave)
+      // TODO: Отправить данные на сервер
+      // await updateClientAddress(client.id, addressToSave)
 
-    alert(`Address saved successfully!\n\n${JSON.stringify(addressToSave, null, 2)}`)
-  }
+      alert(`Address saved successfully!\n\n${JSON.stringify(addressToSave, null, 2)}`)
+    },
+    [addressData, country]
+  )
   // 1. Поиск города (зависит от страны)
   useEffect(() => {
-    console.log('Fetching cities for query:', deferredCity, 'country:', country, 'code:', countryCode)
+    console.log(
+      'Fetching cities for query:',
+      deferredCity,
+      'country:',
+      country,
+      'code:',
+      countryCode
+    )
     if (deferredCity.length < 1 || !country) {
       setCities([])
       return
@@ -100,18 +114,19 @@ export function ClientAdress({ client, className }: ClientAdressProps) {
               countrycode: props.countrycode,
               osm_key: props.osm_key,
               osm_value: props.osm_value,
-              type: props.type
+              type: props.type,
             })
             console.log('Comparing:', {
               apiCountrycode: props.countrycode?.toLowerCase(),
               expectedCode: countryCode.toLowerCase(),
-              matches: props.countrycode?.toLowerCase() === countryCode.toLowerCase()
+              matches: props.countrycode?.toLowerCase() === countryCode.toLowerCase(),
             })
           }
 
           const matchesCountry = props.countrycode?.toLowerCase() === countryCode.toLowerCase()
-          const isPlace = props.osm_key === 'place' &&
-                         ['city', 'town', 'village', 'municipality'].includes(props.osm_value)
+          const isPlace =
+            props.osm_key === 'place' &&
+            ['city', 'town', 'village', 'municipality'].includes(props.osm_value)
           return matchesCountry && isPlace
         })
         console.log('Filtered cities:', filtered.length, 'results for country:', country)
@@ -229,13 +244,20 @@ export function ClientAdress({ client, className }: ClientAdressProps) {
       }))
 
       // В поле отображаем улицу с district для удобства
-      const displayName = selected.district ? `${selected.street} (${selected.district})` : selected.street
+      const displayName = selected.district
+        ? `${selected.street} (${selected.district})`
+        : selected.street
       setStreetQuery(displayName)
     }
   }
 
   // Функция для получения почтового индекса по полному адресу
-  const fetchPostalCode = async (street: string, houseNumber: string, city: string, country: string) => {
+  const fetchPostalCode = async (
+    street: string,
+    houseNumber: string,
+    city: string,
+    country: string
+  ) => {
     if (!street || !city || !country) return
 
     try {
@@ -284,13 +306,12 @@ export function ClientAdress({ client, className }: ClientAdressProps) {
   return (
     <Card className="w-full max-w-md border border-gray-200 dark:border-gray-700">
       <Card.Header>
-        <Card.Title className='capitalize'>Address</Card.Title>
+        <Card.Title className="capitalize">Address</Card.Title>
         <Card.Description>wo Dienstleistungen erbracht werden</Card.Description>
       </Card.Header>
       <Form onSubmit={onSubmit} autoComplete="off">
         <Card.Content>
           <div className="flex flex-col gap-4">
-           
             {/* Город */}
             <ComboBox
               className="w-full"
@@ -302,7 +323,10 @@ export function ClientAdress({ client, className }: ClientAdressProps) {
             >
               <Label>City / Stadt {cityQuery && `(${cities.length} results)`}</Label>
               <ComboBox.InputGroup>
-                <Input placeholder={country ? "Type city name..." : "Select country first"} autoComplete="new-password" />
+                <Input
+                  placeholder={country ? 'Type city name...' : 'Select country first'}
+                  autoComplete="new-password"
+                />
                 <ComboBox.Trigger />
               </ComboBox.InputGroup>
               <ComboBox.Popover>
@@ -331,11 +355,13 @@ export function ClientAdress({ client, className }: ClientAdressProps) {
               onInputChange={setStreetQuery}
               onSelectionChange={handleStreetSelection}
               isDisabled={!cityQuery}
-              
             >
               <Label>Street / Straße {streetQuery && `(${streets.length} results)`}</Label>
               <ComboBox.InputGroup>
-                <Input placeholder={cityQuery ? "Type street name..." : "Select city first"} autoComplete="new-password" />
+                <Input
+                  placeholder={cityQuery ? 'Type street name...' : 'Select city first'}
+                  autoComplete="new-password"
+                />
                 <ComboBox.Trigger />
               </ComboBox.InputGroup>
               <ComboBox.Popover>
@@ -346,7 +372,11 @@ export function ClientAdress({ client, className }: ClientAdressProps) {
                         ? `${streetObj.street} (${streetObj.district})`
                         : streetObj.street
                       return (
-                        <ListBox.Item key={streetObj.id} id={streetObj.id.toString()} textValue={displayName}>
+                        <ListBox.Item
+                          key={streetObj.id}
+                          id={streetObj.id.toString()}
+                          textValue={displayName}
+                        >
                           {displayName}
                           <ListBox.ItemIndicator />
                         </ListBox.Item>
@@ -354,54 +384,55 @@ export function ClientAdress({ client, className }: ClientAdressProps) {
                     })
                   ) : (
                     <ListBox.Item key="empty" textValue="No results">
-                      {streetQuery.length < 3 ? 'Type at least 3 characters...' : 'No streets found'}
+                      {streetQuery.length < 3
+                        ? 'Type at least 3 characters...'
+                        : 'No streets found'}
                     </ListBox.Item>
                   )}
                 </ListBox>
               </ComboBox.Popover>
             </ComboBox>
             <div className="flex items-center flex-row gap-2 w-full">
+              {/* Номер дома */}
+              <TextField name="houseNumber" className="w-full min-w-0" type="text">
+                <Label>House Number / Hausnummer</Label>
+                <Input
+                  placeholder="e.g. 12A"
+                  value={addressData.houseNumber}
+                  onChange={e => setAddressData(prev => ({ ...prev, houseNumber: e.target.value }))}
+                />
+              </TextField>
 
-            {/* Номер дома */}
-            <TextField name="houseNumber" className="w-full min-w-0" type="text">
-              <Label>House Number / Hausnummer</Label>
-              <Input
-                placeholder="e.g. 12A"
-                value={addressData.houseNumber}
-                onChange={(e) => setAddressData(prev => ({ ...prev, houseNumber: e.target.value }))}
-              />
-            </TextField>
-
-            {/* Почтовый индекс */}
-            <TextField name="zipCode" className="w-full min-w-0" type="text">
-              <Label>Postal Code / PLZ</Label>
-              <Input
-                placeholder="12345"
-                value={addressData.zipCode}
-                onChange={(e) => setAddressData(prev => ({ ...prev, zipCode: e.target.value }))}
-              />
-            </TextField>
-                  </div>
+              {/* Почтовый индекс */}
+              <TextField name="zipCode" className="w-full min-w-0" type="text">
+                <Label>Postal Code / PLZ</Label>
+                <Input
+                  placeholder="12345"
+                  value={addressData.zipCode}
+                  onChange={e => setAddressData(prev => ({ ...prev, zipCode: e.target.value }))}
+                />
+              </TextField>
+            </div>
             {/* Район/округ */}
             <TextField name="district" type="text">
               <Label>District / Bezirk (optional)</Label>
               <Input
                 placeholder="e.g. Bad Godesberg"
                 value={addressData.district}
-                onChange={(e) => setAddressData(prev => ({ ...prev, district: e.target.value }))}
+                onChange={e => setAddressData(prev => ({ ...prev, district: e.target.value }))}
                 autoComplete="off"
               />
             </TextField>
 
-
-             {/* Страна */}
+            {/* Страна */}
             <ComboBox
               className="w-full"
               inputValue={CountriesHelper.getNameByCode(country.toLowerCase()) || country}
               onInputChange={setCountry}
-              onSelectionChange={(key) => {
+              onSelectionChange={key => {
                 if (key) {
-                  const countryName = CountriesHelper.getNameByCode(key.toString()) || key.toString()
+                  const countryName =
+                    CountriesHelper.getNameByCode(key.toString()) || key.toString()
                   setCountry(countryName)
                 }
               }}
@@ -430,16 +461,15 @@ export function ClientAdress({ client, className }: ClientAdressProps) {
             </ComboBox>
 
             {/* Карта адреса */}
-            {addressCoordinates && addressData.zipCode && (
-              <div className="w-full">
-                <Label className="mb-2 block">Address Location / Standort</Label>
-                <AddressMap
-                  coordinates={addressCoordinates}
-                  address={`${addressData.street} ${addressData.houseNumber}, ${addressData.zipCode} ${addressData.city}, ${country}`}
-                />
-              </div>
-            )}
-
+            <div
+              className={`w-full ${addressCoordinates && addressData.zipCode ? 'block' : 'hidden'}`}
+            >
+              <Label className="mb-2 block">Address Location / Standort</Label>
+              <AddressMap
+                coordinates={addressCoordinates}
+                address={`${addressData.street} ${addressData.houseNumber}, ${addressData.zipCode} ${addressData.city}, ${country}`}
+              />
+            </div>
           </div>
         </Card.Content>
         <Card.Footer className="mt-4 flex flex-col gap-2">
@@ -450,4 +480,4 @@ export function ClientAdress({ client, className }: ClientAdressProps) {
       </Form>
     </Card>
   )
-}
+})

@@ -1,11 +1,11 @@
 'use client'
 
+import React, { useState, useTransition, useRef, useEffect, useCallback, memo } from 'react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { useLanguage } from '@/hooks/useLanguage'
 import { Client } from '@/types/scheduling'
 import { Button, Separator } from '@heroui/react'
 import { FilePenLine, Undo2, UserStar, History } from 'lucide-react'
-import { useState, useTransition, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ClientOverview from './ClientOverview'
 import ClientHistory from './ClientHistory'
@@ -16,7 +16,8 @@ interface ClientDetailProps {
   className?: string
 }
 
-export default function ClientDetail({ client, onClose, className }: ClientDetailProps) {
+export default memo(ClientDetail)
+function ClientDetail({ client, onClose, className }: ClientDetailProps) {
   const { clients, groups, isLoading, selectedDate, selectedAppointment, setSelectedAppointment } =
     useScheduling()
   const lang = useLanguage()
@@ -32,12 +33,12 @@ export default function ClientDetail({ client, onClose, className }: ClientDetai
       if (activeTab === 'overview' && overviewRef.current) {
         setIndicatorStyle({
           width: overviewRef.current.offsetWidth,
-          left: overviewRef.current.offsetLeft
+          left: overviewRef.current.offsetLeft,
         })
       } else if (activeTab === 'history' && historyRef.current) {
         setIndicatorStyle({
           width: historyRef.current.offsetWidth,
-          left: historyRef.current.offsetLeft
+          left: historyRef.current.offsetLeft,
         })
       }
     }
@@ -47,17 +48,17 @@ export default function ClientDetail({ client, onClose, className }: ClientDetai
     return () => window.removeEventListener('resize', updateIndicator)
   }, [activeTab])
 
-  const onPressOverview = () => {
+  const onPressOverview = useCallback(() => {
     startTransition(() => {
       setActiveTab('overview')
     })
-  }
+  }, [startTransition])
 
-  const onPressHistory = () => {
+  const onPressHistory = useCallback(() => {
     startTransition(() => {
       setActiveTab('history')
     })
-  }
+  }, [startTransition])
 
   return (
     <div className={`flex flex-col ${className || ''}`}>
@@ -73,14 +74,14 @@ export default function ClientDetail({ client, onClose, className }: ClientDetai
         <div className="flex flex-row gap-2 mb-2">
           <Button
             ref={overviewRef}
-            variant={activeTab === 'overview' ? "tertiary" : "ghost"}
+            variant={activeTab === 'overview' ? 'tertiary' : 'ghost'}
             onPress={onPressOverview}
           >
             <FilePenLine className="w-5 h-5 mr-2" /> Overview
           </Button>
           <Button
             ref={historyRef}
-            variant={activeTab === 'history' ? "tertiary" : "ghost"}
+            variant={activeTab === 'history' ? 'tertiary' : 'ghost'}
             onPress={onPressHistory}
           >
             <History className="w-5 h-5 mr-2" /> History
@@ -92,12 +93,14 @@ export default function ClientDetail({ client, onClose, className }: ClientDetai
             className="absolute bottom-0 h-0.5 bg-blue-500 transition-all duration-200 ease-out"
             style={{
               width: `${indicatorStyle.width}px`,
-              left: `${indicatorStyle.left}px`
+              left: `${indicatorStyle.left}px`,
             }}
           />
         </div>
       </div>
-      <div className={`transition-opacity duration-200 ${isPending ? 'opacity-50' : 'opacity-100'}`}>
+      <div
+        className={`transition-opacity duration-200 ${isPending ? 'opacity-50' : 'opacity-100'}`}
+      >
         <AnimatePresence mode="wait">
           {activeTab === 'overview' ? (
             <motion.div
@@ -122,7 +125,6 @@ export default function ClientDetail({ client, onClose, className }: ClientDetai
           )}
         </AnimatePresence>
       </div>
-      
     </div>
   )
 }

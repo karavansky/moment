@@ -18,7 +18,11 @@ interface NavbarProps {
   isHydrated?: boolean
 }
 
-export default function Navbar({ onMenuToggle, sidebarExpanded = true, isHydrated = false }: NavbarProps) {
+export default function Navbar({
+  onMenuToggle,
+  sidebarExpanded = true,
+  isHydrated = false,
+}: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { t } = useTranslation()
   const lang = useLanguage()
@@ -30,14 +34,12 @@ export default function Navbar({ onMenuToggle, sidebarExpanded = true, isHydrate
   return (
     <nav
       suppressHydrationWarning
-      className={`fixed top-0 left-0 right-0 z-40 bg-transparent ${
+      className={`fixed top-0 left-0 right-0 z-40  backdrop-blur-sm ${
         isHydrated ? 'transition-all duration-300' : ''
       } ${sidebarExpanded ? 'md:left-56' : 'md:left-16'}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-end h-16">
-
-
           {/* Mobile Center Section: App Store Badge + Language Switcher + Sidebar Menu Button */}
           <div className="lg:hidden flex items-center gap-3">
             <SupportButtons lang={lang} onAction={handleSupportAction} t={t} />
@@ -116,7 +118,6 @@ export default function Navbar({ onMenuToggle, sidebarExpanded = true, isHydrate
             >
               {t('navbar.privacy')}
             </Link>
-
           </div>
         )}
       </div>
