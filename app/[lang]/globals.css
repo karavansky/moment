@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '@heroui/styles';
+@import 'leaflet/dist/leaflet.css';
 /*
  @plugin '../../hero.ts';
 */
@@ -226,5 +227,66 @@
   /* В свернутом состоянии скрываем footer */
   .sidebar-collapsed .sidebar-footer {
     display: none !important;
+  }
+
+  /* Leaflet map styles for dark mode */
+  .dark .leaflet-container {
+    background: #1f2937;
+  }
+
+  .dark .leaflet-tile {
+    filter: brightness(0.7) invert(1) contrast(0.9) hue-rotate(180deg);
+  }
+
+  .dark .leaflet-control-zoom a {
+    background-color: #374151;
+    color: #e5e7eb;
+    border-color: #4b5563;
+  }
+
+  .dark .leaflet-control-zoom a:hover {
+    background-color: #4b5563;
+  }
+
+  .dark .leaflet-control-attribution {
+    background-color: rgba(31, 41, 55, 0.8);
+    color: #9ca3af;
+  }
+
+  .dark .leaflet-control-attribution a {
+    color: #60a5fa;
+  }
+
+  /* Custom map marker styles */
+  .custom-map-marker {
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: markerBounce 0.6s ease-out;
+  }
+
+  .custom-map-marker svg {
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+    transition: transform 0.2s ease;
+  }
+
+  .custom-map-marker:hover svg {
+    transform: scale(1.1);
+  }
+
+  @keyframes markerBounce {
+    0% {
+      opacity: 0;
+      transform: translateY(-50px) scale(0.5);
+    }
+    50% {
+      transform: translateY(10px) scale(1.05);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
 }

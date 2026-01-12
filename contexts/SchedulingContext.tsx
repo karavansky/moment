@@ -6,7 +6,7 @@ import {
   Worker,
   Client,
   Team,
-  Category,
+  Groupe,
   User,
   Report,
 } from '@/types/scheduling';
@@ -16,7 +16,7 @@ import getAllSampleObjects from '@/lib/scheduling-mock-data';
 interface SchedulingState {
   user: User | null;
   teams: Team[];
-  categories: Category[];
+  groups: Groupe[];
   workers: Worker[];
   clients: Client[];
   appointments: Appointment[];
@@ -53,7 +53,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
   const [state, setState] = useState<SchedulingState>({
     user: null,
     teams: [],
-    categories: [],
+    groups: [],
     workers: [],
     clients: [],
     appointments: [],
@@ -81,7 +81,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
       setState({
         user: mockData.user,
         teams: mockData.teams,
-        categories: mockData.categories,
+        groups: mockData.groups,
         workers: mockData.workers,
         clients: mockData.clients,
         appointments: mockData.appointments,

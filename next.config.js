@@ -61,7 +61,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "font-src 'self' data:",
-              "connect-src 'self' wss://app.quailbreeder.net https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://stats.g.doubleclick.net https://analytics.google.com",
+              "connect-src 'self' wss://app.quailbreeder.net https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://stats.g.doubleclick.net https://analytics.google.com https://photon.komoot.io",
               "worker-src 'self' blob:",
               "frame-src 'self'",
               "child-src 'self' blob:",

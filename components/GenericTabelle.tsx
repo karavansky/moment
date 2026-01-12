@@ -10,6 +10,12 @@ import {
   Spinner,
   Checkbox,
   DropdownItemIndicator,
+  Input,
+  TextField,
+  Label,
+  ChipProps,
+  Chip,
+  InputGroup,
 } from '@heroui/react'
 import { SortDescriptor } from '@heroui/table'
 
@@ -17,6 +23,7 @@ import {
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  SearchIcon,
   VerticalDotsIcon,
 } from '@/components/icons'
 import scrollIntoView from 'scroll-into-view-if-needed'
@@ -32,13 +39,22 @@ interface GenericTabelleProps {
   isShowColumns?: boolean
 }
 
+
 export const statusOptions = [
-  { name: 'Aktive sysupdates', uid: 'active' },
-  { name: 'Keine aktive sysudates', uid: 'keine' },
-]
+  {name: "Active", uid: "active"},
+  {name: "Paused", uid: "paused"},
+  {name: "Archive", uid: "archive"},
+];
+const statusColorMap: Record<string, ChipProps["color"]> = {
+  active: "success",
+  paused: "warning",
+  archive: "danger",
+};
 
 const GenericTabelle = function GenericTabelle(props: GenericTabelleProps) {
   const { isShowColumns = false } = props
+  const [filterValue, setFilterValue] = React.useState("");
+  
   const list = React.useMemo(() => {
     return props.list.map((el, idx) => ({ ...el, _id: (el as any)._id ?? idx + 1 }))
   }, [props.list])
@@ -46,6 +62,7 @@ const GenericTabelle = function GenericTabelle(props: GenericTabelleProps) {
   const [rowsPerPage, setRowsPerPage] = React.useState(20)
   const [page, setPage] = React.useState(1)
   const [isMounted, setIsMounted] = React.useState(false)
+  const [statusFilter, setStatusFilter] = React.useState<Selection>("all");
 
   React.useEffect(() => {
     setIsMounted(true)
@@ -141,7 +158,9 @@ const GenericTabelle = function GenericTabelle(props: GenericTabelleProps) {
       return newSet
     })
   }
+  const hasSearchFilter = Boolean(filterValue);
 
+  
   const toggleAll = () => {
     if (selectedKeys.size === items.length) {
       setSelectedKeys(new Set())
@@ -149,6 +168,15 @@ const GenericTabelle = function GenericTabelle(props: GenericTabelleProps) {
       setSelectedKeys(new Set(items.map(item => String(item._id))))
     }
   }
+
+  const onSearchChange = React.useCallback((value?: string) => {
+    if (value) {
+      setFilterValue(value);
+      setPage(1);
+    } else {
+      setFilterValue("");
+    }
+  }, []);
 
   const isDate = (value: any): value is Date => {
     return value instanceof Date
@@ -206,7 +234,7 @@ const GenericTabelle = function GenericTabelle(props: GenericTabelleProps) {
     }
   }, [])
 
-  const topContent = React.useMemo(() => {
+  const topColumns = React.useMemo(() => {
     return (
       <div className="flex flex-col gap-4 pb-4">
         <div className="flex gap-3 justify-end items-center">
@@ -306,6 +334,19 @@ const GenericTabelle = function GenericTabelle(props: GenericTabelleProps) {
     onRowsPerPageChange,
     onPageChange,
   ])
+  const topSearch = React.useMemo(() => {
+    return (
+          <TextField className="w-full max-w-70" name="filter" onChange={onSearchChange}>
+      <InputGroup>
+        <InputGroup.Prefix>
+          <SearchIcon className="size-4 text-muted" />
+        </InputGroup.Prefix>
+        <InputGroup.Input className="w-full max-w-70" placeholder="Search..." value={filterValue}/>
+      </InputGroup>
+    </TextField>
+
+    )
+  }, [])
 
   if (!isMounted) {
     return null
@@ -313,7 +354,8 @@ const GenericTabelle = function GenericTabelle(props: GenericTabelleProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      {isShowColumns && topContent}
+      {topSearch}
+      {isShowColumns && topColumns}
       <div className="border-[0.5px] border-gray-300 rounded-2xl overflow-hidden bg-transparent shadow-sm">
         <div className="min-h-105 overflow-auto max-h-[calc(100vh-200px)]">
           <table className="w-full text-left border-collapse">

@@ -2,166 +2,170 @@
 // Основано на Swift моделях из iOS приложения
 
 // Категория клиентов
-export interface Category {
-  id: string;
-  categoryName: string;
-  firmaID: string;
-  clients?: Client[];
+export interface Groupe {
+  id: string
+  groupeName: string
+  firmaID: string
+  clients?: Client[]
 }
 
 // Клиент
 export interface Client {
-  id: string;
-  firmaID: string;
-  name: string;
-  surname: string;
-  email: string;
-  strasse: string;
-  plz: string;
-  ort: string;
-  houseNumber: string;
-  latitude: number;
-  longitude: number;
-  categoryId: string;
-  category?: Category;
-  appointments?: Appointment[];
+  id: string
+  status: number
+  firmaID: string
+  name: string
+  surname: string
+  email?: string
+  phone?: string
+  phone2?: string
+  country: string
+  street: string
+  postalCode: string
+  city: string
+  houseNumber: string
+  district?: string
+  latitude: number
+  longitude: number
+  groupe?: Groupe
+  appointments?: Appointment[]
 }
 // Команда работников
 export interface Team {
-  id: string;
-  teamName: string;
-  firmaID: string;
-  workers?: Worker[];
+  id: string
+  teamName: string
+  firmaID: string
+  workers?: Worker[]
 }
 
 // Работник
 export interface Worker {
-  id: string;
-  firmaID: string;
-  workerName: string;
-  teamId: string;
-  team?: Team;
-  appointments?: Appointment[];
-  reports?: Report[];
+  id: string
+  firmaID: string
+  workerName: string
+  teamId: string
+  team?: Team
+  appointments?: Appointment[]
+  reports?: Report[]
 }
 
 // Назначение (встреча/визит)
 export interface Appointment {
-  id: string;
-  userID: string;
-  clientID: string;
-  date: Date;
-  isFixedTime: boolean;
-  startTime: Date;
-  duration: number;
-  endTime: Date;
-  fahrzeit: number; // время в пути (driving time)
-  workerId: string;
-  worker?: Worker;
-  client?: Client;
-  reports?: Report[];
+  id: string
+  userID: string
+  clientID: string
+  date: Date
+  isFixedTime: boolean
+  startTime: Date
+  duration: number
+  endTime: Date
+  fahrzeit: number // время в пути (driving time)
+  workerId: string
+  worker?: Worker
+  client?: Client
+  reports?: Report[]
 }
 
 // Отчет о выполненной работе
 export interface Report {
-  id: string;
-  firmaID: string;
-  photos: string; // JSON строка или путь к фотографиям
-  workerId: string;
-  appointmentId: string;
-  worker?: Worker;
-  appointment?: Appointment;
+  id: string
+  firmaID: string
+  photos: string // JSON строка или путь к фотографиям
+  workerId: string
+  appointmentId: string
+  worker?: Worker
+  appointment?: Appointment
 }
 
 // Пользователь
 export interface User {
-  id: string;
-  firmaID: string;
-  userName: string;
+  id: string
+  firmaID: string
+  userName: string
 }
 
 // DTO для создания назначения
 export interface CreateAppointmentDTO {
-  userID: string;
-  clientID: string;
-  date: string | Date;
-  isFixedTime: boolean;
-  startTime: string | Date;
-  endTime: string | Date;
-  duration: number;
-  fahrzeit: number;
-  workerId: string;
+  userID: string
+  clientID: string
+  date: string | Date
+  isFixedTime: boolean
+  startTime: string | Date
+  endTime: string | Date
+  duration: number
+  fahrzeit: number
+  workerId: string
 }
 
 // DTO для обновления назначения
 export interface UpdateAppointmentDTO {
-  id: string;
-  date?: string | Date;
-  isFixedTime?: boolean;
-  startTime?: string | Date;
-  endTime?: string | Date;
-  duration?: number;
-  fahrzeit?: number;
-  workerId?: string;
-  clientID?: string;
+  id: string
+  date?: string | Date
+  isFixedTime?: boolean
+  startTime?: string | Date
+  endTime?: string | Date
+  duration?: number
+  fahrzeit?: number
+  workerId?: string
+  clientID?: string
 }
 
 // DTO для создания клиента
 export interface CreateClientDTO {
-  firmaID: string;
-  clientName: string;
-  strasse: string;
-  plz: string;
-  ort: string;
-  houseNumber: string;
-  latitude: number;
-  longitude: number;
-  categoryId: string;
+  firmaID: string
+  clientName: string
+  strasse: string
+  plz: string
+  ort: string
+  houseNumber: string
+  latitude: number
+  longitude: number
+  categoryId: string
 }
 
 // DTO для создания работника
 export interface CreateWorkerDTO {
-  firmaID: string;
-  workerName: string;
-  teamId: string;
+  firmaID: string
+  workerName: string
+  teamId: string
 }
 
 // DTO для создания отчета
 export interface CreateReportDTO {
-  firmaID: string;
-  photos: string;
-  workerId: string;
-  appointmentId: string;
+  firmaID: string
+  photos: string
+  workerId: string
+  appointmentId: string
 }
 
 // Вспомогательные типы для календаря и планирования
 export interface DateAppointmentView {
-  id: string;
-  date: Date;
-  dayOfWeek: string;
-  day: string;
-  appointments?: Appointment[];
+  id: string
+  date: Date
+  dayOfWeek: string
+  day: string
+  appointments?: Appointment[]
 }
 
 // Тип для перетаскивания назначений (drag & drop)
 export interface AppointmentDraggable {
-  id: string;
-  exportID: string;
-  userID: string;
-  clientID: string;
-  date: Date;
-  isFixedTime: boolean;
-  startTime: Date;
-  endTime: Date;
-  workerName: string;
-  clientName: string;
-  duration: number;
-  fahrzeit: number;
-  isReport: boolean;
+  id: string
+  exportID: string
+  userID: string
+  clientID: string
+  date: Date
+  isFixedTime: boolean
+  startTime: Date
+  endTime: Date
+  workerName: string
+  clientName: string
+  duration: number
+  fahrzeit: number
+  isReport: boolean
 }
 
 // Тип для перетаскивания работников (drag & drop)
 export interface WorkerDraggable {
-  id: string;
-  workerName: string;
+  id: string
+  workerName: string
 }

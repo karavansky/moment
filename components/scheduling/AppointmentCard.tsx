@@ -110,8 +110,8 @@ function AppointmentCard({
         <div className="flex items-start gap-1.5 text-xs">
           <MapPin className="w-3 h-3 shrink-0 mt-0.5" />
           <span className="text-xs">
-            {appointment.client.strasse} {appointment.client.houseNumber}, {appointment.client.plz}{' '}
-            {appointment.client.ort}
+            {appointment.client.street} {appointment.client.houseNumber}, {appointment.client.postalCode}{' '}
+            {appointment.client.city}
           </span>
         </div>
       )}
@@ -184,8 +184,8 @@ function AppointmentCard({
               <div className="flex items-start gap-1.5 text-xs text-default-500">
                 <MapPin className="w-3 h-3 shrink-0 mt-0.5" />
                 <span className="truncate">
-                  {appointment.client.strasse} {appointment.client.houseNumber},{' '}
-                  {appointment.client.plz} {appointment.client.ort}
+                  {appointment.client.street} {appointment.client.houseNumber},{' '}
+                  {appointment.client.postalCode} {appointment.client.city}
                 </span>
               </div>
             )}

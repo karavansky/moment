@@ -26,7 +26,7 @@ extension ModelContainer {
       let user = User(id: UUID(), firmaID: firmaID, userName: "Warsteiner")
       let team1 = Team(id: UUID(), firmaID: firmaID, worker: [], teamName: "Pflege")
       let team2 = Team(id: UUID(), firmaID: firmaID, worker: [], teamName: "Reinigung")
-      let group1 = Category(id: UUID(), firmaID: firmaID, clients: [], categoryName: "VIP")
+      let group1 = Groupe(id: UUID(), firmaID: firmaID, clients: [], categoryName: "VIP")
       let group2 = Category(id: UUID(), firmaID: firmaID, clients: [], categoryName: "Normal")
       let worker_1 = Worker(id: UUID(), firmaID: firmaID, workerName: "Schmidt", appointments: [], team: team1)
       let worker_2 = Worker(id: UUID(), firmaID: firmaID, workerName: "Müller", appointments: [], team: team2)

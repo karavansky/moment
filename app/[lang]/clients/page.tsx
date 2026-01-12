@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth'
 import { getUserByEmail } from '@/lib/users'
 import { redirect } from 'next/navigation'
-import ClientsTable from './ClientsTable'
+import ClientsView from './ClientsView'
 import { SchedulingProvider } from '@/contexts/SchedulingContext';
 
 export default async function ClientsPage() {
@@ -22,6 +22,6 @@ export default async function ClientsPage() {
   }
 
   return (
-      <ClientsTable />
+      <ClientsView />
   )
 }

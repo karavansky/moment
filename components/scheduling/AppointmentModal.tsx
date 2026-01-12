@@ -264,9 +264,9 @@ export default function AppointmentModal({
                       <MapPin className="w-4 h-4 mt-0.5 text-default-500" />
                       <div>
                         <p className="text-xs text-default-500">
-                          {selectedClient.strasse} {selectedClient.houseNumber}
+                          {selectedClient.street} {selectedClient.houseNumber}
                           <br />
-                          {selectedClient.plz} {selectedClient.ort}
+                          {selectedClient.postalCode} {selectedClient.city}
                         </p>
                       </div>
                     </div>
