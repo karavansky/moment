@@ -931,37 +931,39 @@ export const ClientAdress = memo(function ClientAdress({
               </TextField>
 
               {/* Страна - Native Select */}
-              <TextField className="w-1/2 min-w-0" isRequired>
+              <TextField className="w-1/2 min-w-0 " isRequired>
                 <Label className="text-lg md:text-base">Land</Label>
-                <select
-                  name="country"
-                  value={country}
-                  onChange={e => {
-                    const countryName = e.target.value
-                    const countryCodeValue = CountriesHelper.getCodeByName(countryName) || ''
-                    if (countryCodeValue !== addressData.country.toLowerCase()) {
-                      setCountryCode(countryCodeValue)
-                      setCountry(countryName)
-                      setAddressData(prev => ({ ...prev, country: countryCodeValue }))
-                    }
-                  }}
-                  className="w-full h-10 px-3 text-lg md:text-base bg-gray-100 dark:bg-gray-800 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 rounded-xl outline-none cursor-pointer transition-colors"
-                  required
-                >
-                  {countriesList.map(item => {
-                    // Конвертируем код страны в эмодзи флага
-                    const flagEmoji = item.id
-                      .toUpperCase()
-                      .split('')
-                      .map(char => String.fromCodePoint(127397 + char.charCodeAt(0)))
-                      .join('')
-                    return (
-                      <option key={item.id} value={item.name}>
-                        {flagEmoji} {item.name}
-                      </option>
-                    )
-                  })}
-                </select>
+                <Surface variant='tertiary' className="h-11  flex flex-col rounded-xl p-2  active:bg-transparent focus:bg-transparent">
+                  <select
+                    name="country"
+                    value={country}
+                    onChange={e => {
+                      const countryName = e.target.value
+                      const countryCodeValue = CountriesHelper.getCodeByName(countryName) || ''
+                      if (countryCodeValue !== addressData.country.toLowerCase()) {
+                        setCountryCode(countryCodeValue)
+                        setCountry(countryName)
+                        setAddressData(prev => ({ ...prev, country: countryCodeValue }))
+                      }
+                    }}
+                    className="px-2 py-0 text-lg md:text-base border-0 border-transparent rounded-xl outline-none cursor-pointer bg-transparent active:bg-transparent focus:bg-transparent"
+                    required
+                  >
+                    {countriesList.map(item => {
+                      // Конвертируем код страны в эмодзи флага
+                      const flagEmoji = item.id
+                        .toUpperCase()
+                        .split('')
+                        .map(char => String.fromCodePoint(127397 + char.charCodeAt(0)))
+                        .join('')
+                      return (
+                        <option key={item.id} value={item.name}>
+                          {flagEmoji} {item.name}
+                        </option>
+                      )
+                    })}
+                  </select>
+                </Surface>
               </TextField>
             </div>
             {/* Карта адреса */}
