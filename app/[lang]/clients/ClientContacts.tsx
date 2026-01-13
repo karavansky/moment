@@ -12,18 +12,22 @@ import {
   TextField,
 } from '@heroui/react'
 import { Client } from '@/types/scheduling'
+import { useScheduling } from '@/contexts/SchedulingContext'
 import { Mail } from 'lucide-react'
 import React, { useState, useEffect, useCallback, memo } from 'react'
 
-interface ClientAdressProps {
+interface ClientContactsProps {
   client: Client
+  isCreateNew?: boolean
   className?: string
 }
 
 export const ClientContacts = memo(function ClientContacts({
   client,
+  isCreateNew = false,
   className,
-}: ClientAdressProps) {
+}: ClientContactsProps) {
+  const { updateClient, addClient } = useScheduling()
   const [formData, setFormData] = useState({
     name: client.name || '',
     surname: client.surname || '',
@@ -59,23 +63,44 @@ export const ClientContacts = memo(function ClientContacts({
     formData.email !== (client.email || '') ||
     formData.phone !== (client.phone || '')
 
-  const onSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    const data: Record<string, string> = {}
+  const onSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
 
-    // Convert FormData to plain object
-    formData.forEach((value, key) => {
-      data[key] = value.toString()
-    })
+      // Создаем обновленный объект клиента
+      const clientData: Client = {
+        ...client,
+        name: formData.name,
+        surname: formData.surname,
+        email: formData.email,
+        phone: formData.phone,
+      }
 
-    alert('Form submitted successfully!')
-  }, [])
+      if (isCreateNew) {
+        console.log('Creating new client with contacts:', clientData)
+        // Добавляем нового клиента в контексте
+        addClient(clientData)
+        // TODO: Отправить данные на сервер
+        // await createClient(clientData)
+        alert(`Client ${formData.name} ${formData.surname} created successfully!`)
+      } else {
+        console.log('Updating client with contacts:', clientData)
+        // Обновляем клиента в контексте
+        updateClient(clientData)
+        // TODO: Отправить данные на сервер
+        // await updateClient(client.id, clientData)
+        alert('Contact information saved successfully!')
+      }
+    },
+    [formData, client, updateClient, addClient, isCreateNew]
+  )
 
   return (
-    <Card className="w-full max-w-md border border-gray-200 dark:border-gray-700">
+    <Card className={`w-full max-w-md border border-gray-200 dark:border-gray-700 ${className || ''}`}>
       <Card.Header>
-        <Card.Title>Contact Information</Card.Title>
+        <Card.Title>
+          {isCreateNew ? 'New Client Contacts' : 'Contact Information'}
+        </Card.Title>
       </Card.Header>
       <Form onSubmit={onSubmit}>
         <Card.Content>
@@ -131,20 +156,22 @@ export const ClientContacts = memo(function ClientContacts({
           </div>
         </Card.Content>
         <Card.Footer className="mt-4 flex flex-col gap-2">
-          {isChanged && (
+          {(isChanged || isCreateNew) && (
             <>
               <Separator />
               <div className="flex gap-6 justify-end">
-                <Button
-                  className="w-full max-w-50 "
-                  variant="danger-soft"
-                  type="reset"
-                  onPress={handleReset}
-                >
-                  Reset
-                </Button>
+                {!isCreateNew && (
+                  <Button
+                    className="w-full max-w-50 "
+                    variant="danger-soft"
+                    type="reset"
+                    onPress={handleReset}
+                  >
+                    Reset
+                  </Button>
+                )}
                 <Button className="w-full max-w-50" type="submit">
-                  Save
+                  {isCreateNew ? 'Create' : 'Save'}
                 </Button>
               </div>
             </>

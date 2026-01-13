@@ -1,0 +1,119 @@
+services:
+  mailserver:
+    image: docker.io/mailserver/docker-mailserver:latest
+    container_name: mailserver
+    hostname: mail
+    domainname: quailbreeder.net
+    env_file: .env
+    ports:
+      - "25:25"
+      - "465:465"
+      - "587:587"
+      - "143:143"
+      - "993:993"
+#      - "80:80"
+    volumes:
+      - ./docker-data/dms/mail-data/:/var/mail/
+      - ./docker-data/dms/mail-state/:/var/mail-state/
+      - ./docker-data/dms/config/:/tmp/docker-mailserver/
+      - /etc/localtime:/etc/localtime:ro
+      # Измените это монтирование:
+      - ./docker-data/ssl:/etc/letsencrypt:ro  # Let's Encrypt директория
+      # Дополнительно для хранения полученных сертификатов:
+#      - ./docker-data/certbot/www:/var/www/certbot:rw
+
+    restart: always
+
+    # 🔒 Ограничение ресурсов (КРИТИЧНО для 2GB VPS)
+    mem_limit: 900m
+    cpus: 1.5
+
+    cap_add:
+      - NET_ADMIN
+      - SYS_PTRACE
+
+  blog:
+    image: blog:latest
+    container_name: blog
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - HOSTNAME=0.0.0.0
+    depends_on:
+      - postgres
+
+  moment:
+    image: moment:latest
+    container_name: moment
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      - HOSTNAME=0.0.0.0
+    depends_on:
+      - postgres
+
+  photon:
+    image: rtuszik/photon-docker:latest
+    container_name: photon
+    restart: unless-stopped
+    ports:
+      - "2322:2322"
+    environment:
+      - REGION=germany        # Замените на нужный регион (например, 'russia', 'france' или 'planet')
+      - UPDATE_STRATEGY=SEQUENTIAL
+    volumes:
+      - ./docker-data/photon:/photon/photon_data
+
+  postgres:
+    image: postgres:alpine
+    container_name: alpine
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=hronop
+      - POSTGRES_PASSWORD=Sk02081978
+      - PGDATA=/var/lib/postgresql/18/docker
+    volumes:
+      - postgres-data:/var/lib/postgresql
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=karavansky@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=Sk02081978
+      - PGADMIN_CONFIG_SERVER_MODE=True
+      - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=False
+      - PGADMIN_CONFIG_PROXY_X_FOR_COUNT=1
+      - PGADMIN_CONFIG_PROXY_X_PROTO_COUNT=1
+      - PGADMIN_CONFIG_PROXY_X_HOST_COUNT=1
+      - SCRIPT_NAME=/pgadmin
+      - PGADMIN_CONFIG_X_FRAME_OPTIONS='SAMEORIGIN'
+      - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=False
+      - PGADMIN_CONFIG_SESSION_COOKIE_PATH='/pgadmin/'
+      - PGADMIN_CONFIG_SESSION_COOKIE_NAME='pgadmin4_session'
+      - PGADMIN_CONFIG_SESSION_COOKIE_SAMESITE='Lax'
+      - PGADMIN_CONFIG_WTF_CSRF_TIME_LIMIT=None
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+
+
+volumes:
+  postgres-data:
+    external: true
+    name: f5b75a4d3df7bdcd9853ec8760e8d8ef8d2c3b89874cff0f8f0b4a0e767706b5
+  pgadmin-data:
+    external: true
+    name: quailbreeder_pgadmin_data
+
+
+
+

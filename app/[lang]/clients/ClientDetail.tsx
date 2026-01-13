@@ -13,11 +13,12 @@ import ClientHistory from './ClientHistory'
 interface ClientDetailProps {
   client: Client
   onClose: () => void
+  isCreateNew?: boolean
   className?: string
 }
 
 export default memo(ClientDetail)
-function ClientDetail({ client, onClose, className }: ClientDetailProps) {
+function ClientDetail({ client, onClose, isCreateNew = false, className }: ClientDetailProps) {
   const { clients, groups, isLoading, selectedDate, selectedAppointment, setSelectedAppointment } =
     useScheduling()
   const lang = useLanguage()
@@ -67,7 +68,7 @@ function ClientDetail({ client, onClose, className }: ClientDetailProps) {
           <Undo2 className="w-5 h-5 text-primary" />
         </Button>
         <h2 className="text-2xl font-semibold">
-          {client.surname} {client.name}
+          {isCreateNew ? 'New Client' : `${client.surname} ${client.name}`}
         </h2>
       </div>
       <div className="flex flex-col relative mb-4">
@@ -110,7 +111,7 @@ function ClientDetail({ client, onClose, className }: ClientDetailProps) {
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.3, ease: 'easeInOut' }}
             >
-              <ClientOverview client={client} className="pt-2" />
+              <ClientOverview client={client} isCreateNew={isCreateNew} className="pt-2" />
             </motion.div>
           ) : (
             <motion.div

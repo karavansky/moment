@@ -39,6 +39,9 @@ interface SchedulingActions {
   updateAppointment: (appointment: Appointment) => void;
   deleteAppointment: (id: string) => void;
   moveAppointmentToDate: (appointmentId: string, newDate: Date) => void;
+  addClient: (client: Client) => void;
+  updateClient: (client: Client) => void;
+  deleteClient: (id: string) => void;
   refreshData: () => void;
 }
 
@@ -184,6 +187,34 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
           ),
         };
       });
+    },
+
+    addClient: (client) => {
+      console.log('Adding new client:', client);
+      setState((prev) => ({
+        ...prev,
+        clients: [...prev.clients, client],
+      }));
+    },
+
+    updateClient: (updatedClient) => {
+      console.log('Updating client:', updatedClient);
+      setState((prev) => ({
+        ...prev,
+        clients: prev.clients.map((client) =>
+          client.id === updatedClient.id ? updatedClient : client
+        ),
+      }));
+    },
+
+    deleteClient: (id) => {
+      console.log('Deleting client:', id);
+      setState((prev) => ({
+        ...prev,
+        clients: prev.clients.filter((client) => client.id !== id),
+        // Также удаляем все связанные appointments
+        appointments: prev.appointments.filter((apt) => apt.clientID !== id),
+      }));
     },
 
     refreshData: () => {

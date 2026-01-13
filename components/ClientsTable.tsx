@@ -40,6 +40,7 @@ interface GenericTabelleProps {
   initialVisibleColumns?: string[]
   sortDescriptor?: SortDescriptor
   onRowClick?: (id: string) => void
+  onAddNew?: () => void
   isShowColumns?: boolean
   groups: Groupe[]
   className?: string
@@ -548,7 +549,7 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
                 </Dropdown.Menu>
               </Dropdown.Popover>
             </Dropdown>
-            <Button variant="primary" className="ml-auto sm:ml-0">
+            <Button variant="primary" className="ml-auto sm:ml-0" onPress={props.onAddNew}>
               Add New
               <PlusIcon />
             </Button>

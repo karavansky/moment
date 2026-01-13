@@ -24,6 +24,7 @@ export interface Client {
   postalCode: string
   city: string
   houseNumber: string
+  apartment?: string
   district?: string
   latitude: number
   longitude: number

@@ -9,20 +9,49 @@ import { motion, AnimatePresence } from 'framer-motion'
 import ClientDetail from './ClientDetail'
 
 export default function ClientsView() {
-  const { clients, groups, isLoading } = useScheduling()
+  const { clients, groups, isLoading, firmaID } = useScheduling()
   const lang = useLanguage()
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
+  const [isCreateNew, setIsCreateNew] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   const onSelectClient = (client: Client) => {
     startTransition(() => {
       setSelectedClient(client)
+      setIsCreateNew(false)
+    })
+  }
+
+  const onAddNewClient = () => {
+    startTransition(() => {
+      // Создаем пустой объект клиента с дефолтными значениями
+      const newClient: Client = {
+        id: crypto.randomUUID(),
+        firmaID: firmaID,
+        status: 0,
+        name: '',
+        surname: '',
+        email: '',
+        phone: '',
+        phone2: '',
+        country: '',
+        street: '',
+        postalCode: '',
+        city: '',
+        houseNumber: '',
+        district: '',
+        latitude: 0,
+        longitude: 0,
+      }
+      setSelectedClient(newClient)
+      setIsCreateNew(true)
     })
   }
 
   const onCloseClientDetail = () => {
     startTransition(() => {
       setSelectedClient(null)
+      setIsCreateNew(false)
     })
   }
 
@@ -47,6 +76,7 @@ export default function ClientsView() {
               <ClientDetail
                 client={selectedClient}
                 onClose={onCloseClientDetail}
+                isCreateNew={isCreateNew}
                 className="pt-2"
               />
             </motion.div>
@@ -69,6 +99,7 @@ export default function ClientsView() {
                     onSelectClient(client)
                   }
                 }}
+                onAddNew={onAddNewClient}
                 groups={groups}
                 className="pt-2"
               />
