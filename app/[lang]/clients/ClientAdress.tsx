@@ -63,6 +63,7 @@ export const ClientAdress = memo(function ClientAdress({
   const [isCityInvalid, setIsCityInvalid] = useState(false)
   const [isCountryInvalid, setIsCountryInvalid] = useState(false)
   const [isHouseInvalid, setIsHouseInvalid] = useState(false)
+  const [isStreetInvalid, setIsStreetInvalid] = useState(false)
 
   const isChanged =
     addressData.street !== (client.street || '') ||
@@ -776,82 +777,82 @@ export const ClientAdress = memo(function ClientAdress({
 
               {/* Улица */}
               <div className="w-3/5 min-w-0 flex flex-col gap-2">
-                            <TextField
-                isRequired
-                name="street"
-                type="text"
-              >
-                <Label className="text-lg md:text-base">Straße</Label>
-                <div className="relative">
-                  <Input
-                    value={streetQuery}
-                    onChange={e => {
-                      const val = e.target.value
+                <TextField isRequired name="street" type="text" isInvalid={isStreetInvalid}>
+                  <Label className="text-lg md:text-base">Straße</Label>
+                  <div className="relative">
+                    <Input
+                      value={streetQuery}
+                      onChange={e => {
+                        const val = e.target.value
+                        console.log('Street input changed to:', val)
+                        console.log('listStreets items:', listStreets.items)
+                        // 1. Попытка найти по составному имени (для дубликатов)
+                        let selected = listStreets.items.find(
+                          s => s.district && `${s.street} (${s.district})` === val
+                        )
 
-                      // 1. Попытка найти по составному имени (для дубликатов)
-                      let selected = listStreets.items.find(
-                        s => s.district && `${s.street} (${s.district})` === val
-                      )
-
-                      // 2. Если не нашли, ищем по точному совпадению улицы (для уникальных)
-                      if (!selected) {
-                        const candidates = listStreets.items.filter(s => s.street === val)
-                        if (candidates.length === 1) {
-                          selected = candidates[0]
+                        // 2. Если не нашли, ищем по точному совпадению улицы (для уникальных)
+                        if (!selected) {
+                          const candidates = listStreets.items.filter(s => s.street === val)
+                          if (candidates.length === 1) {
+                            selected = candidates[0]
+                          }
+                          console.log('Trying to find street by exact name selected:', selected)
                         }
-                      }
 
-                      if (selected) {
-                        console.log('User selected from datalist:', selected)
+                        if (selected) {
+                          console.log('User selected from datalist:', selected)
 
-                        // 1. Обновляем полные данные адреса (включая район)
-                        setAddressData(prev => ({
-                          ...prev,
-                          street: selected ? selected.street : '',
-                          district: (selected && selected.district) || prev.district,
-                        }))
+                          // 1. Обновляем полные данные адреса (включая район)
+                          setAddressData(prev => ({
+                            ...prev,
+                            street: selected ? selected.street : '',
+                            district: (selected && selected.district) || prev.district,
+                          }))
 
-                        // 2. Визуально оставляем в поле только название улицы (без района)
-                        setStreetQuery(selected.street)
-                      } else {
-                        // Если совпадения нет - продолжаем обычный ввод и поиск
-                        handleStreetInputChange(val)
-                      }
-                    }}
-                    placeholder={cityQuery ? 'Type street name...' : 'Select city first'}
-                    autoComplete="off"
-                    list="street-options"
-                    className="text-lg md:text-base w-full"
-                    disabled={!cityQuery}
-                    required
-                  />
-                  <datalist id="street-options">
-                    {(() => {
-                      const streetCounts = listStreets.items.reduce(
-                        (acc, item) => {
-                          acc[item.street] = (acc[item.street] || 0) + 1
-                          return acc
-                        },
-                        {} as Record<string, number>
-                      )
+                          // 2. Визуально оставляем в поле только название улицы (без района)
+                          setStreetQuery(selected.street)
+                          setIsStreetInvalid(false)
+                        } else {
+                          // Если совпадения нет - продолжаем обычный ввод и поиск
+                          setIsStreetInvalid(true)
+                          handleStreetInputChange(val)
+                        }
+                      }}
+                      placeholder={cityQuery ? 'Type street name...' : 'Select city first'}
+                      autoComplete="off"
+                      list="street-options"
+                      className="text-lg md:text-base w-full"
+                      disabled={!cityQuery}
+                      required
+                    />
+                    <datalist id="street-options">
+                      {(() => {
+                        const streetCounts = listStreets.items.reduce(
+                          (acc, item) => {
+                            acc[item.street] = (acc[item.street] || 0) + 1
+                            return acc
+                          },
+                          {} as Record<string, number>
+                        )
 
-                      return listStreets.items.map(streetObj => {
-                        const count = streetCounts[streetObj.street] || 0
-                        const isDuplicate = count > 1
+                        return listStreets.items.map(streetObj => {
+                          const count = streetCounts[streetObj.street] || 0
+                          const isDuplicate = count > 1
 
-                        const value =
-                          isDuplicate && streetObj.district
-                            ? `${streetObj.street} (${streetObj.district})`
-                            : streetObj.street
+                          const value =
+                            isDuplicate && streetObj.district
+                              ? `${streetObj.street} (${streetObj.district})`
+                              : streetObj.street
 
-                        const label =
-                          !isDuplicate && streetObj.district ? streetObj.district : undefined
+                          const label =
+                            !isDuplicate && streetObj.district ? streetObj.district : undefined
 
-                        return <option key={streetObj.id} value={value} label={label} />
-                      })
-                    })()}
-                  </datalist>
-                </div>
+                          return <option key={streetObj.id} value={value} label={label} />
+                        })
+                      })()}
+                    </datalist>
+                  </div>
                 </TextField>
               </div>
             </div>
