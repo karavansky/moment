@@ -26,6 +26,7 @@ import { appRouterContext } from 'next/dist/server/route-modules/app-route/share
 import { isOutputType } from 'graphql'
 import { useAsyncList } from '@react-stately/data'
 import { i } from 'framer-motion/client'
+import { List } from 'lucide-react'
 
 // Динамический импорт карты для избежания SSR проблем
 const AddressMap = dynamic(() => import('./AddressMap'), { ssr: false })
@@ -60,7 +61,6 @@ export const ClientAdress = memo(function ClientAdress({
   const [cityQuery, setCityQuery] = useState(client.city || '')
   const [streetQuery, setStreetQuery] = useState(client.street || '')
   const [isCityInvalid, setIsCityInvalid] = useState(false)
-  const [isStreetInvalid, setIsStreetInvalid] = useState(false)
   const [isCountryInvalid, setIsCountryInvalid] = useState(false)
   const [isHouseInvalid, setIsHouseInvalid] = useState(false)
 
@@ -97,9 +97,7 @@ export const ClientAdress = memo(function ClientAdress({
   const [country, setCountry] = useState(normalizedCountry || '')
   console.log('ClientAdress render with country:', country, 'code:', countryCode)
   const [cities, setCities] = useState<any[]>([])
-  const [streets, setStreets] = useState<Array<{ id: number; street: string; district: string }>>(
-    []
-  )
+
   const listCities = useAsyncList<Character>({
     initialSelectedKeys: [client.city ? client.city : ''],
     initialFilterText: client.city || '',
@@ -199,6 +197,80 @@ export const ClientAdress = memo(function ClientAdress({
     },
   })
 
+  const listStreets = useAsyncList<{ id: number; street: string; district: string }>({
+    initialFilterText: client.street || '',
+    async load({ signal, filterText }) {
+      const streetQuery = filterText
+      const cityName = addressData.city
+      // Access state values that should be captured or available in render scope
+      const countryName = country
+      const countryCodeValue = countryCode
+
+      if ((streetQuery && streetQuery.length < 3) || !cityName || !countryName) {
+        return { items: [] }
+      }
+
+      try {
+        const searchQuery = `${streetQuery} ${cityName} ${countryName}`
+        const isGermany = countryCodeValue?.toLowerCase() === 'de'
+        const baseUrl = isGermany ? '/api/photon' : 'https://photon.komoot.io/api'
+        const url = `${baseUrl}?q=${encodeURIComponent(searchQuery)}&osm_tag=highway&lang=de&limit=50`
+
+        const res = await fetch(url, { signal })
+
+        if (!res.ok) {
+          return { items: [] }
+        }
+
+        const data = await res.json()
+
+        if (!data.features || !Array.isArray(data.features)) {
+          return { items: [] }
+        }
+        console.log('Street search data:', data.features)
+        const filtered = data.features.filter((f: any) => {
+          const props = f.properties
+          const matchesCountry = props.countrycode?.toLowerCase() === countryCodeValue.toLowerCase()
+          const matchesCity = props.city?.toLowerCase() === cityName.toLowerCase()
+          const isStreet = props.osm_key === 'highway' || props.street
+          return matchesCountry && matchesCity && isStreet
+        })
+
+        const streetObjects = filtered
+          .map((f: any, index: number) => {
+            const name = f.properties.name || f.properties.street
+            const district = f.properties.district || ''
+            return name ? { id: index, street: name, district } : null
+          })
+          .filter(Boolean) as Array<{ id: number; street: string; district: string }>
+
+        const uniqueStreetsMap = new Map<string, { id: number; street: string; district: string }>()
+        streetObjects.forEach(obj => {
+          const key = `${obj.street}|${obj.district}`
+          if (!uniqueStreetsMap.has(key)) {
+            uniqueStreetsMap.set(key, obj)
+          }
+        })
+        const uniqueStreets = Array.from(uniqueStreetsMap.values())
+        if (streetQuery) {
+          const searchLower = streetQuery.toLowerCase()
+          uniqueStreets.sort((a, b) => {
+            const aStartsWith = a.street.toLowerCase().startsWith(searchLower)
+            const bStartsWith = b.street.toLowerCase().startsWith(searchLower)
+            if (aStartsWith && !bStartsWith) return -1
+            if (!aStartsWith && bStartsWith) return 1
+            return a.street.localeCompare(b.street)
+          })
+        } else {
+          console.log('No street query for sorting')
+        }
+        return { items: uniqueStreets }
+      } catch (error: any) {
+        return { items: [] }
+      }
+    },
+  })
+
   useEffect(() => {
     //  listCities.setFilterText(addressData.city)
   }, [addressData.city])
@@ -210,13 +282,11 @@ export const ClientAdress = memo(function ClientAdress({
 
   // AbortControllers для отмены запросов
   const cityAbortController = useRef<AbortController | null>(null)
-  const streetAbortController = useRef<AbortController | null>(null)
 
   // Флаги для предотвращения множественных одновременных запросов
   const isFetchingCities = useRef(false)
-  const isFetchingStreets = useRef(false)
-  const isFetchingPostcode = useRef(false)
-  //const [isFetchingPostcode, setIsFetchingPostcode] = useState(false)
+  //const isFetchingPostcode = useRef(false)
+  const [isFetchingPostcode, setIsFetchingPostcode] = useState(false)
 
   const onSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
@@ -323,107 +393,6 @@ export const ClientAdress = memo(function ClientAdress({
     []
   )
 
-  // 2. Явная функция для поиска улиц
-  const fetchStreets = useCallback(
-    async (
-      streetQuery: string,
-      cityName: string,
-      countryName: string,
-      countryCodeValue: string
-    ) => {
-      if (streetQuery.length < 3 || !cityName || !countryName) {
-        return
-      }
-
-      // Отменяем предыдущий запрос, если он еще выполняется
-      if (streetAbortController.current) {
-        streetAbortController.current.abort()
-      }
-
-      // Создаем новый AbortController для этого запроса
-      streetAbortController.current = new AbortController()
-      const signal = streetAbortController.current.signal
-
-      isFetchingStreets.current = true
-
-      try {
-        const searchQuery = `${streetQuery} ${cityName} ${countryName}`
-
-        const isGermany = countryCodeValue?.toLowerCase() === 'de'
-        const baseUrl = isGermany ? '/api/photon' : 'https://photon.komoot.io/api'
-
-        // const url = `/api/photon?q=${encodeURIComponent(searchQuery)}&osm_tag=highway&lang=de&limit=50`
-        const url = `${baseUrl}?q=${encodeURIComponent(searchQuery)}&osm_tag=highway&lang=de&limit=50`
-
-        const res = await fetch(url, { signal })
-
-        if (!res.ok) {
-          console.error('❌ API response not OK:', res.status, res.statusText)
-          setStreets([])
-          return
-        }
-
-        const data = await res.json()
-
-        if (!data.features || !Array.isArray(data.features)) {
-          console.warn('⚠️ No features in API response for streets')
-          setStreets([])
-          return
-        }
-
-        const filtered = data.features.filter((f: any) => {
-          const props = f.properties
-          const matchesCountry = props.countrycode?.toLowerCase() === countryCodeValue.toLowerCase()
-          const matchesCity = props.city?.toLowerCase() === cityName.toLowerCase()
-          const isStreet = props.osm_key === 'highway' || props.street
-          return matchesCountry && matchesCity && isStreet
-        })
-
-        // Преобразуем в массив объектов {id, street, district}
-        const streetObjects = filtered
-          .map((f: any, index: number) => {
-            const name = f.properties.name || f.properties.street
-            const district = f.properties.district || ''
-            return name ? { id: index, street: name, district } : null
-          })
-          .filter(Boolean) as Array<{ id: number; street: string; district: string }>
-
-        // Убираем дубликаты
-        const uniqueStreetsMap = new Map<string, { id: number; street: string; district: string }>()
-        streetObjects.forEach(obj => {
-          const key = `${obj.street}|${obj.district}`
-          if (!uniqueStreetsMap.has(key)) {
-            uniqueStreetsMap.set(key, obj)
-          }
-        })
-        const uniqueStreets = Array.from(uniqueStreetsMap.values())
-
-        // Сортируем
-        const searchLower = streetQuery.toLowerCase()
-        uniqueStreets.sort((a, b) => {
-          const aStartsWith = a.street.toLowerCase().startsWith(searchLower)
-          const bStartsWith = b.street.toLowerCase().startsWith(searchLower)
-          if (aStartsWith && !bStartsWith) return -1
-          if (!aStartsWith && bStartsWith) return 1
-          return a.street.localeCompare(b.street)
-        })
-
-        setStreets(uniqueStreets)
-      } catch (error: any) {
-        // Игнорируем ошибки отмены запроса
-        if (error.name === 'AbortError') {
-          return
-        }
-        // console.error('❌ Error fetching streets:', error)
-        // Не показываем ошибку пользователю, просто очищаем список
-        // setStreets([])
-      } finally {
-        isFetchingStreets.current = false
-      }
-    },
-    []
-  )
-
   // 3. Явная функция для получения почтового индекса
   const fetchPostalCode = useCallback(
     async (street: string, houseNumber: string, city: string, countryValue: string) => {
@@ -489,8 +458,8 @@ export const ClientAdress = memo(function ClientAdress({
         // Не показываем ошибку пользователю, просто игнорируем
         setIsHouseInvalid(true)
       } finally {
-        //setIsFetchingPostcode(false)
-        isFetchingPostcode.current = false
+        setIsFetchingPostcode(false)
+        // isFetchingPostcode.current = false
       }
     },
     [setAddressData, setAddressCoordinates, setIsHouseInvalid]
@@ -549,24 +518,20 @@ export const ClientAdress = memo(function ClientAdress({
     (value: string) => {
       // Игнорируем пустое значение если улица уже выбрана
       if (!value && addressData.street) {
-        return
+        //     return
       }
 
       setStreetQuery(value)
 
-      // Очищаем предыдущий таймер
       if (streetSearchTimer.current) {
         clearTimeout(streetSearchTimer.current)
       }
 
-      // Устанавливаем новый таймер с увеличенным debounce (500ms вместо 300ms)
-      if (value.length >= 3 && addressData.city && country) {
-        streetSearchTimer.current = setTimeout(() => {
-          fetchStreets(value, addressData.city, country, countryCode)
-        }, 500)
-      }
+      streetSearchTimer.current = setTimeout(() => {
+        listStreets.setFilterText(value)
+      }, 500)
     },
-    [addressData.city, addressData.street, country, countryCode, fetchStreets]
+    [addressData.street, listStreets]
   )
 
   const handleCitySelection = useCallback(
@@ -595,28 +560,11 @@ export const ClientAdress = memo(function ClientAdress({
         }))
         setCityQuery(keyString)
         setStreetQuery('')
-        setStreets([])
+        // setStreets([]) replaced
+        listStreets.setFilterText('')
       }
     },
     [cities, addressData.city]
-  )
-
-  const handleStreetSelection = useCallback(
-    (key: React.Key | null) => {
-      if (!key) return
-
-      const selected = streets.find(s => s.id === Number(key))
-      if (selected) {
-        const streetName = selected.street
-        setStreetQuery(streetName)
-        setAddressData(prev => ({
-          ...prev,
-          street: streetName,
-          district: selected.district || prev.district,
-        }))
-      }
-    },
-    [streets]
   )
 
   const handleCountrySelection = useCallback(
@@ -631,7 +579,8 @@ export const ClientAdress = memo(function ClientAdress({
           setCityQuery('')
           setStreetQuery('')
           setCities([])
-          setStreets([])
+          // setStreets([]) replaced
+          listStreets.setFilterText('')
           setAddressData(prev => ({
             ...prev,
             country: countryName,
@@ -647,8 +596,8 @@ export const ClientAdress = memo(function ClientAdress({
   )
   const handleHouseSelection = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      //setIsFetchingPostcode(true)
-      isFetchingPostcode.current = true
+      setIsFetchingPostcode(true)
+      // isFetchingPostcode.current = true
       console.log('House number changed to:', e.target.value)
       setAddressData(prev => ({ ...prev, houseNumber: e.target.value }))
       // Очищаем предыдущий таймер
@@ -768,8 +717,9 @@ export const ClientAdress = memo(function ClientAdress({
                 onInputChange={value => {
                   console.log('City input change to:', value)
                   if (value.length > 0) {
-                    listCities.setFilterText(value)
+                    //                    listCities.setFilterText(value)
                   }
+                  listCities.setFilterText(value)
                 }}
                 // inputValue={cityQuery}
                 //  onOpenChange={handleCityOpenChange}
@@ -825,55 +775,85 @@ export const ClientAdress = memo(function ClientAdress({
               </ComboBox>
 
               {/* Улица */}
-              <ComboBox
-                key="streetQuery"
-                className="w-3/5 min-w-0"
-                inputValue={streetQuery}
-                onInputChange={handleStreetInputChange}
-                onSelectionChange={handleStreetSelection}
-                items={streets}
-                isDisabled={!cityQuery}
+              <div className="w-3/5 min-w-0 flex flex-col gap-2">
+                            <TextField
                 isRequired
-                isInvalid={isStreetInvalid}
+                name="street"
+                type="text"
               >
                 <Label className="text-lg md:text-base">Straße</Label>
-                <ComboBox.InputGroup>
+                <div className="relative">
                   <Input
-                    placeholder={cityQuery ? 'Type street name...' : 'Select city first'}
-                    autoComplete="new-password"
-                    className="text-lg md:text-base"
-                  />
-                  <ComboBox.Trigger />
-                </ComboBox.InputGroup>
-                <ComboBox.Popover>
-                  <ListBox>
-                    {streets.length > 0 ? (
-                      streets.map(streetObj => {
-                        const displayName = streetObj.district
-                          ? `${streetObj.street} (${streetObj.district})`
-                          : streetObj.street
-                        return (
-                          <ListBox.Item
-                            key={streetObj.id}
-                            id={streetObj.id.toString()}
-                            textValue={streetObj.street}
-                          >
-                            <span className="text-xl md:text-base">{displayName}</span>
+                    value={streetQuery}
+                    onChange={e => {
+                      const val = e.target.value
 
-                            <ListBox.ItemIndicator />
-                          </ListBox.Item>
-                        )
+                      // 1. Попытка найти по составному имени (для дубликатов)
+                      let selected = listStreets.items.find(
+                        s => s.district && `${s.street} (${s.district})` === val
+                      )
+
+                      // 2. Если не нашли, ищем по точному совпадению улицы (для уникальных)
+                      if (!selected) {
+                        const candidates = listStreets.items.filter(s => s.street === val)
+                        if (candidates.length === 1) {
+                          selected = candidates[0]
+                        }
+                      }
+
+                      if (selected) {
+                        console.log('User selected from datalist:', selected)
+
+                        // 1. Обновляем полные данные адреса (включая район)
+                        setAddressData(prev => ({
+                          ...prev,
+                          street: selected ? selected.street : '',
+                          district: (selected && selected.district) || prev.district,
+                        }))
+
+                        // 2. Визуально оставляем в поле только название улицы (без района)
+                        setStreetQuery(selected.street)
+                      } else {
+                        // Если совпадения нет - продолжаем обычный ввод и поиск
+                        handleStreetInputChange(val)
+                      }
+                    }}
+                    placeholder={cityQuery ? 'Type street name...' : 'Select city first'}
+                    autoComplete="off"
+                    list="street-options"
+                    className="text-lg md:text-base w-full"
+                    disabled={!cityQuery}
+                    required
+                  />
+                  <datalist id="street-options">
+                    {(() => {
+                      const streetCounts = listStreets.items.reduce(
+                        (acc, item) => {
+                          acc[item.street] = (acc[item.street] || 0) + 1
+                          return acc
+                        },
+                        {} as Record<string, number>
+                      )
+
+                      return listStreets.items.map(streetObj => {
+                        const count = streetCounts[streetObj.street] || 0
+                        const isDuplicate = count > 1
+
+                        const value =
+                          isDuplicate && streetObj.district
+                            ? `${streetObj.street} (${streetObj.district})`
+                            : streetObj.street
+
+                        const label =
+                          !isDuplicate && streetObj.district ? streetObj.district : undefined
+
+                        return <option key={streetObj.id} value={value} label={label} />
                       })
-                    ) : (
-                      <ListBox.Item key="empty" textValue="No results">
-                        {streetQuery.length < 3
-                          ? 'Type at least 3 characters...'
-                          : 'No streets found'}
-                      </ListBox.Item>
-                    )}
-                  </ListBox>
-                </ComboBox.Popover>
-              </ComboBox>
+                    })()}
+                  </datalist>
+                </div>
+                </TextField>
+              </div>
             </div>
             <div className="flex items-center flex-row gap-2 w-full">
               {/* Номер дома */}
@@ -885,17 +865,19 @@ export const ClientAdress = memo(function ClientAdress({
                 type="text"
               >
                 <Label className="text-lg md:text-base">Hausnummer</Label>
-                <InputGroup>
-                  <InputGroup.Input
+                <div className="relative w-full">
+                  <Input
                     placeholder="e.g. 12A"
                     value={addressData.houseNumber}
                     onChange={handleHouseSelection}
-                    className="text-lg md:text-base h-10"
+                    className="text-lg md:text-base h-10 pr-8 w-full"
                   />
-                  <InputGroup.Suffix>
-                    {isFetchingPostcode.current && <Spinner className="size-4" />}
-                  </InputGroup.Suffix>
-                </InputGroup>
+                  {isFetchingPostcode && (
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
+                      <Spinner size="sm" />
+                    </div>
+                  )}
+                </div>
               </TextField>
               <TextField name="apartment" className="w-1/3 min-w-0" type="text">
                 <Label className="text-lg md:text-base">Apt</Label>
@@ -933,7 +915,10 @@ export const ClientAdress = memo(function ClientAdress({
               {/* Страна - Native Select */}
               <TextField className="w-1/2 min-w-0 " isRequired>
                 <Label className="text-lg md:text-base">Land</Label>
-                <Surface variant='tertiary' className="h-11  flex flex-col rounded-xl p-2  active:bg-transparent focus:bg-transparent">
+                <Surface
+                  variant="tertiary"
+                  className="h-11  flex flex-col rounded-xl p-2  active:bg-transparent focus:bg-transparent"
+                >
                   <select
                     name="country"
                     value={country}
@@ -1006,28 +991,56 @@ export const ClientAdress = memo(function ClientAdress({
 })
 
 /*
-                  <ListBox>
-                    
-                    {cities.length > 0 ? (
-                      cities.map(item => (
-                        <ListBox.Item
-                          key={item.properties.osm_id}
-                          id={item.properties.osm_id}
-                          textValue={item.properties.name}
-                        >
-                          {item.properties.name}{' '}
-                          {item.properties.postcode && `(${item.properties.postcode})`}
-                          <ListBox.ItemIndicator />
-                        </ListBox.Item>
-                      ))
-                    ) : isFetchingCities.current ? (
-                      <ListBox.Item key="empty" textValue="loading">
-                        Loading cities...
-                        <Spinner className="size-4 ml-2" />
-                      </ListBox.Item>
-                    ) : <ListBox.Item key="empty" textValue="No results">
-                        {cityQuery.length < 2 ? 'Type at least 2 characters...' : 'No cities found'}
-                      </ListBox.Item>}
-                  </ListBox>
 
+//{streets.length > 0 && streetQuery.length >= 3 && (
+              Улица 
+              <ComboBox
+                key="streetQuery"
+                className="w-3/5 min-w-0"
+                inputValue={streetQuery}
+                onInputChange={handleStreetInputChange}
+                onSelectionChange={handleStreetSelection}
+                items={streets}
+                isDisabled={!cityQuery}
+                isRequired
+                isInvalid={isStreetInvalid}
+              >
+                <Label className="text-lg md:text-base">Straße</Label>
+                <ComboBox.InputGroup>
+                  <Input
+                    placeholder={cityQuery ? 'Type street name...' : 'Select city first'}
+                    autoComplete="new-password"
+                    className="text-lg md:text-base"
+                  />
+                  <ComboBox.Trigger />
+                </ComboBox.InputGroup>
+                <ComboBox.Popover>
+                  <ListBox>
+                    {streets.length > 0 ? (
+                      streets.map(streetObj => {
+                        const displayName = streetObj.district
+                          ? `${streetObj.street} (${streetObj.district})`
+                          : streetObj.street
+                        return (
+                          <ListBox.Item
+                            key={streetObj.id}
+                            id={streetObj.id.toString()}
+                            textValue={streetObj.street}
+                          >
+                            <span className="text-xl md:text-base">{displayName}</span>
+
+                            <ListBox.ItemIndicator />
+                          </ListBox.Item>
+                        )
+                      })
+                    ) : (
+                      <ListBox.Item key="empty" textValue="No results">
+                        {streetQuery.length < 3
+                          ? 'Type at least 3 characters...'
+                          : 'No streets found'}
+                      </ListBox.Item>
+                    )}
+                  </ListBox>
+                </ComboBox.Popover>
+              </ComboBox>
 */
