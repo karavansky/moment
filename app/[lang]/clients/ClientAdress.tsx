@@ -16,7 +16,6 @@ import {
   ListBoxLoadMoreItem,
   Separator,
   Spinner,
-  Surface,
   TextField,
 } from '@heroui/react'
 import { Client } from '@/types/scheduling'
@@ -153,7 +152,19 @@ export const ClientAdress = memo(function ClientAdress({
         }
 
         const uniqueLocations = Array.from(acc.values())
-      return {
+
+        if (filterText) {
+          const searchLower = filterText.toLowerCase()
+          uniqueLocations.sort((a, b) => {
+            const aStartsWith = a.name.toLowerCase().startsWith(searchLower)
+            const bStartsWith = b.name.toLowerCase().startsWith(searchLower)
+            if (aStartsWith && !bStartsWith) return -1
+            if (!aStartsWith && bStartsWith) return 1
+            return a.name.localeCompare(b.name)
+          })
+        }
+
+        return {
           cursor: data.next,
           items: uniqueLocations,
         }
@@ -695,69 +706,47 @@ export const ClientAdress = memo(function ClientAdress({
           <div className="flex flex-col gap-4 ">
             <div className="flex items-center justify-center flex-row gap-2 w-full">
               {/* Город */}
-              <ComboBox
-                key="cityQuery"
-                className="w-2/5 min-w-0 "
-                inputValue={listCities.filterText}
-                onInputChange={value => {
-                  console.log('City input change to:', value)
-                  if (value.length > 0) {
-                    //                    listCities.setFilterText(value)
-                  }
-                  listCities.setFilterText(value)
-                }}
-                // inputValue={cityQuery}
-                //  onOpenChange={handleCityOpenChange}
-                //onInputChange={handleCityInputChange}
-                onSelectionChange={handleCitySelection}
-                items={cities}
-                isDisabled={!country}
-                isRequired
-                isInvalid={isCityInvalid}
-                aria-label="city Select"
-              >
-                <Label className="text-lg md:text-base">Stadt </Label>
-                <ComboBox.InputGroup>
-                  <Input
-                    placeholder={country ? 'Type city name...' : 'Select country first'}
-                    autoComplete="new-password"
-                    className="text-lg md:text-base"
-                  />
-                  <ComboBox.Trigger />
-                </ComboBox.InputGroup>
-                <ComboBox.Popover>
-                  <ListBox renderEmptyState={() => <EmptyState />}>
-                    {listCities.filterText.length < 2 ? (
-                      <ListBox.Item key="empty" textValue="Type at least 2 characters">
-                        Type at least 2 characters...
-                      </ListBox.Item>
-                    ) : listCities.items.length === 0 ? (
-                      <ListBox.Item key="no-results" textValue="No results">
-                        No cities found
-                      </ListBox.Item>
-                    ) : (
-                      <Collection items={listCities.items}>
-                        {item => (
-                          <ListBox.Item id={item.name} textValue={item.name}>
-                            <span className="text-xl md:text-base">{item.name}</span>
-                            <ListBox.ItemIndicator />
-                          </ListBox.Item>
-                        )}
-                      </Collection>
-                    )}
+              <div className="w-2/5 min-w-0 flex flex-col gap-2">
+                <TextField isRequired name="city" type="text" isInvalid={isCityInvalid}>
+                  <Label className="text-lg md:text-base">Stadt</Label>
+                  <div className="relative w-full">
+                    <Input
+                      value={listCities.filterText}
+                      onChange={e => {
+                        const val = e.target.value
+                        console.log('City input changed to:', val)
+                        listCities.setFilterText(val)
 
-                    <ListBoxLoadMoreItem
-                      isLoading={listCities.loadingState === 'loadingMore'}
-                      onLoadMore={listCities.loadMore}
-                    >
-                      <div className="flex items-center justify-center gap-2 py-2">
-                        <Spinner size="sm" />
-                        <span className="muted text-sm">Loading more...</span>
-                      </div>
-                    </ListBoxLoadMoreItem>
-                  </ListBox>
-                </ComboBox.Popover>
-              </ComboBox>
+                        const selected = listCities.items.find(c => c.name === val)
+
+                        if (selected) {
+                          handleCitySelection(selected.name)
+                          setIsCityInvalid(false)
+                        } else {
+                          setIsCityInvalid(true)
+                        }
+                      }}
+                      placeholder={country ? 'Type city name...' : 'Select country first'}
+                      autoComplete="off"
+                      list="city-options"
+                      className="text-lg md:text-base w-full pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0"
+                      disabled={!country}
+                      required
+                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-default-500">
+                      <ChevronDown size={16} />
+                    </div>
+                    <datalist id="city-options">
+                      {listCities.items.map((item, i) => (
+                        <option key={i} value={item.name} />
+                      ))}
+                    </datalist>
+                  </div>
+                  <FieldError>
+                    {isCityInvalid ? 'Please select a valid city from the list' : null}
+                  </FieldError>
+                </TextField>
+              </div>
 
               {/* Улица */}
               <div className="w-3/5 min-w-0 flex flex-col gap-2">
@@ -918,10 +907,7 @@ export const ClientAdress = memo(function ClientAdress({
               {/* Страна - Native Select */}
               <TextField className="w-1/2 min-w-0 " isRequired>
                 <Label className="text-lg md:text-base">Land</Label>
-                <Surface
-                  variant="tertiary"
-                  className="h-11  flex flex-col rounded-xl p-2  active:bg-transparent focus:bg-transparent"
-                >
+                <div className="surface surface--tertiary h-11 md:h-10 flex items-center rounded-xl px-2 w-full">
                   <select
                     name="country"
                     value={country}
@@ -934,7 +920,7 @@ export const ClientAdress = memo(function ClientAdress({
                         setAddressData(prev => ({ ...prev, country: countryCodeValue }))
                       }
                     }}
-                    className="px-2 py-0 text-lg md:text-base border-0 border-transparent rounded-xl outline-none cursor-pointer bg-transparent active:bg-transparent focus:bg-transparent"
+                    className="w-full px-2 py-0 text-lg md:text-base border-0 border-transparent outline-none cursor-pointer bg-transparent"
                     required
                   >
                     {countriesList.map(item => {
@@ -951,7 +937,7 @@ export const ClientAdress = memo(function ClientAdress({
                       )
                     })}
                   </select>
-                </Surface>
+                </div>
               </TextField>
             </div>
             {/* Карта адреса */}
