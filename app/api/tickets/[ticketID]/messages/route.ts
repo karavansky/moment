@@ -18,8 +18,7 @@ export async function GET(
 ) {
   const { ticketID } = await params
 
-
-  if (ticketID==="12345" ) {
+  if (ticketID === '12345') {
     return NextResponse.json({
       success: true,
       messages: [
@@ -36,7 +35,8 @@ export async function GET(
           messageID: '2',
           ticketID: ticketID,
           userID: 'admin-user',
-          message: 'QuailBreeder is available exclusively for iOS. You can download it directly from the Apple App Store for your iPhone or iPad. We chose iOS to provide a high-performance, native experience optimized specifically for the Apple ecosystem.' ,
+          message:
+            'QuailBreeder is available exclusively for iOS. You can download it directly from the Apple App Store for your iPhone or iPad. We chose iOS to provide a high-performance, native experience optimized specifically for the Apple ecosystem.',
           isAdmin: true,
           date: '2024-01-01 13:00:00',
           dateRead: null,
@@ -44,7 +44,7 @@ export async function GET(
       ],
     })
   }
-    if (ticketID==="12346") {
+  if (ticketID === '12346') {
     return NextResponse.json({
       success: true,
       messages: [
@@ -61,7 +61,8 @@ export async function GET(
           messageID: '2',
           ticketID: ticketID,
           userID: 'admin-user',
-          message: 'You can configure and track three distinct types of equipment: Incubators, Brooders, and Cages. The system provides a visual display of the current load for each type, helping you optimize your batch scheduling.' ,
+          message:
+            'You can configure and track three distinct types of equipment: Incubators, Brooders, and Cages. The system provides a visual display of the current load for each type, helping you optimize your batch scheduling.',
           isAdmin: true,
           date: '2024-01-01 13:00:00',
           dateRead: null,
@@ -70,7 +71,8 @@ export async function GET(
           messageID: '3',
           ticketID: ticketID,
           userID: 'admin-user',
-          message: 'Detailed instructions on how to set up equipment directories can be found at https://quailbreeder.net/get-started' ,
+          message:
+            'Detailed instructions on how to set up equipment directories can be found at https://moment-lbs.app/get-started',
           isAdmin: true,
           date: '2024-01-01 13:00:00',
           dateRead: null,

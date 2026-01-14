@@ -244,15 +244,18 @@ export default function Sidebar() {
         </nav>
 
         {/* Footer - User/Settings */}
-        <div className="sidebar-footer p-4 border-t border-divider shrink-0" suppressHydrationWarning>
+        <div
+          className="sidebar-footer p-4 border-t border-divider shrink-0"
+          suppressHydrationWarning
+        >
           <Card className="p-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">
                 QB
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-foreground truncate">Quail Breeder</div>
-                <div className="text-xs text-default-500 truncate">quailbreeder.net</div>
+                <div className="text-sm font-medium text-foreground truncate">Moment LBS</div>
+                <div className="text-xs text-default-500 truncate">moment-lbs.app</div>
               </div>
             </div>
           </Card>

@@ -13,15 +13,18 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ isOpen, onOpenChange, onSignIn, t }: AuthModalProps) {
-  const state = useMemo(() => ({
-    isOpen,
-    setOpen: (open: boolean) => {
-      if (!open) onOpenChange()
-    },
-    open: () => {},
-    close: onOpenChange,
-    toggle: onOpenChange
-  }), [isOpen, onOpenChange])
+  const state = useMemo(
+    () => ({
+      isOpen,
+      setOpen: (open: boolean) => {
+        if (!open) onOpenChange()
+      },
+      open: () => {},
+      close: onOpenChange,
+      toggle: onOpenChange,
+    }),
+    [isOpen, onOpenChange]
+  )
 
   return (
     // NOTE: Hero UI 3.0 beta has a known issue with controlled modals
@@ -37,7 +40,7 @@ export function AuthModal({ isOpen, onOpenChange, onSignIn, t }: AuthModalProps)
                 <div className="flex justify-center mb-6">
                   <Image
                     src="/hatching-quail-icon.webp"
-                    alt="Quail Breeder"
+                    alt="Moment LBS"
                     width={80}
                     height={80}
                     className="rounded-xl"

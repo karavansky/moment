@@ -20,7 +20,7 @@ export default async function SignIn({ params }: SignInPageProps) {
           <div className="flex justify-center mb-6">
             <Image
               src="/hatching-quail-icon.webp"
-              alt="Quail Breeder"
+              alt="Moment LBS"
               width={80}
               height={80}
               className="rounded-xl"
@@ -86,11 +86,17 @@ export default async function SignIn({ params }: SignInPageProps) {
         <div className="mt-8 pt-6 border-t border-sand-300">
           <p className="text-center text-sm text-earth-600">
             {dict.auth.byContinuing}{' '}
-            <a href={`/${lang}/terms-of-use`} className="text-earth-800 hover:underline font-semibold">
+            <a
+              href={`/${lang}/terms-of-use`}
+              className="text-earth-800 hover:underline font-semibold"
+            >
               {dict.auth.termsOfUse}
             </a>{' '}
             {dict.auth.and}{' '}
-            <a href={`/${lang}/privacy-policy`} className="text-earth-800 hover:underline font-semibold">
+            <a
+              href={`/${lang}/privacy-policy`}
+              className="text-earth-800 hover:underline font-semibold"
+            >
               {dict.auth.privacyPolicy}
             </a>
           </p>

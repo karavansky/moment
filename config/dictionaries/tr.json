@@ -190,12 +190,12 @@
   },
   "policy": {
     "title": "Gizlilik Politikası",
-    "intro": "Gizliliğiniz bizim için önemlidir. Bu Gizlilik Politikası, Quail Breeder'ın uygulamamızı kullandığınızda bilgilerinizi nasıl topladığını, kullandığını ve koruduğunu açıklar.",
+    "intro": "Gizliliğiniz bizim için önemlidir. Bu Gizlilik Politikası, Moment LBS'ın uygulamamızı kullandığınızda bilgilerinizi nasıl topladığını, kullandığını ve koruduğunu açıklar.",
     "dataCollection": {
       "title": "Hangi Bilgileri Topluyoruz",
       "confidential": {
         "title": "Gizli İçerik",
-        "text": "Quail Breeder, sağladığınız aşağıdaki gizli içeriği toplar ve depolar:",
+        "text": "Moment LBS, sağladığınız aşağıdaki gizli içeriği toplar ve depolar:",
         "item1": "Ekipman dizinleri (kuluçka makineleri, büyütme alanları ve konumlar)",
         "item2": "Çıkım parti bilgileri",
         "item3": "Müşteri dizin detayları",
@@ -208,7 +208,7 @@
       },
       "notCollect": {
         "title": "Toplamadığımız Bilgiler",
-        "text": "Quail Breeder açıkça şunları toplamaz:",
+        "text": "Moment LBS açıkça şunları toplamaz:",
         "item1": "IP adresleri",
         "item2": "Cihaz bilgileri",
         "item3": "Kişisel donanım tanımlayıcıları"
@@ -218,11 +218,11 @@
       "title": "Bilgilerinizi Nasıl Kullanıyoruz",
       "maintaining": {
         "title": "Hizmetlerimizi Sürdürme",
-        "text": "Bilgilerinizi müşteri desteği sağlamak ve Quail Breeder uygulamasının işlevselliğini sürdürmek için kullanırız."
+        "text": "Bilgilerinizi müşteri desteği sağlamak ve Moment LBS uygulamasının işlevselliğini sürdürmek için kullanırız."
       },
       "communicating": {
         "title": "Sizinle İletişim Kurma",
-        "text": "Sizinle Quail Breeder ile ilgili yeni özellikler, güncellemeler ve teklifler hakkında bilgi vermek için iletişim bilgilerinizi kullanabiliriz."
+        "text": "Sizinle Moment LBS ile ilgili yeni özellikler, güncellemeler ve teklifler hakkında bilgi vermek için iletişim bilgilerinizi kullanabiliriz."
       },
       "important": "Önemli: Bilgilerinizi satma veya kiralamayı iş edinmiyoruz."
     },
@@ -239,7 +239,7 @@
       },
       "stop": {
         "title": "Kullanmayı Durdurma:",
-        "text": "Quail Breeder uygulamasını istediğiniz zaman kısıtlama olmaksızın kullanmayı bırakabilirsiniz."
+        "text": "Moment LBS uygulamasını istediğiniz zaman kısıtlama olmaksızın kullanmayı bırakabilirsiniz."
       },
       "export": {
         "title": "Veri Dışa Aktarımı:",
@@ -253,7 +253,7 @@
     },
     "dataProtection": {
       "title": "Verilerinizi Korumaya Yönelik Taahhütlerimiz",
-      "text": "Quail Breeder, gizli bilgilerinizi korumayı taahhüt eder:",
+      "text": "Moment LBS, gizli bilgilerinizi korumayı taahhüt eder:",
       "item1": "Gizli içeriğinizi önceden yazılı izniniz olmadan üçüncü taraflara ifşa etmeyeceğiz.",
       "item2": "Bilgilerinizin kullanımını yalnızca hesap sahibi olarak sizinle olan ticari ilişkilere özel tutarız.",
       "item3": "Verilerinizi yetkisiz erişime karşı korumak için endüstri standardı güvenlik önlemlerini uygularız."
@@ -273,10 +273,10 @@
   },
   "terms": {
     "title": "Kullanım Şartları",
-    "intro": "Bu Kullanım Şartları, Quail Breeder uygulaması ve hizmetlerini kullanımınızı yönetir. Uygulamamızı kullanarak, bu şartlara bağlı kalmayı kabul etmiş olursunuz.",
+    "intro": "Bu Kullanım Şartları, Moment LBS uygulaması ve hizmetlerini kullanımınızı yönetir. Uygulamamızı kullanarak, bu şartlara bağlı kalmayı kabul etmiş olursunuz.",
     "purpose": {
       "title": "Uygulama Amacı",
-      "text": "Quail Breeder, aşağıdakileri içeren bıldırcın çiftliği operasyonları için kapsamlı muhasebe araçları sağlar:",
+      "text": "Moment LBS, aşağıdakileri içeren bıldırcın çiftliği operasyonları için kapsamlı muhasebe araçları sağlar:",
       "item1": "Kuluçka makinesi yönetimi ve yumurta takibi",
       "item2": "Çıkım sürecinin izlenmesi",
       "item3": "Büyütme ve büyüme takibi",
@@ -285,13 +285,13 @@
     },
     "subscription": {
       "title": "Abonelik ve Ödeme",
-      "text": "Quail Breeder, şu adla anılan ücretli, aylık otomatik yenilenen bir abonelik gerektirir:",
+      "text": "Moment LBS, şu adla anılan ücretli, aylık otomatik yenilenen bir abonelik gerektirir:",
       "name": "QuailBreederAboneliği",
       "important": "Önemli: Ödeme, satın alma onayı üzerine iTunes Hesabınıza tahsil edilecektir. Abonelikler, cari dönemin bitiminden en az 24 saat önce otomatik yenileme kapatılmadığı sürece otomatik olarak yenilenir."
     },
     "license": {
       "title": "Lisans ve Kısıtlamalar",
-      "text": "Quail Breeder'ı yalnızca Apple cihazlarınızda kişisel kullanım için devredilemez bir lisans alırsınız.",
+      "text": "Moment LBS'ı yalnızca Apple cihazlarınızda kişisel kullanım için devredilemez bir lisans alırsınız.",
       "prohibited": "Aşağıdakiler yasaktır:",
       "item1": "Uygulamayı üçüncü taraflarla paylaşmak",
       "item2": "Yazılımı tersine mühendislik yapmak veya kaynak koduna dönüştürmek",
@@ -406,7 +406,7 @@
   "sla": {
     "hero": {
       "title": "Zorluklarınızı Anlayan Destek",
-      "description": "Kuluçka hesaplaması veya program kurulumu hakkında bir sorunuz mu var? Biz buradayız. Amacımız, quailbreeder.net'i başarınız için 7/24 çalışır durumda tutmaktır.",
+      "description": "Kuluçka hesaplaması veya program kurulumu hakkında bir sorunuz mu var? Biz buradayız. Amacımız, moment-lbs.app'i başarınız için 7/24 çalışır durumda tutmaktır.",
       "button": "Biletlerime Git"
     },
     "commitment": {

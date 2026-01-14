@@ -4,7 +4,7 @@ const path = require('path')
 const nextConfig = {
   output: 'standalone',
   reactStrictMode: false, // Отключено для избежания дублирования WebSocket событий
-  allowedDevOrigins: ['quailbreeder.net', 'app.quailbreeder.net'],
+  allowedDevOrigins: ['moment-lbs.app', 'dev.moment-lbs.app'],
   // basePath: '/app',
 
   // Compiler optimizations
@@ -61,7 +61,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "font-src 'self' data:",
-              "connect-src 'self' wss://app.quailbreeder.net https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://stats.g.doubleclick.net https://analytics.google.com https://photon.komoot.io",
+              "connect-src 'self' wss://dev.moment-lbs.app https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://stats.g.doubleclick.net https://analytics.google.com https://photon.komoot.io",
               "worker-src 'self' blob:",
               "frame-src 'self'",
               "child-src 'self' blob:",

@@ -3,7 +3,7 @@ import { supportedLocales } from '@/config/locales'
 import { getLocalizedRoute } from '@/config/routes'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://quailbreeder.net'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://moment-lbs.app'
 
   // Current date for lastModified
   const currentDate = new Date()
@@ -24,7 +24,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // Добавляем корневую страницу / как универсальную (x-default)
   const rootLanguages: Record<string, string> = {}
-  supportedLocales.forEach((lang) => {
+  supportedLocales.forEach(lang => {
     rootLanguages[lang] = `${baseUrl}/${lang}`
   })
   rootLanguages['x-default'] = `${baseUrl}/` // x-default указывает на корневую страницу
@@ -40,8 +40,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   })
 
   // Генерируем записи для всех языковых версий
-  supportedLocales.forEach((locale) => {
-    pages.forEach((page) => {
+  supportedLocales.forEach(locale => {
+    pages.forEach(page => {
       // Получаем переведенный маршрут для текущего языка
       const localizedRoute = page.route ? getLocalizedRoute(page.route, locale) : ''
       const pageUrl = `${baseUrl}/${locale}${localizedRoute ? '/' + localizedRoute : ''}`
@@ -50,7 +50,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       const languages: Record<string, string> = {}
 
       // Добавляем все поддерживаемые языки с их переведенными маршрутами
-      supportedLocales.forEach((lang) => {
+      supportedLocales.forEach(lang => {
         const translatedRoute = page.route ? getLocalizedRoute(page.route, lang) : ''
         languages[lang] = `${baseUrl}/${lang}${translatedRoute ? '/' + translatedRoute : ''}`
       })

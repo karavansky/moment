@@ -2,8 +2,8 @@
   "home": {
     "topmoto": "Data Analysis and Decision Support Tool for Quail Farming",
     "botmoto": "Evaluate feed efficiency, housing conditions, and stocking density to pinpoint superior performance and maximize yield per cycle.",
-    "what": "What is Quail Breeder?",
-    "expl": "Quail Breeder is an all-in-one digital assistant designed to manage and optimize your quail production. It accurately accounts for every step of your operation, from egg to invoice.",
+    "what": "What is Moment LBS?",
+    "expl": "Moment LBS is an all-in-one digital assistant designed to manage and optimize your quail production. It accurately accounts for every step of your operation, from egg to invoice.",
     "flow": "Flow Map",
     "content": "The process consists of the following steps:",
     "get": "Get started — it’s quick",
@@ -190,12 +190,12 @@
   },
   "policy": {
     "title": "Privacy Policy",
-    "intro": "Your privacy is important to us. This Privacy Policy explains how Quail Breeder collects, uses, and protects your information when you use our application.",
+    "intro": "Your privacy is important to us. This Privacy Policy explains how Moment LBS collects, uses, and protects your information when you use our application.",
     "dataCollection": {
       "title": "What Information We Collect",
       "confidential": {
         "title": "Confidential Content",
-        "text": "Quail Breeder collects and stores the following confidential content that you provide:",
+        "text": "Moment LBS collects and stores the following confidential content that you provide:",
         "item1": "Equipment directories (incubators, brooders, and locations)",
         "item2": "Hatching batch information",
         "item3": "Customer directory details",
@@ -208,7 +208,7 @@
       },
       "notCollect": {
         "title": "What We Don't Collect",
-        "text": "Quail Breeder explicitly does NOT collect:",
+        "text": "Moment LBS explicitly does NOT collect:",
         "item1": "IP addresses",
         "item2": "Device information",
         "item3": "Personal hardware identifiers"
@@ -218,11 +218,11 @@
       "title": "How We Use Your Information",
       "maintaining": {
         "title": "Maintaining Our Services",
-        "text": "We use your information to provide customer support and maintain the functionality of the Quail Breeder application."
+        "text": "We use your information to provide customer support and maintain the functionality of the Moment LBS application."
       },
       "communicating": {
         "title": "Communicating With You",
-        "text": "We may use your contact information to inform you about new features, updates, and offerings related to Quail Breeder."
+        "text": "We may use your contact information to inform you about new features, updates, and offerings related to Moment LBS."
       },
       "important": "Important: We are not in the business of selling or renting your information."
     },
@@ -239,7 +239,7 @@
       },
       "stop": {
         "title": "Stop Using:",
-        "text": "You can stop using the Quail Breeder application at any time without restrictions."
+        "text": "You can stop using the Moment LBS application at any time without restrictions."
       },
       "export": {
         "title": "Data Export:",
@@ -253,7 +253,7 @@
     },
     "dataProtection": {
       "title": "Our Commitments to Protect Your Data",
-      "text": "Quail Breeder is committed to protecting your confidential information:",
+      "text": "Moment LBS is committed to protecting your confidential information:",
       "item1": "We will not disclose your confidential content to any third party without your prior written consent.",
       "item2": "We restrict the use of your information exclusively to business relations with you as the account owner.",
       "item3": "We implement industry-standard security measures to protect your data from unauthorized access."
@@ -273,10 +273,10 @@
   },
   "terms": {
     "title": "Terms of Use",
-    "intro": "These Terms of Use govern your use of the Quail Breeder application and services. By using our application, you agree to be bound by these terms.",
+    "intro": "These Terms of Use govern your use of the Moment LBS application and services. By using our application, you agree to be bound by these terms.",
     "purpose": {
       "title": "Application Purpose",
-      "text": "Quail Breeder provides comprehensive accounting tools for quail farm operations, including:",
+      "text": "Moment LBS provides comprehensive accounting tools for quail farm operations, including:",
       "item1": "Incubator management and egg tracking",
       "item2": "Hatching process monitoring",
       "item3": "Brooding and growth tracking",
@@ -285,13 +285,13 @@
     },
     "subscription": {
       "title": "Subscription and Payment",
-      "text": "Quail Breeder requires a paid monthly auto-renewing subscription called",
+      "text": "Moment LBS requires a paid monthly auto-renewing subscription called",
       "name": "QuailBreederSubscription",
       "important": "Important: Payment will be charged to your iTunes Account upon confirmation of purchase. Subscriptions automatically renew unless auto-renew is turned off at least 24 hours before the end of the current period."
     },
     "license": {
       "title": "License and Restrictions",
-      "text": "You receive a non-transferable license to use Quail Breeder for personal use on your Apple devices only.",
+      "text": "You receive a non-transferable license to use Moment LBS for personal use on your Apple devices only.",
       "prohibited": "You are prohibited from:",
       "item1": "Sharing the application with third parties",
       "item2": "Reverse engineering or decompiling the software",
@@ -407,7 +407,7 @@
   "sla": {
     "hero": {
       "title": "Support that understands your challenges",
-      "description": "Have a question about incubation calculation or program setup? We're here for you. Our goal is to keep quailbreeder.net working for your success 24/7.",
+      "description": "Have a question about incubation calculation or program setup? We're here for you. Our goal is to keep moment-lbs.app working for your success 24/7.",
       "button": "Go to my tickets"
     },
     "commitment": {

@@ -10,7 +10,7 @@ import { GoogleAnalytics } from '@next/third-parties/google'
 import { getSidebarState } from '@/lib/sidebar-actions'
 
 const baseUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL || 'http://localhost:3000'
+  process.env.NEXT_PUBLIC_SITE_URL ||  'http://localhost:3000'
 
 // Экспорт viewport отдельно (требование Next.js 14+)
 export const viewport: Viewport = {
@@ -62,8 +62,8 @@ export async function generateMetadata({
 
   return {
     metadataBase: new URL(baseUrl),
-    title: 'Data Analysis and Decision Support Tool for Quail Farming',
-    description: 'Take control of your business with poultry management software',
+    title: 'Reliable time and location tracking for care & field services.',
+    description: 'Moment LBS: The smartest way to manage your mobile workforce. Instantly track time and GPS location for care workers and field staff via your browser. No installation required — start optimizing your business operations in seconds.',
     alternates: {
       canonical: `${baseUrl}/${lang}`,
       languages,
@@ -81,38 +81,38 @@ export async function generateMetadata({
       type: 'website',
       locale: localeMap[lang] || 'en_US',
       url: `${baseUrl}/${lang}`,
-      siteName: 'QuailBreeder',
-      title: 'Data Analysis and Decision Support Tool for Quail Farming',
+      siteName: 'Moment LBS',
+      title: 'Reliable time and location tracking for care & field services.',
       description:
-        'Take control of your business with poultry management software. Track incubation, hatching, brooding, feeding, and selling processes.',
+        'Moment LBS: The smartest way to manage your mobile workforce. Instantly track time and GPS location for care workers and field staff via your browser. No installation required — start optimizing your business operations in seconds.',
       images: [
         {
           url: '/hatching-quail-icon-200.webp',
           width: 200,
           height: 200,
-          alt: 'QuailBreeder Application Interface',
+          alt: 'Moment LBS Application Interface',
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'QuailBreeder - Accounting for Quail Breeding',
+      title: 'Moment LBS - Reliable time and location tracking for care & field services.',
       description:
-        'Take control of your business with poultry management software. Track incubation, hatching, brooding, feeding, and selling processes.',
+        'Moment LBS: The smartest way to manage your mobile workforce. Instantly track time and GPS location for care workers and field staff via your browser. No installation required — start optimizing your business operations in seconds.',
       images: ['/hatching-quail-icon-200.webp'],
     },
     keywords: [
-      'quail breeding',
-      'poultry management',
-      'incubation tracking',
-      'farm management',
-      'quail farm software',
-      'hatching management',
-      'brooding tracking',
+      'Field staff tracking app',
+      'Home care time tracking',
+      'Location-based service for mobile workers',
+      'Visit verification app',
+      'Transport services log',
+      'Mobile workforce management',
+      'staff location tracking',
     ],
     authors: [{ name: 'Serhii Karavanskyi' }],
-    creator: 'QuailBreeder',
-    publisher: 'QuailBreeder',
+    creator: 'Moment LBS',
+    publisher: 'Moment LBS',
     robots: {
       index: true,
       follow: true,
@@ -130,7 +130,7 @@ export async function generateMetadata({
     },
     appleWebApp: {
       capable: true,
-      title: 'QuailBreeder',
+      title: 'Moment LBS',
       statusBarStyle: 'default',
     },
   }
@@ -165,7 +165,7 @@ export default async function RootLayout({
         <meta httpEquiv="content-language" content={lang} />
 
         {/* Google Analytics */}
-        {isProduction && <GoogleAnalytics gaId="G-3SPK1FFQN1" />}
+        {isProduction && <GoogleAnalytics gaId="G-HB6BYNFW9F" />}
       </head>
       <body suppressHydrationWarning className="h-dvh overflow-hidden antialiased md:subpixel-antialiased">
         {/* Blocking script to prevent flash - executes BEFORE any rendering */}

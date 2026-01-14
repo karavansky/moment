@@ -29,4 +29,4 @@ Disallow: /_next/static/
 Disallow: /_next/image
 
 # Sitemap (includes all language versions)
-Sitemap: https://quailbreeder.net/sitemap.xml
+Sitemap: https://moment-lbs.app/sitemap.xml

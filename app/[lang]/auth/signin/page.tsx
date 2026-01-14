@@ -14,13 +14,13 @@ export default async function SignInPage({ params }: SignInPageProps) {
   const dict = await getDictionary(lang)
 
   return (
- <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-earth-800 via-earth-900 to-earth-950 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-earth-800 via-earth-900 to-earth-950 p-4">
       <div className="bg-white/95 backdrop-blur-md dark:bg-gray-800/90  rounded-3xl shadow-2xl p-8 md:p-12 w-full max-w-md border border-sand-300">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-6">
             <Image
               src="/hatching-quail-icon.webp"
-              alt="Quail Breeder"
+              alt="Moment LBS"
               width={80}
               height={80}
               className="rounded-xl"
@@ -86,11 +86,17 @@ export default async function SignInPage({ params }: SignInPageProps) {
         <div className="mt-8 pt-6 border-t border-sand-300">
           <p className="text-center text-sm text-earth-600">
             {dict.auth.byContinuing}{' '}
-            <a href={`/${lang}/terms-of-use`} className="text-earth-800 hover:underline font-semibold">
+            <a
+              href={`/${lang}/terms-of-use`}
+              className="text-earth-800 hover:underline font-semibold"
+            >
               {dict.auth.termsOfUse}
             </a>{' '}
             {dict.auth.and}{' '}
-            <a href={`/${lang}/privacy-policy`} className="text-earth-800 hover:underline font-semibold">
+            <a
+              href={`/${lang}/privacy-policy`}
+              className="text-earth-800 hover:underline font-semibold"
+            >
               {dict.auth.privacyPolicy}
             </a>
           </p>

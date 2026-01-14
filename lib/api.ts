@@ -106,7 +106,7 @@ export class ApiClient {
 
   static getWebSocketURL(sessionId: string): string {
     // WebSocket must connect directly to backend (Next.js can't proxy WS in App Router)
-    const backendUrl = 'ws://ws.quailbreeder.net'
+    const backendUrl = 'ws://ws.moment-lbs.app'
     /*  
     typeof window !== 'undefined'
         ? `ws://${window.location.hostname}:3003`

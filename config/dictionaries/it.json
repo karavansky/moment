@@ -2,8 +2,8 @@
   "home": {
     "topmoto": "Strumento di Analisi Dati e Supporto Decisionale per l'Allevamento di Quaglie",
     "botmoto": "valuta l'efficienza del mangime, le condizioni di stabulazione e la densità di allevamento per individuare le performance superiori e massimizzare la resa per ciclo.",
-    "what": "Che cos'è Quail Breeder?",
-    "expl": "Quail Breeder è un assistente digitale completo progettato per gestire e ottimizzare la tua produzione di quaglie. Tiene conto con precisione di ogni fase della tua operazione, dall'uovo alla fattura.",
+    "what": "Che cos'è Moment LBS?",
+    "expl": "Moment LBS è un assistente digitale completo progettato per gestire e ottimizzare la tua produzione di quaglie. Tiene conto con precisione di ogni fase della tua operazione, dall'uovo alla fattura.",
     "flow": "Mappa del Flusso",
     "content": "Il processo consiste nei seguenti passaggi:",
     "get": "Inizia — è veloce",
@@ -190,12 +190,12 @@
   },
   "policy": {
     "title": "Politica sulla Privacy",
-    "intro": "La tua privacy è importante per noi. Questa Politica sulla Privacy spiega come Quail Breeder raccoglie, utilizza e protegge le tue informazioni quando usi la nostra applicazione.",
+    "intro": "La tua privacy è importante per noi. Questa Politica sulla Privacy spiega come Moment LBS raccoglie, utilizza e protegge le tue informazioni quando usi la nostra applicazione.",
     "dataCollection": {
       "title": "Quali Informazioni Raccogliamo",
       "confidential": {
         "title": "Contenuti Riservati",
-        "text": "Quail Breeder raccoglie e memorizza i seguenti contenuti riservati che fornisci:",
+        "text": "Moment LBS raccoglie e memorizza i seguenti contenuti riservati che fornisci:",
         "item1": "Cataloghi attrezzature (incubatrici, brooders e ubicazioni)",
         "item2": "Informazioni sui lotti di schiusa",
         "item3": "Dettagli del catalogo clienti",
@@ -208,7 +208,7 @@
       },
       "notCollect": {
         "title": "Cosa Non Raccogliamo",
-        "text": "Quail Breeder esplicitamente NON raccoglie:",
+        "text": "Moment LBS esplicitamente NON raccoglie:",
         "item1": "Indirizzi IP",
         "item2": "Informazioni sul dispositivo",
         "item3": "Identificatori hardware personali"
@@ -218,11 +218,11 @@
       "title": "Come Utilizziamo le Tue Informazioni",
       "maintaining": {
         "title": "Manutenzione dei Nostri Servizi",
-        "text": "Utilizziamo le tue informazioni per fornire supporto clienti e mantenere la funzionalità dell'applicazione Quail Breeder."
+        "text": "Utilizziamo le tue informazioni per fornire supporto clienti e mantenere la funzionalità dell'applicazione Moment LBS."
       },
       "communicating": {
         "title": "Comunicare con Te",
-        "text": "Potremmo usare le tue informazioni di contatto per informarti su nuove funzionalità, aggiornamenti e offerte relative a Quail Breeder."
+        "text": "Potremmo usare le tue informazioni di contatto per informarti su nuove funzionalità, aggiornamenti e offerte relative a Moment LBS."
       },
       "important": "Importante: Non siamo nel business di vendere o affittare le tue informazioni."
     },
@@ -239,7 +239,7 @@
       },
       "stop": {
         "title": "Smetti di Utilizzare:",
-        "text": "Puoi smettere di usare l'applicazione Quail Breeder in qualsiasi momento senza restrizioni."
+        "text": "Puoi smettere di usare l'applicazione Moment LBS in qualsiasi momento senza restrizioni."
       },
       "export": {
         "title": "Esportazione Dati:",
@@ -253,7 +253,7 @@
     },
     "dataProtection": {
       "title": "I Nostri Impegni per Proteggere i Tuoi Dati",
-      "text": "Quail Breeder si impegna a proteggere le tue informazioni riservate:",
+      "text": "Moment LBS si impegna a proteggere le tue informazioni riservate:",
       "item1": "Non divulgheremo i tuoi contenuti riservati a terze parti senza il tuo preventivo consenso scritto.",
       "item2": "Limitiamo l'uso delle tue informazioni esclusivamente alle relazioni commerciali con te in quanto proprietario dell'account.",
       "item3": "Implementiamo misure di sicurezza standard del settore per proteggere i tuoi dati da accessi non autorizzati."
@@ -273,10 +273,10 @@
   },
   "terms": {
     "title": "Termini di Utilizzo",
-    "intro": "Questi Termini di Utilizzo regolano il tuo uso dell'applicazione e dei servizi Quail Breeder. Utilizzando la nostra applicazione, accetti di essere vincolato da questi termini.",
+    "intro": "Questi Termini di Utilizzo regolano il tuo uso dell'applicazione e dei servizi Moment LBS. Utilizzando la nostra applicazione, accetti di essere vincolato da questi termini.",
     "purpose": {
       "title": "Scopo dell'Applicazione",
-      "text": "Quail Breeder fornisce strumenti contabili completi per le operazioni di allevamento di quaglie, inclusi:",
+      "text": "Moment LBS fornisce strumenti contabili completi per le operazioni di allevamento di quaglie, inclusi:",
       "item1": "Gestione incubatrici e tracciamento uova",
       "item2": "Monitoraggio del processo di schiusa",
       "item3": "Tracciamento allevamento pulcini e crescita",
@@ -285,13 +285,13 @@
     },
     "subscription": {
       "title": "Abbonamento e Pagamento",
-      "text": "Quail Breeder richiede un abbonamento a pagamento con rinnovo automatico mensile chiamato",
+      "text": "Moment LBS richiede un abbonamento a pagamento con rinnovo automatico mensile chiamato",
       "name": "QuailBreederSubscription",
       "important": "Importante: Il pagamento verrà addebitato sul tuo account iTunes alla conferma dell'acquisto. Gli abbonamenti si rinnovano automaticamente a meno che il rinnovo automatico non venga disattivato almeno 24 ore prima della fine del periodo corrente."
     },
     "license": {
       "title": "Licenza e Restrizioni",
-      "text": "Ricevi una licenza non trasferibile per utilizzare Quail Breeder per uso personale solo sui tuoi dispositivi Apple.",
+      "text": "Ricevi una licenza non trasferibile per utilizzare Moment LBS per uso personale solo sui tuoi dispositivi Apple.",
       "prohibited": "Ti è proibito:",
       "item1": "Condividere l'applicazione con terze parti",
       "item2": "Ingegneria inversa o decompilazione del software",
@@ -406,7 +406,7 @@
   "sla": {
     "hero": {
       "title": "Supporto che comprende le tue sfide",
-      "description": "Hai una domanda sul calcolo dell'incubazione o sulla configurazione del programma? Siamo qui per te. Il nostro obiettivo è mantenere quailbreeder.net operativo per il tuo successo 24 ore su 24, 7 giorni su 7.",
+      "description": "Hai una domanda sul calcolo dell'incubazione o sulla configurazione del programma? Siamo qui per te. Il nostro obiettivo è mantenere moment-lbs.app operativo per il tuo successo 24 ore su 24, 7 giorni su 7.",
       "button": "Vai ai miei ticket"
     },
     "commitment": {

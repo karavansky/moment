@@ -342,14 +342,118 @@ server {
     }
 }
 
-# ===== MOMENT SERVER =====
+# ===== DEV SERVER =====
+# HTTP/2 ENABLED for dev
 server {
-    server_name moment.quailbreeder.net;
+    server_name dev.moment-lbs.app;
     listen 443 ssl;
     listen [::]:443 ssl;
     http2 on;
-    ssl_certificate /etc/letsencrypt/live/quailbreeder.net/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/quailbreeder.net/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/moment-lbs.app/fullchain.pem; # Placeholder until expanded
+    ssl_certificate_key /etc/letsencrypt/live/moment-lbs.app/privkey.pem; # Placeholder until expanded
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    # Safari 421 fix: prevent connection reuse from other domains
+    add_header Alt-Svc 'clear' always;
+
+    # Safari 421 fix: use separate SSL session cache for dev subdomain
+    ssl_session_cache shared:SSL_DEV:10m;
+
+    # Proxy buffering optimization for Next.js large images
+    proxy_buffering on;
+    proxy_buffer_size 4k;
+    proxy_buffers 8 512k;
+    proxy_busy_buffers_size 1m;
+    proxy_max_temp_file_size 0;
+
+    # Block common exploit/scanner paths
+    location ~* ^/(\+CSCOE\+|vpns?|dana-na|remote|citrix|cgi-bin|\.env|\.git) {
+        return 444;
+    }
+
+    # Next.js 16 Turbopack HMR WebSocket - specific location before general /_next/
+    # IMPORTANT: WebSocket requires HTTP/1.1, disable HTTP/2 for this endpoint
+    location = /_next/webpack-hmr {
+        # Force HTTP/1.1 by proxying to backend
+        proxy_pass http://localhost:3007;
+        proxy_http_version 1.1;
+
+        # WebSocket upgrade headers
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+
+        # Standard proxy headers
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Long timeout for persistent WebSocket connection
+        proxy_read_timeout 86400s;
+        proxy_send_timeout 86400s;
+
+        # Disable buffering for real-time updates
+        proxy_buffering off;
+    }
+
+    # Next.js internal paths (_next/image, _next/static, etc.) - no rate limit
+    location ^~ /_next/ {
+        proxy_pass http://localhost:3007;
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Increase timeout for image optimization (Next.js can be slow)
+        proxy_read_timeout 120s;
+        proxy_connect_timeout 120s;
+        proxy_send_timeout 120s;
+
+        # Cache Next.js static assets (optimized images, JS, CSS)
+        # expires 1y;
+        # add_header Cache-Control "public, immutable";
+    }
+
+    # Block indexing for dev subdomain - return robots.txt
+    location = /robots.txt {
+        return 200 "User-agent: *\nDisallow: /\n";
+        add_header Content-Type text/plain;
+    }
+
+    # Static assets with higher rate limits
+    location ~* \.(jpg|jpeg|png|gif|webp|ico|svg|css|js|woff|woff2|ttf|eot|json|xml)$ {
+        limit_req zone=static burst=100 nodelay;
+        proxy_pass http://localhost:3007;
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    location / {
+        limit_req zone=general burst=100 nodelay;
+        proxy_pass http://localhost:3007/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+# ===== MOMENT SERVER =====
+server {
+    server_name moment-lbs.app;
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    ssl_certificate /etc/letsencrypt/live/moment-lbs.app/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/moment-lbs.app/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
@@ -431,25 +535,42 @@ server {
 
 # ===== REDIRECT SUBDOMAINS TO MAIN DOMAIN =====
 server {
-    server_name karavansky.quailbreeder.net monitor.quailbreeder.net ;
+    server_name karavansky.moment-lbs.app;
     listen 443 ssl;
     listen [::]:443 ssl;
     http2 on;
-    ssl_certificate /etc/letsencrypt/live/quailbreeder.net/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/quailbreeder.net/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/moment-lbs.app/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/moment-lbs.app/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
-    return 301 https://quailbreeder.net$request_uri;
+    return 301 https://moment-lbs.app$request_uri;
+}
+
+# ===== MAIL SUBDOMAIN (Placeholder for SSL) =====
+server {
+    server_name mail.moment-lbs.app;
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    ssl_certificate /etc/letsencrypt/live/moment-lbs.app/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/moment-lbs.app/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    location / {
+        return 200 "Mail server is running on non-HTTP ports.";
+        add_header Content-Type text/plain;
+    }
 }
 
 # ===== WEBSOCKET SERVER =====
 server {
-    server_name ws.quailbreeder.net;
+    server_name ws.moment-lbs.app;
     listen 443 ssl;
     listen [::]:443 ssl;
     http2 on;
-    ssl_certificate /etc/letsencrypt/live/quailbreeder.net/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/quailbreeder.net/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/moment-lbs.app/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/moment-lbs.app/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
@@ -473,4 +594,28 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
+}
+
+# ===== HTTP REDIRECTS (Port 80) =====
+server {
+    if ($host = moment-lbs.app) {
+        return 301 https://$host$request_uri;
+    }
+    if ($host = ws.moment-lbs.app) {
+        return 301 https://$host$request_uri;
+    }
+    if ($host = mail.moment-lbs.app) {
+        return 301 https://$host$request_uri;
+    }
+    if ($host = karavansky.moment-lbs.app) {
+        return 301 https://$host$request_uri;
+    }
+    if ($host = dev.moment-lbs.app) {
+        return 301 https://$host$request_uri;
+    }
+
+    listen 80;
+    listen [::]:80;
+    server_name moment-lbs.app ws.moment-lbs.app mail.moment-lbs.app karavansky.moment-lbs.app dev.moment-lbs.app;
+    return 404;
 }

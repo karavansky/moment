@@ -190,12 +190,12 @@
   },
   "policy": {
     "title": "Política de Privacidad",
-    "intro": "Su privacidad es importante para nosotros. Esta Política de Privacidad explica cómo Quail Breeder recopila, utiliza y protege su información cuando utiliza nuestra aplicación.",
+    "intro": "Su privacidad es importante para nosotros. Esta Política de Privacidad explica cómo Moment LBS recopila, utiliza y protege su información cuando utiliza nuestra aplicación.",
     "dataCollection": {
       "title": "Qué Información Recopilamos",
       "confidential": {
         "title": "Contenido Confidencial",
-        "text": "Quail Breeder recopila y almacena el siguiente contenido confidencial que usted proporciona:",
+        "text": "Moment LBS recopila y almacena el siguiente contenido confidencial que usted proporciona:",
         "item1": "Directorios de equipos (incubadoras, criadoras y ubicaciones)",
         "item2": "Información de lotes de eclosión",
         "item3": "Detalles del directorio de clientes",
@@ -208,7 +208,7 @@
       },
       "notCollect": {
         "title": "Lo que No Recopilamos",
-        "text": "Quail Breeder explícitamente NO recopila:",
+        "text": "Moment LBS explícitamente NO recopila:",
         "item1": "Direcciones IP",
         "item2": "Información del dispositivo",
         "item3": "Identificadores de hardware personales"
@@ -218,11 +218,11 @@
       "title": "Cómo Usamos Su Información",
       "maintaining": {
         "title": "Mantenimiento de Nuestros Servicios",
-        "text": "Utilizamos su información para proporcionar soporte al cliente y mantener la funcionalidad de la aplicación Quail Breeder."
+        "text": "Utilizamos su información para proporcionar soporte al cliente y mantener la funcionalidad de la aplicación Moment LBS."
       },
       "communicating": {
         "title": "Comunicación con Usted",
-        "text": "Podemos utilizar su información de contacto para informarle sobre nuevas características, actualizaciones y ofertas relacionadas con Quail Breeder."
+        "text": "Podemos utilizar su información de contacto para informarle sobre nuevas características, actualizaciones y ofertas relacionadas con Moment LBS."
       },
       "important": "Importante: Nuestro negocio no es vender o alquilar su información."
     },
@@ -239,7 +239,7 @@
       },
       "stop": {
         "title": "Dejar de Usar:",
-        "text": "Puede dejar de usar la aplicación Quail Breeder en cualquier momento sin restricciones."
+        "text": "Puede dejar de usar la aplicación Moment LBS en cualquier momento sin restricciones."
       },
       "export": {
         "title": "Exportación de Datos:",
@@ -253,7 +253,7 @@
     },
     "dataProtection": {
       "title": "Nuestros Compromisos para Proteger Sus Datos",
-      "text": "Quail Breeder se compromete a proteger su información confidencial:",
+      "text": "Moment LBS se compromete a proteger su información confidencial:",
       "item1": "No divulgaremos su contenido confidencial a terceros sin su consentimiento previo por escrito.",
       "item2": "Restringimos el uso de su información exclusivamente a las relaciones comerciales con usted como propietario de la cuenta.",
       "item3": "Implementamos medidas de seguridad estándar de la industria para proteger sus datos contra el acceso no autorizado."
@@ -273,10 +273,10 @@
   },
   "terms": {
     "title": "Términos de Uso",
-    "intro": "Estos Términos de Uso rigen su uso de la aplicación y los servicios Quail Breeder. Al utilizar nuestra aplicación, usted acepta estar sujeto a estos términos.",
+    "intro": "Estos Términos de Uso rigen su uso de la aplicación y los servicios Moment LBS. Al utilizar nuestra aplicación, usted acepta estar sujeto a estos términos.",
     "purpose": {
       "title": "Propósito de la Aplicación",
-      "text": "Quail Breeder proporciona herramientas de contabilidad integrales para las operaciones de granjas de codornices, incluyendo:",
+      "text": "Moment LBS proporciona herramientas de contabilidad integrales para las operaciones de granjas de codornices, incluyendo:",
       "item1": "Gestión de incubadoras y seguimiento de huevos",
       "item2": "Supervisión del proceso de eclosión",
       "item3": "Seguimiento de cría y crecimiento",
@@ -285,13 +285,13 @@
     },
     "subscription": {
       "title": "Suscripción y Pago",
-      "text": "Quail Breeder requiere una suscripción mensual de pago con renovación automática llamada",
+      "text": "Moment LBS requiere una suscripción mensual de pago con renovación automática llamada",
       "name": "SuscripciónQuailBreeder",
       "important": "Importante: El pago se cargará a su cuenta de iTunes tras la confirmación de la compra. Las suscripciones se renuevan automáticamente a menos que la renovación automática se desactive al menos 24 horas antes del final del período actual."
     },
     "license": {
       "title": "Licencia y Restricciones",
-      "text": "Usted recibe una licencia no transferible para usar Quail Breeder para uso personal solo en sus dispositivos Apple.",
+      "text": "Usted recibe una licencia no transferible para usar Moment LBS para uso personal solo en sus dispositivos Apple.",
       "prohibited": "Tiene prohibido:",
       "item1": "Compartir la aplicación con terceros",
       "item2": "Realizar ingeniería inversa o descompilar el software",
@@ -406,7 +406,7 @@
   "sla": {
     "hero": {
       "title": "Soporte que comprende tus desafíos",
-      "description": "¿Tienes una pregunta sobre el cálculo de incubación o la configuración del programa? Estamos aquí para ti. Nuestro objetivo es mantener quailbreeder.net funcionando para tu éxito las 24 horas del día, los 7 días de la semana.",
+      "description": "¿Tienes una pregunta sobre el cálculo de incubación o la configuración del programa? Estamos aquí para ti. Nuestro objetivo es mantener moment-lbs.app funcionando para tu éxito las 24 horas del día, los 7 días de la semana.",
       "button": "Ir a mis tickets"
     },
     "commitment": {

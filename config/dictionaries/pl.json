@@ -2,8 +2,8 @@
   "home": {
     "topmoto": "Narzędzie do Analizy Danych i Wspomagania Decyzji w Hodowli Przepiórek",
     "botmoto": "Oceń efektywność paszy, warunki utrzymania i zagęszczenie, aby wskazać lepsze wyniki i zmaksymalizować wydajność na cykl.",
-    "what": "Czym jest Quail Breeder?",
-    "expl": "Quail Breeder to wszechstronny asystent cyfrowy zaprojektowany do zarządzania i optymalizacji Twojej produkcji przepiórek. Precyzyjnie rozlicza każdy etap Twojej działalności, od jaja do faktury.",
+    "what": "Czym jest Moment LBS?",
+    "expl": "Moment LBS to wszechstronny asystent cyfrowy zaprojektowany do zarządzania i optymalizacji Twojej produkcji przepiórek. Precyzyjnie rozlicza każdy etap Twojej działalności, od jaja do faktury.",
     "flow": "Mapa Procesu",
     "content": "Proces składa się z następujących kroków:",
     "get": "Rozpocznij — to szybkie",
@@ -190,12 +190,12 @@
   },
   "policy": {
     "title": "Polityka Prywatności",
-    "intro": "Twoja prywatność jest dla nas ważna. Ta Polityka Prywatności wyjaśnia, w jaki sposób Quail Breeder zbiera, wykorzystuje i chroni Twoje informacje podczas korzystania z naszej aplikacji.",
+    "intro": "Twoja prywatność jest dla nas ważna. Ta Polityka Prywatności wyjaśnia, w jaki sposób Moment LBS zbiera, wykorzystuje i chroni Twoje informacje podczas korzystania z naszej aplikacji.",
     "dataCollection": {
       "title": "Jakie Informacje Zbieramy",
       "confidential": {
         "title": "Zawartość Poufna",
-        "text": "Quail Breeder zbiera i przechowuje następującą poufną treść, którą podajesz:",
+        "text": "Moment LBS zbiera i przechowuje następującą poufną treść, którą podajesz:",
         "item1": "Katalogi sprzętu (inkubatory, broodery i lokalizacje)",
         "item2": "Informacje o partiach wylęgu",
         "item3": "Szczegóły katalogu klientów",
@@ -208,7 +208,7 @@
       },
       "notCollect": {
         "title": "Czego Nie Zbieramy",
-        "text": "Quail Breeder wyraźnie NIE zbiera:",
+        "text": "Moment LBS wyraźnie NIE zbiera:",
         "item1": "Adresów IP",
         "item2": "Informacji o urządzeniu",
         "item3": "Osobistych identyfikatorów sprzętowych"
@@ -218,11 +218,11 @@
       "title": "Jak Wykorzystujemy Twoje Informacje",
       "maintaining": {
         "title": "Utrzymanie Naszych Usług",
-        "text": "Wykorzystujemy Twoje informacje do zapewnienia wsparcia klientom i utrzymania funkcjonalności aplikacji Quail Breeder."
+        "text": "Wykorzystujemy Twoje informacje do zapewnienia wsparcia klientom i utrzymania funkcjonalności aplikacji Moment LBS."
       },
       "communicating": {
         "title": "Komunikacja z Tobą",
-        "text": "Możemy wykorzystać Twoje dane kontaktowe, aby informować Cię o nowych funkcjach, aktualizacjach i ofertach związanych z Quail Breeder."
+        "text": "Możemy wykorzystać Twoje dane kontaktowe, aby informować Cię o nowych funkcjach, aktualizacjach i ofertach związanych z Moment LBS."
       },
       "important": "Ważne: Nie zajmujemy się sprzedażą ani wynajmem Twoich informacji."
     },
@@ -239,7 +239,7 @@
       },
       "stop": {
         "title": "Zaprzestań Używania:",
-        "text": "Możesz przestać korzystać z aplikacji Quail Breeder w dowolnym momencie bez ograniczeń."
+        "text": "Możesz przestać korzystać z aplikacji Moment LBS w dowolnym momencie bez ograniczeń."
       },
       "export": {
         "title": "Eksport Danych:",
@@ -253,7 +253,7 @@
     },
     "dataProtection": {
       "title": "Nasze Zobowiązania do Ochrony Twoich Danych",
-      "text": "Quail Breeder zobowiązuje się do ochrony Twoich poufnych informacji:",
+      "text": "Moment LBS zobowiązuje się do ochrony Twoich poufnych informacji:",
       "item1": "Nie ujawnimy Twojej poufnej treści żadnej stronie trzeciej bez Twojej uprzedniej pisemnej zgody.",
       "item2": "Ograniczamy wykorzystanie Twoich informacji wyłącznie do relacji biznesowych z Tobą jako właścicielem konta.",
       "item3": "Wdrażamy standardowe środki bezpieczeństwa branży, aby chronić Twoje dane przed nieautoryzowanym dostępem."
@@ -273,10 +273,10 @@
   },
   "terms": {
     "title": "Warunki Użytkowania",
-    "intro": "Niniejsze Warunki Użytkowania regulują korzystanie z aplikacji i usług Quail Breeder. Korzystając z naszej aplikacji, zgadzasz się być związany tymi warunkami.",
+    "intro": "Niniejsze Warunki Użytkowania regulują korzystanie z aplikacji i usług Moment LBS. Korzystając z naszej aplikacji, zgadzasz się być związany tymi warunkami.",
     "purpose": {
       "title": "Cel Aplikacji",
-      "text": "Quail Breeder zapewnia kompleksowe narzędzia księgowe do operacji hodowli przepiórek, w tym:",
+      "text": "Moment LBS zapewnia kompleksowe narzędzia księgowe do operacji hodowli przepiórek, w tym:",
       "item1": "Zarządzanie inkubatorami i śledzenie jaj",
       "item2": "Monitorowanie procesu wylęgu",
       "item3": "Śledzenie odchowu piskląt i wzrostu",
@@ -285,13 +285,13 @@
     },
     "subscription": {
       "title": "Subskrypcja i Płatność",
-      "text": "Quail Breeder wymaga płatnej, automatycznie odnawiającej się subskrypcji miesięcznej o nazwie",
+      "text": "Moment LBS wymaga płatnej, automatycznie odnawiającej się subskrypcji miesięcznej o nazwie",
       "name": "QuailBreederSubscription",
       "important": "Ważne: Płatność zostanie obciążona Twoje konto iTunes po potwierdzeniu zakupu. Subskrypcje odnawiają się automatycznie, chyba że auto-odnawianie zostanie wyłączone co najmniej 24 godziny przed końcem bieżącego okresu."
     },
     "license": {
       "title": "Licencja i Ograniczenia",
-      "text": "Otrzymujesz nieprzenoszalną licencję na korzystanie z Quail Breeder do użytku osobistego wyłącznie na swoich urządzeniach Apple.",
+      "text": "Otrzymujesz nieprzenoszalną licencję na korzystanie z Moment LBS do użytku osobistego wyłącznie na swoich urządzeniach Apple.",
       "prohibited": "Jest Ci zabronione:",
       "item1": "Udostępnianie aplikacji osobom trzecim",
       "item2": "Inżynieria wsteczna lub dekompilacja oprogramowania",
@@ -406,7 +406,7 @@
   "sla": {
     "hero": {
       "title": "Wsparcie, które rozumie Twoje wyzwania",
-      "description": "Masz pytanie dotyczące obliczeń inkubacji lub konfiguracji programu? Jesteśmy tutaj dla Ciebie. Naszym celem jest utrzymanie quailbreeder.net w działaniu dla Twojego sukcesu 24/7.",
+      "description": "Masz pytanie dotyczące obliczeń inkubacji lub konfiguracji programu? Jesteśmy tutaj dla Ciebie. Naszym celem jest utrzymanie moment-lbs.app w działaniu dla Twojego sukcesu 24/7.",
       "button": "Przejdź do moich zgłoszeń"
     },
     "commitment": {

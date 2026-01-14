@@ -5,46 +5,51 @@
  * Usage: node scripts/send-jwt-notification.js <old_expiry_date> <new_expiry_date>
  */
 
-const nodemailer = require('nodemailer');
-const fs = require('fs');
-const path = require('path');
+const nodemailer = require('nodemailer')
+const fs = require('fs')
+const path = require('path')
 
 function readEnvFile() {
-  const envPath = path.join(__dirname, '..', '.env');
-  const envContent = fs.readFileSync(envPath, 'utf8');
-  const envVars = {};
+  const envPath = path.join(__dirname, '..', '.env')
+  const envContent = fs.readFileSync(envPath, 'utf8')
+  const envVars = {}
 
   envContent.split('\n').forEach(line => {
-    const match = line.match(/^([^#=]+)=(.*)$/);
+    const match = line.match(/^([^#=]+)=(.*)$/)
     if (match) {
-      const key = match[1].trim();
-      let value = match[2].trim();
-      if ((value.startsWith('"') && value.endsWith('"')) ||
-          (value.startsWith("'") && value.endsWith("'"))) {
-        value = value.slice(1, -1);
+      const key = match[1].trim()
+      let value = match[2].trim()
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
+        value = value.slice(1, -1)
       }
-      envVars[key] = value;
+      envVars[key] = value
     }
-  });
+  })
 
-  return envVars;
+  return envVars
 }
 
 async function sendNotification(oldExpiry, newExpiry) {
-  const env = readEnvFile();
+  const env = readEnvFile()
 
   const transporter = nodemailer.createTransport({
     host: env.SMTP_HOST || 'localhost',
     port: parseInt(env.SMTP_PORT || '587'),
     secure: env.SMTP_SECURE === 'true',
-    auth: env.SMTP_USER && env.SMTP_PASSWORD ? {
-      user: env.SMTP_USER,
-      pass: env.SMTP_PASSWORD,
-    } : undefined,
+    auth:
+      env.SMTP_USER && env.SMTP_PASSWORD
+        ? {
+            user: env.SMTP_USER,
+            pass: env.SMTP_PASSWORD,
+          }
+        : undefined,
     tls: {
       rejectUnauthorized: false,
     },
-  });
+  })
 
   const oldDate = new Date(oldExpiry).toLocaleString('en-US', {
     year: 'numeric',
@@ -53,7 +58,7 @@ async function sendNotification(oldExpiry, newExpiry) {
     hour: '2-digit',
     minute: '2-digit',
     timeZone: 'UTC',
-  });
+  })
 
   const newDate = new Date(newExpiry).toLocaleString('en-US', {
     year: 'numeric',
@@ -62,7 +67,7 @@ async function sendNotification(oldExpiry, newExpiry) {
     hour: '2-digit',
     minute: '2-digit',
     timeZone: 'UTC',
-  });
+  })
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -206,7 +211,7 @@ node scripts/generate-apple-secret.js
       </div>
     </body>
     </html>
-  `;
+  `
 
   const textContent = `
 Apple Client Secret JWT Regenerated
@@ -239,29 +244,29 @@ To manually regenerate JWT, run:
 
 QuailBreeder CI/CD System
 This is an automated notification from the deployment pipeline.
-  `;
+  `
 
   const mailOptions = {
-    from: env.SMTP_FROM || 'info@quailbreeder.net',
+    from: env.SMTP_FROM || 'info@moment-lbs.app',
     to: 'quailbreeding@gmail.com',
     subject: '[CI/CD] Apple JWT Auto-Regenerated',
     text: textContent,
     html: htmlContent,
-  };
+  }
 
   try {
-    await transporter.sendMail(mailOptions);
-    console.log('✅ JWT regeneration notification sent to admin');
+    await transporter.sendMail(mailOptions)
+    console.log('✅ JWT regeneration notification sent to admin')
   } catch (error) {
-    console.error('⚠️  Failed to send notification email:', error.message);
+    console.error('⚠️  Failed to send notification email:', error.message)
     // Don't fail the script if email fails
   }
 }
 
-const args = process.argv.slice(2);
+const args = process.argv.slice(2)
 if (args.length < 2) {
-  console.error('Usage: node send-jwt-notification.js <old_expiry_date> <new_expiry_date>');
-  process.exit(1);
+  console.error('Usage: node send-jwt-notification.js <old_expiry_date> <new_expiry_date>')
+  process.exit(1)
 }
 
-sendNotification(args[0], args[1]);
+sendNotification(args[0], args[1])

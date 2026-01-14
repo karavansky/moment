@@ -190,12 +190,12 @@
   },
   "policy": {
     "title": "Datenschutzerklärung",
-    "intro": "Ihre Privatsphäre ist uns wichtig. Diese Datenschutzerklärung erläutert, wie Quail Breeder Ihre Informationen sammelt, verwendet und schützt, wenn Sie unsere Anwendung nutzen.",
+    "intro": "Ihre Privatsphäre ist uns wichtig. Diese Datenschutzerklärung erläutert, wie Moment LBS Ihre Informationen sammelt, verwendet und schützt, wenn Sie unsere Anwendung nutzen.",
     "dataCollection": {
       "title": "Welche Informationen wir sammeln",
       "confidential": {
         "title": "Vertrauliche Inhalte",
-        "text": "Quail Breeder sammelt und speichert die folgenden vertraulichen Inhalte, die Sie bereitstellen:",
+        "text": "Moment LBS sammelt und speichert die folgenden vertraulichen Inhalte, die Sie bereitstellen:",
         "item1": "Geräteverzeichnisse (Inkubatoren, Aufzuchtkästen und Standorte)",
         "item2": "Informationen zu Schlupfchargen",
         "item3": "Kundenstammdetails",
@@ -208,7 +208,7 @@
       },
       "notCollect": {
         "title": "Was wir NICHT sammeln",
-        "text": "Quail Breeder sammelt ausdrücklich NICHT:",
+        "text": "Moment LBS sammelt ausdrücklich NICHT:",
         "item1": "IP-Adressen",
         "item2": "Geräteinformationen",
         "item3": "Persönliche Hardware-Identifikatoren"
@@ -218,11 +218,11 @@
       "title": "Wie wir Ihre Informationen verwenden",
       "maintaining": {
         "title": "Aufrechterhaltung unserer Dienste",
-        "text": "Wir verwenden Ihre Informationen, um Kundensupport bereitzustellen und die Funktionalität der Quail Breeder-Anwendung aufrechtzuerhalten."
+        "text": "Wir verwenden Ihre Informationen, um Kundensupport bereitzustellen und die Funktionalität der Moment LBS-Anwendung aufrechtzuerhalten."
       },
       "communicating": {
         "title": "Kommunikation mit Ihnen",
-        "text": "Wir können Ihre Kontaktinformationen verwenden, um Sie über neue Funktionen, Updates und Angebote im Zusammenhang mit Quail Breeder zu informieren."
+        "text": "Wir können Ihre Kontaktinformationen verwenden, um Sie über neue Funktionen, Updates und Angebote im Zusammenhang mit Moment LBS zu informieren."
       },
       "important": "Wichtig: Wir verkaufen oder vermieten Ihre Informationen nicht."
     },
@@ -239,7 +239,7 @@
       },
       "stop": {
         "title": "Nutzung beenden:",
-        "text": "Sie können die Verwendung der Quail Breeder-Anwendung jederzeit ohne Einschränkungen beenden."
+        "text": "Sie können die Verwendung der Moment LBS-Anwendung jederzeit ohne Einschränkungen beenden."
       },
       "export": {
         "title": "Datenexport:",
@@ -253,7 +253,7 @@
     },
     "dataProtection": {
       "title": "Unsere Verpflichtungen zum Schutz Ihrer Daten",
-      "text": "Quail Breeder verpflichtet sich, Ihre vertraulichen Informationen zu schützen:",
+      "text": "Moment LBS verpflichtet sich, Ihre vertraulichen Informationen zu schützen:",
       "item1": "Wir werden Ihre vertraulichen Inhalte ohne Ihre vorherige schriftliche Zustimmung nicht an Dritte weitergeben.",
       "item2": "Wir beschränken die Verwendung Ihrer Informationen ausschließlich auf Geschäftsbeziehungen mit Ihnen als Kontoinhaber.",
       "item3": "Wir implementieren branchenübliche Sicherheitsmaßnahmen, um Ihre Daten vor unbefugtem Zugriff zu schützen."
@@ -273,10 +273,10 @@
   },
   "terms": {
     "title": "Nutzungsbedingungen",
-    "intro": "Diese Nutzungsbedingungen regeln Ihre Nutzung der Quail Breeder-Anwendung und -Dienste. Durch die Nutzung unserer Anwendung stimmen Sie diesen Bedingungen zu.",
+    "intro": "Diese Nutzungsbedingungen regeln Ihre Nutzung der Moment LBS-Anwendung und -Dienste. Durch die Nutzung unserer Anwendung stimmen Sie diesen Bedingungen zu.",
     "purpose": {
       "title": "Zweck der Anwendung",
-      "text": "Quail Breeder bietet umfassende Buchhaltungstools für den Betrieb von Wachtelfarmen, einschließlich:",
+      "text": "Moment LBS bietet umfassende Buchhaltungstools für den Betrieb von Wachtelfarmen, einschließlich:",
       "item1": "Inkubatorverwaltung und Eierverfolgung",
       "item2": "Überwachung des Schlupfprozesses",
       "item3": "Aufzucht- und Wachstumsverfolgung",
@@ -285,13 +285,13 @@
     },
     "subscription": {
       "title": "Abonnement und Zahlung",
-      "text": "Quail Breeder erfordert ein kostenpflichtiges monatliches Abonnement mit automatischer Verlängerung namens",
+      "text": "Moment LBS erfordert ein kostenpflichtiges monatliches Abonnement mit automatischer Verlängerung namens",
       "name": "QuailBreederSubscription",
       "important": "Wichtig: Die Zahlung wird Ihrem iTunes-Konto bei Kaufbestätigung belastet. Abonnements verlängern sich automatisch, es sei denn, die automatische Verlängerung wird mindestens 24 Stunden vor Ende des aktuellen Zeitraums deaktiviert."
     },
     "license": {
       "title": "Lizenz und Einschränkungen",
-      "text": "Sie erhalten eine nicht übertragbare Lizenz zur Nutzung von Quail Breeder ausschließlich für den persönlichen Gebrauch auf Ihren Apple-Geräten.",
+      "text": "Sie erhalten eine nicht übertragbare Lizenz zur Nutzung von Moment LBS ausschließlich für den persönlichen Gebrauch auf Ihren Apple-Geräten.",
       "prohibited": "Es ist Ihnen untersagt:",
       "item1": "Die Anwendung mit Dritten zu teilen",
       "item2": "Die Software zurückzuentwickeln oder zu dekompilieren",
@@ -406,7 +406,7 @@
   "sla": {
     "hero": {
       "title": "Support, der Ihre Herausforderungen versteht",
-      "description": "Eine Frage zur Inkubationsberechnung oder Programmeinrichtung? Wir sind für Sie da. Unser Ziel ist es, quailbreeder.net 24/7 für Ihren Erfolg am Laufen zu halten.",
+      "description": "Eine Frage zur Inkubationsberechnung oder Programmeinrichtung? Wir sind für Sie da. Unser Ziel ist es, moment-lbs.app 24/7 für Ihren Erfolg am Laufen zu halten.",
       "button": "Zu meinen Tickets"
     },
     "commitment": {

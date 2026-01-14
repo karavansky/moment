@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Quail Breeder',
-    short_name: 'QuailBreeder',
-    description: 'Data Analysis and Decision Support Tool for Quail Farming',
+    name: 'Moment Location Based Services',
+    short_name: 'MomentLBS',
+    description: 'Professional time tracking and location-based service for home care, field staff, and transport logistics.',
     start_url: '/',
     icons: [
       {

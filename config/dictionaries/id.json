@@ -190,12 +190,12 @@
   },
   "policy": {
     "title": "Kebijakan Privasi",
-    "intro": "Privasi Anda penting bagi kami. Kebijakan Privasi ini menjelaskan bagaimana Quail Breeder mengumpulkan, menggunakan, dan melindungi informasi Anda saat Anda menggunakan aplikasi kami.",
+    "intro": "Privasi Anda penting bagi kami. Kebijakan Privasi ini menjelaskan bagaimana Moment LBS mengumpulkan, menggunakan, dan melindungi informasi Anda saat Anda menggunakan aplikasi kami.",
     "dataCollection": {
       "title": "Informasi Apa yang Kami Kumpulkan",
       "confidential": {
         "title": "Konten Rahasia",
-        "text": "Quail Breeder mengumpulkan dan menyimpan konten rahasia berikut yang Anda berikan:",
+        "text": "Moment LBS mengumpulkan dan menyimpan konten rahasia berikut yang Anda berikan:",
         "item1": "Direktori peralatan (inkubator, brooder, dan lokasi)",
         "item2": "Informasi batch penetasan",
         "item3": "Detail direktori pelanggan",
@@ -208,7 +208,7 @@
       },
       "notCollect": {
         "title": "Apa yang Tidak Kami Kumpulkan",
-        "text": "Quail Breeder secara eksplisit TIDAK mengumpulkan:",
+        "text": "Moment LBS secara eksplisit TIDAK mengumpulkan:",
         "item1": "Alamat IP",
         "item2": "Informasi perangkat",
         "item3": "Pengenal perangkat keras pribadi"
@@ -218,11 +218,11 @@
       "title": "Bagaimana Kami Menggunakan Informasi Anda",
       "maintaining": {
         "title": "Memelihara Layanan Kami",
-        "text": "Kami menggunakan informasi Anda untuk menyediakan dukungan pelanggan dan menjaga fungsionalitas aplikasi Quail Breeder."
+        "text": "Kami menggunakan informasi Anda untuk menyediakan dukungan pelanggan dan menjaga fungsionalitas aplikasi Moment LBS."
       },
       "communicating": {
         "title": "Berkomunikasi dengan Anda",
-        "text": "Kami dapat menggunakan informasi kontak Anda untuk memberi tahu Anda tentang fitur baru, pembaruan, dan penawaran terkait Quail Breeder."
+        "text": "Kami dapat menggunakan informasi kontak Anda untuk memberi tahu Anda tentang fitur baru, pembaruan, dan penawaran terkait Moment LBS."
       },
       "important": "Penting: Kami tidak berbisnis menjual atau menyewakan informasi Anda."
     },
@@ -239,7 +239,7 @@
       },
       "stop": {
         "title": "Berhenti Menggunakan:",
-        "text": "Anda dapat berhenti menggunakan aplikasi Quail Breeder kapan saja tanpa batasan."
+        "text": "Anda dapat berhenti menggunakan aplikasi Moment LBS kapan saja tanpa batasan."
       },
       "export": {
         "title": "Ekspor Data:",
@@ -253,7 +253,7 @@
     },
     "dataProtection": {
       "title": "Komitmen Kami untuk Melindungi Data Anda",
-      "text": "Quail Breeder berkomitmen untuk melindungi informasi rahasia Anda:",
+      "text": "Moment LBS berkomitmen untuk melindungi informasi rahasia Anda:",
       "item1": "Kami tidak akan mengungkapkan konten rahasia Anda kepada pihak ketiga mana pun tanpa persetujuan tertulis Anda sebelumnya.",
       "item2": "Kami membatasi penggunaan informasi Anda secara eksklusif untuk hubungan bisnis dengan Anda sebagai pemilik akun.",
       "item3": "Kami menerapkan langkah-langkah keamanan standar industri untuk melindungi data Anda dari akses tidak sah."
@@ -273,10 +273,10 @@
   },
   "terms": {
     "title": "Ketentuan Penggunaan",
-    "intro": "Ketentuan Penggunaan ini mengatur penggunaan Anda atas aplikasi dan layanan Quail Breeder. Dengan menggunakan aplikasi kami, Anda setuju untuk terikat oleh ketentuan ini.",
+    "intro": "Ketentuan Penggunaan ini mengatur penggunaan Anda atas aplikasi dan layanan Moment LBS. Dengan menggunakan aplikasi kami, Anda setuju untuk terikat oleh ketentuan ini.",
     "purpose": {
       "title": "Tujuan Aplikasi",
-      "text": "Quail Breeder menyediakan alat akuntansi komprehensif untuk operasi peternakan puyuh, termasuk:",
+      "text": "Moment LBS menyediakan alat akuntansi komprehensif untuk operasi peternakan puyuh, termasuk:",
       "item1": "Manajemen inkubator dan pelacakan telur",
       "item2": "Pemantauan proses penetasan",
       "item3": "Pelacakan pemeliharaan brooder dan pertumbuhan",
@@ -285,13 +285,13 @@
     },
     "subscription": {
       "title": "Langganan dan Pembayaran",
-      "text": "Quail Breeder memerlukan langganan bulanan berbayar yang diperbarui secara otomatis yang disebut",
+      "text": "Moment LBS memerlukan langganan bulanan berbayar yang diperbarui secara otomatis yang disebut",
       "name": "LanggananQuailBreeder",
       "important": "Penting: Pembayaran akan dibebankan ke Akun iTunes Anda pada konfirmasi pembelian. Langganan diperbarui secara otomatis kecuali perpanjangan otomatis dimatikan setidaknya 24 jam sebelum akhir periode berjalan."
     },
     "license": {
       "title": "Lisensi dan Pembatasan",
-      "text": "Anda diberikan lisensi yang tidak dapat dialihkan untuk menggunakan Quail Breeder untuk penggunaan pribadi hanya pada perangkat Apple Anda.",
+      "text": "Anda diberikan lisensi yang tidak dapat dialihkan untuk menggunakan Moment LBS untuk penggunaan pribadi hanya pada perangkat Apple Anda.",
       "prohibited": "Anda dilarang untuk:",
       "item1": "Berbagi aplikasi dengan pihak ketiga",
       "item2": "Rekayasa balik atau dekompilasi perangkat lunak",
@@ -406,7 +406,7 @@
   "sla": {
     "hero": {
       "title": "Dukungan yang Memahami Tantangan Anda",
-      "description": "Punya pertanyaan tentang perhitungan inkubasi atau pengaturan program? Kami di sini untuk Anda. Tujuan kami adalah menjaga quailbreeder.net tetap berjalan untuk kesuksesan Anda 24/7.",
+      "description": "Punya pertanyaan tentang perhitungan inkubasi atau pengaturan program? Kami di sini untuk Anda. Tujuan kami adalah menjaga moment-lbs.app tetap berjalan untuk kesuksesan Anda 24/7.",
       "button": "Pergi ke tiket saya"
     },
     "commitment": {

@@ -4,7 +4,7 @@ import { getLocalizedRoute } from '@/config/routes'
 import type { SupportedLocale } from '@/config/locales'
 
 // Базовые настройки OpenGraph
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://quailbreeder.net'
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://moment-lbs.app'
 
 // Маппинг языков в локали OpenGraph (ISO 639-1 + ISO 3166-1)
 const localeMap: Record<string, string> = {
@@ -38,7 +38,7 @@ export const defaultMetadata: Metadata = {
     images: [
       {
         url: '/hatching-quail-icon.webp',
-        width: 200 ,
+        width: 200,
         height: 200,
         alt: 'QuailBreeder Application Interface',
       },
@@ -110,9 +110,7 @@ export function createPageMetadata(
   image?: string
 ): Metadata {
   // Убираем язык из пути если он там есть и слеш в начале
-  const cleanPath = path.startsWith('/en') || path.startsWith('/de')
-    ? path.substring(3)
-    : path
+  const cleanPath = path.startsWith('/en') || path.startsWith('/de') ? path.substring(3) : path
   const routeKey = cleanPath.startsWith('/') ? cleanPath.substring(1) : cleanPath
 
   // Для главной страницы (пустой routeKey) не добавляем дополнительный слеш
@@ -120,14 +118,12 @@ export function createPageMetadata(
 
   // Получаем переведенный маршрут для текущего языка
   const localizedRoute = isHomePage ? '' : getLocalizedRoute(routeKey, lang as SupportedLocale)
-  const canonicalUrl = isHomePage
-    ? `${baseUrl}/${lang}`
-    : `${baseUrl}/${lang}/${localizedRoute}`
+  const canonicalUrl = isHomePage ? `${baseUrl}/${lang}` : `${baseUrl}/${lang}/${localizedRoute}`
 
   // Генерируем объект languages для hreflang тегов с переведенными маршрутами
   // routeKey уже является каноническим ключом (например, 'get-started')
   const languages: Record<string, string> = {}
-  supportedLocales.forEach((locale) => {
+  supportedLocales.forEach(locale => {
     const translatedRoute = isHomePage ? '' : getLocalizedRoute(routeKey, locale)
     languages[locale] = isHomePage
       ? `${baseUrl}/${locale}`

@@ -7,10 +7,12 @@
 ### 1. ✅ База данных
 
 **Таблица users:**
+
 - Добавлено поле `isAdmin` (BOOLEAN, по умолчанию FALSE)
 - Email `karavansky@gmail.com` установлен как администратор
 
 **Таблица messages:**
+
 - `messageID` - уникальный ID сообщения
 - `ticketID` - связь с тикетом
 - `userID` - кто отправил сообщение
@@ -23,13 +25,16 @@
 ### 2. ✅ API Endpoints
 
 **Для администратора:**
+
 - `GET /api/admin/tickets` - все тикеты с статистикой
 
 **Для пользователей:**
+
 - `GET /api/tickets/my` - мои тикеты
 - `POST /api/support/tickets` - создать тикет (+ автоматически создается первое сообщение)
 
 **Для переписки:**
+
 - `GET /api/tickets/[ticketID]/messages` - получить все сообщения
 - `POST /api/tickets/[ticketID]/messages` - отправить сообщение
 
@@ -47,6 +52,7 @@ PGPASSWORD=hronop psql -h localhost -p 5432 -U hronop -d quailbreeder -c "SELECT
 ```
 
 Должны увидеть:
+
 ```
         email         | isAdmin
 ----------------------+---------
@@ -110,10 +116,7 @@ export async function createUser(
   provider: string
 ): Promise<User> {
   // Список email администраторов
-  const adminEmails = [
-    'karavansky@gmail.com',
-    'admin@quailbreeder.net',
-  ]
+  const adminEmails = ['karavansky@gmail.com', 'admin@moment-lbs.app']
 
   const isAdmin = adminEmails.includes(email)
 
@@ -202,12 +205,14 @@ curl -X GET http://localhost:3001/api/tickets/abc123/messages \
 ## Безопасность
 
 ✅ **Реализовано:**
+
 - Проверка аутентификации на всех endpoints
 - Проверка прав доступа (владелец или админ)
 - Автоматическая маркировка сообщений от админа
 - Foreign keys для целостности данных
 
 ⚠️ **Рекомендации:**
+
 - Rate limiting для API endpoints
 - Валидация длины сообщений (max 10000 символов)
 - XSS защита при отображении сообщений
