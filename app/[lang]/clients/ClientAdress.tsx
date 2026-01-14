@@ -641,25 +641,6 @@ export const ClientAdress = memo(function ClientAdress({
 
   // Автоматический поиск почтового индекса при изменении адреса
   useEffect(() => {
-    // Очищаем предыдущий таймер
-    /*
-    if (postalCodeTimer.current) {
-      clearTimeout(postalCodeTimer.current)
-    }
-      */
-    /*
-    // Если zipCode уже есть, не запрашиваем повторно (только если пользователь изменил другие поля)
-    if (addressData.street && addressData.city && country && addressData.houseNumber) {
-      postalCodeTimer.current = setTimeout(() => {
-        fetchPostalCode(
-          addressData.street,
-          addressData.houseNumber,
-          addressData.city,
-          addressData.country
-        )
-      }, 1000) // 1 секунда debounce
-    }
-*/
     if (addressData.latitude && addressData.longitude) {
       setAddressCoordinates({ lat: addressData.latitude, lng: addressData.longitude })
     }
@@ -668,7 +649,7 @@ export const ClientAdress = memo(function ClientAdress({
         clearTimeout(postalCodeTimer.current)
       }*/
     }
-  }, [addressData.street, addressData.houseNumber, addressData.city, country, fetchPostalCode])
+  }, [addressData.latitude, addressData.longitude, setAddressCoordinates])
 
   const handleReset = useCallback(() => {
     const resetCountryName = CountriesHelper.getNameByCode(client.country.toLowerCase())
@@ -687,7 +668,7 @@ export const ClientAdress = memo(function ClientAdress({
     setCountry(resetCountryName || '')
     setCityQuery(client.city || '')
     setStreetQuery(client.street || '')
-  }, [client])
+  }, [client.country, client.city, client.street, client.postalCode, client.houseNumber, client.district, client.latitude, client.longitude, client.apartment])
 
   return (
     <Card
@@ -711,11 +692,11 @@ export const ClientAdress = memo(function ClientAdress({
                   <Label className="text-lg md:text-base">Stadt</Label>
                   <div className="relative w-full">
                     <Input
-                      value={listCities.filterText}
+                      value={cityQuery}
                       onChange={e => {
                         const val = e.target.value
                         console.log('City input changed to:', val)
-                        listCities.setFilterText(val)
+                        setCityQuery(val)
 
                         const selected = listCities.items.find(c => c.name === val)
 
@@ -724,6 +705,7 @@ export const ClientAdress = memo(function ClientAdress({
                           setIsCityInvalid(false)
                         } else {
                           setIsCityInvalid(true)
+                          listCities.setFilterText(val)
                         }
                       }}
                       placeholder={country ? 'Type city name...' : 'Select country first'}
