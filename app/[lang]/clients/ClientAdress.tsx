@@ -27,6 +27,8 @@ import { isOutputType } from 'graphql'
 import { useAsyncList } from '@react-stately/data'
 import { i } from 'framer-motion/client'
 import { ChevronDown, List } from 'lucide-react'
+import { useTranslation } from '@/components/Providers'
+import { useLanguage } from '@/hooks/useLanguage'
 
 // Динамический импорт карты для избежания SSR проблем
 const AddressMap = dynamic(() => import('./AddressMap'), { ssr: false })
@@ -45,13 +47,15 @@ export const ClientAdress = memo(function ClientAdress({
   isCreateNew = false,
   className,
 }: ClientAdressProps) {
+  const { t } = useTranslation()
+  const lang = useLanguage()
   const { updateClient, addClient } = useScheduling()
   const [addressData, setAddressData] = useState({
     street: client.street || '',
     city: client.city || '',
     zipCode: client.postalCode || '',
     houseNumber: client.houseNumber || '',
-    country: client.country || '',
+    country: isCreateNew ? lang : client.country || '',
     district: client.district || '',
     latitude: client.latitude || 0,
     longitude: client.longitude || 0,
@@ -65,6 +69,7 @@ export const ClientAdress = memo(function ClientAdress({
   const [isHouseInvalid, setIsHouseInvalid] = useState(false)
   const [isStreetInvalid, setIsStreetInvalid] = useState(false)
   const [isStreetLeast3Chars, setIsStreetLeast3Chars] = useState(false)
+  const [isCityLeast2Chars, setIsCityLeast2Chars] = useState(false)
 
   const isChanged =
     addressData.street !== (client.street || '') ||
@@ -75,14 +80,19 @@ export const ClientAdress = memo(function ClientAdress({
     addressData.district !== (client.district || '')
 
   // Состояние для координат адреса
+  // Инициализируем сразу из props, чтобы избежать лишнего рендера при монтировании
   const [addressCoordinates, setAddressCoordinates] = useState<{ lat: number; lng: number } | null>(
-    null
+    client.latitude && client.longitude ? { lat: client.latitude, lng: client.longitude } : null
   )
 
   // Получаем код страны из названия или напрямую из кода
-  const normalizedCountry = CountriesHelper.getNameByCode(client.country.toLowerCase())
+  const normalizedCountry = CountriesHelper.getNameByCode(
+    isCreateNew ? lang : client.country.toLowerCase()
+  )
   const [countryCode, setCountryCode] = useState(
-    CountriesHelper.getCodeByName(client.country.toLowerCase()) || client.country.toLowerCase()
+    isCreateNew
+      ? lang
+      : CountriesHelper.getCodeByName(client.country.toLowerCase()) || client.country.toLowerCase()
   )
 
   const countriesList = useMemo(
@@ -102,8 +112,13 @@ export const ClientAdress = memo(function ClientAdress({
 
   const listCities = useAsyncList<Character>({
     initialSelectedKeys: [client.city ? client.city : ''],
-    initialFilterText: client.city || '',
+    initialFilterText: '', // client.city || '', - Избегаем загрузки при монтировании
     async load({ cursor, filterText, signal }) {
+      // Прерываем, если фильтр пустой или слишком короткий
+      if (!filterText || filterText.length < 2) {
+        return { items: [] }
+      }
+
       console.log(
         'useAsyncList cities with filter:',
         filterText,
@@ -181,15 +196,23 @@ export const ClientAdress = memo(function ClientAdress({
   })
 
   const listStreets = useAsyncList<{ id: number; street: string; district: string }>({
-    initialFilterText: client.street || '',
+    initialFilterText: '', // client.street || '', - Избегаем загрузки при монтировании
     async load({ signal, filterText }) {
+      console.log(
+        'useAsyncList streets with filter:',
+        filterText,
+
+        'signal:',
+        signal
+      )
       const streetQuery = filterText
       const cityName = addressData.city
       // Access state values that should be captured or available in render scope
       const countryName = country
       const countryCodeValue = countryCode
 
-      if ((streetQuery && streetQuery.length < 3) || !cityName || !countryName) {
+      // Исправленная проверка: если фильтра нет ИЛИ он короткий -> выходим
+      if (!streetQuery || streetQuery.length < 3 || !cityName || !countryName) {
         return { items: [] }
       }
 
@@ -262,6 +285,12 @@ export const ClientAdress = memo(function ClientAdress({
   const citySearchTimer = useRef<NodeJS.Timeout | null>(null)
   const streetSearchTimer = useRef<NodeJS.Timeout | null>(null)
   const postalCodeTimer = useRef<NodeJS.Timeout | null>(null)
+
+  // Дополнительный ref для отслеживания последнего запрошенного номера дома
+  // чтобы избежать дублирования запросов при leading/trailing debounce
+  const lastRequestedHouseNumber = useRef<string>('')
+  const lastRequestedCity = useRef<string>('')
+  const lastRequestedStreet = useRef<string>('')
 
   // AbortControllers для отмены запросов
   const cityAbortController = useRef<AbortController | null>(null)
@@ -393,9 +422,13 @@ export const ClientAdress = memo(function ClientAdress({
   const fetchPostalCode = useCallback(
     async (street: string, houseNumber: string, city: string, countryValue: string) => {
       console.log('Fetching postal code for:', { street, houseNumber, city, countryValue })
-      if (!street || !city || !countryValue) return
 
       try {
+        if (!street || !city || !countryValue) {
+          console.warn('⚠️ Missing required params for postal code fetch')
+          return
+        }
+
         const fullAddress = houseNumber
           ? `${street} ${houseNumber}, ${city}, ${countryValue.toLowerCase() === 'de' ? 'Germany' : countryValue}`
           : `${street}, ${city}, ${countryValue}`
@@ -472,19 +505,38 @@ export const ClientAdress = memo(function ClientAdress({
       // Очищаем предыдущий таймер
       if (citySearchTimer.current) {
         clearTimeout(citySearchTimer.current)
+      } else {
+        // Leading edge: если таймера нет, запускаем запрос немедленно
+        if (value.length >= 3 && country) {
+          console.log('🚀 Immediate fetch for city:', value)
+          lastRequestedCity.current = value
+          listCities.setFilterText(value)
+        }
       }
 
-      // Устанавливаем новый таймер с увеличенным debounce (500ms вместо 300ms)
+      // Trailing edge: запускаем таймер
       if (value.length >= 3 && country) {
-        console.log('Scheduling city fetch for:', value)
+        // console.log('Scheduling city fetch for:', value)
         citySearchTimer.current = setTimeout(() => {
-          fetchCities(value, country, countryCode)
+          if (value === lastRequestedCity.current) {
+            console.log('⏭️ Skipping trailing fetch for city - already requested:', value)
+            citySearchTimer.current = null
+            return
+          }
+          console.log('🐢 Trailing fetch for city:', value)
+          lastRequestedCity.current = value
+          listCities.setFilterText(value)
+          citySearchTimer.current = null
         }, 500)
       } else {
-        setCities([])
+        if (citySearchTimer.current) {
+          clearTimeout(citySearchTimer.current)
+          citySearchTimer.current = null
+        }
+        // setCities([]) removed
       }
     },
-    [cityQuery, country, countryCode, fetchCities]
+    [cityQuery, country, countryCode, listCities]
   )
   const handleCityOpenChange = useCallback(
     (isOpen: Boolean) => {
@@ -521,10 +573,25 @@ export const ClientAdress = memo(function ClientAdress({
 
       if (streetSearchTimer.current) {
         clearTimeout(streetSearchTimer.current)
+      } else {
+        // Leading edge
+        if (value) {
+          console.log('🚀 Immediate filter for street:', value)
+          lastRequestedStreet.current = value
+          listStreets.setFilterText(value)
+        }
       }
 
       streetSearchTimer.current = setTimeout(() => {
+        if (value === lastRequestedStreet.current) {
+          console.log('⏭️ Skipping trailing filter for street:', value)
+          streetSearchTimer.current = null
+          return
+        }
+        console.log('🐢 Trailing filter for street:', value)
+        lastRequestedStreet.current = value
         listStreets.setFilterText(value)
+        streetSearchTimer.current = null
       }, 500)
     },
     [addressData.street, listStreets]
@@ -592,28 +659,55 @@ export const ClientAdress = memo(function ClientAdress({
   )
   const handleHouseSelection = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setIsFetchingPostcode(true)
-      // isFetchingPostcode.current = true
-      console.log('House number changed to:', e.target.value)
-      setAddressData(prev => ({ ...prev, houseNumber: e.target.value }))
-      // Очищаем предыдущий таймер
+      const val = e.target.value
+      // Не сбрасываем индикатор жестко в false, так как может идти немедленный запрос
+      // setIsFetchingPostcode(false)
 
+      console.log('House number changed to:', val)
+      setAddressData(prev => ({ ...prev, houseNumber: val }))
+
+      // Использование countryCodeValue вместо addressData.country, если они рассинхронизированы
+      // Обычно addressData.country должен хранить код страны
+      const effectiveCountryCode = addressData.country || countryCode || ''
+
+      // Очищаем предыдущий таймер
       if (postalCodeTimer.current) {
         clearTimeout(postalCodeTimer.current)
+      } else {
+        // Если таймера нет, значит это начало ввода (First/Leading edge)
+        // Отправляем запрос немедленно
+        if (addressData.street && addressData.city && effectiveCountryCode && val) {
+          console.log('🚀 Immediate fetch for house number:', val)
+          lastRequestedHouseNumber.current = val
+          setIsFetchingPostcode(true)
+          fetchPostalCode(addressData.street, val, addressData.city, effectiveCountryCode)
+        }
       }
 
-      // Если zipCode уже есть, не запрашиваем повторно (только если пользователь изменил другие поля)
-      if (addressData.street && addressData.city && country && e.target.value) {
+      // Всегда устанавливаем таймер для завершения ввода (Trailing edge)
+      if (addressData.street && addressData.city && effectiveCountryCode && val) {
         postalCodeTimer.current = setTimeout(() => {
-          fetchPostalCode(addressData.street, e.target.value, addressData.city, addressData.country)
-        }, 1000) // 1 секунда debounce
-        return () => {
-          if (postalCodeTimer.current) {
-            clearTimeout(postalCodeTimer.current)
+          // Проверяем, не отправляли ли мы уже запрос для этого значения (в leading edge)
+          if (val === lastRequestedHouseNumber.current) {
+            console.log('⏭️ Skipping trailing fetch - already requested:', val)
+            postalCodeTimer.current = null
+            return
           }
-        }
+
+          console.log('🐢 Trailing fetch for house number:', val)
+          lastRequestedHouseNumber.current = val
+          setIsFetchingPostcode(true)
+          fetchPostalCode(addressData.street, val, addressData.city, effectiveCountryCode)
+          postalCodeTimer.current = null
+        }, 1000) // 1 секунда debounce
       } else {
         // Если не хватает данных для запроса, сбрасываем почтовый индекс
+        if (postalCodeTimer.current) {
+          clearTimeout(postalCodeTimer.current)
+          postalCodeTimer.current = null
+        }
+        setIsFetchingPostcode(false)
+
         console.log('Если не хватает данных для запроса, сбрасываем почтовый индекс')
         console.log('e.target.value', e.target.value)
         console.log(
@@ -642,7 +736,13 @@ export const ClientAdress = memo(function ClientAdress({
   // Автоматический поиск почтового индекса при изменении адреса
   useEffect(() => {
     if (addressData.latitude && addressData.longitude) {
-      setAddressCoordinates({ lat: addressData.latitude, lng: addressData.longitude })
+      setAddressCoordinates(prev => {
+        // Избегаем обновления состояния, если координаты не изменились
+        if (prev && prev.lat === addressData.latitude && prev.lng === addressData.longitude) {
+          return prev
+        }
+        return { lat: addressData.latitude, lng: addressData.longitude }
+      })
     }
     return () => {
       /* if (postalCodeTimer.current) {
@@ -668,19 +768,31 @@ export const ClientAdress = memo(function ClientAdress({
     setCountry(resetCountryName || '')
     setCityQuery(client.city || '')
     setStreetQuery(client.street || '')
-  }, [client.country, client.city, client.street, client.postalCode, client.houseNumber, client.district, client.latitude, client.longitude, client.apartment])
+  }, [
+    client.country,
+    client.city,
+    client.street,
+    client.postalCode,
+    client.houseNumber,
+    client.district,
+    client.latitude,
+    client.longitude,
+    client.apartment,
+  ])
 
   return (
     <Card
       className={`w-full max-w-md border border-gray-200  dark:border-gray-700 ${className || ''}`}
     >
       <Card.Header>
-        <Card.Title>
-          <span className="text-xl md:text-xl uppercase">
+        <Card.Title className="flex items-center justify-center gap-2">
+          <span className="text-xl md:text-xl  capitalize font-semibold">
             {isCreateNew ? 'New Client Address' : 'Address'}
           </span>
         </Card.Title>
-        <Card.Description>wo Dienstleistungen erbracht werden</Card.Description>
+        <Card.Description className="flex items-center justify-center gap-2">
+          wo Dienstleistungen erbracht werden
+        </Card.Description>
       </Card.Header>
       <Form onSubmit={onSubmit} autoComplete="off">
         <Card.Content>
@@ -689,7 +801,7 @@ export const ClientAdress = memo(function ClientAdress({
               {/* Город */}
               <div className="w-2/5 min-w-0 flex flex-col gap-2">
                 <TextField isRequired name="city" type="text" isInvalid={isCityInvalid}>
-                  <Label className="text-lg md:text-base">Stadt</Label>
+                  <Label className="text-base font-normal ">Stadt</Label>
                   <div className="relative w-full">
                     <Input
                       value={cityQuery}
@@ -705,13 +817,18 @@ export const ClientAdress = memo(function ClientAdress({
                           setIsCityInvalid(false)
                         } else {
                           setIsCityInvalid(true)
+                          if (val.length < 2) {
+                            setIsCityLeast2Chars(true)
+                          } else {
+                            setIsCityLeast2Chars(false)
+                          }
                           listCities.setFilterText(val)
                         }
                       }}
                       placeholder={country ? 'Type city name...' : 'Select country first'}
                       autoComplete="off"
                       list="city-options"
-                      className="text-lg md:text-base w-full pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0"
+                      className="text-lg md:text-base font-normal w-full pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0"
                       disabled={!country}
                       required
                     />
@@ -725,7 +842,11 @@ export const ClientAdress = memo(function ClientAdress({
                     </datalist>
                   </div>
                   <FieldError>
-                    {isCityInvalid ? 'Please select a valid city from the list' : null}
+                    {isCityLeast2Chars
+                      ? 'Please enter at least 2 characters'
+                      : isCityInvalid
+                        ? 'Please select a valid city from the list'
+                        : null}
                   </FieldError>
                 </TextField>
               </div>
@@ -733,9 +854,7 @@ export const ClientAdress = memo(function ClientAdress({
               {/* Улица */}
               <div className="w-3/5 min-w-0 flex flex-col gap-2">
                 <TextField isRequired name="street" type="text" isInvalid={isStreetInvalid}>
-                  <Label className="text-lg font-light subpixel-antialiased md:text-base">
-                    Straße
-                  </Label>
+                  <Label className="text-base font-normal ">Straße</Label>
                   <div className="relative w-full">
                     <Input
                       ref={streetInputRef}
@@ -785,7 +904,7 @@ export const ClientAdress = memo(function ClientAdress({
                       placeholder={cityQuery ? 'Type street name...' : 'Select city first'}
                       autoComplete="off"
                       list="street-options"
-                      className="text-lg font-light subpixel-antialiased md:text-base w-full pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0"
+                      className="text-lg font-normal md:text-base w-full pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0"
                       disabled={!cityQuery}
                       required
                     />
@@ -838,7 +957,7 @@ export const ClientAdress = memo(function ClientAdress({
                 className="w-1/3 min-w-0 "
                 type="text"
               >
-                <Label className="text-lg md:text-base">Hausnummer</Label>
+                <Label className="text-base font-normal ">Hausnummer</Label>
                 <div className="relative w-full">
                   <Input
                     placeholder="e.g. 12A"
@@ -854,7 +973,7 @@ export const ClientAdress = memo(function ClientAdress({
                 </div>
               </TextField>
               <TextField name="apartment" className="w-1/3 min-w-0" type="text">
-                <Label className="text-lg md:text-base">Apt</Label>
+                <Label className="text-base font-normal ">Apt</Label>
                 <Input
                   placeholder="e.g. 102"
                   value={addressData.apartment}
@@ -864,31 +983,31 @@ export const ClientAdress = memo(function ClientAdress({
               </TextField>
               {/* Почтовый индекс */}
               <TextField name="zipCode" className="w-1/3 min-w-0" type="text">
-                <Label className="text-lg md:text-base">PLZ</Label>
+                <Label className="text-base font-normal ">PLZ</Label>
                 <Input
                   placeholder="12345"
                   value={addressData.zipCode}
                   onChange={e => setAddressData(prev => ({ ...prev, zipCode: e.target.value }))}
-                  className="text-lg md:text-base h-10"
+                  className="text-lg font-normal md:text-base h-10"
                 />
               </TextField>
             </div>
             <div className="flex items-center flex-row gap-2 w-full">
               {/* Район/округ */}
               <TextField name="district" type="text" className="w-1/2 min-w-0">
-                <Label className="text-lg md:text-base">Bezirk</Label>
+                <Label className="text-base font-normal ">Bezirk</Label>
                 <Input
                   placeholder="e.g. Bad Godesberg"
                   value={addressData.district}
                   onChange={e => setAddressData(prev => ({ ...prev, district: e.target.value }))}
                   autoComplete="off"
-                  className="text-lg md:text-base"
+                  className="text-lg font-normal md:text-base"
                 />
               </TextField>
 
               {/* Страна - Native Select */}
               <TextField className="w-1/2 min-w-0 " isRequired>
-                <Label className="text-lg md:text-base">Land</Label>
+                <Label className="text-base font-normal ">Land</Label>
                 <div className="surface surface--tertiary h-11 md:h-10 flex items-center rounded-xl px-2 w-full">
                   <select
                     name="country"
@@ -902,7 +1021,7 @@ export const ClientAdress = memo(function ClientAdress({
                         setAddressData(prev => ({ ...prev, country: countryCodeValue }))
                       }
                     }}
-                    className="w-full px-2 py-0 text-lg md:text-base border-0 border-transparent outline-none cursor-pointer bg-transparent"
+                    className="w-full px-2 py-0 text-lg font-normal md:text-base border-0 border-transparent outline-none cursor-pointer bg-transparent"
                     required
                   >
                     {countriesList.map(item => {
