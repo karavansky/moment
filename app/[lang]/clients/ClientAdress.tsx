@@ -7,6 +7,7 @@ import {
   Collection,
   ComboBox,
   EmptyState,
+  FieldError,
   Form,
   Input,
   InputGroup,
@@ -26,7 +27,7 @@ import { appRouterContext } from 'next/dist/server/route-modules/app-route/share
 import { isOutputType } from 'graphql'
 import { useAsyncList } from '@react-stately/data'
 import { i } from 'framer-motion/client'
-import { List } from 'lucide-react'
+import { ChevronDown, List } from 'lucide-react'
 
 // Динамический импорт карты для избежания SSR проблем
 const AddressMap = dynamic(() => import('./AddressMap'), { ssr: false })
@@ -64,6 +65,7 @@ export const ClientAdress = memo(function ClientAdress({
   const [isCountryInvalid, setIsCountryInvalid] = useState(false)
   const [isHouseInvalid, setIsHouseInvalid] = useState(false)
   const [isStreetInvalid, setIsStreetInvalid] = useState(false)
+  const [isStreetLeast3Chars, setIsStreetLeast3Chars] = useState(false)
 
   const isChanged =
     addressData.street !== (client.street || '') ||
@@ -151,38 +153,7 @@ export const ClientAdress = memo(function ClientAdress({
         }
 
         const uniqueLocations = Array.from(acc.values())
-        /*
-        const filtered = data.features.filter((f: any) => {
-          const props = f.properties
-          const matchesCountry = props.countrycode?.toLowerCase() === countryCode.toLowerCase()
-          const isPlace =
-            props.osm_key === 'place' &&
-            ['city', 'town', 'village', 'municipality'].includes(props.osm_value)
-          return matchesCountry && isPlace
-        })
-        const uniqueLocations: Character[] = [
-          ...filtered
-            .reduce((acc: Map<string, Character>, f: any) => {
-              const name = f.properties.name
-              if (!acc.has(name)) {
-                acc.set(name, { name } as Character)
-              }
-              return acc
-            }, new Map<string, Character>())
-            .values(),
-        ]
-            */
-        /*
-        const uniqueCitiesMap = filtered.map((f: any) => ({ name: f.properties.name }))
-
-        const uniqueLocationsOld: Character[] = [
-          ...new Map<string, Character>( // <--- Указываем типы здесь
-            uniqueCitiesMap.map((item: Character) => [item.name, item])
-          ).values(),
-        ]
-          */
-        //const uniqueLocations: Character[] = Array.from(new Map(uniqueCitiesMap.map((item: Character) => [item.name, item])).values());
-        return {
+      return {
           cursor: data.next,
           items: uniqueLocations,
         }
@@ -288,6 +259,19 @@ export const ClientAdress = memo(function ClientAdress({
   const isFetchingCities = useRef(false)
   //const isFetchingPostcode = useRef(false)
   const [isFetchingPostcode, setIsFetchingPostcode] = useState(false)
+
+  const streetInputRef = useRef<HTMLInputElement>(null)
+
+  // Синхронизация состояния валидации с нативным DOM API для поддержки CSS псевдо-классов :valid/:invalid
+  useEffect(() => {
+    if (streetInputRef.current) {
+      if (isStreetInvalid) {
+        streetInputRef.current.setCustomValidity('Please select a valid street from the list')
+      } else {
+        streetInputRef.current.setCustomValidity('')
+      }
+    }
+  }, [isStreetInvalid])
 
   const onSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
@@ -778,9 +762,12 @@ export const ClientAdress = memo(function ClientAdress({
               {/* Улица */}
               <div className="w-3/5 min-w-0 flex flex-col gap-2">
                 <TextField isRequired name="street" type="text" isInvalid={isStreetInvalid}>
-                  <Label className="text-lg md:text-base">Straße</Label>
-                  <div className="relative">
+                  <Label className="text-lg font-light subpixel-antialiased md:text-base">
+                    Straße
+                  </Label>
+                  <div className="relative w-full">
                     <Input
+                      ref={streetInputRef}
                       value={streetQuery}
                       onChange={e => {
                         const val = e.target.value
@@ -816,16 +803,24 @@ export const ClientAdress = memo(function ClientAdress({
                         } else {
                           // Если совпадения нет - продолжаем обычный ввод и поиск
                           setIsStreetInvalid(true)
+                          if (val.length < 3) {
+                            setIsStreetLeast3Chars(true)
+                          } else {
+                            setIsStreetLeast3Chars(false)
+                          }
                           handleStreetInputChange(val)
                         }
                       }}
                       placeholder={cityQuery ? 'Type street name...' : 'Select city first'}
                       autoComplete="off"
                       list="street-options"
-                      className="text-lg md:text-base w-full"
+                      className="text-lg font-light subpixel-antialiased md:text-base w-full pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0"
                       disabled={!cityQuery}
                       required
                     />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-default-500">
+                      <ChevronDown size={16} />
+                    </div>
                     <datalist id="street-options">
                       {(() => {
                         const streetCounts = listStreets.items.reduce(
@@ -853,6 +848,13 @@ export const ClientAdress = memo(function ClientAdress({
                       })()}
                     </datalist>
                   </div>
+                  <FieldError>
+                    {isStreetLeast3Chars
+                      ? 'Please enter at least 3 characters'
+                      : isStreetInvalid
+                        ? 'Please select a valid street from the list'
+                        : null}
+                  </FieldError>
                 </TextField>
               </div>
             </div>
