@@ -30,7 +30,14 @@ export default function StaffSelect({
     return teams
       .map(team => ({
         team,
-        workers: workers.filter(w => w.teamId === team.id),
+        workers: workers
+          .filter(w => w.teamId === team.id)
+          .sort((a, b) =>
+            a.workerName.localeCompare(b.workerName, undefined, {
+              sensitivity: 'base', // Игнорирует разницу между 'а' и 'А'
+              numeric: true, // Правильно сортирует числа в именах (например, "Рабочий 2" перед "Рабочий 10")
+            })
+          ),
       }))
       .filter(({ workers }) => workers.length > 0)
   }, [teams, workers])
@@ -51,10 +58,12 @@ export default function StaffSelect({
   )
 
   // --- RENDER FOR MOBILE (iOS/Android) ---
-  if (isReady && isMobile) {
+  //  if (isReady && isMobile) {
+  console.log("Selected worker ID:", selectedWorkerId)
+  if (true) {
     return (
       <TextField className="w-1/2 min-w-0 " isRequired>
-        <Label className="text-base font-normal ">Land</Label>
+        <Label className="text-base font-normal ">Fachkraft</Label>
         <div
           className="relative surface surface--tertiary h-11 md:h-10 flex items-center rounded-xl w-full focus-within:outline-none focus-within:ring-0"
           style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
@@ -81,7 +90,7 @@ export default function StaffSelect({
                   {'👥 ' + team.teamName + ' 👥'}
                 </option>
                 {teamWorkers.map(worker => (
-                  <option key={worker.id} value={worker.id}>
+                  <option key={worker.id} value={worker.id} >
                     {worker.workerName}
                   </option>
                 ))}

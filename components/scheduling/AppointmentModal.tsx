@@ -76,7 +76,8 @@ export default function AppointmentModal({
           isDriveTime: appointment.fahrzeit > 0 ? true : false,
         }
   )
-
+  console.log('Initial formData:', formData)
+  console.log('Appointment prop:', appointment)
   const [isDateInvalid, setIsDateInvalid] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -87,10 +88,10 @@ export default function AppointmentModal({
   }, [formData.startHour, formData.startMinute])
 */
   const [isFixedTime, setIsFixedTime] = useState(false)
-  // Initialize form data when appointment or defaultDate changes
-  /*
+
+  // Initialize form data when appointment or selectedDate changes
   useEffect(() => {
-    if (appointment) {
+    if (appointment && !isNewAppointment) {
       const startTime = new Date(appointment.startTime)
       setFormData({
         clientID: appointment.clientID,
@@ -100,9 +101,10 @@ export default function AppointmentModal({
         startMinute: appointment.isFixedTime ? startTime.getMinutes() : 0,
         duration: appointment.duration,
         fahrzeit: appointment.fahrzeit,
-        isDuration: appointment.duration > 0 ? true : false,
-        isDriveTime: appointment.fahrzeit > 0 ? true : false,
+        isDuration: appointment.duration > 0,
+        isDriveTime: appointment.fahrzeit > 0,
       })
+      setIsFixedTime(appointment.isFixedTime)
     } else if (selectedDate) {
       setFormData(prev => ({
         ...prev,
@@ -111,8 +113,7 @@ export default function AppointmentModal({
         startMinute: 0,
       }))
     }
-  }, [appointment, selectedDate])
-*/
+  }, [appointment, selectedDate, isNewAppointment])
   // Calculate end time
   const endTime = useMemo(() => {
     const start = new Date(formData.date)
@@ -306,6 +307,7 @@ export default function AppointmentModal({
                 workers={workers}
                 selectedWorkerId={formData.workerId}
                 onSelectionChange={workerId => {
+                  console.log('Selected worker ID:', workerId)
                   setFormData(prev => ({ ...prev, workerId }))
                   setErrors(prev => ({ ...prev, workerId: '' }))
                 }}
