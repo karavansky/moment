@@ -23,11 +23,13 @@ import { Calendar, Clock, User, MapPin, Save, X, Trash2, AlertCircle, Car } from
 import { formatTime } from '@/lib/calendar-utils'
 import { parseDate, Time, today, getLocalTimeZone } from '@internationalized/date'
 import DatePicker from '@/components/ui/DatePicker'
+import StaffSelect from './StaffSelect'
+import { usePlatform } from '@/hooks/usePlatform'
 
 interface AppointmentModalProps {
   isOpen: boolean
   onClose: () => void
-  appointment?: Appointment | null
+  appointment: Appointment | null
   selectedDate?: Date
   readOnly?: boolean
   isNewAppointment?: boolean
@@ -41,26 +43,41 @@ export default function AppointmentModal({
   readOnly = false,
   isNewAppointment = false,
 }: AppointmentModalProps) {
+  const { isMobile, isReady } = usePlatform()
+
   const { teams, workers, clients, user, addAppointment, updateAppointment, deleteAppointment } =
     useScheduling()
 
   const isEditMode = !!appointment
 
   // Form state
-  const [formData, setFormData] = useState({
-    clientID: '',
-    workerId: '',
-    date: new Date(),
-    startHour: 0,
-    startMinute: 0,
-    duration: 0,
-    fahrzeit: 0,
-    isDuration: false,
-    isDriveTime: false,
-  })
+  const [formData, setFormData] = useState(
+    isNewAppointment || !appointment
+      ? {
+          clientID: '',
+          workerId: '',
+          date: new Date(),
+          startHour: 0,
+          startMinute: 0,
+          duration: 0,
+          fahrzeit: 0,
+          isDuration: false,
+          isDriveTime: false,
+        }
+      : {
+          clientID: appointment.clientID,
+          workerId: appointment.workerId,
+          date: new Date(appointment.date),
+          startHour: appointment.isFixedTime ? new Date(appointment.startTime).getHours() : 0,
+          startMinute: appointment.isFixedTime ? new Date(appointment.startTime).getMinutes() : 0,
+          duration: appointment.duration,
+          fahrzeit: appointment.fahrzeit,
+          isDuration: appointment.duration > 0 ? true : false,
+          isDriveTime: appointment.fahrzeit > 0 ? true : false,
+        }
+  )
 
   const [isDateInvalid, setIsDateInvalid] = useState(false)
-
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   // Calculate isFixedTime dynamically based on time
@@ -71,6 +88,7 @@ export default function AppointmentModal({
 */
   const [isFixedTime, setIsFixedTime] = useState(false)
   // Initialize form data when appointment or defaultDate changes
+  /*
   useEffect(() => {
     if (appointment) {
       const startTime = new Date(appointment.startTime)
@@ -94,7 +112,7 @@ export default function AppointmentModal({
       }))
     }
   }, [appointment, selectedDate])
-
+*/
   // Calculate end time
   const endTime = useMemo(() => {
     const start = new Date(formData.date)
@@ -197,6 +215,8 @@ export default function AppointmentModal({
     })
     alert('Form submitted successfully!')
   }
+  if (!isReady) return null
+
   //console.log('Rendering AppointmentModal with formData:', formData, 'and errors:', errors)
   return (
     <Modal>
@@ -281,64 +301,23 @@ export default function AppointmentModal({
               <Separator />
 
               {/* Worker Selection */}
-              <div className="space-y-2 p-2">
-                <ComboBox
-                  isRequired
-                  className="w-[256px]"
-                  name="worker"
-                  selectedKey={formData.workerId}
-                  onSelectionChange={key => {
-                    setFormData(prev => ({ ...prev, workerId: key as string }))
-                    setErrors(prev => ({ ...prev, workerId: '' }))
-                  }}
-                >
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    Fachkraft
-                  </Label>
-                  <ComboBox.InputGroup>
-                    <Input placeholder="Suche Fachkraft..." />
-                    <ComboBox.Trigger />
-                  </ComboBox.InputGroup>
-                  <ComboBox.Popover>
-                    <ListBox>
-                      {teams.map((team, index) => {
-                        const teamWorkers = workers.filter(w => w.teamId === team.id)
-                        if (teamWorkers.length === 0) return null
-
-                        return (
-                          <React.Fragment key={team.id}>
-                            <ListBox.Section>
-                              <Header>{team.teamName}</Header>
-                              {teamWorkers.map(worker => (
-                                <ListBox.Item
-                                  key={worker.id}
-                                  textValue={worker.workerName}
-                                  id={worker.id}
-                                >
-                                  {worker.workerName}
-                                  <ListBox.ItemIndicator />
-                                </ListBox.Item>
-                              ))}
-                            </ListBox.Section>
-                            {index < teams.length - 1 && <Separator />}
-                          </React.Fragment>
-                        )
-                      })}
-                    </ListBox>
-                  </ComboBox.Popover>
-                </ComboBox>
-                {errors.workerId && <p className="text-xs text-danger">{errors.workerId}</p>}
-              </div>
+              <StaffSelect
+                teams={teams}
+                workers={workers}
+                selectedWorkerId={formData.workerId}
+                onSelectionChange={workerId => {
+                  setFormData(prev => ({ ...prev, workerId }))
+                  setErrors(prev => ({ ...prev, workerId: '' }))
+                }}
+                error={errors.workerId}
+              />
 
               <Separator />
 
               {/* Date */}
               <div className="flex items-center justify-between flex-row gap-2 w-full">
                 <TextField isRequired name="date" type="date" isInvalid={isDateInvalid}>
-                  <Label className="text-base font-medium flex items-center gap-2">
-                    Datum
-                  </Label>
+                  <Label className="text-base font-medium flex items-center gap-2">Datum</Label>
                   <DatePicker
                     value={parseDate(
                       `${formData.date.getFullYear()}-${String(formData.date.getMonth() + 1).padStart(2, '0')}-${String(formData.date.getDate()).padStart(2, '0')}`

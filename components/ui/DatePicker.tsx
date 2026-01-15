@@ -363,7 +363,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
             min={getNativeConstraint(minValue)}
             max={getNativeConstraint(maxValue)}
             disabled={isDisabled}
-            className="h-full w-full bg-transparent border-none outline-none text-foreground text-lg md:text-base ring-0 appearance-none pl-4 pr-10 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden z-10 relative [&:focus]:outline-none [&:focus]:ring-0 [&:focus]:border-none"
+            className="h-full w-full bg-transparent border-none outline-none text-foreground text-lg md:text-base ring-0 appearance-none pl-4 pr-10 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden z-10 relative focus:outline-none focus:ring-0 focus:border-none"
             style={{
               // Ensure consistent height and appearance on iOS
               WebkitAppearance: 'none',
@@ -422,10 +422,10 @@ const DatePicker: React.FC<DatePickerProps> = ({
         {isOpen && (
           <>
             {/* Backdrop */}
-            <div className="fixed inset-0 z-[100000]" onClick={handleCancel} />
+            <div className="fixed inset-0 z-100000" onClick={handleCancel} />
 
             {/* Calendar - centered in viewport */}
-            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100001] w-85 max-w-[90vw] p-4 bg-background rounded-2xl shadow-2xl border border-divider">
+            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-100001 w-85 max-w-[90vw] p-4 bg-background rounded-2xl shadow-2xl border border-divider">
               {/* Month/Year navigation */}
               <Button
                 onPress={() => setIsOpen(false)}
