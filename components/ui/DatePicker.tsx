@@ -13,6 +13,8 @@ import {
 import { DateValue, parseDate, getLocalTimeZone, Time } from '@internationalized/date'
 import { useDateFormatter, useLocale } from '@react-aria/i18n'
 import { usePlatform } from '@/hooks/usePlatform'
+import { useLanguage } from '@/hooks/useLanguage'
+import { useTranslation } from '@/components/Providers'
 
 interface DatePickerProps {
   value?: DateValue
@@ -41,17 +43,18 @@ const DatePicker: React.FC<DatePickerProps> = ({
   onTimeChange,
   timeValue,
 }) => {
+  const { t } = useTranslation()
+  const lang = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState<DateValue | undefined>(value)
   const [inputValue, setInputValue] = useState('')
   const [isTouchDevice, setIsTouchDevice] = useState(false)
-  const [selectedTime, setSelectedTime] = useState<Time | null>(timeValue || null)
+  const [selectedTime, setSelectedTime] = useState<Time | null>(showTime ? timeValue || null : null)
 
   // Temporary state for calendar (not committed until "Fertig" is clicked)
   const [tempDate, setTempDate] = useState<DateValue | undefined>(value)
-  const [tempTime, setTempTime] = useState<Time | null>(timeValue || null)
+  const [tempTime, setTempTime] = useState<Time | null>(showTime ? timeValue || null : null)
 
-  const { locale } = useLocale()
   const { isMobile, isReady } = usePlatform()
 
   // Detect touch device on mount
@@ -59,20 +62,32 @@ const DatePicker: React.FC<DatePickerProps> = ({
     setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0)
   }, [])
 
-  const formatter = useDateFormatter({
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
+  const formatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(lang, {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }),
+    [lang]
+  )
 
-  const monthFormatter = useDateFormatter({
-    month: 'long',
-    year: 'numeric',
-  })
+  const monthFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(lang, {
+        month: 'long',
+        year: 'numeric',
+      }),
+    [lang]
+  )
 
-  const dayFormatter = useDateFormatter({
-    weekday: 'short',
-  })
+  const dayFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(lang, {
+        weekday: 'short',
+      }),
+    [lang]
+  )
 
   // Format date for display
   const formatDate = (date: DateValue | undefined) => {
@@ -89,12 +104,15 @@ const DatePicker: React.FC<DatePickerProps> = ({
     setSelectedDate(value)
     setTempDate(value)
     const dateStr = formatDate(value)
-    const timeStr = selectedTime
-      ? ` ${String(selectedTime.hour).padStart(2, '0')}:${String(selectedTime.minute).padStart(2, '0')}`
+    const timeStr = showTime
+      ? selectedTime
+        ? `, ${String(selectedTime.hour).padStart(2, '0')}:${String(selectedTime.minute).padStart(2, '0')}`
+        : ''
       : ''
     setInputValue(dateStr + timeStr)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, selectedTime])
+    console.log("Locale changed to '", lang, "'")
+  }, [value, selectedTime, lang, formatter])
 
   // Update temp time when props change
   useEffect(() => {
@@ -103,6 +121,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
   const handleDateChange = (newDate: DateValue) => {
     // Only update temporary state, don't call onChange yet
+    console.log('handleDateChange', newDate)
     setTempDate(newDate)
   }
 
@@ -122,7 +141,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
     // Update input value
     const dateStr = formatDate(tempDate)
     const timeStr = tempTime
-      ? ` ${String(tempTime.hour).padStart(2, '0')}:${String(tempTime.minute).padStart(2, '0')}`
+      ? `, ${String(tempTime.hour).padStart(2, '0')}:${String(tempTime.minute).padStart(2, '0')}`
       : ''
     setInputValue(dateStr + timeStr)
 
@@ -179,7 +198,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
   // Generate calendar days
   const generateCalendar = () => {
-    const dateToUse = selectedDate || parseDate(new Date().toISOString().split('T')[0])
+    const dateToUse = tempDate || selectedDate || parseDate(new Date().toISOString().split('T')[0])
 
     const year = dateToUse.year
     const month = dateToUse.month
@@ -225,13 +244,13 @@ const DatePicker: React.FC<DatePickerProps> = ({
       days.push(dayFormatter.format(date))
     }
     return days
-  }, [locale, dayFormatter])
+  }, [lang, dayFormatter])
 
   // Format month and year using locale
   const monthYearDisplay = useMemo(() => {
     const jsDate = currentMonth.toDate(getLocalTimeZone())
     return monthFormatter.format(jsDate)
-  }, [currentMonth, locale, monthFormatter])
+  }, [currentMonth, lang, monthFormatter])
 
   // Update time when props change
   useEffect(() => {
@@ -257,8 +276,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
       pl: 'Wybierz datę',
       ru: 'Выберите дату',
     }
-    return translations[locale] || translations.en
-  }, [locale, placeholder])
+    return translations[lang] || translations.en
+  }, [lang, placeholder])
 
   // Handle native input change (iOS/Android)
   const handleNativeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -333,7 +352,10 @@ const DatePicker: React.FC<DatePickerProps> = ({
         style={{ width: showTime ? '24ch' : '18ch' }}
       >
         {label && <label className="text-sm font-medium text-foreground">{label}</label>}
-        <div className="relative surface surface--tertiary h-11 md:h-10 flex items-center rounded-xl w-full">
+        <div
+          className="relative surface surface--tertiary h-11 md:h-10 flex items-center rounded-xl w-full focus-within:outline-none focus-within:ring-0"
+          style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
+        >
           <input
             type={showTime ? 'datetime-local' : 'date'}
             value={getNativeValue()}
@@ -341,12 +363,15 @@ const DatePicker: React.FC<DatePickerProps> = ({
             min={getNativeConstraint(minValue)}
             max={getNativeConstraint(maxValue)}
             disabled={isDisabled}
-            className="h-full w-full bg-transparent border-none text-foreground text-lg md:text-base focus:ring-0 appearance-none pl-4 pr-10 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden z-10 relative"
+            className="h-full w-full bg-transparent border-none outline-none text-foreground text-lg md:text-base ring-0 appearance-none pl-4 pr-10 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden z-10 relative [&:focus]:outline-none [&:focus]:ring-0 [&:focus]:border-none"
             style={{
               // Ensure consistent height and appearance on iOS
               WebkitAppearance: 'none',
               minHeight: '100%',
               lineHeight: 'normal',
+              outline: 'none',
+              boxShadow: 'none',
+              WebkitTapHighlightColor: 'transparent',
             }}
           />
           {!getNativeValue() && (
@@ -377,13 +402,17 @@ const DatePicker: React.FC<DatePickerProps> = ({
             placeholder={placeholderText}
             disabled={isDisabled}
             readOnly={isTouchDevice}
-            className="w-full px-3 py-2 pr-10 border border-divider rounded-lg bg-default-50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-3 py-2 pr-10 border border-divider rounded-lg bg-default-50 text-foreground focus:outline-none focus:ring-0 focus:border-divider focus:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              outline: 'none',
+              boxShadow: 'none',
+            }}
           />
           <Button
             variant="tertiary"
-            onClick={() => setIsOpen(!isOpen)}
+            onPress={() => setIsOpen(!isOpen)}
             isDisabled={isDisabled}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-default-100 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-9 h-9 absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-default-100 rounded-3xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <CalendarIcon className="w-4 h-4 text-default-500" />
           </Button>
@@ -398,22 +427,29 @@ const DatePicker: React.FC<DatePickerProps> = ({
             {/* Calendar - centered in viewport */}
             <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100001] w-85 max-w-[90vw] p-4 bg-background rounded-2xl shadow-2xl border border-divider">
               {/* Month/Year navigation */}
-              <div className="flex items-center justify-between mb-4">
+              <Button
+                onPress={() => setIsOpen(false)}
+                variant="danger-soft"
+                className="w-6 h-6 absolute top-2 right-2"
+                size="sm"
+                isIconOnly
+              >
+                <X className="w-4 h-4" />
+              </Button>
+              <div className="flex items-center justify-between pt-6 mb-4">
                 <Button
                   onPress={() => navigateMonth(-1)}
-                  size="sm"
+                  size="md"
                   variant="ghost"
                   isIconOnly
                   className="min-w-8 h-8"
                 >
                   ←
                 </Button>
-
                 <div className="text-base font-semibold">{monthYearDisplay}</div>
-
                 <Button
                   onPress={() => navigateMonth(1)}
-                  size="sm"
+                  size="md"
                   variant="ghost"
                   isIconOnly
                   className="min-w-8 h-8"
@@ -458,7 +494,10 @@ const DatePicker: React.FC<DatePickerProps> = ({
                   return (
                     <Button
                       key={index}
-                      onPress={() => !isDisabledDay && handleDateChange(day)}
+                      onPress={() => {
+                        console.log('Clicked day', day, ' isDisabledDay', !isDisabledDay)
+                        !isDisabledDay && handleDateChange(day)
+                      }}
                       isDisabled={isDisabledDay}
                       size="sm"
                       variant={isSelected ? 'primary' : 'ghost'}
@@ -475,44 +514,36 @@ const DatePicker: React.FC<DatePickerProps> = ({
               </div>
 
               {/* Time picker        {showTime && ( */}
-              <div className="flex items-center justify-between gap-4 mt-4 py-2">
+              <div className={`flex items-center ${showTime ? 'justify-between' : 'justify-end'} gap-4 mt-4 px-2 py-2`}>
                 {showTime && (
-                  <TimeField
-                    className="w-30"
-                    name="time"
-                    value={tempTime}
-                    onChange={time => {
-                      setTempTime(time)
-                    }}
-                    hourCycle={24}
-                  >
+                  <div className="flex items-center gap-2">
                     <Label className="text-lg pl-2">Zeit</Label>
-                    <DateInputGroup>
-                      <DateInputGroup.Prefix>
-                        <Clock className="size-4 text-muted" />
-                      </DateInputGroup.Prefix>
-                      <DateInputGroup.Input>
-                        {segment => <DateInputGroup.Segment segment={segment} />}
-                      </DateInputGroup.Input>
-                    </DateInputGroup>
-                  </TimeField>
+                    <TimeField
+                      className="w-30"
+                      name="time"
+                      value={tempTime}
+                      onChange={time => {
+                        setTempTime(time)
+                      }}
+                      hourCycle={24}
+                    >
+                      <DateInputGroup>
+                        <DateInputGroup.Prefix>
+                          <Clock className="size-4 text-muted" />
+                        </DateInputGroup.Prefix>
+                        <DateInputGroup.Input>
+                          {segment => <DateInputGroup.Segment segment={segment} />}
+                        </DateInputGroup.Input>
+                      </DateInputGroup>
+                    </TimeField>
+                  </div>
                 )}
 
                 {/* Action button */}
                 <Button
                   onPress={handleApplyChanges}
-                  variant="danger-soft"
-                  className="w-12 h-12"
-                  size="sm"
-                  isIconOnly
-                >
-                  <X className="w-6 h-6" />
-                </Button>
-
-                <Button
-                  onPress={handleApplyChanges}
                   variant="primary"
-                  className="w-12 h-12"
+                  className="w-12 h-12 "
                   size="sm"
                   isIconOnly
                 >

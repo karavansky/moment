@@ -336,8 +336,7 @@ export default function AppointmentModal({
               {/* Date */}
               <div className="flex items-center justify-between flex-row gap-2 w-full">
                 <TextField isRequired name="date" type="date" isInvalid={isDateInvalid}>
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
+                  <Label className="text-base font-medium flex items-center gap-2">
                     Datum
                   </Label>
                   <DatePicker
