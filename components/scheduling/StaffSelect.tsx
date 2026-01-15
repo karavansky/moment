@@ -42,7 +42,16 @@ export default function StaffSelect({
               console.log('Selected workerId (mobile):', workerId)
               onSelectionChange(workerId)
             }}
-            className="w-full px-2 py-0 text-lg font-normal md:text-base border-0 border-transparent outline-none cursor-pointer bg-transparent"
+            className="w-full h-full px-2 py-0 text-lg font-normal md:text-base border-0 border-transparent outline-none cursor-pointer bg-transparent appearance-none text-foreground"
+            style={{
+              WebkitAppearance: 'none',
+              MozAppearance: 'none',
+              minHeight: '100%',
+              lineHeight: 'normal',
+              outline: 'none',
+              boxShadow: 'none',
+              WebkitTapHighlightColor: 'transparent',
+            }}
             required
           >
             {teams.map((team, index) => {
@@ -51,7 +60,7 @@ export default function StaffSelect({
               return (
                 <React.Fragment key={team.id}>
                   <option key={team.id} value={team.teamName} disabled>
-                    {"👥 " + team.teamName + " 👥"}
+                    {'👥 ' + team.teamName + ' 👥'}
                   </option>
                   {teamWorkers.map(worker => (
                     <option key={worker.id} value={worker.id}>
