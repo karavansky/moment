@@ -94,13 +94,13 @@ export const ClientContacts = memo(function ClientContacts({
     },
     [formData, client, updateClient, addClient, isCreateNew]
   )
-
+  const [date, setDate] = useState('')
   return (
-    <Card className={`w-full max-w-md border border-gray-200 dark:border-gray-700 ${className || ''}`}>
+    <Card
+      className={`w-full max-w-md border border-gray-200 dark:border-gray-700 ${className || ''}`}
+    >
       <Card.Header>
-        <Card.Title>
-          {isCreateNew ? 'New Client Contacts' : 'Contact Information'}
-        </Card.Title>
+        <Card.Title>{isCreateNew ? 'New Client Contacts' : 'Contact Information'}</Card.Title>
       </Card.Header>
       <Form onSubmit={onSubmit}>
         <Card.Content>
@@ -153,6 +153,43 @@ export const ClientContacts = memo(function ClientContacts({
                 />
               </InputGroup>
             </TextField>
+            <div className="flex flex-col w-full max-w-64">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Date
+              </label>
+              <input
+                type="datetime-local"
+                className="w-full h-10 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                value={date}
+                onChange={e => setDate(e.target.value)}
+              />
+              {date && <p className="mt-1 text-sm text-gray-500">Selected: {date}</p>}
+              <select>
+                  <optgroup label="Недоступно">
+                    <option>Вариант A</option>
+                    <option>Вариант B</option>
+                  </optgroup>
+
+                  <optgroup label="Доступно">
+                    <option>Вариант C</option>
+                    <option>Вариант D</option>
+                  </optgroup>
+              </select>
+              <div className="relative">
+                <button className="absolute inset-0 opacity-0 btn">Open Dropdown</button>
+                <select>
+                  <optgroup label="Недоступно" disabled>
+                    <option>Вариант A</option>
+                    <option>Вариант B</option>
+                  </optgroup>
+
+                  <optgroup label="Доступно">
+                    <option>Вариант C</option>
+                    <option>Вариант D</option>
+                  </optgroup>
+                </select>
+              </div>
+            </div>
           </div>
         </Card.Content>
         <Card.Footer className="mt-4 flex flex-col gap-2">

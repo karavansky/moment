@@ -1,20 +1,21 @@
 # Allow all legitimate bots
 User-agent: *
-Allow: /
+Disallow: /
+# Allow: /
 
 # Allow all language versions
-Allow: /en/
-Allow: /de/
-Allow: /es/
-Allow: /fr/
-Allow: /id/
-Allow: /ja/
-Allow: /pt/
-Allow: /ru/
-Allow: /tr/
-Allow: /uk/
-Allow: /it/
-Allow: /pl/
+# Allow: /en/
+# Allow: /de/
+# Allow: /es/
+# Allow: /fr/
+# Allow: /id/
+# Allow: /ja/
+# Allow: /pt/
+# Allow: /ru/
+# Allow: /tr/
+# Allow: /uk/
+# Allow: /it/
+# Allow: /pl/
 
 # Disallow common attack paths
 Disallow: /api/
