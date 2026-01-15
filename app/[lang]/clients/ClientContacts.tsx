@@ -158,22 +158,31 @@ export const ClientContacts = memo(function ClientContacts({
                 Date
               </label>
               <input
-                type="datetime-local"
+                type="date"
                 className="w-full h-10 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 value={date}
-                onChange={e => setDate(e.target.value)}
+                min="2026-01-15"
+                max="2027-01-13"
+                onChange={e => {
+                  // Manual validation check for iOS/Safari
+                  if (e.target.value && e.target.value < '2026-01-15') {
+                    alert('Selected date: ' + e.target.value)
+                    return
+                  }
+                  setDate(e.target.value)
+                }}
               />
               {date && <p className="mt-1 text-sm text-gray-500">Selected: {date}</p>}
               <select>
-                  <optgroup label="Недоступно">
-                    <option>Вариант A</option>
-                    <option>Вариант B</option>
-                  </optgroup>
+                <optgroup label="Недоступно">
+                  <option>Вариант A</option>
+                  <option>Вариант B</option>
+                </optgroup>
 
-                  <optgroup label="Доступно">
-                    <option>Вариант C</option>
-                    <option>Вариант D</option>
-                  </optgroup>
+                <optgroup label="Доступно">
+                  <option>Вариант C</option>
+                  <option>Вариант D</option>
+                </optgroup>
               </select>
               <div className="relative">
                 <button className="absolute inset-0 opacity-0 btn">Open Dropdown</button>

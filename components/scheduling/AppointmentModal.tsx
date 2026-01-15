@@ -14,28 +14,32 @@ import {
   Input,
   ListBox,
   Switch,
+  TextField,
+  FieldError,
 } from '@heroui/react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { Appointment } from '@/types/scheduling'
 import { Calendar, Clock, User, MapPin, Save, X, Trash2, AlertCircle, Car } from 'lucide-react'
 import { formatTime } from '@/lib/calendar-utils'
-import { parseDate, Time } from '@internationalized/date'
+import { parseDate, Time, today, getLocalTimeZone } from '@internationalized/date'
 import DatePicker from '@/components/ui/DatePicker'
 
 interface AppointmentModalProps {
   isOpen: boolean
   onClose: () => void
   appointment?: Appointment | null
-  defaultDate?: Date
+  selectedDate?: Date
   readOnly?: boolean
+  isNewAppointment?: boolean
 }
 
 export default function AppointmentModal({
   isOpen,
   onClose,
   appointment,
-  defaultDate,
+  selectedDate,
   readOnly = false,
+  isNewAppointment = false,
 }: AppointmentModalProps) {
   const { teams, workers, clients, user, addAppointment, updateAppointment, deleteAppointment } =
     useScheduling()
@@ -55,13 +59,17 @@ export default function AppointmentModal({
     isDriveTime: false,
   })
 
+  const [isDateInvalid, setIsDateInvalid] = useState(false)
+
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   // Calculate isFixedTime dynamically based on time
+  /*
   const isFixedTime = useMemo(() => {
     return formData.startHour !== 0 || formData.startMinute !== 0
   }, [formData.startHour, formData.startMinute])
-
+*/
+  const [isFixedTime, setIsFixedTime] = useState(false)
   // Initialize form data when appointment or defaultDate changes
   useEffect(() => {
     if (appointment) {
@@ -77,15 +85,15 @@ export default function AppointmentModal({
         isDuration: appointment.duration > 0 ? true : false,
         isDriveTime: appointment.fahrzeit > 0 ? true : false,
       })
-    } else if (defaultDate) {
+    } else if (selectedDate) {
       setFormData(prev => ({
         ...prev,
-        date: new Date(defaultDate),
+        date: new Date(selectedDate),
         startHour: 0,
         startMinute: 0,
       }))
     }
-  }, [appointment, defaultDate])
+  }, [appointment, selectedDate])
 
   // Calculate end time
   const endTime = useMemo(() => {
@@ -216,7 +224,7 @@ export default function AppointmentModal({
               </div>
             </Modal.Header>
 
-            <Modal.Body className="gap-4 px-6 py-4">
+            <Modal.Body className="gap-4 py-2">
               {/* Client Selection */}
               <div className="space-y-2 p-2">
                 <ComboBox
@@ -242,12 +250,8 @@ export default function AppointmentModal({
                       <ListBox.Section>
                         <Header>Kunden</Header>
                         {clients.map(client => (
-                          <ListBox.Item
-                            key={client.id}
-                            textValue={client.name}
-                            id={client.id}
-                          >
-                            {client.surname} {client.name} 
+                          <ListBox.Item key={client.id} textValue={client.name} id={client.id}>
+                            {client.surname} {client.name}
                             <ListBox.ItemIndicator />
                           </ListBox.Item>
                         ))}
@@ -330,46 +334,82 @@ export default function AppointmentModal({
               <Separator />
 
               {/* Date */}
-              <div className="space-y-2 p-2">
-                <Label className="text-sm font-medium flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  Datum *
-                </Label>
-                <DatePicker
-                  value={parseDate(
-                    `${formData.date.getFullYear()}-${String(formData.date.getMonth() + 1).padStart(2, '0')}-${String(formData.date.getDate()).padStart(2, '0')}`
-                  )}
-                  onChange={e => {
-                    if (!e) return
-                    // Create date at midnight local time without timezone conversion
-                    const newDate = new Date(e.year, e.month - 1, e.day, 0, 0, 0, 0)
-                    setFormData(prev => ({ ...prev, date: newDate }))
-                  }}
-                  minValue={parseDate(new Date().toISOString().split('T')[0])}
-                  isDisabled={readOnly}
-                  className="max-w-[256px]"
-                  showTime={true}
-                  timeValue={
-                    formData.startHour === 0 && formData.startMinute === 0
-                      ? null
-                      : new Time(formData.startHour, formData.startMinute)
-                  }
-                  onTimeChange={time => {
-                    if (time) {
-                      setFormData(prev => ({
-                        ...prev,
-                        startHour: time.hour,
-                        startMinute: time.minute,
-                      }))
-                    } else {
-                      setFormData(prev => ({
-                        ...prev,
-                        startHour: 0,
-                        startMinute: 0,
-                      }))
+              <div className="flex items-center justify-between flex-row gap-2 w-full">
+                <TextField isRequired name="date" type="date" isInvalid={isDateInvalid}>
+                  <Label className="text-sm font-medium flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    Datum
+                  </Label>
+                  <DatePicker
+                    value={parseDate(
+                      `${formData.date.getFullYear()}-${String(formData.date.getMonth() + 1).padStart(2, '0')}-${String(formData.date.getDate()).padStart(2, '0')}`
+                    )}
+                    onChange={e => {
+                      if (!e) return
+                      // Create date at midnight local time without timezone conversion
+                      const newDate = new Date(e.year, e.month - 1, e.day, 0, 0, 0, 0)
+
+                      // Validate against today for past dates
+                      const todayDate = new Date()
+                      todayDate.setHours(0, 0, 0, 0)
+
+                      if (newDate < todayDate) {
+                        setIsDateInvalid(true)
+                      } else {
+                        setIsDateInvalid(false)
+                      }
+
+                      console.log(
+                        'Selected date:',
+                        newDate,
+                        'Today:',
+                        todayDate,
+                        'Is invalid:',
+                        newDate < todayDate
+                      )
+                      setFormData(prev => ({ ...prev, date: newDate }))
+                    }}
+                    minValue={today(getLocalTimeZone())}
+                    isDisabled={readOnly}
+                    //  className="max-w-[256px]"
+                    showTime={isFixedTime}
+                    timeValue={
+                      formData.startHour === 0 && formData.startMinute === 0
+                        ? null
+                        : new Time(formData.startHour, formData.startMinute)
                     }
+                    onTimeChange={time => {
+                      if (time) {
+                        setFormData(prev => ({
+                          ...prev,
+                          startHour: time.hour,
+                          startMinute: time.minute,
+                        }))
+                      } else {
+                        setFormData(prev => ({
+                          ...prev,
+                          startHour: 0,
+                          startMinute: 0,
+                        }))
+                      }
+                    }}
+                  />
+                  <FieldError>
+                    {isDateInvalid ? 'Das Datum darf nicht in der Vergangenheit liegen' : null}
+                  </FieldError>
+                </TextField>
+                <Switch
+                  size="lg"
+                  isSelected={isFixedTime}
+                  onChange={e => {
+                    setIsFixedTime(e)
                   }}
-                />
+                >
+                  <Label className="text-sm">Fest Zeit</Label>
+                  <Switch.Control>
+                    <Switch.Thumb />
+                  </Switch.Control>
+                </Switch>
               </div>
 
               <Separator />
@@ -446,31 +486,29 @@ export default function AppointmentModal({
                     </div>
                   </div>
                 </Switch>
-                              {/* Drive Time Input */}
-              {formData.isDriveTime && (
-                <div className="flex flex-col items-end gap-2 ">
-                  <input
-                    type="number"
-                    min={0}
-                    step={5}
-                    value={formData.fahrzeit}
-                    onChange={e =>
-                      setFormData(prev => ({
-                        ...prev,
-                        fahrzeit: parseInt(e.target.value) || 0,
-                      }))
-                    }
-                    disabled={readOnly}
-                    className="w-16 text-right px-3 py-2 border border-divider rounded-lg bg-default-50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-70 disabled:cursor-not-allowed"
-                  />
-                </div>
-              )}
-
+                {/* Drive Time Input */}
+                {formData.isDriveTime && (
+                  <div className="flex flex-col items-end gap-2 ">
+                    <input
+                      type="number"
+                      min={0}
+                      step={5}
+                      value={formData.fahrzeit}
+                      onChange={e =>
+                        setFormData(prev => ({
+                          ...prev,
+                          fahrzeit: parseInt(e.target.value) || 0,
+                        }))
+                      }
+                      disabled={readOnly}
+                      className="w-16 text-right px-3 py-2 border border-divider rounded-lg bg-default-50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-70 disabled:cursor-not-allowed"
+                    />
+                  </div>
+                )}
               </div>
 
-             
               {/* Calculated End Time */}
-              {isFixedTime && (
+              {isFixedTime && false && (
                 <div className="flex items-center gap-2 p-3 bg-accent-50 rounded-lg">
                   <Clock className="w-4 h-4 text-accent" />
                   <div className="text-sm">

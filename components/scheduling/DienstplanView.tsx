@@ -179,7 +179,7 @@ function DienstplanView() {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         appointment={selectedAppointment}
-        defaultDate={selectedDate}
+        selectedDate={selectedDate}
         readOnly={
           selectedAppointment
             ? selectedAppointment.reports && selectedAppointment.reports.length > 0

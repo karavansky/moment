@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
-import { Calendar as CalendarIcon, Clock, Check } from 'lucide-react'
+import { Calendar as CalendarIcon, Clock, Check, X } from 'lucide-react'
 import {
   Button,
   Surface,
@@ -271,6 +271,11 @@ const DatePicker: React.FC<DatePickerProps> = ({
         // datetime-local input returns "YYYY-MM-DDTHH:mm"
         const [d, t] = val.split('T')
         const newDate = parseDate(d)
+
+        // Manual validation for native picker
+        // if (minValue && newDate.compare(minValue) < 0) return
+        //if (maxValue && newDate.compare(maxValue) > 0) return
+
         onChange?.(newDate)
         setSelectedDate(newDate)
 
@@ -283,6 +288,11 @@ const DatePicker: React.FC<DatePickerProps> = ({
       } else {
         // date input returns "YYYY-MM-DD"
         const newDate = parseDate(val)
+
+        // Manual validation for native picker
+        //if (minValue && newDate.compare(minValue) < 0) return
+        //if (maxValue && newDate.compare(maxValue) > 0) return
+
         onChange?.(newDate)
         setSelectedDate(newDate)
       }
@@ -304,44 +314,61 @@ const DatePicker: React.FC<DatePickerProps> = ({
     return `${d}T${t}`
   }
 
+  // Helper to format min/max for native input
+  const getNativeConstraint = (val: DateValue | undefined) => {
+    if (!val) return undefined
+    const str = val.toString()
+    // For datetime-local, constraints must be full ISO string ending in T00:00 to work on iOS
+    if (showTime && !str.includes('T')) {
+      return `${str}T00:00`
+    }
+    return str
+  }
+
   // --- RENDER FOR MOBILE (iOS/Android) ---
   if (isReady && isMobile) {
     return (
-      <div className={`flex flex-col gap-1.5 ${className}`}>
+      <div
+        className={`inline-flex flex-col gap-1.5 ${className}`}
+        style={{ width: showTime ? '24ch' : '18ch' }}
+      >
         {label && <label className="text-sm font-medium text-foreground">{label}</label>}
-        <div className="relative surface surface--tertiary h-11 md:h-10 flex items-center rounded-xl px-2 w-full">
+        <div className="relative surface surface--tertiary h-11 md:h-10 flex items-center rounded-xl w-full">
           <input
             type={showTime ? 'datetime-local' : 'date'}
             value={getNativeValue()}
             onChange={handleNativeChange}
-            min={minValue ? minValue.toString() : undefined}
-            max={maxValue ? maxValue.toString() : undefined}
+            min={getNativeConstraint(minValue)}
+            max={getNativeConstraint(maxValue)}
             disabled={isDisabled}
-            className="w-full px-3 py-2 rounded-lg text-lg font-normal md:text-base  border border-divider bg-default-50 text-foreground shadow-sm focus:border-primary focus:ring-1 focus:ring-primary appearance-none"
-
-            //className="w-full h-10 px-3 py-2 rounded-lg border border-divider bg-default-50 text-foreground shadow-sm focus:border-primary focus:ring-1 focus:ring-primary appearance-none"
+            className="h-full w-full bg-transparent border-none text-foreground text-lg md:text-base focus:ring-0 appearance-none pl-4 pr-10 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden z-10 relative"
             style={{
               // Ensure consistent height and appearance on iOS
               WebkitAppearance: 'none',
-              minHeight: '2.5rem',
+              minHeight: '100%',
+              lineHeight: 'normal',
             }}
           />
           {!getNativeValue() && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-default-500 text-sm">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-default-500 text-sm z-0">
               {placeholderText}
             </div>
           )}
+          <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-default-500 pointer-events-none z-0" />
         </div>
       </div>
     )
   }
 
   return (
-    <div className={`flex flex-col gap-1.5 ${className}`}>
+    <div
+      className={`inline-flex flex-col gap-1.5 ${className}`}
+      style={{ width: showTime ? '20ch' : '15ch' }} // Match desktop width to mobile width for consistency
+    >
       {label && <label className="text-sm font-medium text-foreground">{label}</label>}
 
-      <div className="relative">
-        <Surface className="relative rounded-xl" variant="secondary">
+      <div className="relative w-full">
+        <Surface className="relative rounded-xl w-full" variant="secondary">
           <input
             type="text"
             value={inputValue}
@@ -369,7 +396,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
             <div className="fixed inset-0 z-[100000]" onClick={handleCancel} />
 
             {/* Calendar - centered in viewport */}
-            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100001] w-85 max-w-[90vw] p-4 bg-background rounded-lg shadow-2xl border border-divider">
+            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100001] w-85 max-w-[90vw] p-4 bg-background rounded-2xl shadow-2xl border border-divider">
               {/* Month/Year navigation */}
               <div className="flex items-center justify-between mb-4">
                 <Button
@@ -448,28 +475,39 @@ const DatePicker: React.FC<DatePickerProps> = ({
               </div>
 
               {/* Time picker        {showTime && ( */}
-
               <div className="flex items-center justify-between gap-4 mt-4 py-2">
-                <Label className="text-lg pl-2">Zeit</Label>
-                <TimeField
-                  className="w-30"
-                  name="time"
-                  value={tempTime}
-                  onChange={time => {
-                    setTempTime(time)
-                  }}
-                  hourCycle={24}
-                >
-                  <DateInputGroup>
-                    <DateInputGroup.Prefix>
-                      <Clock className="size-4 text-muted" />
-                    </DateInputGroup.Prefix>
-                    <DateInputGroup.Input>
-                      {segment => <DateInputGroup.Segment segment={segment} />}
-                    </DateInputGroup.Input>
-                  </DateInputGroup>
-                </TimeField>
+                {showTime && (
+                  <TimeField
+                    className="w-30"
+                    name="time"
+                    value={tempTime}
+                    onChange={time => {
+                      setTempTime(time)
+                    }}
+                    hourCycle={24}
+                  >
+                    <Label className="text-lg pl-2">Zeit</Label>
+                    <DateInputGroup>
+                      <DateInputGroup.Prefix>
+                        <Clock className="size-4 text-muted" />
+                      </DateInputGroup.Prefix>
+                      <DateInputGroup.Input>
+                        {segment => <DateInputGroup.Segment segment={segment} />}
+                      </DateInputGroup.Input>
+                    </DateInputGroup>
+                  </TimeField>
+                )}
+
                 {/* Action button */}
+                <Button
+                  onPress={handleApplyChanges}
+                  variant="danger-soft"
+                  className="w-12 h-12"
+                  size="sm"
+                  isIconOnly
+                >
+                  <X className="w-6 h-6" />
+                </Button>
 
                 <Button
                   onPress={handleApplyChanges}
@@ -490,3 +528,46 @@ const DatePicker: React.FC<DatePickerProps> = ({
 }
 
 export default DatePicker
+
+/*
+// Handle native input change (iOS/Android)
+  const handleNativeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Format: YYYY-MM-DDTHH:mm or YYYY-MM-DD depending on showTime
+    const val = e.target.value
+    if (!val) return
+
+    try {
+      if (showTime) {
+        // datetime-local input returns "YYYY-MM-DDTHH:mm"
+        const [d, t] = val.split('T')
+        const newDate = parseDate(d)
+
+        // Manual validation for native picker
+        if (minValue && newDate.compare(minValue) < 0) return
+        if (maxValue && newDate.compare(maxValue) > 0) return
+
+        onChange?.(newDate)
+        setSelectedDate(newDate)
+
+        if (t) {
+          const [h, m] = t.split(':').map(Number)
+          const newTime = new Time(h, m)
+          onTimeChange?.(newTime)
+          setSelectedTime(newTime)
+        }
+      } else {
+        // date input returns "YYYY-MM-DD"
+        const newDate = parseDate(val)
+
+        // Manual validation for native picker
+        if (minValue && newDate.compare(minValue) < 0) return
+        if (maxValue && newDate.compare(maxValue) > 0) return
+
+        onChange?.(newDate)
+        setSelectedDate(newDate)
+      }
+    } catch (err) {
+      console.error('Invalid date from native input', err)
+    }
+  }
+*/
