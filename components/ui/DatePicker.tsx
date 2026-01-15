@@ -12,6 +12,7 @@ import {
 } from '@heroui/react'
 import { DateValue, parseDate, getLocalTimeZone, Time } from '@internationalized/date'
 import { useDateFormatter, useLocale } from '@react-aria/i18n'
+import { usePlatform } from '@/hooks/usePlatform'
 
 interface DatePickerProps {
   value?: DateValue
@@ -51,6 +52,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
   const [tempTime, setTempTime] = useState<Time | null>(timeValue || null)
 
   const { locale } = useLocale()
+  const { isMobile, isReady } = usePlatform()
 
   // Detect touch device on mount
   useEffect(() => {
@@ -257,6 +259,82 @@ const DatePicker: React.FC<DatePickerProps> = ({
     }
     return translations[locale] || translations.en
   }, [locale, placeholder])
+
+  // Handle native input change (iOS/Android)
+  const handleNativeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Format: YYYY-MM-DDTHH:mm or YYYY-MM-DD depending on showTime
+    const val = e.target.value
+    if (!val) return
+
+    try {
+      if (showTime) {
+        // datetime-local input returns "YYYY-MM-DDTHH:mm"
+        const [d, t] = val.split('T')
+        const newDate = parseDate(d)
+        onChange?.(newDate)
+        setSelectedDate(newDate)
+
+        if (t) {
+          const [h, m] = t.split(':').map(Number)
+          const newTime = new Time(h, m)
+          onTimeChange?.(newTime)
+          setSelectedTime(newTime)
+        }
+      } else {
+        // date input returns "YYYY-MM-DD"
+        const newDate = parseDate(val)
+        onChange?.(newDate)
+        setSelectedDate(newDate)
+      }
+    } catch (err) {
+      console.error('Invalid date from native input', err)
+    }
+  }
+
+  // Helper to format date for native input value
+  const getNativeValue = () => {
+    if (!selectedDate) return ''
+    const d = selectedDate.toString() // YYYY-MM-DD
+    if (!showTime) return d
+
+    // For datetime-local
+    const t = selectedTime
+      ? `${String(selectedTime.hour).padStart(2, '0')}:${String(selectedTime.minute).padStart(2, '0')}`
+      : '00:00'
+    return `${d}T${t}`
+  }
+
+  // --- RENDER FOR MOBILE (iOS/Android) ---
+  if (isReady && isMobile) {
+    return (
+      <div className={`flex flex-col gap-1.5 ${className}`}>
+        {label && <label className="text-sm font-medium text-foreground">{label}</label>}
+        <div className="relative surface surface--tertiary h-11 md:h-10 flex items-center rounded-xl px-2 w-full">
+          <input
+            type={showTime ? 'datetime-local' : 'date'}
+            value={getNativeValue()}
+            onChange={handleNativeChange}
+            min={minValue ? minValue.toString() : undefined}
+            max={maxValue ? maxValue.toString() : undefined}
+            disabled={isDisabled}
+            className="w-full px-3 py-2 rounded-lg text-lg font-normal md:text-base  border border-divider bg-default-50 text-foreground shadow-sm focus:border-primary focus:ring-1 focus:ring-primary appearance-none"
+
+            //className="w-full h-10 px-3 py-2 rounded-lg border border-divider bg-default-50 text-foreground shadow-sm focus:border-primary focus:ring-1 focus:ring-primary appearance-none"
+            style={{
+              // Ensure consistent height and appearance on iOS
+              WebkitAppearance: 'none',
+              minHeight: '2.5rem',
+            }}
+          />
+          {!getNativeValue() && (
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-default-500 text-sm">
+              {placeholderText}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
