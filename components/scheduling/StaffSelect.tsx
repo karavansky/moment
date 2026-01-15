@@ -1,8 +1,8 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { ComboBox, Header, Input, Label, ListBox, Separator, TextField } from '@heroui/react'
-import { User, Users } from 'lucide-react'
+import { User } from 'lucide-react'
 import { Team, Worker } from '@/types/scheduling'
 import { usePlatform } from '@/hooks/usePlatform'
 
@@ -25,6 +25,31 @@ export default function StaffSelect({
 }: StaffSelectProps) {
   const { isMobile, isReady } = usePlatform()
 
+  // Мемоизация группировки workers по teams - избегаем повторной фильтрации при каждом рендере
+  const teamsWithWorkers = useMemo(() => {
+    return teams
+      .map(team => ({
+        team,
+        workers: workers.filter(w => w.teamId === team.id),
+      }))
+      .filter(({ workers }) => workers.length > 0)
+  }, [teams, workers])
+
+  // Мемоизация обработчиков
+  const handleMobileChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      onSelectionChange(e.target.value)
+    },
+    [onSelectionChange]
+  )
+
+  const handleDesktopChange = useCallback(
+    (key: React.Key | null) => {
+      if (key) onSelectionChange(key as string)
+    },
+    [onSelectionChange]
+  )
+
   // --- RENDER FOR MOBILE (iOS/Android) ---
   if (isReady && isMobile) {
     return (
@@ -37,11 +62,7 @@ export default function StaffSelect({
           <select
             name="staff"
             value={selectedWorkerId}
-            onChange={e => {
-              const workerId = e.target.value
-              console.log('Selected workerId (mobile):', workerId)
-              onSelectionChange(workerId)
-            }}
+            onChange={handleMobileChange}
             className="w-full h-full px-2 py-0 text-lg font-normal md:text-base border-0 border-transparent outline-none cursor-pointer bg-transparent appearance-none text-foreground"
             style={{
               WebkitAppearance: 'none',
@@ -54,22 +75,18 @@ export default function StaffSelect({
             }}
             required
           >
-            {teams.map((team, index) => {
-              const teamWorkers = workers.filter(w => w.teamId === team.id)
-              if (teamWorkers.length === 0) return null
-              return (
-                <React.Fragment key={team.id}>
-                  <option key={team.id} value={team.teamName} disabled>
-                    {'👥 ' + team.teamName + ' 👥'}
+            {teamsWithWorkers.map(({ team, workers: teamWorkers }) => (
+              <React.Fragment key={team.id}>
+                <option value={team.teamName} disabled>
+                  {'👥 ' + team.teamName + ' 👥'}
+                </option>
+                {teamWorkers.map(worker => (
+                  <option key={worker.id} value={worker.id}>
+                    {worker.workerName}
                   </option>
-                  {teamWorkers.map(worker => (
-                    <option key={worker.id} value={worker.id}>
-                      {worker.workerName}
-                    </option>
-                  ))}
-                </React.Fragment>
-              )
-            })}
+                ))}
+              </React.Fragment>
+            ))}
           </select>
           <User className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-default-500 pointer-events-none z-0" />
         </div>
@@ -104,7 +121,7 @@ export default function StaffSelect({
         className="w-[256px]"
         name="worker"
         selectedKey={selectedWorkerId}
-        onSelectionChange={key => onSelectionChange(key as string)}
+        onSelectionChange={handleDesktopChange}
       >
         <Label className="text-sm font-medium flex items-center gap-2">
           <User className="w-4 h-4" />
@@ -116,25 +133,20 @@ export default function StaffSelect({
         </ComboBox.InputGroup>
         <ComboBox.Popover>
           <ListBox>
-            {teams.map((team, index) => {
-              const teamWorkers = workers.filter(w => w.teamId === team.id)
-              if (teamWorkers.length === 0) return null
-
-              return (
-                <React.Fragment key={team.id}>
-                  <ListBox.Section>
-                    <Header>{team.teamName}</Header>
-                    {teamWorkers.map(worker => (
-                      <ListBox.Item key={worker.id} textValue={worker.workerName} id={worker.id}>
-                        {worker.workerName}
-                        <ListBox.ItemIndicator />
-                      </ListBox.Item>
-                    ))}
-                  </ListBox.Section>
-                  {index < teams.length - 1 && <Separator />}
-                </React.Fragment>
-              )
-            })}
+            {teamsWithWorkers.map(({ team, workers: teamWorkers }, index) => (
+              <React.Fragment key={team.id}>
+                <ListBox.Section>
+                  <Header>{team.teamName}</Header>
+                  {teamWorkers.map(worker => (
+                    <ListBox.Item key={worker.id} textValue={worker.workerName} id={worker.id}>
+                      {worker.workerName}
+                      <ListBox.ItemIndicator />
+                    </ListBox.Item>
+                  ))}
+                </ListBox.Section>
+                {index < teamsWithWorkers.length - 1 && <Separator />}
+              </React.Fragment>
+            ))}
           </ListBox>
         </ComboBox.Popover>
       </ComboBox>
