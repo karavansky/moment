@@ -88,14 +88,14 @@ function CalendarView({
   }, [months, today])
 
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden">
+    <div className="w-full h-full flex flex-col overflow-hidden select-none">
       {/* Заголовки дней недели */}
       <div className="z-10 bg-background/95 backdrop-blur-sm border-b border-divider rounded-2xl shadow-sm shrink-0">
         <div className="grid grid-cols-7 gap-0">
           {WEEKDAY_HEADERS_SHORT.map((dayShort, index) => (
             <div
               key={index}
-              className="lg:min-w-30 p-2 sm:p-3 text-center font-semibold text-default-700 bg-default-50 border-r border-divider last:border-r-0"
+              className="lg:min-w-30 p-2 sm:p-3 text-center font-semibold text-default-700 bg-default-50 border-r border-divider last:border-r-0 select-none"
             >
               {/* Показываем короткие названия на мобильных, полные на десктопе */}
               <span className="sm:hidden">{dayShort}</span>

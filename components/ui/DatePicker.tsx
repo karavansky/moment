@@ -11,10 +11,9 @@ import {
   Label,
 } from '@heroui/react'
 import { DateValue, parseDate, getLocalTimeZone, Time } from '@internationalized/date'
-import { useDateFormatter, useLocale } from '@react-aria/i18n'
-import { usePlatform } from '@/hooks/usePlatform'
 import { useLanguage } from '@/hooks/useLanguage'
 import { useTranslation } from '@/components/Providers'
+import { usePlatformContext } from '@/contexts/PlatformContext'
 
 interface DatePickerProps {
   value?: DateValue
@@ -55,7 +54,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
   const [tempDate, setTempDate] = useState<DateValue | undefined>(value)
   const [tempTime, setTempTime] = useState<Time | null>(showTime ? timeValue || null : null)
 
-  const { isMobile, isReady } = usePlatform()
+  const { isMobile, isReady } = usePlatformContext()
 
   // Detect touch device on mount
   useEffect(() => {

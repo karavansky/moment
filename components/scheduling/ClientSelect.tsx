@@ -4,7 +4,7 @@ import React, { useMemo, useCallback, memo } from 'react'
 import { ComboBox, Header, Input, Label, ListBox, Separator, TextField } from '@heroui/react'
 import { User, MapPin } from 'lucide-react'
 import { Client, Groupe } from '@/types/scheduling'
-import { usePlatform } from '@/hooks/usePlatform'
+import { usePlatformContext } from '@/contexts/PlatformContext'
 
 interface GroupedClients {
   group: Groupe
@@ -30,7 +30,7 @@ function ClientSelect({
   className,
   isNew = false,
 }: ClientSelectProps) {
-  const { isMobile, isReady } = usePlatform()
+  const { isMobile, isReady } = usePlatformContext()
   const [isNewSelected, setIsNewSelected] = React.useState(false)
 
   // Мемоизация выбранного клиента

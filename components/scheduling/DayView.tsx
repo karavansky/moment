@@ -7,6 +7,7 @@ import AppointmentCard from './AppointmentCard'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { Calendar } from 'lucide-react'
 import type { Appointment } from '@/types/scheduling'
+import { usePlatformContext } from '@/contexts/PlatformContext'
 
 interface DayViewProps {
   day: CalendarDay
@@ -18,7 +19,7 @@ interface DayViewProps {
 function DayView({ day, isToday = false, isSelected = false, onAppointmentPress }: DayViewProps) {
   const { setSelectedDate, setSelectedAppointment, moveAppointmentToDate } = useScheduling()
   const [isDragOver, setIsDragOver] = useState(false)
-
+  const { isMobile, isReady } = usePlatformContext()
   // Ref для таймера задержки снятия выделения
   const dragLeaveTimerRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -66,13 +67,10 @@ function DayView({ day, isToday = false, isSelected = false, onAppointmentPress 
 
   const handleDragOver = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
-      if (!day.date || !canDropHere(day.date)) {
-        e.dataTransfer.dropEffect = 'none'
-        return
-      }
+      if (!day.date) return
 
       e.preventDefault()
-      e.dataTransfer.dropEffect = 'move'
+      e.dataTransfer.dropEffect = canDropHere(day.date) ? 'move' : 'none'
 
       // Если есть активный таймер на скрытие (dragLeave), отменяем его,
       // так как мы все еще находимся над элементом (или вернулись на него)
@@ -82,6 +80,13 @@ function DayView({ day, isToday = false, isSelected = false, onAppointmentPress 
       }
 
       if (!isDragOver) setIsDragOver(true)
+
+      // Таймер безопасности: если dragover перестанет срабатывать (например, drag закончился),
+      // сбрасываем состояние через небольшой интервал. Это решает проблему "залипания" при dropEffect='none'.
+      dragLeaveTimerRef.current = setTimeout(() => {
+        setIsDragOver(false)
+        dragLeaveTimerRef.current = null
+      }, 300)
     },
     [day.date, canDropHere, isDragOver]
   )
@@ -138,7 +143,11 @@ function DayView({ day, isToday = false, isSelected = false, onAppointmentPress 
 
   // Пустой день
   if (!day.day || !day.date) {
-    return <div className="lg:min-w-30 h-24 sm:h-auto p-1 sm:p-2 bg-default-50" />
+    return (
+      <div
+        className={`lg:min-w-30 ${isMobile ? 'min-h-12' : 'min-h-24'} p-1 sm:p-2 bg-default-50`}
+      />
+    )
   }
 
   const hasAppointments = day.appointments.length > 0
@@ -148,8 +157,9 @@ function DayView({ day, isToday = false, isSelected = false, onAppointmentPress 
   return (
     <div
       className={`
-        lg:min-w-30 h-auto
+        lg:min-w-30 ${isMobile ? 'min-h-12' : 'min-h-24'} h-auto
         transition-all duration-200
+        select-none
       `}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -169,8 +179,8 @@ function DayView({ day, isToday = false, isSelected = false, onAppointmentPress 
             ${isPast ? 'cursor-not-allowed' : 'cursor-pointer hover:shadow-md'}
             ${isToday && !isPast ? 'border-2 border-primary' : ''}
             ${isSelected ? 'ring-2 ring-primary' : ''}
-            ${isDragOver && canDrop ? 'bg-success-50 border-2 border-success' : ''}
-            ${isDragOver && !canDrop ? 'bg-danger-50 border-2 border-danger' : ''}
+            ${isDragOver && canDrop ? 'bg-success/50 border-2 border-success' : ''}
+            ${isDragOver && !canDrop ? 'bg-danger/50 border-2 border-danger' : ''}
           `}
         >
           <Card.Content className="p-0">
@@ -180,7 +190,7 @@ function DayView({ day, isToday = false, isSelected = false, onAppointmentPress 
                 {isToday && !isPast && <Calendar className="w-4 h-4 text-primary" />}
                 <span
                   className={`
-                    text-sm font-semibold inline-flex items-center justify-center
+                    text-sm font-semibold inline-flex items-center justify-center select-none
                     ${
                       isToday && !isPast
                         ? 'bg-danger text-white rounded-full w-6 h-6'
@@ -210,13 +220,13 @@ function DayView({ day, isToday = false, isSelected = false, onAppointmentPress 
 
             {/* Drop zone hint */}
             {isDragOver && canDrop && (
-              <div className="text-xs text-success font-medium mb-1.5 text-center py-1 bg-success-100 rounded">
+              <div className="text-xs text-success font-medium mb-1.5 text-center py-1 bg-success-100 rounded select-none">
                 Отпустите здесь
               </div>
             )}
 
             {isDragOver && !canDrop && (
-              <div className="text-xs text-danger font-medium mb-1.5 text-center py-1 bg-danger-100 rounded">
+              <div className="text-xs text-danger font-medium mb-1.5 text-center py-1 bg-danger-100 rounded select-none">
                 Нельзя в прошлое
               </div>
             )}
@@ -239,21 +249,28 @@ function DayView({ day, isToday = false, isSelected = false, onAppointmentPress 
         <div
           className={`
             lg:hidden
-            h-full
+            w-full h-full
             pt-0.5 pb-0.5
             flex flex-col
+            rounded-md
             
             ${isToday && !isPast ? 'border-l-2 border-primary' : 'border-l border-divider'}
-            ${isSelected ? 'bg-primary/5' : 'bg-transparent'}
-            ${isDragOver && canDrop ? 'bg-success-50 border-l-2 border-success' : ''}
-            ${isDragOver && !canDrop ? 'bg-danger-50 border-l-2 border-danger' : ''}
+            ${
+              isDragOver
+                ? canDrop
+                  ? '!bg-success/50'
+                  : '!bg-danger/50'
+                : isSelected
+                  ? 'bg-primary/5'
+                  : 'bg-transparent'
+            }
           `}
         >
           {/* День - компактная версия */}
           <div className="px-0.5 mb-0.5 shrink-0 text-center">
             <span
               className={`
-                text-[10px] font-semibold inline-flex items-center justify-center
+                text-[10px] font-semibold inline-flex items-center justify-center select-none
                 ${
                   isToday && !isPast
                     ? 'bg-danger text-white rounded-full w-5 h-5'
@@ -270,13 +287,13 @@ function DayView({ day, isToday = false, isSelected = false, onAppointmentPress 
 
           {/* Drop zone hint - компактная версия */}
           {isDragOver && canDrop && (
-            <div className="text-[9px] text-success font-medium mb-0.5 text-center py-0.5 bg-success-100 rounded">
+            <div className="text-[9px] text-success font-medium mb-0.5 text-center py-0.5 bg-success-100 rounded select-none">
               ✓
             </div>
           )}
 
           {isDragOver && !canDrop && (
-            <div className="text-[9px] text-danger font-medium mb-0.5 text-center py-0.5 bg-danger-100 rounded">
+            <div className="text-[9px] text-danger font-medium mb-0.5 text-center py-0.5 bg-danger-100 rounded select-none">
               ✗
             </div>
           )}

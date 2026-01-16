@@ -188,9 +188,9 @@ function DienstplanView() {
 
       {/* Horizontal ScrollShadow - прижат к bottom */}
       <div className="flex-none h-32 shrink-0">
-        <Card className="h-full">
+        <Card className="h-full p-0">
           <Card.Content className="p-0 h-full overflow-hidden">
-            <ScrollShadow className="h-full p-4" orientation="horizontal" hideScrollBar={false}>
+            <ScrollShadow className="h-full " orientation="horizontal" hideScrollBar={true}>
               <div className="flex flex-row gap-4 h-full items-center">
                 {appointments.slice(0, 10).map(appointment => (
                   <Card

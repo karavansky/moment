@@ -80,22 +80,43 @@ function AppointmentCard({
 
       // Устанавливаем кастомное изображение призрака
       if (dragPreviewRef.current) {
-        e.dataTransfer.setDragImage(dragPreviewRef.current, 0, 0)
-      }
+        const rect = dragPreviewRef.current.getBoundingClientRect()
 
-      if (e.currentTarget) {
-        e.currentTarget.style.opacity = '0.5'
+        // По умолчанию: курсор в правом нижнем углу карточки (карточка слева-сверху от пальца)
+        let offsetX = rect.width
+        let offsetY = rect.height
+
+        // Если места слева недостаточно (курсор близко к левому краю),
+        // смещаем точку захвата влево (карточка будет справа от курсора)
+        if (e.clientX < rect.width) {
+          offsetX = 0
+        }
+
+        // Если места сверху недостаточно, смещаем точку захвата вверх (карточка будет снизу от курсора)
+        if (e.clientY < rect.height) {
+          offsetY = 0
+        }
+
+        e.dataTransfer.setDragImage(dragPreviewRef.current, offsetX, offsetY)
       }
     },
     [isDraggable, appointment.id, appointment.date]
   )
 
-  const handleDragEnd = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    if (e.currentTarget) {
-      e.currentTarget.style.opacity = '1'
-    }
+  const handleInteractionStart = useCallback(() => {
+    setIsInteracting(true)
+  }, [])
+
+  const handleInteractionEnd = useCallback(() => {
     setIsInteracting(false)
   }, [])
+
+  const handleDragEnd = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      handleInteractionEnd()
+    },
+    [handleInteractionEnd]
+  )
 
   // Контент для tooltip на мобильной версии
   const tooltipContent = (
@@ -158,10 +179,11 @@ function AppointmentCard({
         e.stopPropagation() // Prevent DayView button from triggering
         onClick?.()
       }}
-      onMouseEnter={() => setIsInteracting(true)}
-      onMouseLeave={() => setIsInteracting(false)}
-      onTouchStart={() => setIsInteracting(true)}
-      onTouchEnd={() => setIsInteracting(false)}
+      onMouseEnter={handleInteractionStart}
+      onMouseLeave={handleInteractionEnd}
+      onTouchStart={handleInteractionStart}
+      onTouchEnd={handleInteractionEnd}
+      onTouchCancel={handleInteractionEnd}
       className={`
         ${isDraggable ? 'cursor-move' : 'cursor-pointer'}
         relative
@@ -170,11 +192,11 @@ function AppointmentCard({
     >
       {/* Custom Drag Preview (Ghost Image) - рендерится вне экрана */}
       {isMounted &&
-        isInteracting &&
         createPortal(
           <div
             ref={dragPreviewRef}
-            className="fixed -top-[1000px] -left-[1000px] w-48 bg-white dark:bg-gray-900 rounded-xl shadow-xl border-2 border-primary p-2 z-[9999] pointer-events-none overflow-hidden"
+            style={{ top: isInteracting ? '-1000px' : '-99999px', left: '-1000px' }}
+            className="fixed w-48 bg-white dark:bg-gray-900 rounded-none shadow-sm border-2 border-primary p-2 z-[9999] pointer-events-none"
           >
             <div className="font-bold text-sm text-foreground truncate mb-1">
               {appointment.client

@@ -4,7 +4,7 @@ import React, { useCallback, memo } from 'react'
 import { ComboBox, Header, Input, Label, ListBox, Separator, TextField } from '@heroui/react'
 import { User } from 'lucide-react'
 import { Team, Worker } from '@/types/scheduling'
-import { usePlatform } from '@/hooks/usePlatform'
+import { usePlatformContext } from '@/contexts/PlatformContext'
 
 interface TeamsWithWorkers {
   team: Team
@@ -26,7 +26,7 @@ function StaffSelect({
   error,
   className,
 }: StaffSelectProps) {
-  const { isMobile, isReady } = usePlatform()
+  const { isMobile, isReady } = usePlatformContext()
 
   // Мемоизация обработчиков
   const handleMobileChange = useCallback(

@@ -114,6 +114,12 @@ export default function WeeklyView({ onAppointmentPress }: WeeklyViewProps) {
   const isProgrammaticScroll = useRef(false) // Флаг для программного скролла
   const isProgrammaticHeaderScroll = useRef(false) // Флаг для программного скролла header
 
+  // Храним currentDate в ref для использования в IntersectionObserver без добавления в зависимости
+  const currentDateRef = useRef(currentDate)
+  useEffect(() => {
+    currentDateRef.current = currentDate
+  }, [currentDate])
+
   // Генерируем массив дней на основе реальных дат назначений
   // Пересоздается только при изменении списка назначений
   const allDays = useMemo<Date[]>(() => {
@@ -392,14 +398,12 @@ export default function WeeklyView({ onAppointmentPress }: WeeklyViewProps) {
           const newDate = daysToDisplay[dayIndex]
 
           if (newDate) {
-            // Устанавливаем флаг, чтобы useEffect не пытался проскроллить контейнер
-            // так как пользователь уже находится на этом элементе
+            // Если дата не изменилась, ничего не делаем (предотвращает застревание флага skipScrollToDateRef)
+            if (isSameDate(newDate, currentDateRef.current)) return
+
             skipScrollToDateRef.current = true
 
-            setCurrentDate(prevDate => {
-              if (isSameDate(prevDate, newDate)) return prevDate
-              return newDate
-            })
+            setCurrentDate(newDate)
 
             const newMonday = getMonday(newDate)
             setCurrentWeekStart(prevMonday => {
@@ -437,7 +441,7 @@ export default function WeeklyView({ onAppointmentPress }: WeeklyViewProps) {
   )
 
   // Форматирование диапазона дат для заголовка
-  const getWeekRangeString = () => {
+  const weekRangeString = useMemo(() => {
     // Генерируем 7 дней текущей недели от понедельника
     const monday = getMonday(currentWeekStart)
     const weekDays = []
@@ -472,20 +476,31 @@ export default function WeeklyView({ onAppointmentPress }: WeeklyViewProps) {
       const lastMonthShort = lastDay.toLocaleDateString(lang, { month: 'short' })
       return `${firstDayNum} ${firstMonthShort} ${firstYear} - ${lastDayNum} ${lastMonthShort} ${lastYear}`
     }
-  }
+  }, [currentWeekStart, lang])
 
   // Group appointments by date
-  const appointmentsByDate = appointments.reduce(
-    (acc, appointment) => {
-      const dateKey = getOnlyDate(appointment.date).toISOString()
-      if (!acc[dateKey]) {
-        acc[dateKey] = []
-      }
-      acc[dateKey].push(appointment)
-      return acc
-    },
-    {} as Record<string, typeof appointments>
-  )
+  const appointmentsByDate = useMemo(() => {
+    const grouped = appointments.reduce(
+      (acc, appointment) => {
+        const dateKey = getOnlyDate(appointment.date).toISOString()
+        if (!acc[dateKey]) {
+          acc[dateKey] = []
+        }
+        acc[dateKey].push(appointment)
+        return acc
+      },
+      {} as Record<string, typeof appointments>
+    )
+
+    // Sort appointments for each day once
+    Object.keys(grouped).forEach(key => {
+      grouped[key].sort((a, b) => {
+        return a.startTime > b.startTime ? 1 : a.startTime < b.startTime ? -1 : 0
+      })
+    })
+
+    return grouped
+  }, [appointments])
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
@@ -493,7 +508,7 @@ export default function WeeklyView({ onAppointmentPress }: WeeklyViewProps) {
       <div className="shrink-0 bg-background border-b rounded-2xl border-divider pb-3">
         <div className="flex items-center justify-between gap-2 px-2 sm:px-4 mb-3">
           <Button
-            onClick={handleNextWeek}
+            onClick={handlePrevWeek}
             className=""
             aria-label="Next week"
             variant="ghost"
@@ -505,7 +520,7 @@ export default function WeeklyView({ onAppointmentPress }: WeeklyViewProps) {
 
           <div className="flex items-center gap-2">
             <CalendarIcon className="w-5 h-5 text-primary" />
-            <h2 className="text-lg sm:text-xl font-bold">{getWeekRangeString()}</h2>
+            <h2 className="text-lg sm:text-xl font-bold">{weekRangeString}</h2>
           </div>
 
           <Button
@@ -631,11 +646,6 @@ export default function WeeklyView({ onAppointmentPress }: WeeklyViewProps) {
             const isCurrentDay = isSameDate(day, currentDate)
             const dayAppointments = appointmentsByDate[day.toISOString()] || []
 
-            // Sort appointments by start time
-            const sortedAppointments = [...dayAppointments].sort((a, b) => {
-              return a.startTime > b.startTime ? 1 : a.startTime < b.startTime ? -1 : 0
-            })
-
             return (
               <div
                 key={index}
@@ -672,13 +682,13 @@ export default function WeeklyView({ onAppointmentPress }: WeeklyViewProps) {
                     {/* Appointments list */}
                     <ScrollShadow className="flex-1 min-h-0" hideScrollBar={false}>
                       <div className="space-y-2">
-                        {sortedAppointments.length === 0 ? (
+                        {dayAppointments.length === 0 ? (
                           <div className="text-center py-8 text-default-500">
                             <CalendarIcon className="mx-auto h-8 w-8 mb-2 opacity-50" />
                             <p className="text-sm">Нет назначений</p>
                           </div>
                         ) : (
-                          sortedAppointments.map(appointment => (
+                          dayAppointments.map(appointment => (
                             <AppointmentCard
                               key={appointment.id}
                               appointment={appointment}

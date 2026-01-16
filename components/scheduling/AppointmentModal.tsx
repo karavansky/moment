@@ -18,7 +18,7 @@ import { parseDate, Time, today, getLocalTimeZone } from '@internationalized/dat
 import DatePicker from '@/components/ui/DatePicker'
 import StaffSelect from './StaffSelect'
 import ClientSelect from './ClientSelect'
-import { usePlatform } from '@/hooks/usePlatform'
+import { usePlatformContext } from '@/contexts/PlatformContext'
 
 interface AppointmentModalProps {
   isOpen: boolean
@@ -37,7 +37,7 @@ export default function AppointmentModal({
   readOnly = false,
   isNewAppointment = false,
 }: AppointmentModalProps) {
-  const { isMobile, isReady } = usePlatform()
+  const { isMobile, isReady } = usePlatformContext()
 
   const {
     clients,
