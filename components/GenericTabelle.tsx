@@ -28,8 +28,8 @@ import {
 } from '@/components/icons'
 import scrollIntoView from 'scroll-into-view-if-needed'
 
-interface GenericTabelleProps {
-  list: Record<string, any>[]
+interface GenericTabelleProps<T> {
+  list: T[]
   titel: string
   isLoading: boolean
   columns?: { name: string; uid: string; sortable?: boolean }[]
@@ -39,30 +39,31 @@ interface GenericTabelleProps {
   isShowColumns?: boolean
 }
 
-
 export const statusOptions = [
-  {name: "Active", uid: "active"},
-  {name: "Paused", uid: "paused"},
-  {name: "Archive", uid: "archive"},
-];
-const statusColorMap: Record<string, ChipProps["color"]> = {
-  active: "success",
-  paused: "warning",
-  archive: "danger",
-};
+  { name: 'Active', uid: 'active' },
+  { name: 'Paused', uid: 'paused' },
+  { name: 'Archive', uid: 'archive' },
+]
+const statusColorMap: Record<string, ChipProps['color']> = {
+  active: 'success',
+  paused: 'warning',
+  archive: 'danger',
+}
 
-const GenericTabelle = function GenericTabelle(props: GenericTabelleProps) {
+const GenericTabelle = function GenericTabelle<T extends { id?: string | number }>(
+  props: GenericTabelleProps<T>
+) {
   const { isShowColumns = false } = props
-  const [filterValue, setFilterValue] = React.useState("");
-  
+  const [filterValue, setFilterValue] = React.useState('')
+
   const list = React.useMemo(() => {
-    return props.list.map((el, idx) => ({ ...el, _id: (el as any)._id ?? idx + 1 }))
+    return props.list.map((el, idx) => ({ ...el, _id: el.id ?? idx + 1 }))
   }, [props.list])
 
   const [rowsPerPage, setRowsPerPage] = React.useState(20)
   const [page, setPage] = React.useState(1)
   const [isMounted, setIsMounted] = React.useState(false)
-  const [statusFilter, setStatusFilter] = React.useState<Selection>("all");
+  const [statusFilter, setStatusFilter] = React.useState<Selection>('all')
 
   React.useEffect(() => {
     setIsMounted(true)
@@ -79,7 +80,7 @@ const GenericTabelle = function GenericTabelle(props: GenericTabelleProps) {
     props.initialVisibleColumns ? new Set(props.initialVisibleColumns) : 'all'
   )
 
-  type TypeList = (typeof list)[0]
+  type TypeList = T & { _id: string | number }
 
   const columns = React.useMemo(
     () =>
@@ -102,8 +103,8 @@ const GenericTabelle = function GenericTabelle(props: GenericTabelleProps) {
     if (!list.length) return [] as typeof list
     const column = sortDescriptor.column as keyof TypeList
     return [...list].sort((a: TypeList, b: TypeList) => {
-      const first = (a[column] as unknown as string) ?? ''
-      const second = (b[column] as unknown as string) ?? ''
+      const first = String(a[column] ?? '')
+      const second = String(b[column] ?? '')
       const cmp = first < second ? -1 : first > second ? 1 : 0
       return sortDescriptor.direction === 'descending' ? -cmp : cmp
     })
@@ -158,9 +159,8 @@ const GenericTabelle = function GenericTabelle(props: GenericTabelleProps) {
       return newSet
     })
   }
-  const hasSearchFilter = Boolean(filterValue);
+  const hasSearchFilter = Boolean(filterValue)
 
-  
   const toggleAll = () => {
     if (selectedKeys.size === items.length) {
       setSelectedKeys(new Set())
@@ -171,12 +171,12 @@ const GenericTabelle = function GenericTabelle(props: GenericTabelleProps) {
 
   const onSearchChange = React.useCallback((value?: string) => {
     if (value) {
-      setFilterValue(value);
-      setPage(1);
+      setFilterValue(value)
+      setPage(1)
     } else {
-      setFilterValue("");
+      setFilterValue('')
     }
-  }, []);
+  }, [])
 
   const isDate = (value: any): value is Date => {
     return value instanceof Date
@@ -215,7 +215,8 @@ const GenericTabelle = function GenericTabelle(props: GenericTabelleProps) {
         }
 
         if (typeof cellValue === 'object') {
-          const display = cellValue.categoryName || cellValue.name || JSON.stringify(cellValue)
+          const display =
+            (cellValue as any).categoryName || (cellValue as any).name || JSON.stringify(cellValue)
           return (
             <div className="flex flex-col">
               <p className="text-bold text-small ">{display}</p>
@@ -224,7 +225,7 @@ const GenericTabelle = function GenericTabelle(props: GenericTabelleProps) {
         }
 
         const isNumber = typeof cellValue === 'number'
-        const formattedValue = isNumber ? cellValue.toLocaleString('de-DE') : cellValue
+        const formattedValue = isNumber ? cellValue.toLocaleString('de-DE') : (cellValue as any)
 
         return (
           <div className={`flex flex-col ${isNumber ? 'items-end' : ''}`}>
@@ -336,15 +337,18 @@ const GenericTabelle = function GenericTabelle(props: GenericTabelleProps) {
   ])
   const topSearch = React.useMemo(() => {
     return (
-          <TextField className="w-full max-w-70" name="filter" onChange={onSearchChange}>
-      <InputGroup>
-        <InputGroup.Prefix>
-          <SearchIcon className="size-4 text-muted" />
-        </InputGroup.Prefix>
-        <InputGroup.Input className="w-full max-w-70" placeholder="Search..." value={filterValue}/>
-      </InputGroup>
-    </TextField>
-
+      <TextField className="w-full max-w-70" name="filter" onChange={onSearchChange}>
+        <InputGroup>
+          <InputGroup.Prefix>
+            <SearchIcon className="size-4 text-muted" />
+          </InputGroup.Prefix>
+          <InputGroup.Input
+            className="w-full max-w-70"
+            placeholder="Search..."
+            value={filterValue}
+          />
+        </InputGroup>
+      </TextField>
     )
   }, [])
 

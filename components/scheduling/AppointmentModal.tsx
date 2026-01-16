@@ -3,27 +3,21 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import {
   Modal,
-  ModalHeader,
-  ModalBody,
   Button,
   Separator,
   Label,
-  DateValue,
-  ComboBox,
-  Header,
-  Input,
-  ListBox,
   Switch,
   TextField,
   FieldError,
 } from '@heroui/react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { Appointment } from '@/types/scheduling'
-import { Calendar, Clock, User, MapPin, Save, X, Trash2, AlertCircle, Car } from 'lucide-react'
+import { Clock, Save, Trash2, Car } from 'lucide-react'
 import { formatTime } from '@/lib/calendar-utils'
 import { parseDate, Time, today, getLocalTimeZone } from '@internationalized/date'
 import DatePicker from '@/components/ui/DatePicker'
 import StaffSelect from './StaffSelect'
+import ClientSelect from './ClientSelect'
 import { usePlatform } from '@/hooks/usePlatform'
 
 interface AppointmentModalProps {
@@ -45,13 +39,22 @@ export default function AppointmentModal({
 }: AppointmentModalProps) {
   const { isMobile, isReady } = usePlatform()
 
-  const { teams, workers, clients, user, addAppointment, updateAppointment, deleteAppointment } =
-    useScheduling()
+  const {
+    clients,
+    workers,
+    user,
+    addAppointment,
+    updateAppointment,
+    deleteAppointment,
+    groupedClients,
+    teamsWithWorkers,
+  } = useScheduling()
 
   const isEditMode = !!appointment
 
-  // Form state
-  const [formData, setFormData] = useState(
+  // Form state - lazy initializer to avoid creating object on every render
+  // isFixedTime включён в formData как единый источник истины
+  const [formData, setFormData] = useState(() =>
     isNewAppointment || !appointment
       ? {
           clientID: '',
@@ -63,6 +66,7 @@ export default function AppointmentModal({
           fahrzeit: 0,
           isDuration: false,
           isDriveTime: false,
+          isFixedTime: false,
         }
       : {
           clientID: appointment.clientID,
@@ -72,22 +76,17 @@ export default function AppointmentModal({
           startMinute: appointment.isFixedTime ? new Date(appointment.startTime).getMinutes() : 0,
           duration: appointment.duration,
           fahrzeit: appointment.fahrzeit,
-          isDuration: appointment.duration > 0 ? true : false,
-          isDriveTime: appointment.fahrzeit > 0 ? true : false,
+          isDuration: appointment.duration > 0,
+          isDriveTime: appointment.fahrzeit > 0,
+          isFixedTime: appointment.isFixedTime,
         }
   )
-  console.log('Initial formData:', formData)
-  console.log('Appointment prop:', appointment)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Initial formData:', formData)
+    console.log('Appointment prop:', appointment)
+  }
   const [isDateInvalid, setIsDateInvalid] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
-
-  // Calculate isFixedTime dynamically based on time
-  /*
-  const isFixedTime = useMemo(() => {
-    return formData.startHour !== 0 || formData.startMinute !== 0
-  }, [formData.startHour, formData.startMinute])
-*/
-  const [isFixedTime, setIsFixedTime] = useState(false)
 
   // Initialize form data when appointment or selectedDate changes
   useEffect(() => {
@@ -103,8 +102,8 @@ export default function AppointmentModal({
         fahrzeit: appointment.fahrzeit,
         isDuration: appointment.duration > 0,
         isDriveTime: appointment.fahrzeit > 0,
+        isFixedTime: appointment.isFixedTime,
       })
-      setIsFixedTime(appointment.isFixedTime)
     } else if (selectedDate) {
       setFormData(prev => ({
         ...prev,
@@ -122,7 +121,7 @@ export default function AppointmentModal({
     return end
   }, [formData.date, formData.startHour, formData.startMinute, formData.duration])
 
-  // Get selected client and worker info
+  // Get selected client and worker info for saving
   const selectedClient = useMemo(
     () => clients.find(c => c.id === formData.clientID),
     [clients, formData.clientID]
@@ -163,7 +162,7 @@ export default function AppointmentModal({
       userID: user.id,
       clientID: formData.clientID,
       date: formData.date,
-      isFixedTime,
+      isFixedTime: formData.isFixedTime,
       startTime,
       duration: formData.duration,
       endTime,
@@ -203,6 +202,7 @@ export default function AppointmentModal({
       fahrzeit: 0,
       isDuration: false,
       isDriveTime: false,
+      isFixedTime: false,
     })
     setErrors({})
     onClose()
@@ -247,67 +247,28 @@ export default function AppointmentModal({
 
             <Modal.Body className="gap-4 py-2">
               {/* Client Selection */}
-              <div className="space-y-2 p-2">
-                <ComboBox
-                  isRequired
-                  className="w-[256px]"
-                  name="client"
-                  selectedKey={formData.clientID}
-                  onSelectionChange={key => {
-                    setFormData(prev => ({ ...prev, clientID: key as string }))
-                    setErrors(prev => ({ ...prev, clientID: '' }))
-                  }}
-                >
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    Kunde
-                  </Label>
-                  <ComboBox.InputGroup>
-                    <Input placeholder="Suche Kunde..." />
-                    <ComboBox.Trigger />
-                  </ComboBox.InputGroup>
-                  <ComboBox.Popover>
-                    <ListBox>
-                      <ListBox.Section>
-                        <Header>Kunden</Header>
-                        {clients.map(client => (
-                          <ListBox.Item key={client.id} textValue={client.name} id={client.id}>
-                            {client.surname} {client.name}
-                            <ListBox.ItemIndicator />
-                          </ListBox.Item>
-                        ))}
-                      </ListBox.Section>
-                    </ListBox>
-                  </ComboBox.Popover>
-                </ComboBox>
-                {errors.clientID && <p className="text-xs text-danger">{errors.clientID}</p>}
-
-                {/* Selected Client Info */}
-                {selectedClient && (
-                  <div className="pt-1 pb-2 bg-default-50 rounded-lg">
-                    <div className="flex items-start gap-2 text-sm">
-                      <MapPin className="w-4 h-4 mt-0.5 text-default-500" />
-                      <div>
-                        <p className="text-xs text-default-500">
-                          {selectedClient.street} {selectedClient.houseNumber}
-                          <br />
-                          {selectedClient.postalCode} {selectedClient.city}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <ClientSelect
+                groupedClients={groupedClients}
+                clients={clients}
+                selectedClientId={formData.clientID}
+                onSelectionChange={clientId => {
+                  setFormData(prev => ({ ...prev, clientID: clientId }))
+                  setErrors(prev => ({ ...prev, clientID: '' }))
+                }}
+                error={errors.clientID}
+                isNew={isNewAppointment || !appointment}
+              />
 
               <Separator />
 
               {/* Worker Selection */}
               <StaffSelect
-                teams={teams}
-                workers={workers}
+                teamsWithWorkers={teamsWithWorkers}
                 selectedWorkerId={formData.workerId}
                 onSelectionChange={workerId => {
-                  console.log('Selected worker ID:', workerId)
+                  if (process.env.NODE_ENV === 'development') {
+                    console.log('Selected worker ID:', workerId)
+                  }
                   setFormData(prev => ({ ...prev, workerId }))
                   setErrors(prev => ({ ...prev, workerId: '' }))
                 }}
@@ -339,20 +300,22 @@ export default function AppointmentModal({
                         setIsDateInvalid(false)
                       }
 
-                      console.log(
-                        'Selected date:',
-                        newDate,
-                        'Today:',
-                        todayDate,
-                        'Is invalid:',
-                        newDate < todayDate
-                      )
+                      if (process.env.NODE_ENV === 'development') {
+                        console.log(
+                          'Selected date:',
+                          newDate,
+                          'Today:',
+                          todayDate,
+                          'Is invalid:',
+                          newDate < todayDate
+                        )
+                      }
                       setFormData(prev => ({ ...prev, date: newDate }))
                     }}
                     minValue={today(getLocalTimeZone())}
                     isDisabled={readOnly}
                     //  className="max-w-[256px]"
-                    showTime={isFixedTime}
+                    showTime={formData.isFixedTime}
                     timeValue={
                       formData.startHour === 0 && formData.startMinute === 0
                         ? null
@@ -380,9 +343,9 @@ export default function AppointmentModal({
                 </TextField>
                 <Switch
                   size="lg"
-                  isSelected={isFixedTime}
-                  onChange={e => {
-                    setIsFixedTime(e)
+                  isSelected={formData.isFixedTime}
+                  onChange={value => {
+                    setFormData(prev => ({ ...prev, isFixedTime: value }))
                   }}
                 >
                   <Label className="text-sm">Fest Zeit</Label>
@@ -488,7 +451,7 @@ export default function AppointmentModal({
               </div>
 
               {/* Calculated End Time */}
-              {isFixedTime && false && (
+              {formData.isFixedTime && false && (
                 <div className="flex items-center gap-2 p-3 bg-accent-50 rounded-lg">
                   <Clock className="w-4 h-4 text-accent" />
                   <div className="text-sm">

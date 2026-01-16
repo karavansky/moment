@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useMemo, useState, useCallback, memo } from 'react'
+import { useEffect, useMemo, useState, useCallback, memo, useTransition } from 'react'
 import { Button, Spinner, Card, ScrollShadow, Chip } from '@heroui/react'
 import { RefreshCw, Calendar as CalendarIcon, CalendarDays, Plus } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { generateCalendarWeeks, formatTime } from '@/lib/calendar-utils'
 import CalendarView from './CalendarView'
@@ -17,6 +18,7 @@ function DienstplanView() {
   const { appointments, isLoading, selectedDate, selectedAppointment, setSelectedAppointment } =
     useScheduling()
   const [viewMode, setViewMode] = useState<ViewMode>('month')
+  const [isPending, startTransition] = useTransition()
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   // Генерация календарных недель из appointments
@@ -26,29 +28,45 @@ function DienstplanView() {
   }, [appointments])
 
   // Мемоизируем обработчики для предотвращения ре-рендеров
-  const handleSetMonthMode = useCallback(() => setViewMode('month'), [])
-  const handleSetWeekMode = useCallback(() => setViewMode('week'), [])
+  const handleSetMonthMode = useCallback(() => {
+    startTransition(() => {
+      setViewMode('month')
+    })
+  }, [])
+  const handleSetWeekMode = useCallback(() => {
+    startTransition(() => {
+      setViewMode('week')
+    })
+  }, [])
   const handleRefresh = useCallback(() => window.location.reload(), [])
+  const [isNewAppointment, setIsNewAppointment] = useState(false)
+
   const handleAddNew = useCallback(() => {
+    setIsNewAppointment(true)
     setSelectedAppointment(null)
     setIsModalOpen(true)
-  }, [setSelectedAppointment])
+  }, [setSelectedAppointment, setIsNewAppointment, setIsModalOpen])
+
+  // Обработчик клика на appointment - прокидывается через props в DayView
+  const handlePressOnAppointment = useCallback(
+    (appointment: NonNullable<typeof selectedAppointment>) => {
+      console.log('handlePressOnAppointment:', appointment)
+      setSelectedAppointment(appointment) // сохраняем в context (не удаляем)
+      setIsNewAppointment(false)
+      setIsModalOpen(true) // открываем модалку напрямую
+    },
+    [setSelectedAppointment]
+  )
 
   // Мемоизируем today для стабильности
   const today = useMemo(() => new Date(), [])
-
-  // Open modal when appointment is selected
-  useEffect(() => {
-    if (selectedAppointment) {
-      setIsModalOpen(true)
-    }
-  }, [selectedAppointment])
 
   // Close modal handler
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false)
     setSelectedAppointment(null)
-  }, [setSelectedAppointment])
+    setIsNewAppointment(false)
+  }, [setSelectedAppointment, setIsNewAppointment, setIsModalOpen])
 
   // Логируем только mount/unmount, без зависимостей от данных
   useEffect(() => {
@@ -134,10 +152,37 @@ function DienstplanView() {
               </Card.Content>
             </Card>
           </div>
-        ) : viewMode === 'month' ? (
-          <CalendarView weeks={calendarWeeks} today={today} selectedDate={selectedDate} />
         ) : (
-          <WeeklyView />
+          <AnimatePresence mode="wait" initial={false}>
+            {viewMode === 'month' ? (
+              <motion.div
+                key="month"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.2 }}
+                className="w-full h-full"
+              >
+                <CalendarView
+                  weeks={calendarWeeks}
+                  today={today}
+                  selectedDate={selectedDate}
+                  onAppointmentPress={handlePressOnAppointment}
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="week"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className="w-full h-full"
+              >
+                <WeeklyView onAppointmentPress={handlePressOnAppointment} />
+              </motion.div>
+            )}
+          </AnimatePresence>
         )}
       </div>
 
@@ -180,6 +225,7 @@ function DienstplanView() {
         onClose={handleCloseModal}
         appointment={selectedAppointment}
         selectedDate={selectedDate}
+        isNewAppointment={isNewAppointment}
         readOnly={
           selectedAppointment
             ? selectedAppointment.reports && selectedAppointment.reports.length > 0

@@ -1,46 +1,32 @@
 'use client'
 
-import React, { useMemo, useCallback } from 'react'
+import React, { useCallback, memo } from 'react'
 import { ComboBox, Header, Input, Label, ListBox, Separator, TextField } from '@heroui/react'
 import { User } from 'lucide-react'
 import { Team, Worker } from '@/types/scheduling'
 import { usePlatform } from '@/hooks/usePlatform'
 
-interface StaffSelectProps {
-  teams: Team[]
+interface TeamsWithWorkers {
+  team: Team
   workers: Worker[]
+}
+
+interface StaffSelectProps {
+  teamsWithWorkers: TeamsWithWorkers[]
   selectedWorkerId: string
   onSelectionChange: (workerId: string) => void
   error?: string
   className?: string
 }
 
-export default function StaffSelect({
-  teams,
-  workers,
+function StaffSelect({
+  teamsWithWorkers,
   selectedWorkerId,
   onSelectionChange,
   error,
   className,
 }: StaffSelectProps) {
   const { isMobile, isReady } = usePlatform()
-
-  // Мемоизация группировки workers по teams - избегаем повторной фильтрации при каждом рендере
-  const teamsWithWorkers = useMemo(() => {
-    return teams
-      .map(team => ({
-        team,
-        workers: workers
-          .filter(w => w.teamId === team.id)
-          .sort((a, b) =>
-            a.workerName.localeCompare(b.workerName, undefined, {
-              sensitivity: 'base', // Игнорирует разницу между 'а' и 'А'
-              numeric: true, // Правильно сортирует числа в именах (например, "Рабочий 2" перед "Рабочий 10")
-            })
-          ),
-      }))
-      .filter(({ workers }) => workers.length > 0)
-  }, [teams, workers])
 
   // Мемоизация обработчиков
   const handleMobileChange = useCallback(
@@ -58,9 +44,10 @@ export default function StaffSelect({
   )
 
   // --- RENDER FOR MOBILE (iOS/Android) ---
-  //  if (isReady && isMobile) {
-  console.log("Selected worker ID:", selectedWorkerId)
-  if (true) {
+  if (process.env.NODE_ENV === 'development') {
+    console.log("Selected worker ID:", selectedWorkerId)
+  }
+  if (isReady && isMobile) {
     return (
       <TextField className="w-1/2 min-w-0 " isRequired>
         <Label className="text-base font-normal ">Fachkraft</Label>
@@ -103,26 +90,7 @@ export default function StaffSelect({
     )
   }
 
-  /*
-          <input
-            type={showTime ? 'datetime-local' : 'date'}
-            value={getNativeValue()}
-            onChange={handleNativeChange}
-            min={getNativeConstraint(minValue)}
-            max={getNativeConstraint(maxValue)}
-            disabled={isDisabled}
-            className="h-full w-full bg-transparent border-none outline-none text-foreground text-lg md:text-base ring-0 appearance-none pl-4 pr-10 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden z-10 relative focus:outline-none focus:ring-0 focus:border-none"
-            style={{
-              // Ensure consistent height and appearance on iOS
-              WebkitAppearance: 'none',
-              minHeight: '100%',
-              lineHeight: 'normal',
-              outline: 'none',
-              boxShadow: 'none',
-              WebkitTapHighlightColor: 'transparent',
-            }}
-          />
-  */
+  // --- RENDER FOR DESKTOP ---
   return (
     <div className="space-y-2 p-2">
       <ComboBox
@@ -163,3 +131,5 @@ export default function StaffSelect({
     </div>
   )
 }
+
+export default memo(StaffSelect)

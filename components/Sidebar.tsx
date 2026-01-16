@@ -185,7 +185,6 @@ export default function Sidebar() {
                 CRM
               </div>
               <Separator className="section-separator mb-6" />
-              <div className="space-y-1">
                 {crmSubItems.map(item => {
                   const Icon = item.icon
                   const active = isActive(item.href)
@@ -194,7 +193,6 @@ export default function Sidebar() {
                     <Link key={item.href} href={item.href} underline="none" className={`w-full`}>
                       <Button
                         variant="ghost"
-                        size="sm"
                         className={`w-full justify-start ${
                           active ? 'bg-success/10 text-success' : 'text-default-600'
                         }`}
@@ -206,7 +204,6 @@ export default function Sidebar() {
                     </Link>
                   )
                 })}
-              </div>
             </div>
 
             {/* Other Items */}
@@ -217,7 +214,6 @@ export default function Sidebar() {
               </div>
               <Separator className="section-separator mb-6" />
 
-              <div className="space-y-1">
                 {otherItems.map(item => {
                   const Icon = item.icon
                   const active = isActive(item.href)
@@ -226,7 +222,6 @@ export default function Sidebar() {
                     <Link key={item.href} href={item.href} underline="none" className={`w-full`}>
                       <Button
                         variant="ghost"
-                        size="sm"
                         className={`w-full justify-start ${
                           active ? 'bg-primary/10 text-primary' : 'text-default-600'
                         }`}
@@ -238,7 +233,6 @@ export default function Sidebar() {
                     </Link>
                   )
                 })}
-              </div>
             </div>
           </div>
         </nav>

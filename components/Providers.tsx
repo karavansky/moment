@@ -8,6 +8,7 @@ import { AuthProvider } from './AuthProvider'
 import { useRouter } from 'next/navigation'
 import { SidebarProvider } from '@/contexts/SidebarContext'
 import { SchedulingProvider } from '@/contexts/SchedulingContext'
+import { PlatformProvider } from '@/contexts/PlatformContext'
 
 export interface ProvidersProps {
   children: React.ReactNode
@@ -80,17 +81,19 @@ export function Providers({ children, themeProps, dictionary, lang, initialSideb
     <SessionProvider>
       <AuthProvider>
         <NextThemesProvider {...themeProps}>
-          <SidebarProvider initialExpanded={initialSidebarExpanded}>
-            <HeroUIThemeWrapper>
-              <ServerLanguageContext.Provider value={lang}>
-                <DictionaryContext.Provider value={memoizedDictionary}>
-                  <SchedulingProvider>
-                    <div className="min-h-screen flex flex-col">{children}</div>
-                  </SchedulingProvider>
-                </DictionaryContext.Provider>
-              </ServerLanguageContext.Provider>
-            </HeroUIThemeWrapper>
-          </SidebarProvider>
+          <PlatformProvider>
+            <SidebarProvider initialExpanded={initialSidebarExpanded}>
+              <HeroUIThemeWrapper>
+                <ServerLanguageContext.Provider value={lang}>
+                  <DictionaryContext.Provider value={memoizedDictionary}>
+                    <SchedulingProvider>
+                      <div className="min-h-screen flex flex-col">{children}</div>
+                    </SchedulingProvider>
+                  </DictionaryContext.Provider>
+                </ServerLanguageContext.Provider>
+              </HeroUIThemeWrapper>
+            </SidebarProvider>
+          </PlatformProvider>
         </NextThemesProvider>
       </AuthProvider>
     </SessionProvider>

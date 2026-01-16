@@ -1,15 +1,17 @@
-'use client';
+'use client'
 
-import { useMemo, useLayoutEffect, useRef, memo } from 'react';
-import { ScrollShadow } from '@heroui/react';
-import { CalendarWeek, isSameDate } from '@/lib/calendar-utils';
-import WeekView from './WeekView';
-import { useLanguage } from '@/hooks/useLanguage';
+import { useMemo, memo } from 'react'
+import { Virtuoso } from 'react-virtuoso'
+import { CalendarWeek, isSameDate } from '@/lib/calendar-utils'
+import WeekView from './WeekView'
+import { useLanguage } from '@/hooks/useLanguage'
+import type { Appointment } from '@/types/scheduling'
 
 interface CalendarViewProps {
-  weeks: CalendarWeek[];
-  today?: Date;
-  selectedDate?: Date;
+  weeks: CalendarWeek[]
+  today?: Date
+  selectedDate?: Date
+  onAppointmentPress?: (appointment: Appointment) => void
 }
 
 // Функция для получения полных названий дней недели на основе локали
@@ -42,49 +44,48 @@ const getWeekdayShortNames = (locale: string): string[] => {
   return names
 }
 
-function CalendarView({ weeks, today = new Date(), selectedDate }: CalendarViewProps) {
+function CalendarView({
+  weeks,
+  today = new Date(),
+  selectedDate,
+  onAppointmentPress,
+}: CalendarViewProps) {
   const lang = useLanguage()
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const weekRefs = useRef<Map<string, HTMLDivElement>>(new Map())
 
   // Генерируем названия дней недели на основе текущей локали
   const WEEKDAY_HEADERS_FULL = useMemo(() => getWeekdayFullNames(lang), [lang])
   const WEEKDAY_HEADERS_SHORT = useMemo(() => getWeekdayShortNames(lang), [lang])
 
-  // Автоскролл к текущей неделе СИНХРОННО до отрисовки (без мигания)
-  useLayoutEffect(() => {
-    if (weeks.length === 0 || !scrollContainerRef.current) return
+  // Группируем недели по месяцам для оптимизации рендеринга
+  const months = useMemo(() => {
+    if (!weeks.length) return []
 
-    // Находим индекс недели с текущим днем
-    const currentWeekIndex = weeks.findIndex(week =>
-      week.days.some(day => day.date && isSameDate(day.date, today))
+    const groups: { id: string; weeks: CalendarWeek[] }[] = []
+    let currentGroup: CalendarWeek[] = []
+
+    weeks.forEach((week, i) => {
+      // Начинаем новую группу, если это не первая неделя И у недели есть monthName (начало месяца)
+      if (i > 0 && week.monthName) {
+        groups.push({ id: `month-${groups.length}`, weeks: currentGroup })
+        currentGroup = []
+      }
+      currentGroup.push(week)
+    })
+
+    if (currentGroup.length > 0) {
+      groups.push({ id: `month-${groups.length}`, weeks: currentGroup })
+    }
+
+    return groups
+  }, [weeks])
+
+  // Вычисляем индекс текущей недели для начального скролла
+  const initialTopMostItemIndex = useMemo(() => {
+    const index = months.findIndex(month =>
+      month.weeks.some(week => week.days.some(day => day.date && isSameDate(day.date, today)))
     )
-
-    if (currentWeekIndex === -1) return
-
-    const currentWeek = weeks[currentWeekIndex]
-    const weekElement = weekRefs.current.get(currentWeek.id)
-
-    if (weekElement && scrollContainerRef.current) {
-      const container = scrollContainerRef.current
-      const containerHeight = container.clientHeight
-      const weekTop = weekElement.offsetTop
-      const weekHeight = weekElement.clientHeight
-
-      // Прокручиваем так, чтобы неделя была примерно посередине
-      const scrollTo = weekTop - (containerHeight / 2) + (weekHeight / 2)
-
-      container.scrollTop = Math.max(0, scrollTo)
-    }
-  }, [weeks, today])
-
-  const setWeekRef = (id: string, element: HTMLDivElement | null) => {
-    if (element) {
-      weekRefs.current.set(id, element)
-    } else {
-      weekRefs.current.delete(id)
-    }
-  }
+    return index !== -1 ? index : 0
+  }, [months, today])
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
@@ -105,25 +106,33 @@ function CalendarView({ weeks, today = new Date(), selectedDate }: CalendarViewP
       </div>
 
       {/* Недели */}
-      <ScrollShadow ref={scrollContainerRef} className="flex-1 min-h-0" hideScrollBar={false} size={60}>
+      <div className="flex-1 min-h-0">
         {weeks.length === 0 ? (
-          <div className="p-8 text-center text-default-500">
-            Нет назначений для отображения
-          </div>
+          <div className="p-8 text-center text-default-500">Нет назначений для отображения</div>
         ) : (
-          weeks.map((week) => (
-            <WeekView
-              key={week.id}
-              ref={(el) => setWeekRef(week.id, el)}
-              week={week}
-              today={today}
-              selectedDate={selectedDate}
-            />
-          ))
+          <Virtuoso
+            data={months}
+            initialTopMostItemIndex={initialTopMostItemIndex}
+            overscan={2000} // Увеличенный буфер для плавности (рендерит соседние месяцы)
+            itemContent={(index, month) => (
+              <div>
+                {month.weeks.map(week => (
+                  <WeekView
+                    key={week.id}
+                    week={week}
+                    today={today}
+                    selectedDate={selectedDate}
+                    onAppointmentPress={onAppointmentPress}
+                  />
+                ))}
+              </div>
+            )}
+            style={{ height: '100%' }}
+          />
         )}
-      </ScrollShadow>
+      </div>
     </div>
-  );
+  )
 }
 
 export default memo(CalendarView)

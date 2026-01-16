@@ -1,90 +1,149 @@
-'use client';
+'use client'
 
-import React, { useState, useCallback, memo } from 'react';
-import { Card, Chip } from '@heroui/react';
-import { CalendarDay, getOnlyDate, isSameDate } from '@/lib/calendar-utils';
-import AppointmentCard from './AppointmentCard';
-import { useScheduling } from '@/contexts/SchedulingContext';
-import { Calendar } from 'lucide-react';
+import React, { useState, useCallback, memo, useMemo, useRef, useEffect } from 'react'
+import { Card, Chip } from '@heroui/react'
+import { CalendarDay, getOnlyDate, isSameDate } from '@/lib/calendar-utils'
+import AppointmentCard from './AppointmentCard'
+import { useScheduling } from '@/contexts/SchedulingContext'
+import { Calendar } from 'lucide-react'
+import type { Appointment } from '@/types/scheduling'
 
 interface DayViewProps {
-  day: CalendarDay;
-  isToday?: boolean;
-  isSelected?: boolean;
+  day: CalendarDay
+  isToday?: boolean
+  isSelected?: boolean
+  onAppointmentPress?: (appointment: Appointment) => void
 }
 
-function DayView({ day, isToday = false, isSelected = false }: DayViewProps) {
-  const { setSelectedDate, setSelectedAppointment, moveAppointmentToDate } = useScheduling();
-  const [isDragOver, setIsDragOver] = useState(false);
+function DayView({ day, isToday = false, isSelected = false, onAppointmentPress }: DayViewProps) {
+  const { setSelectedDate, setSelectedAppointment, moveAppointmentToDate } = useScheduling()
+  const [isDragOver, setIsDragOver] = useState(false)
+
+  // Ref для таймера задержки снятия выделения
+  const dragLeaveTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Очистка таймера при размонтировании компонента
+  useEffect(() => {
+    return () => {
+      if (dragLeaveTimerRef.current) {
+        clearTimeout(dragLeaveTimerRef.current)
+      }
+    }
+  }, [])
+
+  // Оптимизация: вычисляем today один раз при рендере, а не на каждом dragover
+  const today = useMemo(() => getOnlyDate(new Date()), [])
 
   const handleDayClick = useCallback(() => {
     if (day.date) {
-      setSelectedDate(day.date);
+      setSelectedDate(day.date)
     }
-  }, [day.date, setSelectedDate]);
+  }, [day.date, setSelectedDate])
 
-  const handleAppointmentClick = useCallback((appointmentId: string) => {
-    const appointment = day.appointments.find((apt) => apt.id === appointmentId);
-    if (appointment) {
-      setSelectedAppointment(appointment);
-    }
-  }, [day.appointments, setSelectedAppointment]);
+  const handleAppointmentClick = useCallback(
+    (appointmentId: string) => {
+      const appointment = day.appointments.find(apt => apt.id === appointmentId)
+      if (appointment) {
+        // Используем переданный callback если есть, иначе fallback на context
+        if (onAppointmentPress) {
+          onAppointmentPress(appointment)
+        } else {
+          setSelectedAppointment(appointment)
+        }
+      }
+    },
+    [day.appointments, onAppointmentPress, setSelectedAppointment]
+  )
 
-  const canDropHere = useCallback((targetDate: Date | null): boolean => {
-    if (!targetDate) return false;
-    const today = getOnlyDate(new Date());
-    const target = getOnlyDate(targetDate);
-    return target >= today;
-  }, []);
+  const canDropHere = useCallback(
+    (targetDate: Date | null): boolean => {
+      if (!targetDate) return false
+      const target = getOnlyDate(targetDate)
+      return target >= today
+    },
+    [today]
+  )
 
-  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    if (!day.date || !canDropHere(day.date)) {
-      e.dataTransfer.dropEffect = 'none';
-      return;
-    }
-
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    setIsDragOver(true);
-  }, [day.date, canDropHere]);
-
-  const handleDragLeave = useCallback(() => {
-    setIsDragOver(false);
-  }, []);
-
-  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragOver(false);
-
-    if (!day.date || !canDropHere(day.date)) {
-      return;
-    }
-
-    try {
-      const data = JSON.parse(e.dataTransfer.getData('application/json'));
-      const { appointmentId, sourceDate } = data;
-
-      const sourceDateObj = new Date(sourceDate);
-      if (isSameDate(sourceDateObj, day.date)) {
-        return;
+  const handleDragOver = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      if (!day.date || !canDropHere(day.date)) {
+        e.dataTransfer.dropEffect = 'none'
+        return
       }
 
-      moveAppointmentToDate(appointmentId, getOnlyDate(day.date));
-    } catch (error) {
-      console.error('Error handling drop:', error);
+      e.preventDefault()
+      e.dataTransfer.dropEffect = 'move'
+
+      // Если есть активный таймер на скрытие (dragLeave), отменяем его,
+      // так как мы все еще находимся над элементом (или вернулись на него)
+      if (dragLeaveTimerRef.current) {
+        clearTimeout(dragLeaveTimerRef.current)
+        dragLeaveTimerRef.current = null
+      }
+
+      if (!isDragOver) setIsDragOver(true)
+    },
+    [day.date, canDropHere, isDragOver]
+  )
+
+  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    // Предотвращаем мерцание: если мы перешли на дочерний элемент (например, карточку),
+    // не считаем это выходом за пределы дня
+    if (e.currentTarget.contains(e.relatedTarget as Node)) {
+      return
     }
-  }, [day.date, canDropHere, moveAppointmentToDate]);
+
+    // Вместо мгновенного снятия флага, запускаем таймер.
+    // Если это было случайное срабатывание (например, на границе),
+    // следующий dragOver отменит этот таймер.
+    if (dragLeaveTimerRef.current) clearTimeout(dragLeaveTimerRef.current)
+
+    dragLeaveTimerRef.current = setTimeout(() => {
+      setIsDragOver(false)
+      dragLeaveTimerRef.current = null
+    }, 50) // 50мс достаточно для устранения дребезга
+  }, [])
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault()
+
+      // Очищаем таймер и сбрасываем состояние
+      if (dragLeaveTimerRef.current) {
+        clearTimeout(dragLeaveTimerRef.current)
+        dragLeaveTimerRef.current = null
+      }
+      setIsDragOver(false)
+
+      if (!day.date || !canDropHere(day.date)) {
+        return
+      }
+
+      try {
+        const data = JSON.parse(e.dataTransfer.getData('application/json'))
+        const { appointmentId, sourceDate } = data
+
+        const sourceDateObj = new Date(sourceDate)
+        if (isSameDate(sourceDateObj, day.date)) {
+          return
+        }
+
+        moveAppointmentToDate(appointmentId, getOnlyDate(day.date))
+      } catch (error) {
+        console.error('Error handling drop:', error)
+      }
+    },
+    [day.date, canDropHere, moveAppointmentToDate]
+  )
 
   // Пустой день
   if (!day.day || !day.date) {
-    return (
-      <div className="lg:min-w-30 h-24 sm:h-auto p-1 sm:p-2 bg-default-50" />
-    );
+    return <div className="lg:min-w-30 h-24 sm:h-auto p-1 sm:p-2 bg-default-50" />
   }
 
-  const hasAppointments = day.appointments.length > 0;
-  const isPast = !canDropHere(day.date);
-  const canDrop = !isPast;
+  const hasAppointments = day.appointments.length > 0
+  const isPast = !canDropHere(day.date)
+  const canDrop = !isPast
 
   return (
     <div
@@ -118,9 +177,7 @@ function DayView({ day, isToday = false, isSelected = false }: DayViewProps) {
             {/* День */}
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1">
-                {isToday && !isPast && (
-                  <Calendar className="w-4 h-4 text-primary" />
-                )}
+                {isToday && !isPast && <Calendar className="w-4 h-4 text-primary" />}
                 <span
                   className={`
                     text-sm font-semibold inline-flex items-center justify-center
@@ -166,7 +223,7 @@ function DayView({ day, isToday = false, isSelected = false }: DayViewProps) {
 
             {/* Appointments */}
             <div className="space-y-1">
-              {day.appointments.map((appointment) => (
+              {day.appointments.map(appointment => (
                 <AppointmentCard
                   key={appointment.id}
                   appointment={appointment}
@@ -226,7 +283,7 @@ function DayView({ day, isToday = false, isSelected = false }: DayViewProps) {
 
           {/* Appointments */}
           <div className="space-y-0.5 flex-1">
-            {day.appointments.map((appointment) => (
+            {day.appointments.map(appointment => (
               <AppointmentCard
                 key={appointment.id}
                 appointment={appointment}
@@ -238,7 +295,7 @@ function DayView({ day, isToday = false, isSelected = false }: DayViewProps) {
         </div>
       </button>
     </div>
-  );
+  )
 }
 
 export default memo(DayView)

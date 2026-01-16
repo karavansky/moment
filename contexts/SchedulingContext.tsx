@@ -12,6 +12,17 @@ import {
 } from '@/types/scheduling';
 import getAllSampleObjects from '@/lib/scheduling-mock-data';
 
+// Типы для группированных данных
+interface GroupedClients {
+  group: Groupe;
+  clients: Client[];
+}
+
+interface TeamsWithWorkers {
+  team: Team;
+  workers: Worker[];
+}
+
 // Тип для состояния планирования
 interface SchedulingState {
   user: User | null;
@@ -27,6 +38,12 @@ interface SchedulingState {
   selectedClient: Client | null;
   selectedDate: Date;
   selectedAppointment: Appointment | null;
+}
+
+// Тип для вычисляемых данных (derived state)
+interface SchedulingDerived {
+  groupedClients: GroupedClients[];
+  teamsWithWorkers: TeamsWithWorkers[];
 }
 
 // Тип для действий (actions)
@@ -46,7 +63,7 @@ interface SchedulingActions {
 }
 
 // Комбинированный тип для контекста
-type SchedulingContextType = SchedulingState & SchedulingActions;
+type SchedulingContextType = SchedulingState & SchedulingActions & SchedulingDerived;
 
 // Создаем контекст
 const SchedulingContext = createContext<SchedulingContextType | undefined>(undefined);
@@ -222,11 +239,47 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     },
   }), []); // Без зависимостей, так как все функции используют setState с функциональным обновлением
 
+  // Группировка клиентов по группам - вычисляется при изменении clients или groups
+  const groupedClients = useMemo<GroupedClients[]>(() => {
+    return state.groups
+      .map(group => ({
+        group,
+        clients: state.clients
+          .filter(c => c.groupe?.id === group.id)
+          .sort((a, b) =>
+            a.surname.localeCompare(b.surname, undefined, {
+              sensitivity: 'base',
+              numeric: true,
+            })
+          ),
+      }))
+      .filter(({ clients }) => clients.length > 0);
+  }, [state.groups, state.clients]);
+
+  // Группировка workers по teams - вычисляется при изменении workers или teams
+  const teamsWithWorkers = useMemo<TeamsWithWorkers[]>(() => {
+    return state.teams
+      .map(team => ({
+        team,
+        workers: state.workers
+          .filter(w => w.teamId === team.id)
+          .sort((a, b) =>
+            a.workerName.localeCompare(b.workerName, undefined, {
+              sensitivity: 'base',
+              numeric: true,
+            })
+          ),
+      }))
+      .filter(({ workers }) => workers.length > 0);
+  }, [state.teams, state.workers]);
+
   // Мемоизируем contextValue для предотвращения лишних ре-рендеров потребителей контекста
   const contextValue: SchedulingContextType = useMemo(() => ({
     ...state,
     ...actions,
-  }), [state, actions]);
+    groupedClients,
+    teamsWithWorkers,
+  }), [state, actions, groupedClients, teamsWithWorkers]);
 
   return (
     <SchedulingContext.Provider value={contextValue}>

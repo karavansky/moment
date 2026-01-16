@@ -107,7 +107,6 @@ export const ClientAdress = memo(function ClientAdress({
 
   // Состояние для страны
   const [country, setCountry] = useState(normalizedCountry || '')
-  console.log('ClientAdress render with country:', country, 'code:', countryCode)
   const [cities, setCities] = useState<any[]>([])
 
   const listCities = useAsyncList<Character>({
@@ -119,17 +118,8 @@ export const ClientAdress = memo(function ClientAdress({
         return { items: [] }
       }
 
-      console.log(
-        'useAsyncList cities with filter:',
-        filterText,
-        'cursor:',
-        cursor,
-        'signal:',
-        signal
-      )
       try {
         const searchQuery = `${filterText} ${country}`
-        console.log('Loading cities for:', searchQuery, 'country code:', countryCode)
 
         const isGermany = countryCode?.toLowerCase() === 'de'
         const baseUrl = isGermany ? '/api/photon' : 'https://photon.komoot.io/api'
@@ -138,7 +128,6 @@ export const ClientAdress = memo(function ClientAdress({
         const res = await fetch(url, { signal })
 
         if (!res.ok) {
-          console.error('❌ API response not OK:', res.status, res.statusText)
           return { items: [] }
         }
 
@@ -198,13 +187,6 @@ export const ClientAdress = memo(function ClientAdress({
   const listStreets = useAsyncList<{ id: number; street: string; district: string }>({
     initialFilterText: '', // client.street || '', - Избегаем загрузки при монтировании
     async load({ signal, filterText }) {
-      console.log(
-        'useAsyncList streets with filter:',
-        filterText,
-
-        'signal:',
-        signal
-      )
       const streetQuery = filterText
       const cityName = addressData.city
       // Access state values that should be captured or available in render scope
@@ -233,7 +215,6 @@ export const ClientAdress = memo(function ClientAdress({
         if (!data.features || !Array.isArray(data.features)) {
           return { items: [] }
         }
-        console.log('Street search data:', data.features)
         const filtered = data.features.filter((f: any) => {
           const props = f.properties
           const matchesCountry = props.countrycode?.toLowerCase() === countryCodeValue.toLowerCase()
@@ -267,8 +248,6 @@ export const ClientAdress = memo(function ClientAdress({
             if (!aStartsWith && bStartsWith) return 1
             return a.street.localeCompare(b.street)
           })
-        } else {
-          console.log('No street query for sorting')
         }
         return { items: uniqueStreets }
       } catch (error: any) {
@@ -332,11 +311,9 @@ export const ClientAdress = memo(function ClientAdress({
       }
 
       if (isCreateNew) {
-        console.log('Creating new client with address:', clientData)
         addClient(clientData)
         alert(`Client ${client.name} ${client.surname} created successfully!`)
       } else {
-        console.log('Updating client with address:', clientData)
         updateClient(clientData)
         alert(`Address saved successfully for ${client.name} ${client.surname}!`)
       }
@@ -365,12 +342,6 @@ export const ClientAdress = memo(function ClientAdress({
 
       try {
         const searchQuery = `${query} ${countryName}`
-        console.log(
-          'Current country code for city search:',
-          countryCodeValue,
-          'country',
-          countryName
-        )
         const isGermany = countryCodeValue?.toLowerCase() === 'de'
         const baseUrl = isGermany ? '/api/photon' : 'https://photon.komoot.io/api'
 
@@ -380,7 +351,6 @@ export const ClientAdress = memo(function ClientAdress({
         const res = await fetch(url, { signal })
 
         if (!res.ok) {
-          console.error('❌ API response not OK:', res.status, res.statusText)
           setCities([])
           return
         }
@@ -421,8 +391,6 @@ export const ClientAdress = memo(function ClientAdress({
   // 3. Явная функция для получения почтового индекса
   const fetchPostalCode = useCallback(
     async (street: string, houseNumber: string, city: string, countryValue: string) => {
-      console.log('Fetching postal code for:', { street, houseNumber, city, countryValue })
-
       try {
         if (!street || !city || !countryValue) {
           console.warn('⚠️ Missing required params for postal code fetch')
@@ -435,24 +403,20 @@ export const ClientAdress = memo(function ClientAdress({
 
         const isGermany = countryValue.toLowerCase() === 'de'
         const baseUrl = isGermany ? '/api/photon' : 'https://photon.komoot.io/api'
-        console.log('Url:', baseUrl, isGermany)
         const url = `${baseUrl}?q=${encodeURIComponent(fullAddress)}&limit=1`
         // const url = `/api/photon?q=${encodeURIComponent(fullAddress)}&limit=1`
 
         const res = await fetch(url)
         if (!res.ok) {
-          console.error('❌ API response not OK:', res.status, res.statusText)
           return
         }
 
         const data = await res.json()
-        console.log('Fetching postal code from URL:', data)
 
         if (data.features && data.features.length > 0) {
           const feature = data.features[0]
           const postcode = feature.properties.postcode
           const houseNumberFromAPI = feature.properties.housenumber
-          console.log('✅ Found house number from API:', houseNumberFromAPI)
           if (houseNumberFromAPI) {
             setIsHouseInvalid(false)
           } else {
@@ -460,14 +424,11 @@ export const ClientAdress = memo(function ClientAdress({
           }
 
           if (postcode) {
-            console.log('✅ Found postal code:', postcode)
-
             // Получаем координаты
             let coords = null
             if (feature.geometry && feature.geometry.coordinates) {
               const [lng, lat] = feature.geometry.coordinates
               coords = { lat, lng }
-              console.log('✅ Found coordinates:', coords)
             }
 
             // Обновляем оба состояния вместе через React batching
@@ -497,7 +458,6 @@ export const ClientAdress = memo(function ClientAdress({
   // Обработчики с debounce
   const handleCityInputChange = useCallback(
     (value: string) => {
-      console.log('City input changed to:', value)
       if (value.length > 0) {
         setCityQuery(value)
       }
@@ -508,7 +468,6 @@ export const ClientAdress = memo(function ClientAdress({
       } else {
         // Leading edge: если таймера нет, запускаем запрос немедленно
         if (value.length >= 3 && country) {
-          console.log('🚀 Immediate fetch for city:', value)
           lastRequestedCity.current = value
           listCities.setFilterText(value)
         }
@@ -519,11 +478,9 @@ export const ClientAdress = memo(function ClientAdress({
         // console.log('Scheduling city fetch for:', value)
         citySearchTimer.current = setTimeout(() => {
           if (value === lastRequestedCity.current) {
-            console.log('⏭️ Skipping trailing fetch for city - already requested:', value)
             citySearchTimer.current = null
             return
           }
-          console.log('🐢 Trailing fetch for city:', value)
           lastRequestedCity.current = value
           listCities.setFilterText(value)
           citySearchTimer.current = null
@@ -540,7 +497,6 @@ export const ClientAdress = memo(function ClientAdress({
   )
   const handleCityOpenChange = useCallback(
     (isOpen: Boolean) => {
-      console.log('isOpenChange:', isOpen)
       /*  isFetchingCities.current = true
 
       // Очищаем предыдущий таймер
@@ -576,7 +532,6 @@ export const ClientAdress = memo(function ClientAdress({
       } else {
         // Leading edge
         if (value) {
-          console.log('🚀 Immediate filter for street:', value)
           lastRequestedStreet.current = value
           listStreets.setFilterText(value)
         }
@@ -584,11 +539,9 @@ export const ClientAdress = memo(function ClientAdress({
 
       streetSearchTimer.current = setTimeout(() => {
         if (value === lastRequestedStreet.current) {
-          console.log('⏭️ Skipping trailing filter for street:', value)
           streetSearchTimer.current = null
           return
         }
-        console.log('🐢 Trailing filter for street:', value)
         lastRequestedStreet.current = value
         listStreets.setFilterText(value)
         streetSearchTimer.current = null
@@ -602,12 +555,6 @@ export const ClientAdress = memo(function ClientAdress({
       if (!key) return
       const keyString = String(key)
 
-      /*
-      console.log('!!Selected city key:', key, 'cities:', listCities.items)
-      const selectedFoo = listCities.items.find(c => c.name === key)
-      console.log('Selected city object:', selectedFoo)
-      const selected = cities.find(c => c.properties.osm_id === key)
-      */
       if (keyString) {
         //const p = selected.properties
         if (keyString === addressData.city) return
@@ -663,7 +610,6 @@ export const ClientAdress = memo(function ClientAdress({
       // Не сбрасываем индикатор жестко в false, так как может идти немедленный запрос
       // setIsFetchingPostcode(false)
 
-      console.log('House number changed to:', val)
       setAddressData(prev => ({ ...prev, houseNumber: val }))
 
       // Использование countryCodeValue вместо addressData.country, если они рассинхронизированы
@@ -677,7 +623,6 @@ export const ClientAdress = memo(function ClientAdress({
         // Если таймера нет, значит это начало ввода (First/Leading edge)
         // Отправляем запрос немедленно
         if (addressData.street && addressData.city && effectiveCountryCode && val) {
-          console.log('🚀 Immediate fetch for house number:', val)
           lastRequestedHouseNumber.current = val
           setIsFetchingPostcode(true)
           fetchPostalCode(addressData.street, val, addressData.city, effectiveCountryCode)
@@ -689,12 +634,10 @@ export const ClientAdress = memo(function ClientAdress({
         postalCodeTimer.current = setTimeout(() => {
           // Проверяем, не отправляли ли мы уже запрос для этого значения (в leading edge)
           if (val === lastRequestedHouseNumber.current) {
-            console.log('⏭️ Skipping trailing fetch - already requested:', val)
             postalCodeTimer.current = null
             return
           }
 
-          console.log('🐢 Trailing fetch for house number:', val)
           lastRequestedHouseNumber.current = val
           setIsFetchingPostcode(true)
           fetchPostalCode(addressData.street, val, addressData.city, effectiveCountryCode)
@@ -707,19 +650,6 @@ export const ClientAdress = memo(function ClientAdress({
           postalCodeTimer.current = null
         }
         setIsFetchingPostcode(false)
-
-        console.log('Если не хватает данных для запроса, сбрасываем почтовый индекс')
-        console.log('e.target.value', e.target.value)
-        console.log(
-          'addressData.street',
-          addressData.street,
-          'addressData.houseNumber',
-          addressData.houseNumber,
-          'addressData.city',
-          addressData.city,
-          'addressData.country',
-          addressData.country
-        )
       }
     },
     [
@@ -807,7 +737,6 @@ export const ClientAdress = memo(function ClientAdress({
                       value={cityQuery}
                       onChange={e => {
                         const val = e.target.value
-                        console.log('City input changed to:', val)
                         setCityQuery(val)
 
                         const selected = listCities.items.find(c => c.name === val)
@@ -861,8 +790,6 @@ export const ClientAdress = memo(function ClientAdress({
                       value={streetQuery}
                       onChange={e => {
                         const val = e.target.value
-                        console.log('Street input changed to:', val)
-                        console.log('listStreets items:', listStreets.items)
                         // 1. Попытка найти по составному имени (для дубликатов)
                         let selected = listStreets.items.find(
                           s => s.district && `${s.street} (${s.district})` === val
@@ -874,12 +801,9 @@ export const ClientAdress = memo(function ClientAdress({
                           if (candidates.length === 1) {
                             selected = candidates[0]
                           }
-                          console.log('Trying to find street by exact name selected:', selected)
                         }
 
                         if (selected) {
-                          console.log('User selected from datalist:', selected)
-
                           // 1. Обновляем полные данные адреса (включая район)
                           setAddressData(prev => ({
                             ...prev,

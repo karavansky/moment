@@ -262,22 +262,10 @@ const DatePicker: React.FC<DatePickerProps> = ({
   const placeholderText = useMemo(() => {
     if (placeholder) return placeholder
 
-    const translations: Record<string, string> = {
-      en: 'Select date',
-      de: 'Datum wählen',
-      es: 'Seleccionar fecha',
-      fr: 'Sélectionner une date',
-      id: 'Pilih tanggal',
-      ja: '日付を選択',
-      pt: 'Selecionar data',
-      tr: 'Tarih seç',
-      uk: 'Виберіть дату',
-      it: 'Seleziona data',
-      pl: 'Wybierz datę',
-      ru: 'Выберите дату',
-    }
-    return translations[lang] || translations.en
-  }, [lang, placeholder])
+    // Assuming 'common.selectDate' exists in your dictionaries, otherwise add it
+    // Fallback to English if key missing
+    return t('common.selectDate', 'Select date')
+  }, [placeholder, t])
 
   // Handle native input change (iOS/Android)
   const handleNativeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -514,7 +502,9 @@ const DatePicker: React.FC<DatePickerProps> = ({
               </div>
 
               {/* Time picker        {showTime && ( */}
-              <div className={`flex items-center ${showTime ? 'justify-between' : 'justify-end'} gap-4 mt-4 px-2 py-2`}>
+              <div
+                className={`flex items-center ${showTime ? 'justify-between' : 'justify-end'} gap-4 mt-4 px-2 py-2`}
+              >
                 {showTime && (
                   <div className="flex items-center gap-2">
                     <Label className="text-lg pl-2">Zeit</Label>

@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useMemo, useCallback, memo } from 'react'
+import React, { useMemo, useCallback, memo, useRef, useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { Card, Chip } from '@heroui/react'
 import { SimpleTooltip } from '@/components/SimpleTooltip'
 import TruncatedChip from './TruncatedChip'
@@ -22,6 +23,14 @@ function AppointmentCard({
   forceDesktopView = false,
 }: AppointmentCardProps) {
   const hasReport = appointment.reports && appointment.reports.length > 0
+  // Ref для кастомного изображения при перетаскивании (ghost image)
+  const dragPreviewRef = useRef<HTMLDivElement>(null)
+  const [isMounted, setIsMounted] = useState(false)
+  const [isInteracting, setIsInteracting] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   // Мемоизируем проверку прошлого
   const isPastWithoutReport = useMemo((): boolean => {
@@ -69,6 +78,11 @@ function AppointmentCard({
         })
       )
 
+      // Устанавливаем кастомное изображение призрака
+      if (dragPreviewRef.current) {
+        e.dataTransfer.setDragImage(dragPreviewRef.current, 0, 0)
+      }
+
       if (e.currentTarget) {
         e.currentTarget.style.opacity = '0.5'
       }
@@ -80,6 +94,7 @@ function AppointmentCard({
     if (e.currentTarget) {
       e.currentTarget.style.opacity = '1'
     }
+    setIsInteracting(false)
   }, [])
 
   // Контент для tooltip на мобильной версии
@@ -110,8 +125,8 @@ function AppointmentCard({
         <div className="flex items-start gap-1.5 text-xs">
           <MapPin className="w-3 h-3 shrink-0 mt-0.5" />
           <span className="text-xs">
-            {appointment.client.street} {appointment.client.houseNumber}, {appointment.client.postalCode}{' '}
-            {appointment.client.city}
+            {appointment.client.street} {appointment.client.houseNumber},{' '}
+            {appointment.client.postalCode} {appointment.client.city}
           </span>
         </div>
       )}
@@ -143,10 +158,39 @@ function AppointmentCard({
         e.stopPropagation() // Prevent DayView button from triggering
         onClick?.()
       }}
+      onMouseEnter={() => setIsInteracting(true)}
+      onMouseLeave={() => setIsInteracting(false)}
+      onTouchStart={() => setIsInteracting(true)}
+      onTouchEnd={() => setIsInteracting(false)}
       className={`
         ${isDraggable ? 'cursor-move' : 'cursor-pointer'}
+        relative
+        select-none
       `}
     >
+      {/* Custom Drag Preview (Ghost Image) - рендерится вне экрана */}
+      {isMounted &&
+        isInteracting &&
+        createPortal(
+          <div
+            ref={dragPreviewRef}
+            className="fixed -top-[1000px] -left-[1000px] w-48 bg-white dark:bg-gray-900 rounded-xl shadow-xl border-2 border-primary p-2 z-[9999] pointer-events-none overflow-hidden"
+          >
+            <div className="font-bold text-sm text-foreground truncate mb-1">
+              {appointment.client
+                ? `${appointment.client.surname} ${appointment.client.name}`
+                : 'Unknown Client'}
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-default-500">
+              <Clock className="w-3 h-3 shrink-0" />
+              <span>
+                {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
+              </span>
+            </div>
+          </div>,
+          document.body
+        )}
+
       {/* Desktop версия (≥ 800px) - полная информация в Card */}
       <Card
         className={`${forceDesktopView ? 'block' : 'hidden lg:block'} hover:scale-[1.02] transition-transform mb-2 shadow-xl rounded-md p-1!`}
@@ -156,7 +200,9 @@ function AppointmentCard({
             {/* Header: Client name + Report indicator */}
             <div className="flex items-start justify-between gap-2">
               <h4 className="text-sm font-semibold text-foreground truncate flex-1">
-                        {appointment.client ? appointment.client.surname + ' ' + appointment.client.name : 'Unknown Client'}
+                {appointment.client
+                  ? appointment.client.surname + ' ' + appointment.client.name
+                  : 'Unknown Client'}
               </h4>
               {hasReport && <CheckCircle className="w-4 h-4 text-success shrink-0" />}
               {isPastWithoutReport && <CircleAlert className="w-4 h-4 text-danger shrink-0" />}

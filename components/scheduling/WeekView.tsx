@@ -5,15 +5,17 @@ import { CalendarWeek } from '@/lib/calendar-utils';
 import DayView from './DayView';
 import { isSameDate } from '@/lib/calendar-utils';
 import { Separator } from '@heroui/react';
+import type { Appointment } from '@/types/scheduling';
 
 interface WeekViewProps {
   week: CalendarWeek;
   today: Date;
   selectedDate?: Date;
+  onAppointmentPress?: (appointment: Appointment) => void;
 }
 
 const WeekView = forwardRef<HTMLDivElement, WeekViewProps>(
-  ({ week, today, selectedDate }, ref) => {
+  ({ week, today, selectedDate, onAppointmentPress }, ref) => {
     return (
       <div ref={ref} className="mb-2 sm:mb-4">
         {/* Название месяца (если это первая неделя месяца) */}
@@ -31,6 +33,7 @@ const WeekView = forwardRef<HTMLDivElement, WeekViewProps>(
               day={day}
               isToday={day.date ? isSameDate(day.date, today) : false}
               isSelected={day.date && selectedDate ? isSameDate(day.date, selectedDate) : false}
+              onAppointmentPress={onAppointmentPress}
             />
           ))}
         </div>

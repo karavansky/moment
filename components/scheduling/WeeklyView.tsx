@@ -1,12 +1,17 @@
 'use client'
 
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { Card, Chip, ScrollShadow, Button } from '@heroui/react'
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { isSameDate, getOnlyDate } from '@/lib/calendar-utils'
 import AppointmentCard from './AppointmentCard'
 import { useLanguage } from '@/hooks/useLanguage'
+import type { Appointment } from '@/types/scheduling'
+
+interface WeeklyViewProps {
+  onAppointmentPress?: (appointment: Appointment) => void
+}
 
 // Получить понедельник недели для указанной даты
 const getMonday = (date: Date) => {
@@ -93,7 +98,7 @@ const getWeekdayShortNames = (locale: string): string[] => {
   return names
 }
 
-export default function WeeklyView() {
+export default function WeeklyView({ onAppointmentPress }: WeeklyViewProps) {
   const { appointments, setSelectedAppointment } = useScheduling()
   const lang = useLanguage()
   const today = getOnlyDate(new Date())
@@ -105,7 +110,6 @@ export default function WeeklyView() {
   const [currentWeekStart, setCurrentWeekStart] = useState(getMonday(today))
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const headerScrollRef = useRef<HTMLDivElement>(null)
-  const scrollAnimationFrameRef = useRef<number | undefined>(undefined)
   const isInitialMount = useRef(true)
   const isProgrammaticScroll = useRef(false) // Флаг для программного скролла
   const isProgrammaticHeaderScroll = useRef(false) // Флаг для программного скролла header
@@ -205,6 +209,9 @@ export default function WeeklyView() {
     setCurrentWeekStart(getMonday(newDateOnly))
   }
 
+  // Флаг для предотвращения программного скролла, если дата изменена пользователем через скролл
+  const skipScrollToDateRef = useRef(false)
+
   // Scroll to current day when it changes
   useEffect(() => {
     const currentDayIndex = daysToDisplay.findIndex(day => isSameDate(day, currentDate))
@@ -218,6 +225,12 @@ export default function WeeklyView() {
         const containerWidth = container.clientWidth
         const dayWidth = dayElement.offsetWidth
         const scrollPosition = dayElement.offsetLeft - containerWidth / 2 + dayWidth / 2
+
+        // Если изменение даты вызвано скроллом пользователя, не скроллим контейнер обратно
+        if (skipScrollToDateRef.current) {
+          skipScrollToDateRef.current = false
+          return
+        }
 
         // Устанавливаем флаг программного скролла
         isProgrammaticScroll.current = true
@@ -364,93 +377,64 @@ export default function WeeklyView() {
     }
   }, [currentWeekStart, allHeaderDays])
 
-  // Handle scroll to detect current visible day and week
+  // Используем IntersectionObserver для отслеживания видимого дня вместо тяжелого onScroll
   useEffect(() => {
     const container = scrollContainerRef.current
     if (!container) return
 
-    const handleScroll = () => {
-      // Игнорируем события скролла во время программного скролла
-      if (isProgrammaticScroll.current) {
-        return
-      }
+    const observer = new IntersectionObserver(
+      entries => {
+        // Находим элемент, который пересекается больше всего (наиболее видимый)
+        const visibleEntry = entries.find(e => e.isIntersecting && e.intersectionRatio > 0.55)
 
-      // Отменяем предыдущий requestAnimationFrame если есть
-      if (scrollAnimationFrameRef.current) {
-        cancelAnimationFrame(scrollAnimationFrameRef.current)
-      }
+        if (visibleEntry) {
+          const dayIndex = parseInt(visibleEntry.target.getAttribute('data-day-index') || '0')
+          const newDate = daysToDisplay[dayIndex]
 
-      // Используем requestAnimationFrame для моментального обновления
-      scrollAnimationFrameRef.current = requestAnimationFrame(() => {
-        const containerRect = container.getBoundingClientRect()
-        const containerLeft = containerRect.left
-        const containerRight = containerRect.right
+          if (newDate) {
+            // Устанавливаем флаг, чтобы useEffect не пытался проскроллить контейнер
+            // так как пользователь уже находится на этом элементе
+            skipScrollToDateRef.current = true
 
-        const dayElements = Array.from(
-          container.querySelectorAll('[data-day-card]')
-        ) as HTMLElement[]
+            setCurrentDate(prevDate => {
+              if (isSameDate(prevDate, newDate)) return prevDate
+              return newDate
+            })
 
-        // Находим день с максимальной видимостью
-        let maxVisibleDay: VisibleDayInfo | null = null
-
-        dayElements.forEach(element => {
-          const rect = element.getBoundingClientRect()
-          const dayLeft = rect.left
-          const dayRight = rect.right
-          const dayWidth = rect.width
-
-          // Вычисляем видимую часть дня
-          const visibleLeft = Math.max(dayLeft, containerLeft)
-          const visibleRight = Math.min(dayRight, containerRight)
-          const visibleWidth = Math.max(0, visibleRight - visibleLeft)
-
-          // Процент видимости дня
-          const visiblePercentage = (visibleWidth / dayWidth) * 100
-
-          const dayIndex = parseInt(element.getAttribute('data-day-index') || '0')
-
-          // Ищем день с максимальной видимостью
-          if (!maxVisibleDay || visiblePercentage > maxVisibleDay.visiblePercentage) {
-            maxVisibleDay = { element, visiblePercentage, index: dayIndex }
-          }
-        })
-
-        // Обновляем currentDate на день с максимальной видимостью
-        if (maxVisibleDay) {
-          const visibleDay = maxVisibleDay as VisibleDayInfo
-
-          if (daysToDisplay && daysToDisplay[visibleDay.index]) {
-            const newDate = daysToDisplay[visibleDay.index]
-
-            if (!isSameDate(newDate, currentDate)) {
-              setCurrentDate(newDate)
-              // Update week if day is outside current week
-              const newMonday = getMonday(newDate)
-              if (!isSameDate(newMonday, currentWeekStart)) {
-                setCurrentWeekStart(newMonday)
-              }
-            }
+            const newMonday = getMonday(newDate)
+            setCurrentWeekStart(prevMonday => {
+              if (isSameDate(prevMonday, newMonday)) return prevMonday
+              return newMonday
+            })
           }
         }
-      })
-    }
-
-    container.addEventListener('scroll', handleScroll)
-    return () => {
-      container.removeEventListener('scroll', handleScroll)
-      if (scrollAnimationFrameRef.current) {
-        cancelAnimationFrame(scrollAnimationFrameRef.current)
+      },
+      {
+        root: container,
+        threshold: 0.6, // Срабатывает, когда 60% карточки видно
       }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentDate, currentWeekStart, daysToDisplay])
+    )
 
-  const handleAppointmentClick = (appointmentId: string) => {
-    const appointment = appointments.find(apt => apt.id === appointmentId)
-    if (appointment) {
-      setSelectedAppointment(appointment)
-    }
-  }
+    const cards = container.querySelectorAll('[data-day-card]')
+    cards.forEach(card => observer.observe(card))
+
+    return () => observer.disconnect()
+  }, [daysToDisplay]) // Перезапускаем только если список дней изменился
+
+  const handleAppointmentClick = useCallback(
+    (appointmentId: string) => {
+      const appointment = appointments.find(apt => apt.id === appointmentId)
+      if (appointment) {
+        // Используем переданный callback если есть, иначе fallback на context
+        if (onAppointmentPress) {
+          onAppointmentPress(appointment)
+        } else {
+          setSelectedAppointment(appointment)
+        }
+      }
+    },
+    [appointments, onAppointmentPress, setSelectedAppointment]
+  )
 
   // Форматирование диапазона дат для заголовка
   const getWeekRangeString = () => {
@@ -512,11 +496,11 @@ export default function WeeklyView() {
             onClick={handleNextWeek}
             className=""
             aria-label="Next week"
-            variant='ghost'
+            variant="ghost"
             isIconOnly
-            size='lg'
+            size="lg"
           >
-            <ChevronLeft className='w-6 h-6' />
+            <ChevronLeft className="w-6 h-6" />
           </Button>
 
           <div className="flex items-center gap-2">
@@ -528,11 +512,11 @@ export default function WeeklyView() {
             onClick={handleNextWeek}
             className=""
             aria-label="Next week"
-            variant='ghost'
+            variant="ghost"
             isIconOnly
-            size='lg'
+            size="lg"
           >
-            <ChevronRight className='w-6 h-6' />
+            <ChevronRight className="w-6 h-6" />
           </Button>
         </div>
 
