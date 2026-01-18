@@ -135,8 +135,8 @@ function FooterDienst({ className }: FooterDienstProps) {
   const lang = useLanguage()
   const [activeTab, setActiveTab] = useState<'client' | 'staff'>('client')
   const [isPending, startTransition] = useTransition()
-  const clientRef = useRef<HTMLDivElement>(null)
-  const staffRef = useRef<HTMLDivElement>(null)
+  const clientRef = useRef<HTMLButtonElement>(null)
+  const staffRef = useRef<HTMLButtonElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 })
   const { isMobile, isReady } = usePlatformContext()
   const { clients, groups, workers, teams, groupedClients, teamsWithWorkers } = useScheduling()
@@ -187,8 +187,16 @@ function FooterDienst({ className }: FooterDienstProps) {
     e.dataTransfer.setData('application/json', JSON.stringify({ type, id }))
     e.dataTransfer.effectAllowed = 'copyMove'
   }
+  const filteredClients = selectedGroups === 'All Kunden'
+    ? clients
+    : groupedClients.find(g => g.group.groupeName === selectedGroups)?.clients || []
 
-  const itemsToDisplay = activeTab === 'client' ? clients : workers
+  const filteredWorkers =
+    selectedTeams === 'All Teams'
+      ? workers
+      : teamsWithWorkers.find(t => t.team.teamName === selectedTeams)?.workers || []
+
+  const itemsToDisplay = activeTab === 'client' ? filteredClients : filteredWorkers
 
   return (
     <div className="flex-none h-32 shrink-0">
@@ -212,12 +220,18 @@ function FooterDienst({ className }: FooterDienstProps) {
             </div>
           </ScrollShadow>
           {/* Tabs */}
+
           <div className="flex w-full pt-2">
             {/* Groupe */}
             <div className="flex-1 flex justify-center">
-              <div
+              <Button
                 ref={clientRef}
-                className="px-2 md:px-6 relative surface surface--tertiary h-10 md:h-10 flex items-center rounded-xl w-auto max-w-full focus-within:outline-none focus-within:ring-0"
+                variant={activeTab === 'client' ? 'tertiary' : 'ghost'}
+                className="px-2 md:px-6 relative  h-10 md:h-10 flex items-center rounded-xl w-auto max-w-full focus-within:outline-none focus-within:ring-0"
+                onPress={e => {
+                  console.log('onPress')
+                  setActiveTab('client')
+                }}
               >
                 <select
                   name="groupe"
@@ -244,13 +258,18 @@ function FooterDienst({ className }: FooterDienstProps) {
                     </option>
                   ))}
                 </select>
-              </div>
+              </Button>
             </div>
             {/* Teams */}
             <div className="flex-1 flex justify-center">
-              <div
+              <Button
                 ref={staffRef}
-                className="px-2 md:px-6 relative surface surface--tertiary h-11 md:h-10 flex items-center rounded-xl w-auto max-w-full focus-within:outline-none focus-within:ring-0"
+                variant={activeTab === 'staff' ? 'tertiary' : 'ghost'}
+                className="px-2 md:px-6 relative  h-11 md:h-10 flex items-center rounded-xl w-auto max-w-full focus-within:outline-none focus-within:ring-0"
+                onPress={e => {
+                  console.log('onPress')
+                  setActiveTab('staff')
+                }}
               >
                 <select
                   name="team"
@@ -277,7 +296,7 @@ function FooterDienst({ className }: FooterDienstProps) {
                     </option>
                   ))}
                 </select>{' '}
-              </div>
+              </Button>
             </div>
           </div>
           <div className="relative w-full">
