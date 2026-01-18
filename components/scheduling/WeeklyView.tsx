@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso'
 import { Card, Chip, ScrollShadow, Button } from '@heroui/react'
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useScheduling } from '@/contexts/SchedulingContext'
-import { isSameDate, getOnlyDate } from '@/lib/calendar-utils'
+import { isSameDate, getOnlyDate, formatTime } from '@/lib/calendar-utils'
 import AppointmentCard from './AppointmentCard'
 import { useLanguage } from '@/hooks/useLanguage'
 import type { Appointment } from '@/types/scheduling'
@@ -22,68 +23,6 @@ const getMonday = (date: Date) => {
   return new Date(d.setDate(diff))
 }
 
-// Генерация массива дней для скроллинга (несколько недель)
-const generateDaysForScroll = (centerDate: Date, weeksAround: number = 2) => {
-  const days = []
-  const totalDays = weeksAround * 7 * 2 // Количество дней до и после центра
-
-  // Генерируем дни напрямую от centerDate
-  for (let i = -totalDays; i <= totalDays; i++) {
-    const date = new Date(centerDate)
-    date.setDate(centerDate.getDate() + i)
-    days.push(getOnlyDate(date))
-  }
-
-  return days
-}
-
-// Генерация массива дней на основе диапазона дат назначений
-const generateDaysFromAppointments = (appointments: any[], today: Date) => {
-  if (appointments.length === 0) {
-    // Если нет назначений, генерируем стандартный диапазон ±6 месяцев
-    return generateDaysForScroll(today, 26)
-  }
-
-  // Находим минимальную и максимальную даты из назначений
-  let minDate = appointments[0].date
-  let maxDate = appointments[0].date
-
-  appointments.forEach(apt => {
-    if (apt.date < minDate) minDate = apt.date
-    if (apt.date > maxDate) maxDate = apt.date
-  })
-
-  // Добавляем буфер: 2 недели до минимальной даты и 2 недели после максимальной
-  const startDate = new Date(minDate)
-  startDate.setDate(startDate.getDate() - 14)
-
-  const endDate = new Date(maxDate)
-  endDate.setDate(endDate.getDate() + 14)
-
-  // Также учитываем сегодняшнюю дату, чтобы она точно была в диапазоне
-  const todayMinus2Weeks = new Date(today)
-  todayMinus2Weeks.setDate(today.getDate() - 14)
-
-  const todayPlus2Weeks = new Date(today)
-  todayPlus2Weeks.setDate(today.getDate() + 14)
-
-  const finalStartDate = startDate < todayMinus2Weeks ? startDate : todayMinus2Weeks
-  const finalEndDate = endDate > todayPlus2Weeks ? endDate : todayPlus2Weeks
-
-  // Генерируем все дни от startDate до endDate
-  const days = []
-  const currentDate = new Date(finalStartDate)
-
-  while (currentDate <= finalEndDate) {
-    days.push(getOnlyDate(new Date(currentDate)))
-    currentDate.setDate(currentDate.getDate() + 1)
-  }
-
-  return days
-}
-
-type VisibleDayInfo = { element: HTMLElement; visiblePercentage: number; index: number }
-
 // Функция для получения коротких названий дней недели на основе локали
 const getWeekdayShortNames = (locale: string): string[] => {
   const baseDate = new Date(2024, 0, 1) // Понедельник, 1 января 2024
@@ -99,39 +38,246 @@ const getWeekdayShortNames = (locale: string): string[] => {
   return names
 }
 
+const DayColumn = React.memo(
+  ({
+    day,
+    today,
+    currentDate,
+    appointments,
+    lang,
+    containerWidth,
+    setCurrentDate,
+    onDragOver,
+    onDrop,
+    onAppointmentClick,
+  }: {
+    day: Date
+    today: Date
+    currentDate: Date
+    appointments: Appointment[]
+    lang: string
+    containerWidth: number
+    setCurrentDate: (date: Date) => void
+    onDragOver: (e: React.DragEvent<HTMLDivElement>, date: Date) => void
+    onDrop: (e: React.DragEvent<HTMLDivElement>, date: Date) => void
+    onAppointmentClick: (id: string) => void
+  }) => {
+    const scrollRef = useRef<HTMLDivElement>(null)
+    const isCurrentDay = isSameDate(day, currentDate)
+
+    const [now, setNow] = useState(new Date())
+    const isToday = isSameDate(day, now)
+
+    useEffect(() => {
+      const interval = setInterval(() => setNow(new Date()), 60000)
+      return () => clearInterval(interval)
+    }, [])
+
+    // Group appointments by hour
+    const appointmentsByHour = useMemo(() => {
+      const groups: Record<number, Appointment[]> = {}
+      appointments.forEach(app => {
+        const date = new Date(app.startTime)
+        const h = date.getHours()
+        if (!groups[h]) groups[h] = []
+        groups[h].push(app)
+      })
+      // Sort by time
+      Object.keys(groups).forEach(key => {
+        const k = Number(key)
+        groups[k].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+      })
+      return groups
+    }, [appointments])
+
+    useEffect(() => {
+      if (scrollRef.current) {
+        let scrollToMinutes = 6 * 60 // 6:00 AM default
+
+        if (appointments.length > 0) {
+          const earliestStart = Math.min(
+            ...appointments.map(app => {
+              const date = new Date(app.startTime)
+              return date.getHours() * 60 + date.getMinutes()
+            })
+          )
+          scrollToMinutes = Math.max(0, earliestStart - 30)
+        }
+
+        requestAnimationFrame(() => {
+          if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollToMinutes
+          }
+        })
+      }
+    }, [appointments])
+
+    return (
+      <div
+        onClick={() => setCurrentDate(day)}
+        onDragOver={e => onDragOver(e, day)}
+        onDrop={e => onDrop(e, day)}
+        className={`
+      shrink-0 h-full cursor-pointer snap-center p-0
+      ${isCurrentDay ? 'ring-2 ring-primary' : ''}
+    `}
+        style={{ width: containerWidth }}
+      >
+        <Card
+          className={`
+      h-full
+      ${isToday ? 'border-2 border-danger' : isCurrentDay ? 'border-2 border-primary' : ''}
+    `}
+        >
+          <Card.Content className="p-0 h-full flex flex-col">
+            <div className="mb-3 pb-2 border-b border-divider text-center">
+              <div
+                className={`
+            text-lg font-bold
+            ${isToday ? 'text-danger' : isCurrentDay ? 'text-primary' : 'text-foreground'}
+          `}
+              >
+                {day.toLocaleDateString(lang, { weekday: 'long' })}, {day.getDate()}.{' '}
+                {day.toLocaleDateString(lang, { month: 'long' })}
+              </div>
+            </div>
+
+            <ScrollShadow ref={scrollRef} className="flex-1 min-h-0" hideScrollBar={false}>
+              <div className="flex flex-col relative pb-10">
+                {Array.from({ length: 24 }).map((_, hour) => {
+                  const hourApps = appointmentsByHour[hour] || []
+                  const isCurrentHour = isToday && hour === now.getHours()
+                  const currentMinute = now.getMinutes()
+
+                  return (
+                    <div
+                      key={hour}
+                      className="flex min-h-12 border-t border-gray-200 dark:border-gray-800 shrink-0 relative"
+                    >
+                      {isCurrentHour && (
+                        <div
+                          className="absolute left-0 right-0 z-20 pointer-events-none flex items-center"
+                          style={{ top: `${(currentMinute / 60) * 100}%` }}
+                          style={{ top: `${(currentMinute / 60) * 100}%`, transform: 'translateY(-50%)' }}
+                        >
+                          <div className="w-full border-t-2 border-red-500 opacity-50" />
+                          <div className="absolute -left-1 w-2 h-2 rounded-full bg-red-500" />
+                          <div className="w-full h-0.5 bg-red-500 opacity-50" />
+                          <div className="absolute -left-1 w-2 h-2 rounded-full bg-red-500 top-1/2 -translate-y-1/2" />
+                        </div>
+                      )}
+                      <div className="w-12 shrink-0 border-r border-gray-200 dark:border-gray-800 relative">
+                        <span className="absolute -top-2.5 right-1 text-xs text-default-500 bg-background px-1">
+                          {`${String(hour).padStart(2, '0')}:00`}
+                        </span>
+                      </div>
+
+                      <div className="flex-1 p-1 min-w-0">
+                        <div className="flex flex-wrap gap-1 w-full">
+                          {hourApps.map((appointment, idx) => {
+                            const start = new Date(appointment.startTime)
+                            const end = new Date(appointment.endTime)
+
+                            const duration = (end.getTime() - start.getTime()) / 60000
+                            const height = Math.max(duration, 40)
+
+                            return (
+                              <div
+                                key={appointment.id}
+                                onClick={e => {
+                                  e.stopPropagation()
+                                  onAppointmentClick(appointment.id)
+                                }}
+                                className="flex-1 min-w-[85px] relative cursor-pointer group"
+                                style={{ height: `${height}px` }}
+                              >
+                                <div className="h-full p-1.5 rounded-lg bg-primary/20 border-l-4 border-primary text-primary-800 dark:text-primary-200 flex flex-col justify-start overflow-hidden group-hover:bg-primary/30 transition-colors">
+                                  <div className="font-semibold text-xs truncate">
+                                    {appointment.client
+                                      ? `${appointment.client.surname} ${appointment.client.name}`
+                                      : 'Unknown Client'}
+                                  </div>
+                                  <div className="text-xs opacity-80">
+                                    {formatTime(appointment.startTime)} -{' '}
+                                    {formatTime(appointment.endTime)}
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </ScrollShadow>
+          </Card.Content>
+        </Card>
+      </div>
+    )
+  }
+)
+
 export default function WeeklyView({ onAppointmentPress, onExternalDrop }: WeeklyViewProps) {
-  const { appointments, setSelectedAppointment, moveAppointmentToDate } = useScheduling()
+  const {
+    appointments,
+    setSelectedAppointment,
+    moveAppointmentToDate,
+    selectedDate,
+    setSelectedDate,
+  } = useScheduling()
   const lang = useLanguage()
-  const today = getOnlyDate(new Date())
+  const today = useMemo(() => getOnlyDate(new Date()), [])
 
   // Генерируем короткие названия дней недели на основе текущей локали
   const WEEKDAY_NAMES = useMemo(() => getWeekdayShortNames(lang), [lang])
 
-  const [currentDate, setCurrentDate] = useState(today)
-  const [currentWeekStart, setCurrentWeekStart] = useState(getMonday(today))
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const headerScrollRef = useRef<HTMLDivElement>(null)
-  const isInitialMount = useRef(true)
-  const isProgrammaticScroll = useRef(false) // Флаг для программного скролла
-  const isProgrammaticHeaderScroll = useRef(false) // Флаг для программного скролла header
+  const [currentDate, setCurrentDate] = useState(getOnlyDate(selectedDate || today))
+  const [currentWeekStart, setCurrentWeekStart] = useState(getMonday(selectedDate || today))
+  const virtuosoRef = useRef<VirtuosoHandle>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLElement>(null)
+  const [containerWidth, setContainerWidth] = useState(0)
 
-  // Храним currentDate в ref для использования в IntersectionObserver без добавления в зависимости
+  // Refs для управления скроллом
+  const isProgrammaticScroll = useRef(false)
+  const skipScrollToDateRef = useRef(false)
   const currentDateRef = useRef(currentDate)
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
   useEffect(() => {
     currentDateRef.current = currentDate
   }, [currentDate])
 
-  // Генерируем массив дней на основе реальных дат назначений
-  // Пересоздается только при изменении списка назначений
-  const allDays = useMemo<Date[]>(() => {
-    return generateDaysFromAppointments(appointments, today)
-  }, [appointments, today]) // Пересоздается при изменении appointments или today
-
-  // Храним allDays в ref для использования в обработчиках
-  const allDaysRef = useRef<Date[]>(allDays)
   useEffect(() => {
-    allDaysRef.current = allDays
-  }, [allDays])
+    if (!containerRef.current) return
+    const resizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0) {
+          setContainerWidth(entry.contentRect.width)
+        }
+      }
+    })
+    resizeObserver.observe(containerRef.current)
+    return () => resizeObserver.disconnect()
+  }, [])
+
+  // Создаем большой, но конечный список дней для виртуализации
+  // +/- 1 год от сегодняшнего дня
+  const allDays = useMemo(() => {
+    const days = []
+    const centerDate = today
+    const weeksToRender = 52 // 52 недели до и 52 после
+    const daysToGenerate = weeksToRender * 7
+
+    for (let i = -daysToGenerate; i <= daysToGenerate; i++) {
+      const date = new Date(centerDate)
+      date.setDate(centerDate.getDate() + i)
+      days.push(getOnlyDate(date))
+    }
+    return days
+  }, [today])
 
   // Генерируем текущую неделю для header (desktop и tablet)
   const currentWeekDays = useMemo(() => {
@@ -145,286 +291,135 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
     return days
   }, [currentWeekStart])
 
-  // Генерируем дни для header скроллинга
-  // Очень маленькие мобильные (<430px): текущая неделя + по 2 недели вперед и назад (5 недель) со скроллом
-  // Средние мобильные (430-640px): только текущая неделя (7 дней) - статичный header с короткими названиями
-  // Планшет и выше (≥640px): только текущая неделя (7 дней) - статичный header с полными названиями
-  const [headerWeeksCount, setHeaderWeeksCount] = useState(0)
-
-  useEffect(() => {
-    const updateHeaderWeeksCount = () => {
-      // Для мобильных и планшетов (<1024px) - 5 недель для скроллинга
-      // Для desktop (≥1024px) - только текущая неделя
-      setHeaderWeeksCount(window.innerWidth < 1024 ? 2 : 0)
-    }
-
-    updateHeaderWeeksCount()
-    window.addEventListener('resize', updateHeaderWeeksCount)
-    return () => window.removeEventListener('resize', updateHeaderWeeksCount)
-  }, [])
-
-  const allHeaderDays = useMemo(() => {
-    const days = []
-    const monday = getMonday(currentWeekStart)
-
-    for (let week = -headerWeeksCount; week <= headerWeeksCount; week++) {
-      for (let day = 0; day < 7; day++) {
-        const date = new Date(monday)
-        date.setDate(monday.getDate() + week * 7 + day)
-        days.push(getOnlyDate(date))
-      }
-    }
-
-    return days
-  }, [currentWeekStart, headerWeeksCount])
-
-  // Дни для отображения в основном контенте (DayView cards)
-  // На планшете и desktop (≥768px) - только текущая неделя (7 дней)
-  // На мобильном (<768px) - все дни для скроллинга
-  const [isTabletOrDesktop, setIsTabletOrDesktop] = useState(false)
-
-  useEffect(() => {
-    const checkBreakpoint = () => {
-      setIsTabletOrDesktop(window.innerWidth >= 768)
-    }
-
-    checkBreakpoint()
-    window.addEventListener('resize', checkBreakpoint)
-    return () => window.removeEventListener('resize', checkBreakpoint)
-  }, [])
-
-  const daysToDisplay = isTabletOrDesktop ? currentWeekDays : allDays
-
   // Переключение недели
   const handlePrevWeek = () => {
-    // Сохраняем день недели текущего дня
     const newDate = new Date(currentDate)
     newDate.setDate(currentDate.getDate() - 7)
     const newDateOnly = getOnlyDate(newDate)
 
+    skipScrollToDateRef.current = false
+    isProgrammaticScroll.current = true
     setCurrentDate(newDateOnly)
+    setSelectedDate(newDateOnly)
     setCurrentWeekStart(getMonday(newDateOnly))
   }
 
   const handleNextWeek = () => {
-    // Сохраняем день недели текущего дня
     const newDate = new Date(currentDate)
     newDate.setDate(currentDate.getDate() + 7)
     const newDateOnly = getOnlyDate(newDate)
 
+    skipScrollToDateRef.current = false
+    isProgrammaticScroll.current = true
     setCurrentDate(newDateOnly)
+    setSelectedDate(newDateOnly)
     setCurrentWeekStart(getMonday(newDateOnly))
   }
 
-  // Флаг для предотвращения программного скролла, если дата изменена пользователем через скролл
-  const skipScrollToDateRef = useRef(false)
-
-  // Scroll to current day when it changes
+  // Scroll to current day when it changes (Programmatic)
   useEffect(() => {
-    const currentDayIndex = daysToDisplay.findIndex(day => isSameDate(day, currentDate))
+    const currentDayIndex = allDays.findIndex(day => isSameDate(day, currentDate))
 
-    if (scrollContainerRef.current && currentDayIndex !== -1) {
-      const container = scrollContainerRef.current
-      const dayElements = container.querySelectorAll('[data-day-card]')
-
-      if (dayElements[currentDayIndex]) {
-        const dayElement = dayElements[currentDayIndex] as HTMLElement
-        const containerWidth = container.clientWidth
-        const dayWidth = dayElement.offsetWidth
-        const scrollPosition = dayElement.offsetLeft - containerWidth / 2 + dayWidth / 2
-
-        // Если изменение даты вызвано скроллом пользователя, не скроллим контейнер обратно
-        if (skipScrollToDateRef.current) {
-          skipScrollToDateRef.current = false
-          return
-        }
-
-        // Устанавливаем флаг программного скролла
-        isProgrammaticScroll.current = true
-
-        // Всегда используем instant для мгновенного перехода
-        container.scrollTo({
-          left: scrollPosition,
-          behavior: 'instant',
-        })
-
-        // Сбрасываем флаг сразу после мгновенного скролла
-        setTimeout(() => {
-          isProgrammaticScroll.current = false
-        }, 100)
-
-        // После первого скролла переключаем флаг
-        if (isInitialMount.current) {
-          isInitialMount.current = false
-        }
-      }
-    }
-  }, [currentDate, daysToDisplay])
-
-  // Scroll header to center current day (только для мобильных и планшетов <1024px)
-  useEffect(() => {
-    const headerContainer = headerScrollRef.current
-    if (!headerContainer) return
-
-    // Проверяем что это мобильная/планшетная версия (header scroll виден только <1024px)
-    if (window.innerWidth >= 1024) return
-
-    // Находим текущий день в header
-    const currentDayElement = headerContainer.querySelector(
-      `[data-header-day-index="${allHeaderDays.findIndex(day => isSameDate(day, currentDate))}"]`
-    )
-
-    if (currentDayElement) {
-      const element = currentDayElement as HTMLElement
-      const containerWidth = headerContainer.clientWidth
-      const elementLeft = element.offsetLeft
-      const elementWidth = element.offsetWidth
-
-      // Центрируем текущий день
-      const scrollPosition = elementLeft - containerWidth / 2 + elementWidth / 2
-
-      // Устанавливаем флаг программного скролла header
-      isProgrammaticHeaderScroll.current = true
-
-      headerContainer.scrollTo({
-        left: scrollPosition,
-        behavior: 'instant',
-      })
-
-      // Сбрасываем флаг после завершения скролла
-      setTimeout(() => {
-        isProgrammaticHeaderScroll.current = false
-      }, 500)
-    }
-  }, [currentDate, allHeaderDays])
-
-  // Handle header scroll to update week range (только для мобильных и планшетов <1024px)
-  useEffect(() => {
-    const headerContainer = headerScrollRef.current
-    if (!headerContainer) return
-
-    // Отключаем для desktop (≥1024px)
-    if (window.innerWidth >= 1024) return
-
-    let scrollTimeout: NodeJS.Timeout | undefined
-    let isProcessing = false
-    let lastProcessedWeekStart: Date | null = null
-
-    const handleHeaderScroll = () => {
-      if (isProgrammaticHeaderScroll.current || isProcessing) {
+    if (virtuosoRef.current && currentDayIndex !== -1) {
+      // Если изменение даты вызвано скроллом пользователя, не скроллим контейнер обратно
+      if (skipScrollToDateRef.current) {
+        skipScrollToDateRef.current = false
         return
       }
 
-      if (scrollTimeout) {
-        clearTimeout(scrollTimeout)
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
+        scrollTimeoutRef.current = null
       }
 
-      scrollTimeout = setTimeout(() => {
-        if (isProcessing) return
+      isProgrammaticScroll.current = true
 
-        const containerRect = headerContainer.getBoundingClientRect()
-        const containerCenter = containerRect.left + containerRect.width / 2
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.style.scrollSnapType = 'none'
+      }
 
-        const dayElements = headerContainer.querySelectorAll('[data-header-day-index]')
+      if (containerRef.current) {
+        containerRef.current.style.transition = 'none'
+        containerRef.current.style.opacity = '0'
+      }
 
-        type DayInfo = { element: HTMLElement; distanceFromCenter: number; date: Date }
-        let closestDay: DayInfo | null = null
+      virtuosoRef.current.scrollToIndex({
+        index: currentDayIndex,
+        align: 'start',
+        behavior: 'auto',
+      })
 
-        dayElements.forEach(dayEl => {
-          const element = dayEl as HTMLElement
-          const elementRect = element.getBoundingClientRect()
-          const elementCenter = elementRect.left + elementRect.width / 2
-          const distanceFromCenter = Math.abs(elementCenter - containerCenter)
-
-          if (!closestDay || distanceFromCenter < closestDay.distanceFromCenter) {
-            const dayIndexAttr = dayEl.getAttribute('data-header-day-index')
-            const dayIndex = parseInt(dayIndexAttr || '0')
-            const dayDate = allHeaderDays[dayIndex]
-            if (dayDate) {
-              closestDay = { element, distanceFromCenter, date: dayDate }
+      scrollTimeoutRef.current = setTimeout(() => {
+        if (containerRef.current) {
+          requestAnimationFrame(() => {
+            if (containerRef.current) {
+              containerRef.current.style.transition = 'opacity 0.2s ease-out'
+              containerRef.current.style.opacity = '1'
             }
-          }
-        })
-
-        if (closestDay) {
-          const day = closestDay as DayInfo
-          const visibleWeekStart = getMonday(day.date)
-          const currentMonday = getMonday(currentWeekStart)
-
-          if (visibleWeekStart.getTime() !== currentMonday.getTime()) {
-            if (
-              !lastProcessedWeekStart ||
-              lastProcessedWeekStart.getTime() !== visibleWeekStart.getTime()
-            ) {
-              isProcessing = true
-              lastProcessedWeekStart = visibleWeekStart
-
-              if (visibleWeekStart > currentMonday) {
-                handleNextWeek()
-              } else if (visibleWeekStart < currentMonday) {
-                handlePrevWeek()
-              }
-
-              setTimeout(() => {
-                isProcessing = false
-                lastProcessedWeekStart = null
-              }, 1000)
-            }
-          }
+          })
         }
-      }, 200)
+
+        setTimeout(() => {
+          isProgrammaticScroll.current = false
+          if (scrollContainerRef.current) {
+            scrollContainerRef.current.style.scrollSnapType = 'x mandatory'
+          }
+          scrollTimeoutRef.current = null
+        }, 200)
+      }, 50)
     }
 
-    headerContainer.addEventListener('scroll', handleHeaderScroll)
     return () => {
-      headerContainer.removeEventListener('scroll', handleHeaderScroll)
-      if (scrollTimeout) {
-        clearTimeout(scrollTimeout)
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
       }
     }
-  }, [currentWeekStart, allHeaderDays])
+  }, [currentDate, allDays])
 
-  // Используем IntersectionObserver для отслеживания видимого дня вместо тяжелого onScroll
+  // Инициализируем начальный индекс один раз при загрузке
+  const [initialTopMostItemIndex] = useState(() => {
+    const index = allDays.findIndex(day => isSameDate(day, currentDate))
+    return index !== -1 ? { index, align: 'start' as const } : undefined
+  })
+
+  // Синхронизация selectedDate -> currentDate (если дата выбрана извне или загрузилась позже)
   useEffect(() => {
-    const container = scrollContainerRef.current
-    if (!container) return
+    if (selectedDate && !isSameDate(currentDate, selectedDate)) {
+      skipScrollToDateRef.current = false
+      setCurrentDate(getOnlyDate(selectedDate))
+      const newMonday = getMonday(selectedDate)
+      setCurrentWeekStart(prev => (isSameDate(prev, newMonday) ? prev : newMonday))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDate])
 
-    const observer = new IntersectionObserver(
-      entries => {
-        // Находим элемент, который пересекается больше всего (наиболее видимый)
-        const visibleEntry = entries.find(e => e.isIntersecting && e.intersectionRatio > 0.55)
-
-        if (visibleEntry) {
-          const dayIndex = parseInt(visibleEntry.target.getAttribute('data-day-index') || '0')
-          const newDate = daysToDisplay[dayIndex]
-
-          if (newDate) {
-            // Если дата не изменилась, ничего не делаем (предотвращает застревание флага skipScrollToDateRef)
-            if (isSameDate(newDate, currentDateRef.current)) return
-
-            skipScrollToDateRef.current = true
-
-            setCurrentDate(newDate)
-
-            const newMonday = getMonday(newDate)
-            setCurrentWeekStart(prevMonday => {
-              if (isSameDate(prevMonday, newMonday)) return prevMonday
-              return newMonday
-            })
-          }
-        }
-      },
-      {
-        root: container,
-        threshold: 0.6, // Срабатывает, когда 60% карточки видно
-      }
-    )
-
-    const cards = container.querySelectorAll('[data-day-card]')
-    cards.forEach(card => observer.observe(card))
-
-    return () => observer.disconnect()
-  }, [daysToDisplay]) // Перезапускаем только если список дней изменился
+  // Мемоизируем компоненты Virtuoso, чтобы избежать лишних ре-рендеров
+  const virtuosoComponents = useMemo(
+    () => ({
+      List: React.forwardRef<
+        HTMLDivElement,
+        { style?: React.CSSProperties; children?: React.ReactNode }
+      >(({ style, children }, ref) => (
+        <div
+          ref={ref}
+          style={{ ...style, display: 'flex', flexDirection: 'row' }}
+          className="h-full"
+        >
+          {children}
+        </div>
+      )),
+      Item: ({ children, ...props }: any) => (
+        <div
+          {...props}
+          style={{ ...props.style, width: containerWidth }}
+          className="h-full shrink-0 snap-center p-2"
+        >
+          {children}
+        </div>
+      ),
+    }),
+    [containerWidth]
+  )
 
   const handleAppointmentClick = useCallback(
     (appointmentId: string) => {
@@ -582,7 +577,7 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
         </div>
 
         {/* Week days header - Desktop version (≥1024px, static, full names) */}
-        <div className="hidden lg:flex justify-center gap-2 px-2">
+        <div className="flex justify-center gap-2 px-2">
           {currentWeekDays.map((day, dayIndex) => {
             const isToday = isSameDate(day, today)
             const isCurrentDay = isSameDate(day, currentDate)
@@ -596,13 +591,24 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
             const buttonVariant = isCurrentDay ? 'primary' : isToday ? 'danger' : 'tertiary'
 
             return (
-              <div key={dayIndex} className="flex flex-col items-center gap-1 min-w-25">
+              <div key={dayIndex} className="flex flex-1 flex-col items-center gap-1 min-w-0">
                 {/* Полное название дня */}
-                <div className="text-xs text-default-500 text-center">{capitalizedWeekdayLong}</div>
+                <div className="text-xs text-default-500 text-center hidden sm:block">
+                  {capitalizedWeekdayLong}
+                </div>
+                <div className="text-xs text-default-500 text-center block sm:hidden">
+                  {WEEKDAY_NAMES[dayIndex]}
+                </div>
                 <Button
                   size="sm"
                   variant={buttonVariant}
-                  onPress={() => setCurrentDate(day)}
+                  onPress={() => {
+                    if (isSameDate(day, currentDate)) return
+                    //     skipScrollToDateRef.current = false
+                    isProgrammaticScroll.current = true
+                    setCurrentDate(day)
+                    setSelectedDate(day)
+                  }}
                   className="min-w-0 w-10 h-10 p-0 rounded-full flex items-center justify-center"
                 >
                   <div className="text-lg font-bold">{day.getDate()}</div>
@@ -611,230 +617,64 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
             )
           })}
         </div>
-
-        {/* Week days header - Tablet & Mobile version (<1024px, with scroll) */}
-        <ScrollShadow
-          ref={headerScrollRef}
-          orientation="horizontal"
-          hideScrollBar
-          className="lg:hidden px-2 snap-x snap-mandatory"
-          size={0}
-        >
-          <div className="flex gap-2">
-            {/* Группируем дни по неделям */}
-            {Array.from({ length: Math.ceil(allHeaderDays.length / 7) }, (_, weekIndex) => {
-              const weekStart = weekIndex * 7
-              const weekDays = allHeaderDays.slice(weekStart, weekStart + 7)
-
-              return (
-                <div
-                  key={weekIndex}
-                  className="flex gap-1 min-[400px]:gap-2 snap-center shrink-0"
-                  data-week-index={weekIndex}
-                >
-                  {weekDays.map((day, dayIndex) => {
-                    const globalIndex = weekStart + dayIndex
-                    const isToday = isSameDate(day, today)
-                    const isCurrentDay = isSameDate(day, currentDate)
-
-                    const dayOfWeek = day.getDay()
-                    const weekdayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1
-                    const weekdayShort = WEEKDAY_NAMES[weekdayIndex]
-
-                    // Получаем полное название дня недели на основе текущей локали
-                    const weekdayLong = day.toLocaleDateString(lang, { weekday: 'long' })
-                    const capitalizedWeekdayLong =
-                      weekdayLong.charAt(0).toUpperCase() + weekdayLong.slice(1)
-
-                    const buttonVariant = isCurrentDay ? 'primary' : isToday ? 'danger' : 'tertiary'
-
-                    return (
-                      <div
-                        key={globalIndex}
-                        className="flex flex-col items-center gap-0.5 min-w-12 sm:min-w-20 shrink-0"
-                        data-header-day
-                        data-header-day-index={globalIndex}
-                      >
-                        <div className="text-xs text-default-500 text-center block sm:hidden">
-                          {weekdayShort}
-                        </div>
-                        <div className="text-xs text-default-500 text-center hidden sm:block">
-                          {capitalizedWeekdayLong}
-                        </div>
-                        <Button
-                          size="sm"
-                          variant={buttonVariant}
-                          onPress={() => setCurrentDate(day)}
-                          className="min-w-0 w-10 h-10 p-0 rounded-full flex items-center justify-center"
-                        >
-                          <div className="text-lg font-bold">{day.getDate()}</div>
-                        </Button>
-                      </div>
-                    )
-                  })}
-                </div>
-              )
-            })}
-          </div>
-        </ScrollShadow>
       </div>
 
       {/* Horizontal scrollable days (DayView cards) */}
-      <ScrollShadow
-        ref={scrollContainerRef}
-        orientation="horizontal"
-        hideScrollBar
-        className="flex-1 min-h-0 snap-x snap-mandatory"
-      >
-        <div className="flex h-full gap-2 p-2">
-          {daysToDisplay.map((day, index) => {
-            const isToday = isSameDate(day, today)
-            const isCurrentDay = isSameDate(day, currentDate)
-            const dayAppointments = appointmentsByDate[day.toISOString()] || []
+      <div className="flex-1 min-h-0 relative" ref={containerRef}>
+        {containerWidth > 0 && (
+          <Virtuoso
+            ref={virtuosoRef}
+            horizontalDirection
+            className="snap-x snap-mandatory"
+            style={{ height: '100%', width: '100%', position: 'absolute', top: 0, left: 0 }}
+            data={allDays}
+            initialTopMostItemIndex={initialTopMostItemIndex}
+            scrollerRef={ref => {
+              if (ref instanceof HTMLElement) scrollContainerRef.current = ref
+            }}
+            onScroll={e => {
+              if (isProgrammaticScroll.current) return
+              const target = e.currentTarget as HTMLElement
+              const scrollLeft = target.scrollLeft
+              if (containerWidth === 0) return
 
-            return (
-              <div
-                key={index}
-                data-day-card
-                data-day-index={index}
-                onClick={() => setCurrentDate(day)}
-                onDragOver={e => handleDragOver(e, day)}
-                onDrop={e => handleDrop(e, day)}
-                className={`
-                  shrink-0 w-full h-full cursor-pointer snap-center
-                  ${isCurrentDay ? 'ring-2 ring-primary' : ''}
-                `}
-              >
-                <Card
-                  className={`
-                  h-full
-                  ${isToday ? 'border-2 border-danger' : isCurrentDay ? 'border-2 border-primary' : ''}
-                `}
-                >
-                  <Card.Content className="p-1 h-full flex flex-col">
-                    {/* Day header */}
-                    <div className="mb-3 pb-2 border-b border-divider">
-                      <div className="text-sm text-default-500">
-                        {day.toLocaleDateString(lang, { weekday: 'long' })}
-                      </div>
-                      <div
-                        className={`
-                        text-2xl font-bold
-                        ${isToday ? 'text-danger' : isCurrentDay ? 'text-primary' : 'text-foreground'}
-                      `}
-                      >
-                        {day.getDate()} {day.toLocaleDateString(lang, { month: 'long' })}
-                      </div>
-                    </div>
+              const index = Math.round(scrollLeft / containerWidth)
 
-                    {/* Appointments list */}
-                    <ScrollShadow className="flex-1 min-h-0" hideScrollBar={false}>
-                      <div className="space-y-2">
-                        {dayAppointments.length === 0 ? (
-                          <div className="text-center py-8 text-default-500">
-                            <CalendarIcon className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                            <p className="text-sm">Нет назначений</p>
-                          </div>
-                        ) : (
-                          dayAppointments.map(appointment => (
-                            <AppointmentCard
-                              key={appointment.id}
-                              appointment={appointment}
-                              onClick={() => handleAppointmentClick(appointment.id)}
-                              isDraggable={false}
-                              forceDesktopView={true}
-                            />
-                          ))
-                        )}
-                      </div>
-                    </ScrollShadow>
-                  </Card.Content>
-                </Card>
-              </div>
-            )
-          })}
-        </div>
-      </ScrollShadow>
+              if (index >= 0 && index < allDays.length) {
+                const newDate = allDays[index]
+                if (!isSameDate(newDate, currentDateRef.current)) {
+                  skipScrollToDateRef.current = true
+                  setCurrentDate(newDate)
+                  setSelectedDate(newDate)
+
+                  const newMonday = getMonday(newDate)
+                  setCurrentWeekStart(prev => (isSameDate(prev, newMonday) ? prev : newMonday))
+                }
+              }
+            }}
+            components={virtuosoComponents}
+            itemContent={(index, day) => {
+              const dayAppointments = appointmentsByDate[day.toISOString()] || []
+
+              return (
+                <DayColumn
+                  key={day.toISOString()}
+                  day={day}
+                  today={today}
+                  currentDate={currentDate}
+                  appointments={dayAppointments}
+                  lang={lang}
+                  containerWidth={containerWidth}
+                  setCurrentDate={setCurrentDate}
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                  onAppointmentClick={handleAppointmentClick}
+                />
+              )
+            }}
+          />
+        )}
+      </div>
     </div>
   )
 }
-
-
-/*
- 
-      <ScrollShadow
-        ref={scrollContainerRef}
-        orientation="horizontal"
-        hideScrollBar
-        className="flex-1 min-h-0 snap-x snap-mandatory"
-      >
-        <div className="flex h-full gap-2 p-2">
-          {daysToDisplay.map((day, index) => {
-            const isToday = isSameDate(day, today)
-            const isCurrentDay = isSameDate(day, currentDate)
-            const dayAppointments = appointmentsByDate[day.toISOString()] || []
-
-            return (
-              <div
-                key={index}
-                data-day-card
-                data-day-index={index}
-                onClick={() => setCurrentDate(day)}
-                onDragOver={e => handleDragOver(e, day)}
-                onDrop={e => handleDrop(e, day)}
-                className={`
-                  shrink-0 w-full h-full cursor-pointer snap-center
-                  ${isCurrentDay ? 'ring-2 ring-primary' : ''}
-                `}
-              >
-                <Card
-                  className={`
-                  h-full
-                  ${isToday ? 'border-2 border-danger' : isCurrentDay ? 'border-2 border-primary' : ''}
-                `}
-                >
-                  <Card.Content className="p-1 h-full flex flex-col">
-                    {/* Day header */}
-                    <div className="mb-3 pb-2 border-b border-divider">
-                      <div className="text-sm text-default-500">
-                        {day.toLocaleDateString(lang, { weekday: 'long' })}
-                      </div>
-                      <div
-                        className={`
-                        text-2xl font-bold
-                        ${isToday ? 'text-danger' : isCurrentDay ? 'text-primary' : 'text-foreground'}
-                      `}
-                      >
-                        {day.getDate()} {day.toLocaleDateString(lang, { month: 'long' })}
-                      </div>
-                    </div>
-
-                    {/* Appointments list */}
-                    <ScrollShadow className="flex-1 min-h-0" hideScrollBar={false}>
-                      <div className="space-y-2">
-                        {dayAppointments.length === 0 ? (
-                          <div className="text-center py-8 text-default-500">
-                            <CalendarIcon className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                            <p className="text-sm">Нет назначений</p>
-                          </div>
-                        ) : (
-                          dayAppointments.map(appointment => (
-                            <AppointmentCard
-                              key={appointment.id}
-                              appointment={appointment}
-                              onClick={() => handleAppointmentClick(appointment.id)}
-                              isDraggable={false}
-                              forceDesktopView={true}
-                            />
-                          ))
-                        )}
-                      </div>
-                    </ScrollShadow>
-                  </Card.Content>
-                </Card>
-              </div>
-            )
-          })}
-        </div>
-      </ScrollShadow>
-*/
