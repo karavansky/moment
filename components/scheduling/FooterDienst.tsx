@@ -1,6 +1,5 @@
 'use client'
 
-import { createPortal } from 'react-dom'
 import { useState, useTransition, useRef, useEffect, useCallback, memo } from 'react'
 import { useLanguage } from '@/hooks/useLanguage'
 import { Button, Card, ScrollShadow, Separator } from '@heroui/react'
@@ -23,81 +22,111 @@ const DraggableItem = ({
   type: 'client' | 'worker'
   onDragStart: (e: React.DragEvent, type: 'client' | 'worker', id: string) => void
 }) => {
-  const dragPreviewRef = useRef<HTMLDivElement>(null)
-  const [isMounted, setIsMounted] = useState(false)
-  const [isInteracting, setIsInteracting] = useState(false)
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
-
   const name =
     type === 'client'
       ? (item as Client).surname + ' ' + (item as Client).name
       : (item as any).workerName
 
   const handleDragStartLocal = (e: React.DragEvent) => {
+    console.log('[DraggableItem] Drag start', { type, name })
     onDragStart(e, type, item.id)
 
-    if (dragPreviewRef.current) {
-      const rect = dragPreviewRef.current.getBoundingClientRect()
+    // --- Canvas Generation Logic ---
+    try {
+      const canvas = document.createElement('canvas')
+      const width = 200
+      const height = 64
+      const scale = window.devicePixelRatio > 1 ? 2 : 1 // Cap at 2x for performance/compatibility
 
-      // По умолчанию: курсор в правом нижнем углу карточки (карточка слева-сверху от пальца)
-      let offsetX = rect.width
-      let offsetY = rect.height
+      canvas.width = width * scale
+      canvas.height = height * scale
+      canvas.style.width = `${width}px`
+      canvas.style.height = `${height}px`
 
-      // Если места слева недостаточно (курсор близко к левому краю),
-      // смещаем точку захвата влево (карточка будет справа от курсора)
-      if (e.clientX < rect.width) {
-        offsetX = 0
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        console.error('Failed to get 2D context')
+        return
       }
 
-      // Если места сверху недостаточно, смещаем точку захвата вверх (карточка будет снизу от курсора)
-      if (e.clientY < rect.height) {
-        offsetY = 0
-      }
+      ctx.scale(scale, scale)
 
-      e.dataTransfer.setDragImage(dragPreviewRef.current, offsetX, offsetY)
+      const isDark = document.documentElement.classList.contains('dark')
+
+      // --- Workaround for WebKit alpha channel bug ---
+      // Fill the entire canvas with a solid color matching the page background.
+      // This avoids transparency, which iOS renders as black corners.
+      ctx.fillStyle = isDark ? '#111827' : '#ffffff' // bg-gray-900 or white
+      ctx.fillRect(0, 0, width, height)
+
+      // Draw rounded rectangle (fallback for older browsers)
+      const x = 2,
+        y = 2,
+        w = width - 4,
+        h = height - 4,
+        r = 12
+      ctx.beginPath()
+      ctx.moveTo(x + r, y)
+      ctx.lineTo(x + w - r, y)
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r)
+      ctx.lineTo(x + w, y + h - r)
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h)
+      ctx.lineTo(x + r, y + h)
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r)
+      ctx.lineTo(x, y + r)
+      ctx.quadraticCurveTo(x, y, x + r, y)
+      ctx.closePath()
+
+      // Fill and Stroke
+      ctx.fillStyle = isDark ? '#1f2937' : '#ffffff' // bg-gray-800 or white
+      ctx.fill()
+      ctx.lineWidth = 2
+     // ctx.strokeStyle = '#006FEE' // primary color
+     // ctx.stroke()
+
+      // Text
+      ctx.fillStyle = isDark ? '#ffffff' : '#000000'
+      ctx.font = 'bold 14px system-ui, sans-serif'
+      ctx.fillText(name, x + 12, y + 24, w - 24)
+
+      ctx.fillStyle = '#71717a' // text-default-500
+      ctx.font = '12px system-ui, sans-serif'
+      ctx.fillText(type === 'client' ? 'Kunde' : 'Fachkraft', x + 12, y + 44, w - 24)
+
+      // Add to DOM for iOS compatibility
+      canvas.style.position = 'fixed'
+      canvas.style.top = '-9999px'
+      canvas.style.left = '-9999px'
+      document.body.appendChild(canvas)
+
+      // Set drag image
+      let offsetX = width
+      let offsetY = height
+      if (e.clientX < width) offsetX = 0
+      if (e.clientY < height) offsetY = 0
+      e.dataTransfer.setDragImage(canvas, offsetX, offsetY)
+
+      // Cleanup
+      setTimeout(() => {
+        if (document.body.contains(canvas)) {
+          document.body.removeChild(canvas)
+        }
+      }, 0)
+    } catch (err) {
+      console.error('[DraggableItem] Error generating canvas drag image:', err)
     }
   }
 
-  const handleInteractionStart = () => setIsInteracting(true)
-  const handleInteractionEnd = () => setIsInteracting(false)
-
   return (
-    <>
-      {isMounted &&
-        createPortal(
-          <div
-            ref={dragPreviewRef}
-            style={{ top: isInteracting ? '-1000px' : '-99999px', left: '-1000px' }}
-            className="fixed w-48 z-[9999] pointer-events-none"
-          >
-            <div className="bg-white dark:bg-gray-900 rounded-none shadow-xl border-2 border-primary p-3">
-              <div className="font-bold text-sm text-foreground truncate mb-1">{name}</div>
-              <div className="text-xs text-default-500 flex items-center gap-1">
-                {type === 'client' ? 'Kunde' : 'Fachkraft'}
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
-      <div
-        draggable
-        onDragStart={handleDragStartLocal}
-        onDragEnd={handleInteractionEnd}
-        onMouseEnter={handleInteractionStart}
-        onMouseLeave={handleInteractionEnd}
-        onTouchStart={handleInteractionStart}
-        onTouchEnd={handleInteractionEnd}
-        onTouchCancel={handleInteractionEnd}
-        className="flex min-w-62.5 flex-row gap-3 p-3 border border-divider cursor-grab active:cursor-grabbing hover:border-primary transition-colors bg-white dark:bg-gray-800 rounded-xl shadow-sm"
-      >
-        <div className="flex flex-col justify-center gap-1 flex-1">
-          <div className="text-sm font-semibold truncate">{name}</div>
-        </div>
+    <div
+      draggable
+      onDragStart={handleDragStartLocal}
+      className="flex min-w-62.5 flex-row gap-3 p-3 border border-divider cursor-grab active:cursor-grabbing hover:border-primary transition-colors bg-white dark:bg-gray-800 rounded-xl shadow-sm"
+    >
+      <div className="flex flex-col justify-center gap-1 flex-1">
+        <div className="text-sm font-semibold truncate">{name}</div>
       </div>
-    </>
+    </div>
   )
 }
 

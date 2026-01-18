@@ -30,12 +30,21 @@ function DayView({
   // Ref для таймера задержки снятия выделения
   const dragLeaveTimerRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Очистка таймера при размонтировании компонента
+  // Глобальный слушатель для надежного сброса состояния при окончании любого перетаскивания
   useEffect(() => {
-    return () => {
+    const handleGlobalDragEnd = () => {
+      // Принудительно убираем подсветку, когда перетаскивание закончилось где угодно на странице
       if (dragLeaveTimerRef.current) {
         clearTimeout(dragLeaveTimerRef.current)
+        dragLeaveTimerRef.current = null
       }
+      setIsDragOver(false)
+    }
+
+    // Событие 'dragend' не всплывает, поэтому слушаем на window
+    window.addEventListener('dragend', handleGlobalDragEnd)
+    return () => {
+      window.removeEventListener('dragend', handleGlobalDragEnd)
     }
   }, [])
 
@@ -79,21 +88,14 @@ function DayView({
       e.preventDefault()
       e.dataTransfer.dropEffect = canDropHere(day.date) ? 'move' : 'none'
 
-      // Если есть активный таймер на скрытие (dragLeave), отменяем его,
-      // так как мы все еще находимся над элементом (или вернулись на него)
+      // Отменяем любой отложенный вызов dragLeave, так как мы все еще над элементом
       if (dragLeaveTimerRef.current) {
         clearTimeout(dragLeaveTimerRef.current)
         dragLeaveTimerRef.current = null
       }
 
+      // Включаем подсветку, если она еще не включена
       if (!isDragOver) setIsDragOver(true)
-
-      // Таймер безопасности: если dragover перестанет срабатывать (например, drag закончился),
-      // сбрасываем состояние через небольшой интервал. Это решает проблему "залипания" при dropEffect='none'.
-      dragLeaveTimerRef.current = setTimeout(() => {
-        setIsDragOver(false)
-        dragLeaveTimerRef.current = null
-      }, 300)
     },
     [day.date, canDropHere, isDragOver]
   )

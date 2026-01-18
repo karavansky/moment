@@ -85,7 +85,7 @@ function DienstplanView() {
       setIsNewAppointment(true)
       setIsModalOpen(true)
     },
-    [setSelectedDate, setSelectedAppointment]
+    [setSelectedDate, setSelectedAppointment, setIsNewAppointment, setIsModalOpen]
   )
 
   // Мемоизируем today для стабильности

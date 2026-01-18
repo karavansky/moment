@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useMemo, useCallback, memo, useRef, useState, useEffect } from 'react'
-import { createPortal } from 'react-dom'
 import { Chip } from '@heroui/react'
 import { SimpleTooltip } from '@/components/SimpleTooltip'
 import TruncatedChip from './TruncatedChip'
@@ -23,14 +22,6 @@ function AppointmentCard({
   forceDesktopView = false,
 }: AppointmentCardProps) {
   const hasReport = appointment.reports && appointment.reports.length > 0
-  // Ref для кастомного изображения при перетаскивании (ghost image)
-  const dragPreviewRef = useRef<HTMLDivElement>(null)
-  const [isMounted, setIsMounted] = useState(false)
-  const [isInteracting, setIsInteracting] = useState(false)
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
 
   // Мемоизируем проверку прошлого
   const isPastWithoutReport = useMemo((): boolean => {
@@ -69,6 +60,7 @@ function AppointmentCard({
         return
       }
 
+      console.log('[AppointmentCard] Drag start', { id: appointment.id })
       e.dataTransfer.effectAllowed = 'move'
       e.dataTransfer.setData(
         'application/json',
@@ -78,44 +70,104 @@ function AppointmentCard({
         })
       )
 
-      // Устанавливаем кастомное изображение призрака
-      if (dragPreviewRef.current) {
-        const rect = dragPreviewRef.current.getBoundingClientRect()
+      // --- Canvas Generation Logic ---
+      try {
+        const canvas = document.createElement('canvas')
+        const width = 200
+        const height = 60
+        const scale = window.devicePixelRatio > 1 ? 2 : 1 // Cap at 2x
 
-        // По умолчанию: курсор в правом нижнем углу карточки (карточка слева-сверху от пальца)
-        let offsetX = rect.width
-        let offsetY = rect.height
+        canvas.width = width * scale
+        canvas.height = height * scale
+        canvas.style.width = `${width}px`
+        canvas.style.height = `${height}px`
 
-        // Если места слева недостаточно (курсор близко к левому краю),
-        // смещаем точку захвата влево (карточка будет справа от курсора)
-        if (e.clientX < rect.width) {
-          offsetX = 0
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          console.error('Failed to get 2D context')
+          return
         }
 
-        // Если места сверху недостаточно, смещаем точку захвата вверх (карточка будет снизу от курсора)
-        if (e.clientY < rect.height) {
-          offsetY = 0
-        }
+        ctx.scale(scale, scale)
 
-        e.dataTransfer.setDragImage(dragPreviewRef.current, offsetX, offsetY)
+        const isDark = document.documentElement.classList.contains('dark')
+
+        // --- Workaround for WebKit alpha channel bug ---
+        // Fill the entire canvas with a solid color matching the page background.
+        // This avoids transparency, which iOS renders as black corners.
+        ctx.fillStyle = isDark ? '#111827' : '#ffffff' // bg-gray-900 or white
+        ctx.fillRect(0, 0, width, height)
+
+        // Draw rounded rectangle
+        const x = 2,
+          y = 2,
+          w = width - 4,
+          h = height - 4,
+          r = 12
+        ctx.beginPath()
+        ctx.moveTo(x + r, y)
+        ctx.lineTo(x + w - r, y)
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r)
+        ctx.lineTo(x + w, y + h - r)
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h)
+        ctx.lineTo(x + r, y + h)
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r)
+        ctx.lineTo(x, y + r)
+        ctx.quadraticCurveTo(x, y, x + r, y)
+        ctx.closePath()
+
+        // Fill and Stroke
+        ctx.fillStyle = isDark ? '#1f2937' : '#ffffff'
+        ctx.fill()
+   //     ctx.lineWidth = 2
+   //     ctx.strokeStyle = '#006FEE'
+   //     ctx.stroke()
+
+        // Text
+        const clientName = appointment.client
+          ? `${appointment.client.surname} ${appointment.client.name}`
+          : 'Unknown Client'
+        const timeText = `${formatTime(appointment.startTime)} - ${formatTime(appointment.endTime)}`
+
+        ctx.fillStyle = isDark ? '#ffffff' : '#000000'
+        ctx.font = 'bold 14px system-ui, sans-serif'
+        ctx.fillText(clientName, x + 12, y + 22, w - 24)
+
+        ctx.fillStyle = '#71717a'
+        ctx.font = '12px system-ui, sans-serif'
+        ctx.fillText(timeText, x + 12, y + 42, w - 24)
+
+        // Add to DOM for iOS compatibility
+        canvas.style.position = 'fixed'
+        canvas.style.top = '-9999px'
+        canvas.style.left = '-9999px'
+        document.body.appendChild(canvas)
+
+        // Set drag image
+        let offsetX = width
+        let offsetY = height
+        if (e.clientX < width) offsetX = 0
+        if (e.clientY < height) offsetY = 0
+        e.dataTransfer.setDragImage(canvas, offsetX, offsetY)
+
+        // Cleanup
+        setTimeout(() => {
+          if (document.body.contains(canvas)) {
+            document.body.removeChild(canvas)
+          }
+        }, 0)
+      } catch (err) {
+        console.error('[AppointmentCard] Error generating canvas drag image:', err)
       }
     },
-    [isDraggable, appointment.id, appointment.date]
-  )
-
-  const handleInteractionStart = useCallback(() => {
-    setIsInteracting(true)
-  }, [])
-
-  const handleInteractionEnd = useCallback(() => {
-    setIsInteracting(false)
-  }, [])
-
-  const handleDragEnd = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      handleInteractionEnd()
-    },
-    [handleInteractionEnd]
+    [
+      isDraggable,
+      appointment.id,
+      appointment.date,
+      appointment.client,
+      appointment.startTime,
+      appointment.endTime,
+    ]
   )
 
   // Контент для tooltip на мобильной версии
@@ -174,47 +226,16 @@ function AppointmentCard({
     <div
       draggable={isDraggable}
       onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
       onClick={e => {
         e.stopPropagation() // Prevent DayView button from triggering
         onClick?.()
       }}
-      onMouseEnter={handleInteractionStart}
-      onMouseLeave={handleInteractionEnd}
-      onTouchStart={handleInteractionStart}
-      onTouchEnd={handleInteractionEnd}
-      onTouchCancel={handleInteractionEnd}
       className={`
         ${isDraggable ? 'cursor-move' : 'cursor-pointer'}
         relative
         select-none
       `}
     >
-      {/* Custom Drag Preview (Ghost Image) - рендерится вне экрана */}
-      {isMounted &&
-        createPortal(
-          <div
-            ref={dragPreviewRef}
-            style={{ top: isInteracting ? '-1000px' : '-99999px', left: '-1000px' }}
-            className="fixed w-48 z-[9999] pointer-events-none"
-          >
-            <div className="bg-white dark:bg-gray-900 rounded-none shadow-sm border-2 border-primary p-2">
-              <div className="font-bold text-sm text-foreground truncate mb-1">
-                {appointment.client
-                  ? `${appointment.client.surname} ${appointment.client.name}`
-                  : 'Unknown Client'}
-              </div>
-              <div className="flex items-center gap-1.5 text-xs text-default-500">
-                <Clock className="w-3 h-3 shrink-0" />
-                <span>
-                  {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
-                </span>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
-
       {/* Desktop версия (≥ 800px) - полная информация в Card */}
       <div
         className={`${forceDesktopView ? 'block' : 'hidden lg:block'} hover:scale-[1.02] transition-transform mb-2 shadow-xl rounded-md p-1! bg-content1`}
