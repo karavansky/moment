@@ -81,8 +81,8 @@ const DraggableItem = ({
       ctx.fillStyle = isDark ? '#1f2937' : '#ffffff' // bg-gray-800 or white
       ctx.fill()
       ctx.lineWidth = 2
-     // ctx.strokeStyle = '#006FEE' // primary color
-     // ctx.stroke()
+      // ctx.strokeStyle = '#006FEE' // primary color
+      // ctx.stroke()
 
       // Text
       ctx.fillStyle = isDark ? '#ffffff' : '#000000'
@@ -121,10 +121,10 @@ const DraggableItem = ({
     <div
       draggable
       onDragStart={handleDragStartLocal}
-      className="flex min-w-62.5 flex-row gap-3 p-3 border border-divider cursor-grab active:cursor-grabbing hover:border-primary transition-colors bg-white dark:bg-gray-800 rounded-xl shadow-sm"
+      className="flex flex-row gap-3 p-3 border border-divider cursor-grab active:cursor-grabbing hover:border-primary transition-colors bg-white dark:bg-gray-800 rounded-xl shadow-sm"
     >
       <div className="flex flex-col justify-center gap-1 flex-1">
-        <div className="text-sm font-semibold truncate">{name}</div>
+        <div className="text-sm font-semibold whitespace-nowrap">{name}</div>
       </div>
     </div>
   )
