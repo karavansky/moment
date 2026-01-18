@@ -758,3 +758,83 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
     </div>
   )
 }
+
+
+/*
+ 
+      <ScrollShadow
+        ref={scrollContainerRef}
+        orientation="horizontal"
+        hideScrollBar
+        className="flex-1 min-h-0 snap-x snap-mandatory"
+      >
+        <div className="flex h-full gap-2 p-2">
+          {daysToDisplay.map((day, index) => {
+            const isToday = isSameDate(day, today)
+            const isCurrentDay = isSameDate(day, currentDate)
+            const dayAppointments = appointmentsByDate[day.toISOString()] || []
+
+            return (
+              <div
+                key={index}
+                data-day-card
+                data-day-index={index}
+                onClick={() => setCurrentDate(day)}
+                onDragOver={e => handleDragOver(e, day)}
+                onDrop={e => handleDrop(e, day)}
+                className={`
+                  shrink-0 w-full h-full cursor-pointer snap-center
+                  ${isCurrentDay ? 'ring-2 ring-primary' : ''}
+                `}
+              >
+                <Card
+                  className={`
+                  h-full
+                  ${isToday ? 'border-2 border-danger' : isCurrentDay ? 'border-2 border-primary' : ''}
+                `}
+                >
+                  <Card.Content className="p-1 h-full flex flex-col">
+                    {/* Day header */}
+                    <div className="mb-3 pb-2 border-b border-divider">
+                      <div className="text-sm text-default-500">
+                        {day.toLocaleDateString(lang, { weekday: 'long' })}
+                      </div>
+                      <div
+                        className={`
+                        text-2xl font-bold
+                        ${isToday ? 'text-danger' : isCurrentDay ? 'text-primary' : 'text-foreground'}
+                      `}
+                      >
+                        {day.getDate()} {day.toLocaleDateString(lang, { month: 'long' })}
+                      </div>
+                    </div>
+
+                    {/* Appointments list */}
+                    <ScrollShadow className="flex-1 min-h-0" hideScrollBar={false}>
+                      <div className="space-y-2">
+                        {dayAppointments.length === 0 ? (
+                          <div className="text-center py-8 text-default-500">
+                            <CalendarIcon className="mx-auto h-8 w-8 mb-2 opacity-50" />
+                            <p className="text-sm">Нет назначений</p>
+                          </div>
+                        ) : (
+                          dayAppointments.map(appointment => (
+                            <AppointmentCard
+                              key={appointment.id}
+                              appointment={appointment}
+                              onClick={() => handleAppointmentClick(appointment.id)}
+                              isDraggable={false}
+                              forceDesktopView={true}
+                            />
+                          ))
+                        )}
+                      </div>
+                    </ScrollShadow>
+                  </Card.Content>
+                </Card>
+              </div>
+            )
+          })}
+        </div>
+      </ScrollShadow>
+*/
