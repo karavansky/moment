@@ -10,13 +10,20 @@ import CalendarView from './CalendarView'
 import WeeklyView from './WeeklyView'
 import AppointmentModal from './AppointmentModal'
 import { useLanguage } from '@/hooks/useLanguage'
+import FooterDienst from './FooterDienst'
 
 type ViewMode = 'month' | 'week'
 
 function DienstplanView() {
   const lang = useLanguage()
-  const { appointments, isLoading, selectedDate, selectedAppointment, setSelectedAppointment } =
-    useScheduling()
+  const {
+    appointments,
+    isLoading,
+    selectedDate,
+    selectedAppointment,
+    setSelectedAppointment,
+    setSelectedDate,
+  } = useScheduling()
   const [viewMode, setViewMode] = useState<ViewMode>('month')
   const [isPending, startTransition] = useTransition()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -56,6 +63,29 @@ function DienstplanView() {
       setIsModalOpen(true) // открываем модалку напрямую
     },
     [setSelectedAppointment]
+  )
+
+  // Обработчик внешнего drop (из FooterDienst)
+  const handleExternalDrop = useCallback(
+    (date: Date, type: 'client' | 'worker', id: string) => {
+      const template: any = {
+        id: 'new-from-drop',
+        date: date,
+        startTime: date,
+        endTime: new Date(date.getTime() + 60 * 60000),
+        clientID: type === 'client' ? id : '',
+        workerId: type === 'worker' ? id : '',
+        duration: 60,
+        fahrzeit: 0,
+        isFixedTime: false,
+        reports: [],
+      }
+      setSelectedDate(date)
+      setSelectedAppointment(template)
+      setIsNewAppointment(true)
+      setIsModalOpen(true)
+    },
+    [setSelectedDate, setSelectedAppointment]
   )
 
   // Мемоизируем today для стабильности
@@ -168,6 +198,7 @@ function DienstplanView() {
                   today={today}
                   selectedDate={selectedDate}
                   onAppointmentPress={handlePressOnAppointment}
+                  onExternalDrop={handleExternalDrop}
                 />
               </motion.div>
             ) : (
@@ -179,7 +210,10 @@ function DienstplanView() {
                 transition={{ duration: 0.2 }}
                 className="w-full h-full"
               >
-                <WeeklyView onAppointmentPress={handlePressOnAppointment} />
+                <WeeklyView
+                  onAppointmentPress={handlePressOnAppointment}
+                  onExternalDrop={handleExternalDrop}
+                />
               </motion.div>
             )}
           </AnimatePresence>
@@ -187,37 +221,7 @@ function DienstplanView() {
       </div>
 
       {/* Horizontal ScrollShadow - прижат к bottom */}
-      <div className="flex-none h-32 shrink-0">
-        <Card className="h-full p-0">
-          <Card.Content className="p-0 h-full overflow-hidden">
-            <ScrollShadow className="h-full " orientation="horizontal" hideScrollBar={true}>
-              <div className="flex flex-row gap-4 h-full items-center">
-                {appointments.slice(0, 10).map(appointment => (
-                  <Card
-                    key={appointment.id}
-                    className="flex min-w-62.5 flex-row gap-3 p-3 border border-divider"
-                  >
-                    <div className="flex flex-col justify-center gap-1 flex-1">
-                      <div className="text-sm font-semibold truncate">
-                        {appointment.client
-                          ? appointment.client.surname + ' ' + appointment.client.name
-                          : 'Unknown Client'}
-                      </div>
-                      <div className="text-xs text-default-500">
-                        {appointment.worker ? appointment.worker.workerName : 'Unknown Worker'}
-                      </div>
-                      <div className="text-xs text-default-400">
-                        {appointment.date.toLocaleDateString('de-DE')} •{' '}
-                        {formatTime(appointment.startTime)}
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </ScrollShadow>
-          </Card.Content>
-        </Card>
-      </div>
+      <FooterDienst />
 
       {/* Appointment Modal */}
       <AppointmentModal

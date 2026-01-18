@@ -11,6 +11,7 @@ import type { Appointment } from '@/types/scheduling'
 
 interface WeeklyViewProps {
   onAppointmentPress?: (appointment: Appointment) => void
+  onExternalDrop?: (date: Date, type: 'client' | 'worker', id: string) => void
 }
 
 // Получить понедельник недели для указанной даты
@@ -98,8 +99,8 @@ const getWeekdayShortNames = (locale: string): string[] => {
   return names
 }
 
-export default function WeeklyView({ onAppointmentPress }: WeeklyViewProps) {
-  const { appointments, setSelectedAppointment } = useScheduling()
+export default function WeeklyView({ onAppointmentPress, onExternalDrop }: WeeklyViewProps) {
+  const { appointments, setSelectedAppointment, moveAppointmentToDate } = useScheduling()
   const lang = useLanguage()
   const today = getOnlyDate(new Date())
 
@@ -440,6 +441,51 @@ export default function WeeklyView({ onAppointmentPress }: WeeklyViewProps) {
     [appointments, onAppointmentPress, setSelectedAppointment]
   )
 
+  // Drag & Drop handlers for WeeklyView cards
+  const handleDragOver = useCallback(
+    (e: React.DragEvent<HTMLDivElement>, date: Date) => {
+      e.preventDefault()
+      const isPast = date < today
+      if (isPast) {
+        e.dataTransfer.dropEffect = 'none'
+        return
+      }
+      e.dataTransfer.dropEffect = 'move'
+    },
+    [today]
+  )
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>, date: Date) => {
+      e.preventDefault()
+      const isPast = date < today
+      if (isPast) return
+
+      try {
+        const rawData = e.dataTransfer.getData('application/json')
+        if (!rawData) return
+        const data = JSON.parse(rawData)
+
+        // Handle external drop
+        if (data.type === 'client' || data.type === 'worker') {
+          onExternalDrop?.(date, data.type, data.id)
+          return
+        }
+
+        // Handle internal move
+        const { appointmentId, sourceDate } = data
+        if (appointmentId && sourceDate) {
+          const sourceDateObj = new Date(sourceDate)
+          if (isSameDate(sourceDateObj, date)) return
+          moveAppointmentToDate(appointmentId, getOnlyDate(date))
+        }
+      } catch (error) {
+        console.error('Error handling drop in WeeklyView:', error)
+      }
+    },
+    [today, moveAppointmentToDate, onExternalDrop]
+  )
+
   // Форматирование диапазона дат для заголовка
   const weekRangeString = useMemo(() => {
     // Генерируем 7 дней текущей недели от понедельника
@@ -652,6 +698,8 @@ export default function WeeklyView({ onAppointmentPress }: WeeklyViewProps) {
                 data-day-card
                 data-day-index={index}
                 onClick={() => setCurrentDate(day)}
+                onDragOver={e => handleDragOver(e, day)}
+                onDrop={e => handleDrop(e, day)}
                 className={`
                   shrink-0 w-full h-full cursor-pointer snap-center
                   ${isCurrentDay ? 'ring-2 ring-primary' : ''}

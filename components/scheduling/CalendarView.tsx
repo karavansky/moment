@@ -12,6 +12,7 @@ interface CalendarViewProps {
   today?: Date
   selectedDate?: Date
   onAppointmentPress?: (appointment: Appointment) => void
+  onExternalDrop?: (date: Date, type: 'client' | 'worker', id: string) => void
 }
 
 // Функция для получения полных названий дней недели на основе локали
@@ -49,6 +50,7 @@ function CalendarView({
   today = new Date(),
   selectedDate,
   onAppointmentPress,
+  onExternalDrop,
 }: CalendarViewProps) {
   const lang = useLanguage()
 
@@ -123,6 +125,7 @@ function CalendarView({
                     today={today}
                     selectedDate={selectedDate}
                     onAppointmentPress={onAppointmentPress}
+                    onExternalDrop={onExternalDrop}
                   />
                 ))}
               </div>

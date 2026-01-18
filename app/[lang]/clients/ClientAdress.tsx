@@ -578,9 +578,9 @@ export const ClientAdress = memo(function ClientAdress({
   )
 
   const handleCountrySelection = useCallback(
-    (key: React.Key | null) => {
-      if (key) {
-        const countryName = key.toString()
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      if (e.target.value) {
+        const countryName = e.target.value
         const countryCodeValue = CountriesHelper.getCodeByName(countryName) || ''
 
         if (countryCodeValue !== addressData.country.toLowerCase()) {
@@ -593,7 +593,7 @@ export const ClientAdress = memo(function ClientAdress({
           listStreets.setFilterText('')
           setAddressData(prev => ({
             ...prev,
-            country: countryName,
+            country: countryCodeValue,
             city: '',
             street: '',
             zipCode: '',
@@ -936,15 +936,7 @@ export const ClientAdress = memo(function ClientAdress({
                   <select
                     name="country"
                     value={country}
-                    onChange={e => {
-                      const countryName = e.target.value
-                      const countryCodeValue = CountriesHelper.getCodeByName(countryName) || ''
-                      if (countryCodeValue !== addressData.country.toLowerCase()) {
-                        setCountryCode(countryCodeValue)
-                        setCountry(countryName)
-                        setAddressData(prev => ({ ...prev, country: countryCodeValue }))
-                      }
-                    }}
+                    onChange={handleCountrySelection}
                     className="w-full px-2 py-0 text-lg font-normal md:text-base border-0 border-transparent outline-none cursor-pointer bg-transparent"
                     required
                   >

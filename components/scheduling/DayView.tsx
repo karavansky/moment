@@ -14,9 +14,16 @@ interface DayViewProps {
   isToday?: boolean
   isSelected?: boolean
   onAppointmentPress?: (appointment: Appointment) => void
+  onExternalDrop?: (date: Date, type: 'client' | 'worker', id: string) => void
 }
 
-function DayView({ day, isToday = false, isSelected = false, onAppointmentPress }: DayViewProps) {
+function DayView({
+  day,
+  isToday = false,
+  isSelected = false,
+  onAppointmentPress,
+  onExternalDrop,
+}: DayViewProps) {
   const { setSelectedDate, setSelectedAppointment, moveAppointmentToDate } = useScheduling()
   const [isDragOver, setIsDragOver] = useState(false)
   const { isMobile, isReady } = usePlatformContext()
@@ -125,20 +132,31 @@ function DayView({ day, isToday = false, isSelected = false, onAppointmentPress 
       }
 
       try {
-        const data = JSON.parse(e.dataTransfer.getData('application/json'))
-        const { appointmentId, sourceDate } = data
+        const rawData = e.dataTransfer.getData('application/json')
+        if (!rawData) return
 
-        const sourceDateObj = new Date(sourceDate)
-        if (isSameDate(sourceDateObj, day.date)) {
+        const data = JSON.parse(rawData)
+
+        // Handle external drop (Client/Worker)
+        if (data.type === 'client' || data.type === 'worker') {
+          onExternalDrop?.(day.date, data.type, data.id)
           return
         }
 
-        moveAppointmentToDate(appointmentId, getOnlyDate(day.date))
+        // Handle internal appointment move
+        const { appointmentId, sourceDate } = data
+        if (appointmentId && sourceDate) {
+          const sourceDateObj = new Date(sourceDate)
+          if (isSameDate(sourceDateObj, day.date)) {
+            return
+          }
+          moveAppointmentToDate(appointmentId, getOnlyDate(day.date))
+        }
       } catch (error) {
         console.error('Error handling drop:', error)
       }
     },
-    [day.date, canDropHere, moveAppointmentToDate]
+    [day.date, canDropHere, moveAppointmentToDate, onExternalDrop]
   )
 
   // Пустой день

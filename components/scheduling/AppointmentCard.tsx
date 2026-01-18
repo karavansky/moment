@@ -2,7 +2,7 @@
 
 import React, { useMemo, useCallback, memo, useRef, useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { Card, Chip } from '@heroui/react'
+import { Chip } from '@heroui/react'
 import { SimpleTooltip } from '@/components/SimpleTooltip'
 import TruncatedChip from './TruncatedChip'
 import { Appointment } from '@/types/scheduling'
@@ -196,84 +196,84 @@ function AppointmentCard({
           <div
             ref={dragPreviewRef}
             style={{ top: isInteracting ? '-1000px' : '-99999px', left: '-1000px' }}
-            className="fixed w-48 bg-white dark:bg-gray-900 rounded-none shadow-sm border-2 border-primary p-2 z-[9999] pointer-events-none"
+            className="fixed w-48 z-[9999] pointer-events-none"
           >
-            <div className="font-bold text-sm text-foreground truncate mb-1">
-              {appointment.client
-                ? `${appointment.client.surname} ${appointment.client.name}`
-                : 'Unknown Client'}
-            </div>
-            <div className="flex items-center gap-1.5 text-xs text-default-500">
-              <Clock className="w-3 h-3 shrink-0" />
-              <span>
-                {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
-              </span>
+            <div className="bg-white dark:bg-gray-900 rounded-none shadow-sm border-2 border-primary p-2">
+              <div className="font-bold text-sm text-foreground truncate mb-1">
+                {appointment.client
+                  ? `${appointment.client.surname} ${appointment.client.name}`
+                  : 'Unknown Client'}
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-default-500">
+                <Clock className="w-3 h-3 shrink-0" />
+                <span>
+                  {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
+                </span>
+              </div>
             </div>
           </div>,
           document.body
         )}
 
       {/* Desktop версия (≥ 800px) - полная информация в Card */}
-      <Card
-        className={`${forceDesktopView ? 'block' : 'hidden lg:block'} hover:scale-[1.02] transition-transform mb-2 shadow-xl rounded-md p-1!`}
+      <div
+        className={`${forceDesktopView ? 'block' : 'hidden lg:block'} hover:scale-[1.02] transition-transform mb-2 shadow-xl rounded-md p-1! bg-content1`}
       >
-        <Card.Content>
-          <div className="flex flex-col gap-1.5 p-1">
-            {/* Header: Client name + Report indicator */}
-            <div className="flex items-start justify-between gap-2">
-              <h4 className="text-sm font-semibold text-foreground truncate flex-1">
-                {appointment.client
-                  ? appointment.client.surname + ' ' + appointment.client.name
-                  : 'Unknown Client'}
-              </h4>
-              {hasReport && <CheckCircle className="w-4 h-4 text-success shrink-0" />}
-              {isPastWithoutReport && <CircleAlert className="w-4 h-4 text-danger shrink-0" />}
-            </div>
+        <div className="flex flex-col gap-1.5 p-1">
+          {/* Header: Client name + Report indicator */}
+          <div className="flex items-start justify-between gap-2">
+            <h4 className="text-sm font-semibold text-foreground truncate flex-1">
+              {appointment.client
+                ? appointment.client.surname + ' ' + appointment.client.name
+                : 'Unknown Client'}
+            </h4>
+            {hasReport && <CheckCircle className="w-4 h-4 text-success shrink-0" />}
+            {isPastWithoutReport && <CircleAlert className="w-4 h-4 text-danger shrink-0" />}
+          </div>
 
-            {/* Worker */}
-            <div className="flex items-center gap-1.5 text-xs text-default-600">
-              <User className="w-3 h-3 shrink-0" />
-              <span className="truncate">{appointment.worker?.workerName || 'Unknown Worker'}</span>
-            </div>
+          {/* Worker */}
+          <div className="flex items-center gap-1.5 text-xs text-default-600">
+            <User className="w-3 h-3 shrink-0" />
+            <span className="truncate">{appointment.worker?.workerName || 'Unknown Worker'}</span>
+          </div>
 
-            {/* Time */}
-            <div className="flex items-center gap-1.5 text-xs text-default-600">
-              <Clock className="w-3 h-3 shrink-0" />
-              <span>
-                {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
-                {appointment.duration > 0 && (
-                  <span className="text-default-400 ml-1">({appointment.duration} мин)</span>
-                )}
+          {/* Time */}
+          <div className="flex items-center gap-1.5 text-xs text-default-600">
+            <Clock className="w-3 h-3 shrink-0" />
+            <span>
+              {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
+              {appointment.duration > 0 && (
+                <span className="text-default-400 ml-1">({appointment.duration} мин)</span>
+              )}
+            </span>
+          </div>
+
+          {/* Address */}
+          {appointment.client && (
+            <div className="flex items-start gap-1.5 text-xs text-default-500">
+              <MapPin className="w-3 h-3 shrink-0 mt-0.5" />
+              <span className="truncate">
+                {appointment.client.street} {appointment.client.houseNumber},{' '}
+                {appointment.client.postalCode} {appointment.client.city}
               </span>
             </div>
+          )}
 
-            {/* Address */}
-            {appointment.client && (
-              <div className="flex items-start gap-1.5 text-xs text-default-500">
-                <MapPin className="w-3 h-3 shrink-0 mt-0.5" />
-                <span className="truncate">
-                  {appointment.client.street} {appointment.client.houseNumber},{' '}
-                  {appointment.client.postalCode} {appointment.client.city}
-                </span>
-              </div>
+          {/* Tags */}
+          <div className="flex gap-1 flex-wrap mt-1">
+            {appointment.isFixedTime && (
+              <Chip size="sm" color="accent" variant="soft" className="text-xs">
+                Фикс. время
+              </Chip>
             )}
-
-            {/* Tags */}
-            <div className="flex gap-1 flex-wrap mt-1">
-              {appointment.isFixedTime && (
-                <Chip size="sm" color="accent" variant="soft" className="text-xs">
-                  Фикс. время
-                </Chip>
-              )}
-              {appointment.fahrzeit > 0 && (
-                <Chip size="sm" color="default" variant="soft" className="text-xs">
-                  +{appointment.fahrzeit} мин в пути
-                </Chip>
-              )}
-            </div>
+            {appointment.fahrzeit > 0 && (
+              <Chip size="sm" color="default" variant="soft" className="text-xs">
+                +{appointment.fahrzeit} мин в пути
+              </Chip>
+            )}
           </div>
-        </Card.Content>
-      </Card>
+        </div>
+      </div>
 
       {/* Mobile версия (< 800px) - только Chip с Tooltip */}
       <div

@@ -1,15 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
-import {
-  Modal,
-  Button,
-  Separator,
-  Label,
-  Switch,
-  TextField,
-  FieldError,
-} from '@heroui/react'
+import { Modal, Button, Separator, Label, Switch, TextField, FieldError } from '@heroui/react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { Appointment } from '@/types/scheduling'
 import { Clock, Save, Trash2, Car } from 'lucide-react'
@@ -55,31 +47,58 @@ export default function AppointmentModal({
   // Form state - lazy initializer to avoid creating object on every render
   // isFixedTime включён в formData как единый источник истины
   const [formData, setFormData] = useState(() =>
-    isNewAppointment || !appointment
-      ? {
-          clientID: '',
-          workerId: '',
-          date: new Date(),
-          startHour: 0,
-          startMinute: 0,
-          duration: 0,
-          fahrzeit: 0,
-          isDuration: false,
-          isDriveTime: false,
-          isFixedTime: false,
-        }
-      : {
-          clientID: appointment.clientID,
-          workerId: appointment.workerId,
-          date: new Date(appointment.date),
-          startHour: appointment.isFixedTime ? new Date(appointment.startTime).getHours() : 0,
-          startMinute: appointment.isFixedTime ? new Date(appointment.startTime).getMinutes() : 0,
-          duration: appointment.duration,
-          fahrzeit: appointment.fahrzeit,
-          isDuration: appointment.duration > 0,
-          isDriveTime: appointment.fahrzeit > 0,
-          isFixedTime: appointment.isFixedTime,
-        }
+    isNewAppointment
+      ? appointment
+        ? {
+            // Handle template appointment (e.g. from drag & drop)
+            clientID: appointment.clientID || '',
+            workerId: appointment.workerId || '',
+            date: new Date(selectedDate || appointment.date),
+            startHour: 0,
+            startMinute: 0,
+            duration: 60,
+            fahrzeit: 0,
+            isDuration: true,
+            isDriveTime: false,
+            isFixedTime: false,
+          }
+        : {
+            clientID: '',
+            workerId: '',
+            date: new Date(),
+            startHour: 0,
+            startMinute: 0,
+            duration: 0,
+            fahrzeit: 0,
+            isDuration: false,
+            isDriveTime: false,
+            isFixedTime: false,
+          }
+      : appointment
+        ? {
+            clientID: appointment.clientID,
+            workerId: appointment.workerId,
+            date: new Date(appointment.date),
+            startHour: appointment.isFixedTime ? new Date(appointment.startTime).getHours() : 0,
+            startMinute: appointment.isFixedTime ? new Date(appointment.startTime).getMinutes() : 0,
+            duration: appointment.duration,
+            fahrzeit: appointment.fahrzeit,
+            isDuration: appointment.duration > 0,
+            isDriveTime: appointment.fahrzeit > 0,
+            isFixedTime: appointment.isFixedTime,
+          }
+        : {
+            clientID: '',
+            workerId: '',
+            date: new Date(),
+            startHour: 0,
+            startMinute: 0,
+            duration: 0,
+            fahrzeit: 0,
+            isDuration: false,
+            isDriveTime: false,
+            isFixedTime: false,
+          }
   )
   if (process.env.NODE_ENV === 'development') {
     console.log('Initial formData:', formData)
@@ -103,6 +122,20 @@ export default function AppointmentModal({
         isDuration: appointment.duration > 0,
         isDriveTime: appointment.fahrzeit > 0,
         isFixedTime: appointment.isFixedTime,
+      })
+    } else if (isNewAppointment && appointment) {
+      // Handle template appointment (e.g. from drag & drop)
+      setFormData({
+        clientID: appointment.clientID || '',
+        workerId: appointment.workerId || '',
+        date: new Date(selectedDate || appointment.date),
+        startHour: 0,
+        startMinute: 0,
+        duration: 60,
+        fahrzeit: 0,
+        isDuration: true,
+        isDriveTime: false,
+        isFixedTime: false,
       })
     } else if (selectedDate) {
       setFormData(prev => ({

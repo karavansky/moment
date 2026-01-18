@@ -12,10 +12,11 @@ interface WeekViewProps {
   today: Date
   selectedDate?: Date
   onAppointmentPress?: (appointment: Appointment) => void
+  onExternalDrop?: (date: Date, type: 'client' | 'worker', id: string) => void
 }
 
 const WeekView = forwardRef<HTMLDivElement, WeekViewProps>(
-  ({ week, today, selectedDate, onAppointmentPress }, ref) => {
+  ({ week, today, selectedDate, onAppointmentPress, onExternalDrop }, ref) => {
     return (
       <div ref={ref} className="mb-2 sm:mb-4 select-none">
         {/* Название месяца (если это первая неделя месяца) */}
@@ -34,6 +35,7 @@ const WeekView = forwardRef<HTMLDivElement, WeekViewProps>(
               isToday={day.date ? isSameDate(day.date, today) : false}
               isSelected={day.date && selectedDate ? isSameDate(day.date, selectedDate) : false}
               onAppointmentPress={onAppointmentPress}
+              onExternalDrop={onExternalDrop}
             />
           ))}
         </div>

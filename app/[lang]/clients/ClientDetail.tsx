@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useTransition, useRef, useEffect, useCallback, memo } from 'react'
+import { useState, useTransition, useRef, useEffect, useCallback, memo } from 'react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { useLanguage } from '@/hooks/useLanguage'
 import { Client } from '@/types/scheduling'
