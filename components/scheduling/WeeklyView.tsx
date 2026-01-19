@@ -92,7 +92,8 @@ const DayColumn = React.memo(
 
     useEffect(() => {
       if (scrollRef.current) {
-        let scrollToMinutes = 6 * 60 // 6:00 AM default
+        const HOUR_HEIGHT = 48 // 48px (min-h-12)
+        let targetMinutes = 6 * 60 // 6:00 AM default
 
         if (appointments.length > 0) {
           const earliestStart = Math.min(
@@ -101,17 +102,20 @@ const DayColumn = React.memo(
               return date.getHours() * 60 + date.getMinutes()
             })
           )
-          scrollToMinutes = Math.max(0, earliestStart - 30)
+          targetMinutes = Math.max(0, earliestStart - 30)
         }
 
-        requestAnimationFrame(() => {
+        const scrollToPixels = (targetMinutes / 60) * HOUR_HEIGHT
+
+        setTimeout(() => {
           if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollToMinutes
+            scrollRef.current.scrollTop = scrollToPixels
           }
-        })
+        }, 0)
       }
     }, [appointments])
-
+//   ${isToday ? 'border-2 border-danger' : isCurrentDay ? 'border-2 border-primary' : ''} 
+    
     return (
       <div
         onClick={() => setCurrentDate(day)}
@@ -124,13 +128,10 @@ const DayColumn = React.memo(
         style={{ width: containerWidth }}
       >
         <Card
-          className={`
-      h-full
-      ${isToday ? 'border-2 border-danger' : isCurrentDay ? 'border-2 border-primary' : ''}
-    `}
+          className={`pt-1  h-full   `}
         >
           <Card.Content className="p-0 h-full flex flex-col">
-            <div className="mb-3 pb-2 border-b border-divider text-center">
+            <div className="mb-1 pb-1 border-b  border-gray-200 dark:border-gray-800  text-center">
               <div
                 className={`
             text-lg font-bold
@@ -142,8 +143,8 @@ const DayColumn = React.memo(
               </div>
             </div>
 
-            <ScrollShadow ref={scrollRef} className="flex-1 min-h-0" hideScrollBar={false}>
-              <div className="flex flex-col relative pb-10">
+            <ScrollShadow ref={scrollRef} className="flex-1 min-h-0" hideScrollBar={false} size={4}>
+              <div className="flex flex-col relative ">
                 {Array.from({ length: 24 }).map((_, hour) => {
                   const hourApps = appointmentsByHour[hour] || []
                   const isCurrentHour = isToday && hour === now.getHours()
@@ -157,17 +158,17 @@ const DayColumn = React.memo(
                       {isCurrentHour && (
                         <div
                           className="absolute left-0 right-0 z-20 pointer-events-none flex items-center"
-                          style={{ top: `${(currentMinute / 60) * 100}%` }}
-                          style={{ top: `${(currentMinute / 60) * 100}%`, transform: 'translateY(-50%)' }}
+                          style={{
+                            top: `${(currentMinute / 60) * 100}%`,
+                            transform: 'translateY(-50%)',
+                          }}
                         >
-                          <div className="w-full border-t-2 border-red-500 opacity-50" />
-                          <div className="absolute -left-1 w-2 h-2 rounded-full bg-red-500" />
                           <div className="w-full h-0.5 bg-red-500 opacity-50" />
                           <div className="absolute -left-1 w-2 h-2 rounded-full bg-red-500 top-1/2 -translate-y-1/2" />
                         </div>
                       )}
                       <div className="w-12 shrink-0 border-r border-gray-200 dark:border-gray-800 relative">
-                        <span className="absolute -top-2.5 right-1 text-xs text-default-500 bg-background px-1">
+                        <span className="absolute top-1 right-1 text-xs text-default-500 bg-background px-1">
                           {`${String(hour).padStart(2, '0')}:00`}
                         </span>
                       </div>
@@ -412,7 +413,7 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
         <div
           {...props}
           style={{ ...props.style, width: containerWidth }}
-          className="h-full shrink-0 snap-center p-2"
+          className="h-full shrink-0 snap-center p-0"
         >
           {children}
         </div>
