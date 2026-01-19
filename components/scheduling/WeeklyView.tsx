@@ -298,6 +298,12 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
   const scrollContainerRef = useRef<HTMLElement>(null)
   const [containerWidth, setContainerWidth] = useState(0)
 
+  const headerVirtuosoRef = useRef<VirtuosoHandle>(null)
+  const headerContainerRef = useRef<HTMLDivElement>(null)
+  const [headerWidth, setHeaderWidth] = useState(0)
+  const skipHeaderScrollRef = useRef(false)
+  const isHeaderProgrammaticScroll = useRef(false)
+
   // Refs для управления скроллом
   const isProgrammaticScroll = useRef(false)
   const skipScrollToDateRef = useRef(false)
@@ -321,6 +327,19 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
     return () => resizeObserver.disconnect()
   }, [])
 
+  useEffect(() => {
+    if (!headerContainerRef.current) return
+    const resizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0) {
+          setHeaderWidth(entry.contentRect.width)
+        }
+      }
+    })
+    resizeObserver.observe(headerContainerRef.current)
+    return () => resizeObserver.disconnect()
+  }, [])
+
   // Создаем большой, но конечный список дней для виртуализации
   // +/- 1 год от сегодняшнего дня
   const allDays = useMemo(() => {
@@ -336,6 +355,22 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
     }
     return days
   }, [today])
+
+  const allWeeks = useMemo(() => {
+    const weeks = []
+    const centerDate = getMonday(today)
+    const weeksToRender = 52
+    for (let i = -weeksToRender; i <= weeksToRender; i++) {
+      const date = new Date(centerDate)
+      date.setDate(centerDate.getDate() + i * 7)
+      weeks.push(getOnlyDate(date))
+    }
+    return weeks
+  }, [today])
+
+  const [initialWeekIndex] = useState(() => {
+    return allWeeks.findIndex(week => isSameDate(week, getMonday(today)))
+  })
 
   // Генерируем текущую неделю для header (desktop и tablet)
   const currentWeekDays = useMemo(() => {
@@ -434,6 +469,28 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
     }
   }, [currentDate, allDays])
 
+  // Sync header scroll when currentWeekStart changes
+  useEffect(() => {
+    const weekIndex = allWeeks.findIndex(week => isSameDate(week, currentWeekStart))
+    if (headerVirtuosoRef.current && weekIndex !== -1) {
+      if (skipHeaderScrollRef.current) {
+        skipHeaderScrollRef.current = false
+        return
+      }
+
+      isHeaderProgrammaticScroll.current = true
+      headerVirtuosoRef.current.scrollToIndex({
+        index: weekIndex,
+        align: 'start',
+        behavior: 'smooth',
+      })
+
+      setTimeout(() => {
+        isHeaderProgrammaticScroll.current = false
+      }, 500)
+    }
+  }, [currentWeekStart, allWeeks])
+
   // Инициализируем начальный индекс один раз при загрузке
   const [initialTopMostItemIndex] = useState(() => {
     const index = allDays.findIndex(day => isSameDate(day, currentDate))
@@ -477,6 +534,33 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
       ),
     }),
     [containerWidth]
+  )
+
+  const headerVirtuosoComponents = useMemo(
+    () => ({
+      List: React.forwardRef<
+        HTMLDivElement,
+        { style?: React.CSSProperties; children?: React.ReactNode }
+      >(({ style, children }, ref) => (
+        <div
+          ref={ref}
+          style={{ ...style, display: 'flex', flexDirection: 'row' }}
+          className="h-full"
+        >
+          {children}
+        </div>
+      )),
+      Item: ({ children, ...props }: any) => (
+        <div
+          {...props}
+          style={{ ...props.style, width: headerWidth }}
+          className="h-full shrink-0 snap-center flex justify-center"
+        >
+          {children}
+        </div>
+      ),
+    }),
+    [headerWidth]
   )
 
   const handleAppointmentClick = useCallback(
@@ -634,46 +718,105 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
           </Button>
         </div>
 
-        {/* Week days header - Desktop version (≥1024px, static, full names) */}
-        <div className="flex justify-center gap-2 px-2">
-          {currentWeekDays.map((day, dayIndex) => {
-            const isToday = isSameDate(day, today)
-            const isCurrentDay = isSameDate(day, currentDate)
+        {/* Week days header */}
+        {/* <div className="flex justify-center gap-2 px-2">
+          {currentWeekDays.map((day, dayIndex) => { ... })}
+        </div> */}
+        <div ref={headerContainerRef} className="w-full h-16 relative">
+          {headerWidth > 0 && (
+            <Virtuoso
+              ref={headerVirtuosoRef}
+              horizontalDirection
+              className="snap-x snap-mandatory"
+              style={{ height: '100%', width: '100%', position: 'absolute', top: 0, left: 0 }}
+              data={allWeeks}
+              initialTopMostItemIndex={initialWeekIndex}
+              components={headerVirtuosoComponents}
+              onScroll={e => {
+                if (isHeaderProgrammaticScroll.current) return
+                const target = e.currentTarget as HTMLElement
+                const scrollLeft = target.scrollLeft
+                if (headerWidth === 0) return
 
-            // Получаем полное название дня недели на основе текущей локали
-            const weekdayLong = day.toLocaleDateString(lang, { weekday: 'long' })
-            const capitalizedWeekdayLong =
-              weekdayLong.charAt(0).toUpperCase() + weekdayLong.slice(1)
+                const index = Math.round(scrollLeft / headerWidth)
 
-            // Определяем вариант кнопки
-            const buttonVariant = isCurrentDay ? 'primary' : isToday ? 'danger' : 'tertiary'
+                if (index >= 0 && index < allWeeks.length) {
+                  const newWeekStart = allWeeks[index]
+                  if (!isSameDate(newWeekStart, currentWeekStart)) {
+                    skipHeaderScrollRef.current = true
 
-            return (
-              <div key={dayIndex} className="flex flex-1 flex-col items-center gap-1 min-w-0">
-                {/* Полное название дня */}
-                <div className="text-xs text-default-500 text-center hidden sm:block">
-                  {capitalizedWeekdayLong}
-                </div>
-                <div className="text-xs text-default-500 text-center block sm:hidden">
-                  {WEEKDAY_NAMES[dayIndex]}
-                </div>
-                <Button
-                  size="sm"
-                  variant={buttonVariant}
-                  onPress={() => {
-                    if (isSameDate(day, currentDate)) return
-                    //     skipScrollToDateRef.current = false
-                    isProgrammaticScroll.current = true
-                    setCurrentDate(day)
-                    setSelectedDate(day)
-                  }}
-                  className="min-w-0 w-10 h-10 p-0 rounded-full flex items-center justify-center"
-                >
-                  <div className="text-lg font-bold">{day.getDate()}</div>
-                </Button>
-              </div>
-            )
-          })}
+                    const timeDiff = newWeekStart.getTime() - currentWeekStart.getTime()
+                    const daysDiff = Math.round(timeDiff / (1000 * 60 * 60 * 24))
+
+                    const newDate = new Date(currentDate)
+                    newDate.setDate(currentDate.getDate() + daysDiff)
+                    const newDateOnly = getOnlyDate(newDate)
+
+                    setCurrentDate(newDateOnly)
+                    setSelectedDate(newDateOnly)
+                    setCurrentWeekStart(newWeekStart)
+                  }
+                }
+              }}
+              itemContent={(index, weekStart) => {
+                const days = []
+                for (let i = 0; i < 7; i++) {
+                  const date = new Date(weekStart)
+                  date.setDate(weekStart.getDate() + i)
+                  days.push(getOnlyDate(date))
+                }
+
+                return (
+                  <div className="flex justify-center gap-2 px-2 w-full">
+                    {days.map((day, dayIndex) => {
+                      const isToday = isSameDate(day, today)
+                      const isCurrentDay = isSameDate(day, currentDate)
+
+                      // Получаем полное название дня недели на основе текущей локали
+                      const weekdayLong = day.toLocaleDateString(lang, { weekday: 'long' })
+                      const capitalizedWeekdayLong =
+                        weekdayLong.charAt(0).toUpperCase() + weekdayLong.slice(1)
+
+                      // Определяем вариант кнопки
+                      const buttonVariant = isCurrentDay
+                        ? 'primary'
+                        : isToday
+                          ? 'danger'
+                          : 'tertiary'
+
+                      return (
+                        <div
+                          key={dayIndex}
+                          className="flex flex-1 flex-col items-center gap-1 min-w-0"
+                        >
+                          {/* Полное название дня */}
+                          <div className="text-xs text-default-500 text-center hidden sm:block">
+                            {capitalizedWeekdayLong}
+                          </div>
+                          <div className="text-xs text-default-500 text-center block sm:hidden">
+                            {WEEKDAY_NAMES[dayIndex]}
+                          </div>
+                          <Button
+                            size="sm"
+                            variant={buttonVariant}
+                            onPress={() => {
+                              if (isSameDate(day, currentDate)) return
+                              isProgrammaticScroll.current = true
+                              setCurrentDate(day)
+                              setSelectedDate(day)
+                            }}
+                            className="min-w-0 w-10 h-10 p-0 rounded-full flex items-center justify-center"
+                          >
+                            <div className="text-lg font-bold">{day.getDate()}</div>
+                          </Button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )
+              }}
+            />
+          )}
         </div>
       </div>
 
