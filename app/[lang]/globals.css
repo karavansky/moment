@@ -276,6 +276,15 @@
     transform: scale(1.1);
   }
 
+  .no-scrollbar::-webkit-scrollbar {
+    display: none; /* Скрывает скроллбар в Chrome, Safari и Opera */
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE и Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  
   @keyframes markerBounce {
     0% {
       opacity: 0;

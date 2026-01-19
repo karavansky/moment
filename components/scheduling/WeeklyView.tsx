@@ -309,10 +309,15 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
   const skipScrollToDateRef = useRef(false)
   const currentDateRef = useRef(currentDate)
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const currentWeekStartRef = useRef(currentWeekStart)
 
   useEffect(() => {
     currentDateRef.current = currentDate
   }, [currentDate])
+
+  useEffect(() => {
+    currentWeekStartRef.current = currentWeekStart
+  }, [currentWeekStart])
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -369,7 +374,7 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
   }, [today])
 
   const [initialWeekIndex] = useState(() => {
-    return allWeeks.findIndex(week => isSameDate(week, getMonday(today)))
+    return allWeeks.findIndex(week => isSameDate(week, currentWeekStart))
   })
 
   // Генерируем текущую неделю для header (desktop и tablet)
@@ -727,7 +732,7 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
             <Virtuoso
               ref={headerVirtuosoRef}
               horizontalDirection
-              className="snap-x snap-mandatory"
+              className="snap-x snap-mandatory no-scrollbar"
               style={{ height: '100%', width: '100%', position: 'absolute', top: 0, left: 0 }}
               data={allWeeks}
               initialTopMostItemIndex={initialWeekIndex}
@@ -742,14 +747,20 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
 
                 if (index >= 0 && index < allWeeks.length) {
                   const newWeekStart = allWeeks[index]
-                  if (!isSameDate(newWeekStart, currentWeekStart)) {
+                  const currentWeekStartVal = currentWeekStartRef.current
+                  if (!isSameDate(newWeekStart, currentWeekStartVal)) {
                     skipHeaderScrollRef.current = true
 
-                    const timeDiff = newWeekStart.getTime() - currentWeekStart.getTime()
-                    const daysDiff = Math.round(timeDiff / (1000 * 60 * 60 * 24))
+                    // Calculate the new date preserving the day of the week
+                    // We calculate the offset of the current date from its week's Monday
+                    // and apply that offset to the new week's Monday.
+                    // This is more robust than calculating the difference between weeks
+                    // because it doesn't rely on currentWeekStartRef being perfectly in sync with currentDateRef
+                    const currentVal = currentDateRef.current
+                    const currentMonday = getMonday(currentVal)
+                    const offsetInMs = currentVal.getTime() - currentMonday.getTime()
 
-                    const newDate = new Date(currentDate)
-                    newDate.setDate(currentDate.getDate() + daysDiff)
+                    const newDate = new Date(newWeekStart.getTime() + offsetInMs)
                     const newDateOnly = getOnlyDate(newDate)
 
                     setCurrentDate(newDateOnly)
@@ -826,7 +837,7 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
           <Virtuoso
             ref={virtuosoRef}
             horizontalDirection
-            className="snap-x snap-mandatory"
+            className="snap-x snap-mandatory no-scrollbar"
             style={{ height: '100%', width: '100%', position: 'absolute', top: 0, left: 0 }}
             data={allDays}
             initialTopMostItemIndex={initialTopMostItemIndex}
