@@ -101,8 +101,8 @@ export default function AppointmentModal({
           }
   )
   if (process.env.NODE_ENV === 'development') {
-    console.log('Initial formData:', formData)
-    console.log('Appointment prop:', appointment)
+   // console.log('Initial formData:', formData)
+   // console.log('Appointment prop:', appointment)
   }
   const [isDateInvalid, setIsDateInvalid] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
