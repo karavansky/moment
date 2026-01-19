@@ -50,6 +50,8 @@ const DayColumn = React.memo(
     onDragOver,
     onDrop,
     onAppointmentClick,
+    onExternalDrop,
+    moveAppointmentToDate,
   }: {
     day: Date
     today: Date
@@ -61,12 +63,15 @@ const DayColumn = React.memo(
     onDragOver: (e: React.DragEvent<HTMLDivElement>, date: Date) => void
     onDrop: (e: React.DragEvent<HTMLDivElement>, date: Date) => void
     onAppointmentClick: (id: string) => void
+    onExternalDrop?: (date: Date, type: 'client' | 'worker', id: string) => void
+    moveAppointmentToDate: (id: string, date: Date) => void
   }) => {
     const scrollRef = useRef<HTMLDivElement>(null)
     const isCurrentDay = isSameDate(day, currentDate)
 
     const [now, setNow] = useState(new Date())
     const isToday = isSameDate(day, now)
+    const [dragOverHour, setDragOverHour] = useState<number | null>(null)
 
     useEffect(() => {
       const interval = setInterval(() => setNow(new Date()), 60000)
@@ -114,8 +119,55 @@ const DayColumn = React.memo(
         }, 0)
       }
     }, [appointments])
-//   ${isToday ? 'border-2 border-danger' : isCurrentDay ? 'border-2 border-primary' : ''} 
-    
+    //   ${isToday ? 'border-2 border-danger' : isCurrentDay ? 'border-2 border-primary' : ''}
+
+    const handleHourDragOver = (e: React.DragEvent<HTMLDivElement>, hour: number) => {
+      e.preventDefault()
+      e.stopPropagation()
+
+      const targetDate = new Date(day)
+      targetDate.setHours(hour, 0, 0, 0)
+      const now = new Date()
+
+      // Разрешаем, если день в будущем или сегодня (но час не прошел)
+      if (getOnlyDate(targetDate) < getOnlyDate(now)) {
+        e.dataTransfer.dropEffect = 'none'
+        setDragOverHour(null)
+        return
+      }
+      if (isSameDate(targetDate, now) && hour < now.getHours()) {
+        e.dataTransfer.dropEffect = 'none'
+        setDragOverHour(null)
+        return
+      }
+
+      e.dataTransfer.dropEffect = 'move'
+      setDragOverHour(hour)
+    }
+
+    const handleHourDrop = (e: React.DragEvent<HTMLDivElement>, hour: number) => {
+      e.preventDefault()
+      e.stopPropagation()
+      setDragOverHour(null)
+
+      const targetDate = new Date(day)
+      targetDate.setHours(hour, 0, 0, 0)
+
+      try {
+        const rawData = e.dataTransfer.getData('application/json')
+        if (!rawData) return
+        const data = JSON.parse(rawData)
+
+        if (data.type === 'client' || data.type === 'worker') {
+          onExternalDrop?.(targetDate, data.type, data.id)
+        } else if (data.appointmentId) {
+          moveAppointmentToDate(data.appointmentId, getOnlyDate(targetDate))
+        }
+      } catch (err) {
+        console.error(err)
+      }
+    }
+
     return (
       <div
         onClick={() => setCurrentDate(day)}
@@ -127,9 +179,7 @@ const DayColumn = React.memo(
     `}
         style={{ width: containerWidth }}
       >
-        <Card
-          className={`pt-1  h-full   `}
-        >
+        <Card className={`pt-1  h-full   `}>
           <Card.Content className="p-0 h-full flex flex-col">
             <div className="mb-1 pb-1 border-b  border-gray-200 dark:border-gray-800  text-center">
               <div
@@ -149,11 +199,18 @@ const DayColumn = React.memo(
                   const hourApps = appointmentsByHour[hour] || []
                   const isCurrentHour = isToday && hour === now.getHours()
                   const currentMinute = now.getMinutes()
+                  const isDragOver = dragOverHour === hour
 
                   return (
                     <div
                       key={hour}
-                      className="flex min-h-12 border-t border-gray-200 dark:border-gray-800 shrink-0 relative"
+                      className={`flex min-h-12 border-t border-gray-200 dark:border-gray-800 shrink-0 rounded-lg relative ${isDragOver ? 'bg-success/20' : ''}`}
+                      onDragOver={e => handleHourDragOver(e, hour)}
+                      onDragLeave={e => {
+                        if (e.currentTarget.contains(e.relatedTarget as Node)) return
+                        setDragOverHour(null)
+                      }}
+                      onDrop={e => handleHourDrop(e, hour)}
                     >
                       {isCurrentHour && (
                         <div
@@ -670,6 +727,8 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
                   onAppointmentClick={handleAppointmentClick}
+                  onExternalDrop={onExternalDrop}
+                  moveAppointmentToDate={moveAppointmentToDate}
                 />
               )
             }}
