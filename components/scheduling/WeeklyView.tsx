@@ -319,6 +319,18 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
   const headerScrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
+    const handleResize = () => {
+      lastMainResizeTimeRef.current = Date.now()
+      console.log(
+        'Window resize detected lastMainResizeTimeRef updated',
+        lastMainResizeTimeRef.current
+      )
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  useEffect(() => {
     currentDateRef.current = currentDate
   }, [currentDate])
 
@@ -357,6 +369,7 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
   useEffect(() => {
     if (!containerRef.current) return
     const resizeObserver = new ResizeObserver(entries => {
+      console.log('[ResizeObserver] containerRef')
       for (const entry of entries) {
         if (entry.contentRect.width > 0) {
           lastMainResizeTimeRef.current = Date.now()
@@ -396,6 +409,8 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
   useEffect(() => {
     if (!headerContainerRef.current) return
     const resizeObserver = new ResizeObserver(entries => {
+      console.log('[ResizeObserver] headerContainerRef')
+
       for (const entry of entries) {
         if (entry.contentRect.width > 0) {
           lastMainResizeTimeRef.current = Date.now()
@@ -438,7 +453,7 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
   })
 
   // Переключение недели
-  const handlePrevWeek = () => {
+  const handlePrevWeek = useCallback(() => {
     const newDate = new Date(currentDate)
     newDate.setDate(currentDate.getDate() - 7)
     const newDateOnly = getOnlyDate(newDate)
@@ -449,9 +464,9 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
     setCurrentDate(newDateOnly)
     setSelectedDate(newDateOnly)
     setCurrentWeekStart(getMonday(newDateOnly))
-  }
+  }, [currentDate, setSelectedDate, setCurrentWeekStart, setCurrentDate, skipScrollToDateRef.current, skipHeaderScrollRef.current, isProgrammaticScroll.current])
 
-  const handleNextWeek = () => {
+  const handleNextWeek = useCallback(() => {
     const newDate = new Date(currentDate)
     newDate.setDate(currentDate.getDate() + 7)
     const newDateOnly = getOnlyDate(newDate)
@@ -462,7 +477,7 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
     setCurrentDate(newDateOnly)
     setSelectedDate(newDateOnly)
     setCurrentWeekStart(getMonday(newDateOnly))
-  }
+  }, [currentDate, setSelectedDate, setCurrentWeekStart, setCurrentDate, , skipScrollToDateRef.current, skipHeaderScrollRef.current, isProgrammaticScroll.current])
 
   // Scroll to current day when it changes (Programmatic)
   useEffect(() => {
@@ -572,6 +587,9 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
   useEffect(() => {
     if (selectedDate && !isSameDate(currentDate, selectedDate)) {
       skipScrollToDateRef.current = false
+      console.log(
+        'Синхронизация selectedDate -> currentDate (если дата выбрана извне или загрузилась позже) '
+      )
       setCurrentDate(getOnlyDate(selectedDate))
       const newMonday = getMonday(selectedDate)
       setCurrentWeekStart(prev => (isSameDate(prev, newMonday) ? prev : newMonday))
@@ -812,7 +830,10 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
                 // This prevents incorrect index calculation during resize/sidebar toggle
                 if (Date.now() - lastMainResizeTimeRef.current < 1000) return
                 if (Math.abs(target.clientWidth - currentHeaderWidth) > 1) return
-
+                console.log(
+                  '[Header scroll event] Date.now() - lastMainResizeTimeRef.current < 1000',
+                  Date.now() - lastMainResizeTimeRef.current < 1000
+                )
                 const scrollLeft = target.scrollLeft
                 if (currentHeaderWidth === 0) return
 
@@ -823,7 +844,9 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
                   const currentWeekStartVal = currentWeekStartRef.current
                   if (!isSameDate(newWeekStart, currentWeekStartVal)) {
                     skipHeaderScrollRef.current = true
-
+                    console.log(
+                      '[Header scroll event] !isSameDate(newWeekStart, currentWeekStartVal) to true'
+                    )
                     // Calculate the new date preserving the day of the week
                     // We calculate the offset of the current date from its week's Monday
                     // and apply that offset to the new week's Monday.
@@ -924,15 +947,23 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
 
               if (Date.now() - lastMainResizeTimeRef.current < 1000) return
               if (Math.abs(target.clientWidth - currentContainerWidth) > 1) return
-              
+
               const scrollLeft = target.scrollLeft
               if (currentContainerWidth === 0) return
+
+              console.log(
+                '[DayView scroll event] Date.now() - lastMainResizeTimeRef.current < 1000',
+                Date.now() - lastMainResizeTimeRef.current < 1000
+              )
 
               const index = Math.round(scrollLeft / currentContainerWidth)
 
               if (index >= 0 && index < allDays.length) {
                 const newDate = allDays[index]
                 if (!isSameDate(newDate, currentDateRef.current)) {
+                  console.log(
+                    '[DayView scroll event] !isSameDate(newDate, currentDateRef.current) to true'
+                  )
                   skipScrollToDateRef.current = true
                   setCurrentDate(newDate)
                   setSelectedDate(newDate)
