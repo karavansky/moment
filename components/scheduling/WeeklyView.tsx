@@ -398,7 +398,7 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
     const resizeObserver = new ResizeObserver(entries => {
       for (const entry of entries) {
         if (entry.contentRect.width > 0) {
-          lastResizeTimeRef.current = Date.now()
+          lastMainResizeTimeRef.current = Date.now()
           isHeaderProgrammaticScroll.current = true
           setHeaderWidth(entry.contentRect.width)
           headerWidthRef.current = entry.contentRect.width
@@ -810,7 +810,8 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
 
                 // Ignore scroll events if the container width doesn't match the item width
                 // This prevents incorrect index calculation during resize/sidebar toggle
-                if (Math.abs(target.clientWidth - currentHeaderWidth) > 5) return
+                if (Date.now() - lastMainResizeTimeRef.current < 1000) return
+                if (Math.abs(target.clientWidth - currentHeaderWidth) > 1) return
 
                 const scrollLeft = target.scrollLeft
                 if (currentHeaderWidth === 0) return
@@ -921,9 +922,9 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
               const target = e.currentTarget as HTMLElement
               const currentContainerWidth = containerWidthRef.current
 
-              if (Date.now() - lastMainResizeTimeRef.current < 500) return
-              if (Math.abs(target.clientWidth - currentContainerWidth) > 5) return
-
+              if (Date.now() - lastMainResizeTimeRef.current < 1000) return
+              if (Math.abs(target.clientWidth - currentContainerWidth) > 1) return
+              
               const scrollLeft = target.scrollLeft
               if (currentContainerWidth === 0) return
 
