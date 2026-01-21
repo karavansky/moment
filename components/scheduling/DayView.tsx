@@ -15,6 +15,7 @@ interface DayViewProps {
   isSelected?: boolean
   onAppointmentPress?: (appointment: Appointment) => void
   onExternalDrop?: (date: Date, type: 'client' | 'worker', id: string) => void
+  onDayPress?: (date: Date) => void
 }
 
 function DayView({
@@ -23,13 +24,15 @@ function DayView({
   isSelected = false,
   onAppointmentPress,
   onExternalDrop,
+  onDayPress,
 }: DayViewProps) {
   const { setSelectedDate, setSelectedAppointment, moveAppointmentToDate } = useScheduling()
   const [isDragOver, setIsDragOver] = useState(false)
+  const [isPressed, setIsPressed] = useState(false)
   const { isMobile, isReady } = usePlatformContext()
   // Ref для таймера задержки снятия выделения
   const dragLeaveTimerRef = useRef<NodeJS.Timeout | null>(null)
-
+  
   // Глобальный слушатель для надежного сброса состояния при окончании любого перетаскивания
   useEffect(() => {
     const handleGlobalDragEnd = () => {
@@ -52,10 +55,16 @@ function DayView({
   const today = useMemo(() => getOnlyDate(new Date()), [])
 
   const handleDayClick = useCallback(() => {
+    console.log('Day clicked:', day.date)
+    setIsPressed(true)
     if (day.date) {
-      setSelectedDate(day.date)
+      if (onDayPress) {
+        onDayPress(day.date)
+      } else {
+        setSelectedDate(day.date)
+      }
     }
-  }, [day.date, setSelectedDate])
+  }, [day.date, setSelectedDate, onDayPress, setIsPressed])
 
   const handleAppointmentClick = useCallback(
     (appointmentId: string) => {
@@ -81,6 +90,22 @@ function DayView({
     [today]
   )
 
+  // Handlers for manual pressed state
+  const handleMouseDown = useCallback(() => {
+    console.log('MouseDown on day:', day.date)
+    if (day.date && canDropHere(day.date)) {
+      setIsPressed(true)
+    }
+  }, [day.date, canDropHere])
+
+  const handleMouseUp = useCallback(() => {
+    setIsPressed(false)
+  }, [])
+
+  const handleMouseLeaveBtn = useCallback(() => {
+    setIsPressed(false)
+  }, [])
+
   const handleDragOver = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
       if (!day.date) return
@@ -93,7 +118,6 @@ function DayView({
         clearTimeout(dragLeaveTimerRef.current)
         dragLeaveTimerRef.current = null
       }
-
       // Включаем подсветку, если она еще не включена
       if (!isDragOver) setIsDragOver(true)
     },
@@ -177,9 +201,9 @@ function DayView({
   return (
     <div
       className={`
-        lg:min-w-30 ${isMobile ? 'min-h-12' : 'min-h-24'} h-full
+        ${isMobile ? 'min-h-12' : 'min-h-24'} h-full
         transition-all duration-200
-        select-none
+        select-none 
       `}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -188,29 +212,33 @@ function DayView({
       <button
         type="button"
         onClick={!isPast ? handleDayClick : undefined}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeaveBtn}
         disabled={isPast}
-        className="w-full h-full text-left focus:outline-none"
+        className={`w-full h-full text-left rounded-xl`}
       >
         {/* Desktop версия (≥ 800px) - красивый Card */}
         <Card
           className={`
             hidden lg:block
             h-full
+            transition-transform duration-100 ease-in-out
+            ${isPressed ? 'scale-[0.95] bg-surface-quaternary' : ''}
             ${isPast ? 'cursor-not-allowed' : 'cursor-pointer hover:shadow-md'}
             ${isToday && !isPast ? 'border-2 border-primary' : ''}
-            ${isSelected ? 'ring-2 ring-primary' : ''}
             ${isDragOver && canDrop ? 'bg-success/50 border-2 border-success' : ''}
             ${isDragOver && !canDrop ? 'bg-danger/50 border-2 border-danger' : ''}
           `}
         >
           <Card.Content className="p-0">
             {/* День */}
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between ">
               <div className="flex items-center gap-1">
-                {isToday && !isPast && <Calendar className="w-4 h-4 text-primary" />}
+                {isToday && !isPast && <Calendar className="w-4 h-4 " />}
                 <span
                   className={`
-                    text-sm font-semibold inline-flex items-center justify-center select-none
+                    text-md font-normal inline-flex items-center justify-center select-none
                     ${
                       isToday && !isPast
                         ? 'bg-danger text-white rounded-full w-6 h-6'
@@ -218,9 +246,10 @@ function DayView({
                           ? 'text-default-400'
                           : 'text-foreground'
                     }
+                    ${isPast ? 'opacity-50' : ''}
                   `}
                 >
-                  {day.day}
+                  {day.day} 
                 </span>
               </div>
 
@@ -252,7 +281,7 @@ function DayView({
             )}
 
             {/* Appointments */}
-            <div className="space-y-1 ">
+            <div className="space-y-1 " onMouseDown={(e) => e.stopPropagation()}>
               {day.appointments.map(appointment => (
                 <AppointmentCard
                   key={appointment.id}
@@ -272,8 +301,8 @@ function DayView({
             w-full h-full
             pt-0.5 pb-0.5
             flex flex-col
-            rounded-md
-            
+            rounded-xl
+            ${isPressed ? 'scale-[0.95] bg-surface-quaternary' : ''}
             ${isToday && !isPast ? 'border-l-2 border-primary' : 'border-l border-divider'}
             ${
               isDragOver
@@ -290,7 +319,7 @@ function DayView({
           <div className="px-0.5 mb-0.5 shrink-0 text-center">
             <span
               className={`
-                text-[10px] font-semibold inline-flex items-center justify-center select-none
+                text-[14px] font-semibold inline-flex items-center justify-center select-none
                 ${
                   isToday && !isPast
                     ? 'bg-danger text-white rounded-full w-5 h-5'
@@ -319,7 +348,7 @@ function DayView({
           )}
 
           {/* Appointments */}
-          <div className="space-y-2 flex-1">  
+          <div className="space-y-2 flex-1" onMouseDown={(e) => e.stopPropagation()}>
             {day.appointments.slice(0, 3).map(appointment => (
               <AppointmentCard
                 key={appointment.id}

@@ -54,6 +54,13 @@ function DienstplanView() {
     setIsModalOpen(true)
   }, [setSelectedAppointment, setIsNewAppointment, setIsModalOpen])
 
+  const handlePressOnDay = useCallback((day: Date) => {
+    startTransition(() => {
+      setViewMode('week')
+    })
+    setSelectedDate(day)
+  }, [setSelectedDate])
+
   // Обработчик клика на appointment - прокидывается через props в DayView
   const handlePressOnAppointment = useCallback(
     (appointment: NonNullable<typeof selectedAppointment>) => {
@@ -199,6 +206,7 @@ function DienstplanView() {
                   selectedDate={selectedDate}
                   onAppointmentPress={handlePressOnAppointment}
                   onExternalDrop={handleExternalDrop}
+                  onDayPress={handlePressOnDay}
                 />
               </motion.div>
             ) : (

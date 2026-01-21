@@ -13,19 +13,23 @@ interface WeekViewProps {
   selectedDate?: Date
   onAppointmentPress?: (appointment: Appointment) => void
   onExternalDrop?: (date: Date, type: 'client' | 'worker', id: string) => void
+  onDayPress?: (date: Date) => void
 }
 
 const WeekView = forwardRef<HTMLDivElement, WeekViewProps>(
-  ({ week, today, selectedDate, onAppointmentPress, onExternalDrop }, ref) => {
+  ({ week, today, selectedDate, onAppointmentPress, onExternalDrop, onDayPress }, ref) => {
     return (
       <div ref={ref} className="mb-2 sm:mb-4 select-none h-full flex flex-col">
         {/* Название месяца (если это первая неделя месяца) */}
         {week.monthName && (
-          <div className="bg-default-100 px-3 sm:px-4 py-2 border-b border-divider select-none shrink-0">
-            <h2 className="text-base sm:text-lg font-bold text-foreground">{week.monthName}</h2>
-          </div>
+          <>
+            <Separator />
+            <div className="bg-default-100 px-3 sm:px-4 pt-2 pb-0 border-b border-divider select-none shrink-0">
+              <h2 className="text-base sm:text-lg font-bold text-foreground">{week.monthName}</h2>
+            </div>
+          </>
         )}
-        <Separator />
+
         {/* Дни недели */}
         <div className="grid grid-cols-7 gap-0.5 sm:gap-1 bg-divider p-0.5 sm:p-1 flex-1 min-h-0">
           {week.days.map(day => (
@@ -36,6 +40,7 @@ const WeekView = forwardRef<HTMLDivElement, WeekViewProps>(
               isSelected={day.date && selectedDate ? isSameDate(day.date, selectedDate) : false}
               onAppointmentPress={onAppointmentPress}
               onExternalDrop={onExternalDrop}
+              onDayPress={onDayPress}
             />
           ))}
         </div>

@@ -13,6 +13,7 @@ interface CalendarViewProps {
   selectedDate?: Date
   onAppointmentPress?: (appointment: Appointment) => void
   onExternalDrop?: (date: Date, type: 'client' | 'worker', id: string) => void
+  onDayPress?: (date: Date) => void
 }
 
 // Функция для получения полных названий дней недели на основе локали
@@ -75,6 +76,7 @@ function CalendarView({
   selectedDate,
   onAppointmentPress,
   onExternalDrop,
+  onDayPress,
 }: CalendarViewProps) {
   const lang = useLanguage()
   const { isMobile } = usePlatformContext()
@@ -98,8 +100,8 @@ function CalendarView({
   const isMobileLayout = isMobile || isCompact
 
   // Constants for row heights
-  const MIN_WEEK_HEIGHT = isMobileLayout ? 60 : 90
-  const HEADER_HEIGHT = isMobileLayout ? 40 : 50
+  const MIN_WEEK_HEIGHT = isMobileLayout ? 60 : 104
+  const HEADER_HEIGHT = isMobileLayout ? 40 : 46
   const DAY_HEADER_HEIGHT_DESKTOP = 30 // Approximate height of day number header
 
   // Helper to estimate appointment card height based on content
@@ -341,6 +343,7 @@ function CalendarView({
                       selectedDate={selectedDate}
                       onAppointmentPress={onAppointmentPress}
                       onExternalDrop={onExternalDrop}
+                      onDayPress={onDayPress}
                     />
                   </div>
                 </div>
