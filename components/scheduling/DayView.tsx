@@ -319,8 +319,8 @@ function DayView({
           )}
 
           {/* Appointments */}
-          <div className="space-y-0.5 flex-1 ">
-            {day.appointments.slice(0, 2).map(appointment => (
+          <div className="space-y-2 flex-1">  
+            {day.appointments.slice(0, 3).map(appointment => (
               <AppointmentCard
                 key={appointment.id}
                 appointment={appointment}
@@ -328,7 +328,7 @@ function DayView({
                 isDraggable={!isPast}
               />
             ))}
-            {day.appointments.length > 2 && (
+            {day.appointments.length > 3 && (
               <div className="flex justify-center h-2 items-start">
                 <span className="text-[10px] leading-none text-default-400 font-bold select-none">...</span>
               </div>
