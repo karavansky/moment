@@ -125,7 +125,7 @@ function DienstplanView() {
   return (
     <div className="w-full h-full flex flex-col gap-1 px-1 sm:px-6 overflow-hidden">
       {/* Header */}
-      <div className="flex-none flex flex-col gap-3 pb-3 border-b border-divider shrink-0">
+      <div className="flex-none flex flex-col gap-3 pb-1 sm:pb-3 border-b border-divider shrink-0">
         <div className="flex items-center justify-between gap-2 sm:gap-4">
           <div className="flex items-center gap-2">
             <CalendarIcon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
