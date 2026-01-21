@@ -1,10 +1,10 @@
 'use client'
 
-import { useMemo, memo } from 'react'
-import { Virtuoso } from 'react-virtuoso'
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { CalendarWeek, isSameDate } from '@/lib/calendar-utils'
 import WeekView from './WeekView'
 import { useLanguage } from '@/hooks/useLanguage'
+import { usePlatformContext } from '@/contexts/PlatformContext'
 import type { Appointment } from '@/types/scheduling'
 
 interface CalendarViewProps {
@@ -45,6 +45,30 @@ const getWeekdayShortNames = (locale: string): string[] => {
   return names
 }
 
+interface VirtualItem {
+  week: CalendarWeek
+  index: number
+  top: number
+  height: number
+  hasHeader: boolean
+}
+
+// Helper to binary search for the first visible item
+const findStartIndex = (items: VirtualItem[], scrollTop: number) => {
+  let low = 0
+  let high = items.length - 1
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2)
+    const item = items[mid]
+    if (item.top + item.height <= scrollTop) {
+      low = mid + 1
+    } else {
+      high = mid - 1
+    }
+  }
+  return Math.max(0, low)
+}
+
 function CalendarView({
   weeks,
   today = new Date(),
@@ -53,41 +77,131 @@ function CalendarView({
   onExternalDrop,
 }: CalendarViewProps) {
   const lang = useLanguage()
+  const { isMobile } = usePlatformContext()
+
+  // Constants for row heights
+  const WEEK_HEIGHT = isMobile ? 120 : 180
+  const HEADER_HEIGHT = isMobile ? 40 : 50
 
   // Генерируем названия дней недели на основе текущей локали
   const WEEKDAY_HEADERS_FULL = useMemo(() => getWeekdayFullNames(lang), [lang])
   const WEEKDAY_HEADERS_SHORT = useMemo(() => getWeekdayShortNames(lang), [lang])
 
-  // Группируем недели по месяцам для оптимизации рендеринга
-  const months = useMemo(() => {
-    if (!weeks.length) return []
+  // Pre-calculate positions for all weeks
+  const { items, totalHeight } = useMemo(() => {
+    let currentTop = 0
+    const virtualItems: VirtualItem[] = []
 
-    const groups: { id: string; weeks: CalendarWeek[] }[] = []
-    let currentGroup: CalendarWeek[] = []
+    weeks.forEach((week, index) => {
+      const hasHeader = !!week.monthName
+      const height = WEEK_HEIGHT + (hasHeader ? HEADER_HEIGHT : 0)
 
-    weeks.forEach((week, i) => {
-      // Начинаем новую группу, если это не первая неделя И у недели есть monthName (начало месяца)
-      if (i > 0 && week.monthName) {
-        groups.push({ id: `month-${groups.length}`, weeks: currentGroup })
-        currentGroup = []
-      }
-      currentGroup.push(week)
+      virtualItems.push({
+        week,
+        index,
+        top: currentTop,
+        height,
+        hasHeader,
+      })
+
+      currentTop += height
     })
 
-    if (currentGroup.length > 0) {
-      groups.push({ id: `month-${groups.length}`, weeks: currentGroup })
+    return { items: virtualItems, totalHeight: currentTop }
+  }, [weeks, WEEK_HEIGHT, HEADER_HEIGHT])
+
+  // State
+  const [scrollTop, setScrollTop] = useState(0)
+  const [containerHeight, setContainerHeight] = useState(0)
+  const [isResizing, setIsResizing] = useState(false)
+  const [isInitialScrollDone, setIsInitialScrollDone] = useState(false)
+
+  // Refs
+  const containerRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const isProgrammaticScroll = useRef(false)
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // ResizeObserver to handle container size and flicker prevention
+  useEffect(() => {
+    if (!containerRef.current) return
+    const resizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        if (entry.contentRect.height > 0) {
+          setContainerHeight(entry.contentRect.height)
+          setIsResizing(true)
+
+          // Safety fallback
+          const safetyTimeout = setTimeout(() => {
+            setIsResizing(false)
+          }, 500)
+
+          if (scrollTimeoutRef.current) {
+            clearTimeout(scrollTimeoutRef.current)
+          }
+
+          scrollTimeoutRef.current = setTimeout(() => {
+            setIsResizing(false)
+            clearTimeout(safetyTimeout)
+          }, 100)
+        }
+      }
+    })
+    resizeObserver.observe(containerRef.current)
+    return () => {
+      resizeObserver.disconnect()
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
+    }
+  }, [])
+
+  // Initial scroll to today
+  useEffect(() => {
+    if (containerHeight > 0 && items.length > 0 && scrollContainerRef.current) {
+      const todayItemIndex = items.findIndex(item =>
+        item.week.days.some(day => day.date && isSameDate(day.date, today))
+      )
+
+      if (todayItemIndex !== -1) {
+        const targetTop = items[todayItemIndex].top
+        isProgrammaticScroll.current = true
+        scrollContainerRef.current.scrollTop = targetTop
+        setScrollTop(targetTop)
+
+        // Give it a moment to render at the new position before showing
+        setTimeout(() => {
+          isProgrammaticScroll.current = false
+          setIsInitialScrollDone(true)
+        }, 50)
+      } else {
+        // If today is not found, just show the list at the top
+        setIsInitialScrollDone(true)
+      }
+    }
+    // Run only once when ready
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [containerHeight]) // Trigger when container is measured
+
+  // Calculate visible range
+  const visibleItems = useMemo(() => {
+    const OVERSCAN = 2 // Render 2 items above and below
+
+    const startIndex = findStartIndex(items, scrollTop)
+    const start = Math.max(0, startIndex - OVERSCAN)
+
+    let end = start
+    let currentBottom = items[start] ? items[start].top : 0
+
+    // Advance end index until we cover the viewport + overscan
+    while (
+      end < items.length &&
+      currentBottom < scrollTop + containerHeight + (WEEK_HEIGHT * OVERSCAN)
+    ) {
+      currentBottom += items[end].height
+      end++
     }
 
-    return groups
-  }, [weeks])
-
-  // Вычисляем индекс текущей недели для начального скролла
-  const initialTopMostItemIndex = useMemo(() => {
-    const index = months.findIndex(month =>
-      month.weeks.some(week => week.days.some(day => day.date && isSameDate(day.date, today)))
-    )
-    return index !== -1 ? index : 0
-  }, [months, today])
+    return items.slice(start, end)
+  }, [items, scrollTop, containerHeight, WEEK_HEIGHT])
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden select-none">
@@ -107,35 +221,53 @@ function CalendarView({
         </div>
       </div>
 
-      {/* Недели */}
-      <div className="flex-1 min-h-0">
+      {/* Недели (Custom Virtualized List) */}
+      <div className="flex-1 min-h-0 relative" ref={containerRef}>
         {weeks.length === 0 ? (
           <div className="p-8 text-center text-default-500">Нет назначений для отображения</div>
         ) : (
-          <Virtuoso
-            data={months}
-            initialTopMostItemIndex={initialTopMostItemIndex}
-            overscan={2000} // Увеличенный буфер для плавности (рендерит соседние месяцы)
-            itemContent={(index, month) => (
-              <div>
-                {month.weeks.map(week => (
-                  <WeekView
-                    key={week.id}
-                    week={week}
-                    today={today}
-                    selectedDate={selectedDate}
-                    onAppointmentPress={onAppointmentPress}
-                    onExternalDrop={onExternalDrop}
-                  />
-                ))}
-              </div>
-            )}
-            style={{ height: '100%' }}
-          />
+          <div
+            ref={scrollContainerRef}
+            className={`w-full h-full overflow-y-auto no-scrollbar ${
+              isResizing || !isInitialScrollDone ? 'opacity-0' : 'opacity-100'
+            } transition-opacity duration-75`}
+            onScroll={e => {
+              if (isProgrammaticScroll.current) return
+              setScrollTop(e.currentTarget.scrollTop)
+            }}
+          >
+            <div
+              style={{ height: totalHeight, position: 'relative' }}
+              className="w-full"
+            >
+              {visibleItems.map(item => (
+                <div
+                  key={item.week.id}
+                  style={{
+                    position: 'absolute',
+                    top: item.top,
+                    left: 0,
+                    width: '100%',
+                    height: item.height,
+                  }}
+                >
+                  <div className="h-full w-full overflow-hidden">
+                    <WeekView
+                      week={item.week}
+                      today={today}
+                      selectedDate={selectedDate}
+                      onAppointmentPress={onAppointmentPress}
+                      onExternalDrop={onExternalDrop}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </div>
     </div>
   )
 }
 
-export default memo(CalendarView)
+export default React.memo(CalendarView)
