@@ -259,40 +259,13 @@ function AppointmentCard({
           </div>
 
           {/* Time */}
-          <div className="flex items-center gap-1.5 text-xs text-default-600">
-            <Clock className="w-3 h-3 shrink-0" />
-            <span>
-              {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
-              {appointment.duration > 0 && (
-                <span className="text-default-400 ml-1">({appointment.duration} мин)</span>
-              )}
-            </span>
-          </div>
+
 
           {/* Address */}
-          {appointment.client && (
-            <div className="flex items-start gap-1.5 text-xs text-default-500">
-              <MapPin className="w-3 h-3 shrink-0 mt-0.5" />
-              <span className="truncate">
-                {appointment.client.street} {appointment.client.houseNumber},{' '}
-                {appointment.client.postalCode} {appointment.client.city}
-              </span>
-            </div>
-          )}
+
 
           {/* Tags */}
-          <div className="flex gap-1 flex-wrap mt-1">
-            {appointment.isFixedTime && (
-              <Chip size="sm" color="accent" variant="soft" className="text-xs">
-                Фикс. время
-              </Chip>
-            )}
-            {appointment.fahrzeit > 0 && (
-              <Chip size="sm" color="default" variant="soft" className="text-xs">
-                +{appointment.fahrzeit} мин в пути
-              </Chip>
-            )}
-          </div>
+
         </div>
       </div>
 
@@ -311,3 +284,38 @@ function AppointmentCard({
 }
 
 export default memo(AppointmentCard)
+
+/*
+          <div className="flex items-center gap-1.5 text-xs text-default-600">
+            <Clock className="w-3 h-3 shrink-0" />
+            <span>
+              {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
+              {appointment.duration > 0 && (
+                <span className="text-default-400 ml-1">({appointment.duration} мин)</span>
+              )}
+            </span>
+          </div> 
+          
+          {appointment.client && (
+            <div className="flex items-start gap-1.5 text-xs text-default-500">
+              <MapPin className="w-3 h-3 shrink-0 mt-0.5" />
+              <span className="truncate">
+                {appointment.client.street} {appointment.client.houseNumber},{' '}
+                {appointment.client.postalCode} {appointment.client.city}
+              </span>
+            </div>
+          )}
+
+          <div className="flex gap-1 flex-wrap mt-1">
+            {appointment.isFixedTime && (
+              <Chip size="sm" color="accent" variant="soft" className="text-xs">
+                Фикс. время
+              </Chip>
+            )}
+            {appointment.fahrzeit > 0 && (
+              <Chip size="sm" color="default" variant="soft" className="text-xs">
+                +{appointment.fahrzeit} мин в пути
+              </Chip>
+            )}
+          </div>
+*/

@@ -78,11 +78,37 @@ function CalendarView({
 }: CalendarViewProps) {
   const lang = useLanguage()
   const { isMobile } = usePlatformContext()
+  
+  // Custom hook for media query to match Tailwind 'lg' breakpoint (1024px)
+  const useMediaQuery = (query: string) => {
+    const [matches, setMatches] = useState(false)
+    useEffect(() => {
+      const media = window.matchMedia(query)
+      if (media.matches !== matches) {
+        setMatches(media.matches)
+      }
+      const listener = () => setMatches(media.matches)
+      media.addEventListener('change', listener)
+      return () => media.removeEventListener('change', listener)
+    }, [matches, query])
+    return matches
+  }
+
+  const isCompact = useMediaQuery('(max-width: 1023px)')
+  const isMobileLayout = isMobile || isCompact
 
   // Constants for row heights
-  const WEEK_HEIGHT = isMobile ? 120 : 180
-  const HEADER_HEIGHT = isMobile ? 40 : 50
+  const MIN_WEEK_HEIGHT = isMobileLayout ? 60 : 90
+  const HEADER_HEIGHT = isMobileLayout ? 40 : 50
+  const DAY_HEADER_HEIGHT_DESKTOP = 30 // Approximate height of day number header
 
+  // Helper to estimate appointment card height based on content
+  const estimateAppointmentHeight = (app: Appointment) => {
+    let height = 12 + 8 // Base padding (approx) + margin-bottom
+    height += 50
+   
+    return height
+  }
   // Генерируем названия дней недели на основе текущей локали
   const WEEKDAY_HEADERS_FULL = useMemo(() => getWeekdayFullNames(lang), [lang])
   const WEEKDAY_HEADERS_SHORT = useMemo(() => getWeekdayShortNames(lang), [lang])
@@ -94,7 +120,61 @@ function CalendarView({
 
     weeks.forEach((week, index) => {
       const hasHeader = !!week.monthName
-      const height = WEEK_HEIGHT + (hasHeader ? HEADER_HEIGHT : 0)
+      
+      let height = MIN_WEEK_HEIGHT
+
+      if (isMobileLayout) {
+        // Mobile/Compact logic: max 2 appointments + "..."
+        let maxDayHeight = 0
+        const APP_HEIGHT_MOBILE = 50 // Compact appointment height for mobile
+        const DOTS_HEIGHT = 15 // Height for "..."
+        
+        week.days.forEach(day => {
+          let currentDayHeight = 20 // Base padding/header for mobile day
+          
+          if (day.appointments && day.appointments.length > 0) {
+            const count = Math.min(day.appointments.length, 2)
+            currentDayHeight += count * APP_HEIGHT_MOBILE
+            
+            if (day.appointments.length > 2) {
+              currentDayHeight += DOTS_HEIGHT
+            }
+             // Add some bottom padding
+             currentDayHeight += 5
+          }
+          
+          if (currentDayHeight > maxDayHeight) {
+            maxDayHeight = currentDayHeight
+          }
+        })
+         height = Math.max(MIN_WEEK_HEIGHT, maxDayHeight)
+
+      } else {
+        // Desktop logic: fit all appointments
+        // Find the tallest day in this week
+        let maxDayHeight = 0
+        
+        week.days.forEach(day => {
+          let currentDayHeight = DAY_HEADER_HEIGHT_DESKTOP
+          if (day.appointments) {
+            day.appointments.forEach(app => {
+              currentDayHeight += estimateAppointmentHeight(app)
+            })
+          }
+          if (currentDayHeight > maxDayHeight) {
+            maxDayHeight = currentDayHeight
+          }
+        })
+        
+        // Add some padding to the tallest day
+        const contentHeight = maxDayHeight + 20 
+        height = Math.max(MIN_WEEK_HEIGHT, contentHeight)
+      }
+
+      // Add month header height if applicable
+      if (hasHeader) {
+        height += HEADER_HEIGHT
+      }
 
       virtualItems.push({
         week,
@@ -108,7 +188,7 @@ function CalendarView({
     })
 
     return { items: virtualItems, totalHeight: currentTop }
-  }, [weeks, WEEK_HEIGHT, HEADER_HEIGHT])
+  }, [weeks, MIN_WEEK_HEIGHT, HEADER_HEIGHT, isMobileLayout])
 
   // State
   const [scrollTop, setScrollTop] = useState(0)
@@ -192,16 +272,19 @@ function CalendarView({
     let currentBottom = items[start] ? items[start].top : 0
 
     // Advance end index until we cover the viewport + overscan
+    // We use containerHeight as a dynamic buffer zone
+    const buffer = containerHeight || 500
+    
     while (
       end < items.length &&
-      currentBottom < scrollTop + containerHeight + (WEEK_HEIGHT * OVERSCAN)
+      currentBottom < scrollTop + containerHeight + buffer
     ) {
       currentBottom += items[end].height
       end++
     }
 
     return items.slice(start, end)
-  }, [items, scrollTop, containerHeight, WEEK_HEIGHT])
+  }, [items, scrollTop, containerHeight])
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden select-none">

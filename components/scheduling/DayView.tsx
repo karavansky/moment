@@ -165,7 +165,7 @@ function DayView({
   if (!day.day || !day.date) {
     return (
       <div
-        className={`lg:min-w-30 ${isMobile ? 'min-h-12' : 'min-h-24'} p-1 sm:p-2 bg-default-50`}
+        className={`lg:min-w-30 ${isMobile ? 'min-h-12' : 'min-h-24'} h-full p-1 sm:p-2 bg-default-50`}
       />
     )
   }
@@ -177,7 +177,7 @@ function DayView({
   return (
     <div
       className={`
-        lg:min-w-30 ${isMobile ? 'min-h-12' : 'min-h-24'} h-auto
+        lg:min-w-30 ${isMobile ? 'min-h-12' : 'min-h-24'} h-full
         transition-all duration-200
         select-none
       `}
@@ -189,7 +189,7 @@ function DayView({
         type="button"
         onClick={!isPast ? handleDayClick : undefined}
         disabled={isPast}
-        className="w-full text-left focus:outline-none"
+        className="w-full h-full text-left focus:outline-none"
       >
         {/* Desktop версия (≥ 800px) - красивый Card */}
         <Card
@@ -252,7 +252,7 @@ function DayView({
             )}
 
             {/* Appointments */}
-            <div className="space-y-1">
+            <div className="space-y-1 ">
               {day.appointments.map(appointment => (
                 <AppointmentCard
                   key={appointment.id}
@@ -319,8 +319,8 @@ function DayView({
           )}
 
           {/* Appointments */}
-          <div className="space-y-0.5 flex-1">
-            {day.appointments.map(appointment => (
+          <div className="space-y-0.5 flex-1 ">
+            {day.appointments.slice(0, 2).map(appointment => (
               <AppointmentCard
                 key={appointment.id}
                 appointment={appointment}
@@ -328,6 +328,11 @@ function DayView({
                 isDraggable={!isPast}
               />
             ))}
+            {day.appointments.length > 2 && (
+              <div className="flex justify-center h-2 items-start">
+                <span className="text-[10px] leading-none text-default-400 font-bold select-none">...</span>
+              </div>
+            )}
           </div>
         </div>
       </button>
