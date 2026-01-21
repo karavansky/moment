@@ -337,6 +337,10 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
   const lastMainResizeTimeRef = useRef(0)
   const headerScrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
+  // States for hiding content during resize to prevent flickering
+  const [isHeaderResizing, setIsHeaderResizing] = useState(false)
+  const [isMainResizing, setIsMainResizing] = useState(false)
+  
   // Debug refs to prevent log spam
   const lastLoggedHeaderIndex = useRef<number | null>(null)
   const lastLoggedMainIndex = useRef<number | null>(null)
@@ -394,6 +398,7 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
           isProgrammaticScroll.current = true
           setContainerWidth(entry.contentRect.width)
           containerWidthRef.current = entry.contentRect.width
+          setIsMainResizing(true)
 
           if (scrollTimeoutRef.current) {
             clearTimeout(scrollTimeoutRef.current)
@@ -425,6 +430,7 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
                   scroller.scrollLeft = targetScroll
                   setMainScrollLeft(targetScroll) // Force update virtualization state immediately
                   console.log(`[ResizeObserver] Main: Scrolled to index ${currentDayIndex} (px: ${targetScroll})`)
+                  setIsMainResizing(false)
                 } else if (attempts < maxAttempts) {
                   attempts++
                   requestAnimationFrame(attemptScroll)
@@ -432,10 +438,13 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
                   console.warn('[ResizeObserver] Main: Scroll failed (width too small).')
                   scroller.scrollLeft = targetScroll
                   setMainScrollLeft(targetScroll)
+                  setIsMainResizing(false)
                 }
               }
               
               attemptScroll()
+            } else {
+              setIsMainResizing(false)
             }
             setTimeout(() => {
               isProgrammaticScroll.current = false
@@ -465,6 +474,7 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
           isHeaderProgrammaticScroll.current = true
           setHeaderWidth(entry.contentRect.width)
           headerWidthRef.current = entry.contentRect.width
+          setIsHeaderResizing(true)
 
           if (resizeTimeoutRef.current) {
             clearTimeout(resizeTimeoutRef.current)
@@ -493,6 +503,7 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
                    scroller.scrollLeft = targetScroll
                    setHeaderScrollLeft(targetScroll) // Force update virtualization state immediately
                    console.log(`[ResizeObserver] Header: Scrolled to index ${weekIndex} (px: ${targetScroll})`)
+                   setIsHeaderResizing(false)
                 } else if (attempts < maxAttempts) {
                    attempts++
                    requestAnimationFrame(attemptScroll)
@@ -500,10 +511,13 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
                    console.warn('[ResizeObserver] Header: Scroll failed (width too small).')
                    scroller.scrollLeft = targetScroll
                    setHeaderScrollLeft(targetScroll)
+                   setIsHeaderResizing(false)
                 }
               }
               
               attemptScroll()
+            } else {
+              setIsHeaderResizing(false)
             }
             setTimeout(() => {
               isHeaderProgrammaticScroll.current = false
@@ -834,12 +848,12 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
           {headerWidth > 0 && (
             <div
               ref={headerScrollerRef}
-              className="w-full h-full overflow-x-auto snap-x snap-mandatory no-scrollbar"
+              className={`w-full h-full overflow-x-auto snap-x snap-mandatory no-scrollbar ${isHeaderResizing ? 'opacity-0' : 'opacity-100'} transition-opacity duration-75`}
               onScroll={e => {
                 if (isHeaderProgrammaticScroll.current) return
                 const target = e.currentTarget as HTMLElement
                 const currentHeaderWidth = headerWidthRef.current
-                
+                console.log('Header scrollLeft:', target.scrollLeft)
                 // Track scroll state for virtualization
                 setHeaderScrollLeft(target.scrollLeft)
 
@@ -961,7 +975,7 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
         {containerWidth > 0 && (
           <div
             ref={scrollContainerRef}
-            className="w-full h-full overflow-x-auto snap-x snap-mandatory no-scrollbar"
+            className={`w-full h-full overflow-x-auto snap-x snap-mandatory no-scrollbar ${isMainResizing ? 'opacity-0' : 'opacity-100'} transition-opacity duration-75`}
             onScroll={e => {
               if (isProgrammaticScroll.current) return
               const target = e.currentTarget as HTMLElement
