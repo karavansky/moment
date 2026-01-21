@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
-import { Virtuoso, VirtuosoHandle } from 'react-virtuoso'
 import { Card, ScrollShadow, Button } from '@heroui/react'
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useScheduling } from '@/contexts/SchedulingContext'
@@ -277,6 +276,23 @@ const DayColumn = React.memo(
   }
 )
 
+// Custom virtualization helper
+const getVisibleRange = (scrollPos: number, containerSize: number, itemSize: number, totalCount: number, overscan = 1) => {
+  if (itemSize === 0 || containerSize === 0) return { start: 0, end: 0, startOffset: 0 }
+  
+  const start = Math.floor(scrollPos / itemSize)
+  const visibleCount = Math.ceil(containerSize / itemSize)
+  
+  const safeStart = Math.max(0, start - overscan)
+  const safeEnd = Math.min(totalCount, start + visibleCount + overscan)
+  
+  return {
+    start: safeStart,
+    end: safeEnd,
+    startOffset: safeStart * itemSize
+  }
+}
+
 export default function WeeklyView({ onAppointmentPress, onExternalDrop }: WeeklyViewProps) {
   const {
     appointments,
@@ -293,14 +309,17 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
 
   const [currentDate, setCurrentDate] = useState(getOnlyDate(selectedDate || today))
   const [currentWeekStart, setCurrentWeekStart] = useState(getMonday(selectedDate || today))
-  const virtuosoRef = useRef<VirtuosoHandle>(null)
+  
+  // Scroll state for virtualization
+  const [headerScrollLeft, setHeaderScrollLeft] = useState(0)
+  const [mainScrollLeft, setMainScrollLeft] = useState(0)
+
   const containerRef = useRef<HTMLDivElement>(null)
-  const scrollContainerRef = useRef<HTMLElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [containerWidth, setContainerWidth] = useState(0)
 
-  const headerVirtuosoRef = useRef<VirtuosoHandle>(null)
   const headerContainerRef = useRef<HTMLDivElement>(null)
-  const headerScrollerRef = useRef<HTMLElement | null>(null)
+  const headerScrollerRef = useRef<HTMLDivElement>(null)
   const [headerWidth, setHeaderWidth] = useState(0)
   const skipHeaderScrollRef = useRef(false)
   const isHeaderProgrammaticScroll = useRef(false)
@@ -317,14 +336,14 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
   const containerWidthRef = useRef(0)
   const lastMainResizeTimeRef = useRef(0)
   const headerScrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  
+  // Debug refs to prevent log spam
+  const lastLoggedHeaderIndex = useRef<number | null>(null)
+  const lastLoggedMainIndex = useRef<number | null>(null)
 
   useEffect(() => {
     const handleResize = () => {
       lastMainResizeTimeRef.current = Date.now()
-      console.log(
-        'Window resize detected lastMainResizeTimeRef updated',
-        lastMainResizeTimeRef.current
-      )
     }
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
@@ -369,7 +388,6 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
   useEffect(() => {
     if (!containerRef.current) return
     const resizeObserver = new ResizeObserver(entries => {
-      console.log('[ResizeObserver] containerRef')
       for (const entry of entries) {
         if (entry.contentRect.width > 0) {
           lastMainResizeTimeRef.current = Date.now()
@@ -385,15 +403,46 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
             const currentDayIndex = allDays.findIndex(day =>
               isSameDate(day, currentDateRef.current)
             )
-            if (virtuosoRef.current && currentDayIndex !== -1) {
-              virtuosoRef.current.scrollToIndex({
-                index: currentDayIndex,
-                align: 'start',
-                behavior: 'auto',
-              })
+            
+            // Disable snap to prevent fighting with manual scroll
+            if (scrollContainerRef.current) {
+              scrollContainerRef.current.style.scrollSnapType = 'none'
+            }
+
+            // Fix: Use direct DOM scroll with "safe" retry logic
+            // Checks if scrollWidth is ready before setting scrollLeft to avoid clamping
+            if (scrollContainerRef.current && currentDayIndex !== -1 && containerWidthRef.current > 0) {
+              const targetScroll = currentDayIndex * containerWidthRef.current
+              const scroller = scrollContainerRef.current
+              
+              let attempts = 0
+              const maxAttempts = 5
+              
+              const attemptScroll = () => {
+                // Check if the container is wide enough to support the target scroll
+                // We add a small buffer (10px) to account for potential floating point rounding
+                if (scroller.scrollWidth >= targetScroll - 10) {
+                  scroller.scrollLeft = targetScroll
+                  setMainScrollLeft(targetScroll) // Force update virtualization state immediately
+                  console.log(`[ResizeObserver] Main: Scrolled to index ${currentDayIndex} (px: ${targetScroll})`)
+                } else if (attempts < maxAttempts) {
+                  attempts++
+                  requestAnimationFrame(attemptScroll)
+                } else {
+                  console.warn('[ResizeObserver] Main: Scroll failed (width too small).')
+                  scroller.scrollLeft = targetScroll
+                  setMainScrollLeft(targetScroll)
+                }
+              }
+              
+              attemptScroll()
             }
             setTimeout(() => {
               isProgrammaticScroll.current = false
+              // Restore snap
+              if (scrollContainerRef.current) {
+                scrollContainerRef.current.style.scrollSnapType = 'x mandatory'
+              }
             }, 200)
           }, 100)
         }
@@ -409,7 +458,6 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
   useEffect(() => {
     if (!headerContainerRef.current) return
     const resizeObserver = new ResizeObserver(entries => {
-      console.log('[ResizeObserver] headerContainerRef')
 
       for (const entry of entries) {
         if (entry.contentRect.width > 0) {
@@ -427,15 +475,42 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
               isSameDate(week, currentWeekStartRef.current)
             )
 
-            if (headerVirtuosoRef.current && weekIndex !== -1) {
-              headerVirtuosoRef.current.scrollToIndex({
-                index: weekIndex,
-                align: 'start',
-                behavior: 'auto',
-              })
+            // Disable snap
+            if (headerScrollerRef.current) {
+              headerScrollerRef.current.style.scrollSnapType = 'none'
+            }
+
+            // Fix: Use direct DOM scroll with "safe" retry logic
+            if (headerScrollerRef.current && weekIndex !== -1 && headerWidthRef.current > 0) {
+              const targetScroll = weekIndex * headerWidthRef.current
+              const scroller = headerScrollerRef.current
+              
+              let attempts = 0
+              const maxAttempts = 5
+              
+              const attemptScroll = () => {
+                if (scroller.scrollWidth >= targetScroll - 10) {
+                   scroller.scrollLeft = targetScroll
+                   setHeaderScrollLeft(targetScroll) // Force update virtualization state immediately
+                   console.log(`[ResizeObserver] Header: Scrolled to index ${weekIndex} (px: ${targetScroll})`)
+                } else if (attempts < maxAttempts) {
+                   attempts++
+                   requestAnimationFrame(attemptScroll)
+                } else {
+                   console.warn('[ResizeObserver] Header: Scroll failed (width too small).')
+                   scroller.scrollLeft = targetScroll
+                   setHeaderScrollLeft(targetScroll)
+                }
+              }
+              
+              attemptScroll()
             }
             setTimeout(() => {
               isHeaderProgrammaticScroll.current = false
+              // Restore snap
+              if (headerScrollerRef.current) {
+                 headerScrollerRef.current.style.scrollSnapType = 'x mandatory'
+              }
             }, 200)
           }, 100)
         }
@@ -447,10 +522,6 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
       if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current)
     }
   }, [allWeeks])
-
-  const [initialWeekIndex] = useState(() => {
-    return allWeeks.findIndex(week => isSameDate(week, currentWeekStart))
-  })
 
   // Переключение недели
   const handlePrevWeek = useCallback(() => {
@@ -483,7 +554,7 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
   useEffect(() => {
     const currentDayIndex = allDays.findIndex(day => isSameDate(day, currentDate))
 
-    if (virtuosoRef.current && currentDayIndex !== -1) {
+    if (scrollContainerRef.current && currentDayIndex !== -1 && containerWidth > 0) {
       // Если изменение даты вызвано скроллом пользователя, не скроллим контейнер обратно
       if (skipScrollToDateRef.current) {
         skipScrollToDateRef.current = false
@@ -497,20 +568,18 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
 
       isProgrammaticScroll.current = true
 
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.style.scrollSnapType = 'none'
-      }
+      const scroller = scrollContainerRef.current
+      scroller.style.scrollSnapType = 'none'
 
       if (containerRef.current) {
         containerRef.current.style.transition = 'none'
         containerRef.current.style.opacity = '0'
       }
 
-      virtuosoRef.current.scrollToIndex({
-        index: currentDayIndex,
-        align: 'start',
-        behavior: 'auto',
-      })
+      // Direct scroll
+      const targetScroll = currentDayIndex * containerWidth
+      scroller.scrollLeft = targetScroll
+      setMainScrollLeft(targetScroll) // Force update virtualization state
 
       scrollTimeoutRef.current = setTimeout(() => {
         if (containerRef.current) {
@@ -537,13 +606,13 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
         clearTimeout(scrollTimeoutRef.current)
       }
     }
-  }, [currentDate, allDays])
+  }, [currentDate, allDays, containerWidth])
 
   // Sync header scroll when currentWeekStart changes
   useEffect(() => {
     const weekIndex = allWeeks.findIndex(week => isSameDate(week, currentWeekStart))
 
-    if (headerVirtuosoRef.current && weekIndex !== -1) {
+    if (headerScrollerRef.current && weekIndex !== -1 && headerWidth > 0) {
       if (skipHeaderScrollRef.current) {
         skipHeaderScrollRef.current = false
         return
@@ -555,15 +624,13 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
 
       isHeaderProgrammaticScroll.current = true
 
-      if (headerScrollerRef.current) {
-        headerScrollerRef.current.style.scrollSnapType = 'none'
-      }
+      const scroller = headerScrollerRef.current
+      scroller.style.scrollSnapType = 'none'
 
-      headerVirtuosoRef.current?.scrollToIndex({
-        index: weekIndex,
-        align: 'start',
-        behavior: 'auto',
-      })
+      // Direct scroll
+      const targetScroll = weekIndex * headerWidth
+      scroller.scrollLeft = targetScroll
+      setHeaderScrollLeft(targetScroll) // Force update virtualization state
 
       headerScrollTimeoutRef.current = setTimeout(() => {
         isHeaderProgrammaticScroll.current = false
@@ -575,21 +642,12 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
     return () => {
       if (headerScrollTimeoutRef.current) clearTimeout(headerScrollTimeoutRef.current)
     }
-  }, [currentWeekStart, allWeeks])
-
-  // Инициализируем начальный индекс один раз при загрузке
-  const [initialTopMostItemIndex] = useState(() => {
-    const index = allDays.findIndex(day => isSameDate(day, currentDate))
-    return index !== -1 ? { index, align: 'start' as const } : undefined
-  })
+  }, [currentWeekStart, allWeeks, headerWidth])
 
   // Синхронизация selectedDate -> currentDate (если дата выбрана извне или загрузилась позже)
   useEffect(() => {
     if (selectedDate && !isSameDate(currentDate, selectedDate)) {
       skipScrollToDateRef.current = false
-      console.log(
-        'Синхронизация selectedDate -> currentDate (если дата выбрана извне или загрузилась позже) '
-      )
       setCurrentDate(getOnlyDate(selectedDate))
       const newMonday = getMonday(selectedDate)
       setCurrentWeekStart(prev => (isSameDate(prev, newMonday) ? prev : newMonday))
@@ -597,60 +655,24 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate])
 
-  // Мемоизируем компоненты Virtuoso, чтобы избежать лишних ре-рендеров
-  const virtuosoComponents = useMemo(
-    () => ({
-      List: React.forwardRef<
-        HTMLDivElement,
-        { style?: React.CSSProperties; children?: React.ReactNode }
-      >(({ style, children }, ref) => (
-        <div
-          ref={ref}
-          style={{ ...style, display: 'flex', flexDirection: 'row' }}
-          className="h-full"
-        >
-          {children}
-        </div>
-      )),
-      Item: ({ children, ...props }: any) => (
-        <div
-          {...props}
-          style={{ ...props.style, width: containerWidth }}
-          className="h-full shrink-0 snap-center p-0"
-        >
-          {children}
-        </div>
-      ),
-    }),
-    [containerWidth]
-  )
+  // Custom virtualization logic
+  const visibleWeeks = useMemo(() => {
+    const { start, end, startOffset } = getVisibleRange(headerScrollLeft, headerWidth, headerWidth, allWeeks.length)
+    return {
+      items: allWeeks.slice(start, end).map((week, i) => ({ index: start + i, data: week })),
+      startOffset,
+      totalSize: allWeeks.length * headerWidth
+    }
+  }, [headerScrollLeft, headerWidth, allWeeks])
 
-  const headerVirtuosoComponents = useMemo(
-    () => ({
-      List: React.forwardRef<
-        HTMLDivElement,
-        { style?: React.CSSProperties; children?: React.ReactNode }
-      >(({ style, children }, ref) => (
-        <div
-          ref={ref}
-          style={{ ...style, display: 'flex', flexDirection: 'row' }}
-          className="h-full"
-        >
-          {children}
-        </div>
-      )),
-      Item: ({ children, ...props }: any) => (
-        <div
-          {...props}
-          style={{ ...props.style, width: headerWidth }}
-          className="h-full shrink-0 snap-center flex justify-center"
-        >
-          {children}
-        </div>
-      ),
-    }),
-    [headerWidth]
-  )
+  const visibleDays = useMemo(() => {
+    const { start, end, startOffset } = getVisibleRange(mainScrollLeft, containerWidth, containerWidth, allDays.length)
+    return {
+      items: allDays.slice(start, end).map((day, i) => ({ index: start + i, data: day })),
+      startOffset,
+      totalSize: allDays.length * containerWidth
+    }
+  }, [mainScrollLeft, containerWidth, allDays])
 
   const handleAppointmentClick = useCallback(
     (appointmentId: string) => {
@@ -810,48 +832,39 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
         {/* Week days header */}
         <div ref={headerContainerRef} className="w-full h-16 relative">
           {headerWidth > 0 && (
-            <Virtuoso
-              ref={headerVirtuosoRef}
-              horizontalDirection
-              className="snap-x snap-mandatory no-scrollbar"
-              style={{ height: '100%', width: '100%', position: 'absolute', top: 0, left: 0 }}
-              data={allWeeks}
-              initialTopMostItemIndex={initialWeekIndex}
-              components={headerVirtuosoComponents}
-              scrollerRef={ref => {
-                if (ref instanceof HTMLElement) headerScrollerRef.current = ref
-              }}
+            <div
+              ref={headerScrollerRef}
+              className="w-full h-full overflow-x-auto snap-x snap-mandatory no-scrollbar"
               onScroll={e => {
                 if (isHeaderProgrammaticScroll.current) return
                 const target = e.currentTarget as HTMLElement
                 const currentHeaderWidth = headerWidthRef.current
+                
+                // Track scroll state for virtualization
+                setHeaderScrollLeft(target.scrollLeft)
 
                 // Ignore scroll events if the container width doesn't match the item width
                 // This prevents incorrect index calculation during resize/sidebar toggle
                 if (Date.now() - lastMainResizeTimeRef.current < 1000) return
                 if (Math.abs(target.clientWidth - currentHeaderWidth) > 1) return
-                console.log(
-                  '[Header scroll event] Date.now() - lastMainResizeTimeRef.current < 1000',
-                  Date.now() - lastMainResizeTimeRef.current < 1000
-                )
+
                 const scrollLeft = target.scrollLeft
                 if (currentHeaderWidth === 0) return
 
                 const index = Math.round(scrollLeft / currentHeaderWidth)
+
+                if (index !== lastLoggedHeaderIndex.current) {
+                   console.log(`[Header] Index changed: ${lastLoggedHeaderIndex.current} -> ${index} (ScrollLeft: ${scrollLeft}, Width: ${currentHeaderWidth})`)
+                   lastLoggedHeaderIndex.current = index
+                }
 
                 if (index >= 0 && index < allWeeks.length) {
                   const newWeekStart = allWeeks[index]
                   const currentWeekStartVal = currentWeekStartRef.current
                   if (!isSameDate(newWeekStart, currentWeekStartVal)) {
                     skipHeaderScrollRef.current = true
-                    console.log(
-                      '[Header scroll event] !isSameDate(newWeekStart, currentWeekStartVal) to true'
-                    )
+
                     // Calculate the new date preserving the day of the week
-                    // We calculate the offset of the current date from its week's Monday
-                    // and apply that offset to the new week's Monday.
-                    // This is more robust than calculating the difference between weeks
-                    // because it doesn't rely on currentWeekStartRef being perfectly in sync with currentDateRef
                     const currentVal = currentDateRef.current
                     const currentMonday = getMonday(currentVal)
                     const offsetInMs = currentVal.getTime() - currentMonday.getTime()
@@ -859,70 +872,86 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
                     const newDate = new Date(newWeekStart.getTime() + offsetInMs)
                     const newDateOnly = getOnlyDate(newDate)
 
+                    // IMPORTANT: Update refs immediately to prevent duplicate state updates
+                    currentWeekStartRef.current = newWeekStart
+                    currentDateRef.current = newDateOnly
+
                     setCurrentDate(newDateOnly)
                     setSelectedDate(newDateOnly)
                     setCurrentWeekStart(newWeekStart)
                   }
                 }
               }}
-              itemContent={(index, weekStart) => {
-                const days = []
-                for (let i = 0; i < 7; i++) {
-                  const date = new Date(weekStart)
-                  date.setDate(weekStart.getDate() + i)
-                  days.push(getOnlyDate(date))
-                }
+            >
+              <div 
+                className="h-full relative" 
+                style={{ width: visibleWeeks.totalSize }}
+              >
+                {visibleWeeks.items.map(({ index, data: weekStart }) => {
+                  const days = []
+                  for (let i = 0; i < 7; i++) {
+                    const date = new Date(weekStart)
+                    date.setDate(weekStart.getDate() + i)
+                    days.push(getOnlyDate(date))
+                  }
 
-                return (
-                  <div className="flex justify-center gap-2 px-2 w-full">
-                    {days.map((day, dayIndex) => {
-                      const isToday = isSameDate(day, today)
-                      const isCurrentDay = isSameDate(day, currentDate)
+                  return (
+                    <div 
+                      key={index}
+                      className="absolute top-0 h-full flex justify-center snap-center px-2"
+                      style={{ 
+                        left: index * headerWidth, 
+                        width: headerWidth 
+                      }}
+                    >
+                      <div className="flex justify-center gap-2 w-full">
+                        {days.map((day, dayIndex) => {
+                          const isToday = isSameDate(day, today)
+                          const isCurrentDay = isSameDate(day, currentDate)
 
-                      // Получаем полное название дня недели на основе текущей локали
-                      const weekdayLong = day.toLocaleDateString(lang, { weekday: 'long' })
-                      const capitalizedWeekdayLong =
-                        weekdayLong.charAt(0).toUpperCase() + weekdayLong.slice(1)
+                          const weekdayLong = day.toLocaleDateString(lang, { weekday: 'long' })
+                          const capitalizedWeekdayLong =
+                            weekdayLong.charAt(0).toUpperCase() + weekdayLong.slice(1)
 
-                      // Определяем вариант кнопки
-                      const buttonVariant = isCurrentDay
-                        ? 'primary'
-                        : isToday
-                          ? 'danger'
-                          : 'tertiary'
+                          const buttonVariant = isCurrentDay
+                            ? 'primary'
+                            : isToday
+                              ? 'danger'
+                              : 'tertiary'
 
-                      return (
-                        <div
-                          key={dayIndex}
-                          className="flex flex-1 flex-col items-center gap-1 min-w-0"
-                        >
-                          {/* Полное название дня */}
-                          <div className="text-xs text-default-500 text-center hidden sm:block">
-                            {capitalizedWeekdayLong}
-                          </div>
-                          <div className="text-xs text-default-500 text-center block sm:hidden">
-                            {WEEKDAY_NAMES[dayIndex]}
-                          </div>
-                          <Button
-                            size="sm"
-                            variant={buttonVariant}
-                            onPress={() => {
-                              if (isSameDate(day, currentDate)) return
-                              isProgrammaticScroll.current = true
-                              setCurrentDate(day)
-                              setSelectedDate(day)
-                            }}
-                            className="min-w-0 w-10 h-10 p-0 rounded-full flex items-center justify-center"
-                          >
-                            <div className="text-lg font-bold">{day.getDate()}</div>
-                          </Button>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )
-              }}
-            />
+                          return (
+                            <div
+                              key={dayIndex}
+                              className="flex flex-1 flex-col items-center gap-1 min-w-0"
+                            >
+                              <div className="text-xs text-default-500 text-center hidden sm:block">
+                                {capitalizedWeekdayLong}
+                              </div>
+                              <div className="text-xs text-default-500 text-center block sm:hidden">
+                                {WEEKDAY_NAMES[dayIndex]}
+                              </div>
+                              <Button
+                                size="sm"
+                                variant={buttonVariant}
+                                onPress={() => {
+                                  if (isSameDate(day, currentDate)) return
+                                  isProgrammaticScroll.current = true
+                                  setCurrentDate(day)
+                                  setSelectedDate(day)
+                                }}
+                                className="min-w-0 w-10 h-10 p-0 rounded-full flex items-center justify-center"
+                              >
+                                <div className="text-lg font-bold">{day.getDate()}</div>
+                              </Button>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -930,20 +959,16 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
       {/* Horizontal scrollable days (DayView cards) */}
       <div className="flex-1 min-h-0 relative" ref={containerRef}>
         {containerWidth > 0 && (
-          <Virtuoso
-            ref={virtuosoRef}
-            horizontalDirection
-            className="snap-x snap-mandatory no-scrollbar"
-            style={{ height: '100%', width: '100%', position: 'absolute', top: 0, left: 0 }}
-            data={allDays}
-            initialTopMostItemIndex={initialTopMostItemIndex}
-            scrollerRef={ref => {
-              if (ref instanceof HTMLElement) scrollContainerRef.current = ref
-            }}
+          <div
+            ref={scrollContainerRef}
+            className="w-full h-full overflow-x-auto snap-x snap-mandatory no-scrollbar"
             onScroll={e => {
               if (isProgrammaticScroll.current) return
               const target = e.currentTarget as HTMLElement
               const currentContainerWidth = containerWidthRef.current
+
+              // Track scroll state for virtualization
+              setMainScrollLeft(target.scrollLeft)
 
               if (Date.now() - lastMainResizeTimeRef.current < 1000) return
               if (Math.abs(target.clientWidth - currentContainerWidth) > 1) return
@@ -951,20 +976,21 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
               const scrollLeft = target.scrollLeft
               if (currentContainerWidth === 0) return
 
-              console.log(
-                '[DayView scroll event] Date.now() - lastMainResizeTimeRef.current < 1000',
-                Date.now() - lastMainResizeTimeRef.current < 1000
-              )
-
               const index = Math.round(scrollLeft / currentContainerWidth)
+
+              if (index !== lastLoggedMainIndex.current) {
+                 console.log(`[Main] Index changed: ${lastLoggedMainIndex.current} -> ${index} (ScrollLeft: ${scrollLeft}, Width: ${currentContainerWidth})`)
+                 lastLoggedMainIndex.current = index
+              }
 
               if (index >= 0 && index < allDays.length) {
                 const newDate = allDays[index]
                 if (!isSameDate(newDate, currentDateRef.current)) {
-                  console.log(
-                    '[DayView scroll event] !isSameDate(newDate, currentDateRef.current) to true'
-                  )
                   skipScrollToDateRef.current = true
+                  
+                  // IMPORTANT: Update ref immediately to prevent duplicate state updates
+                  currentDateRef.current = newDate
+
                   setCurrentDate(newDate)
                   setSelectedDate(newDate)
 
@@ -973,31 +999,45 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
                 }
               }
             }}
-            components={virtuosoComponents}
-            itemContent={(index, day) => {
-              const dayAppointments = appointmentsByDate[day.toISOString()] || []
+          >
+            <div 
+              className="h-full relative" 
+              style={{ width: visibleDays.totalSize }}
+            >
+              {visibleDays.items.map(({ index, data: day }) => {
+                const dayAppointments = appointmentsByDate[day.toISOString()] || []
 
-              return (
-                <DayColumn
-                  key={day.toISOString()}
-                  day={day}
-                  today={today}
-                  currentDate={currentDate}
-                  appointments={dayAppointments}
-                  lang={lang}
-                  containerWidth={containerWidth}
-                  setCurrentDate={setCurrentDate}
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
-                  onAppointmentClick={handleAppointmentClick}
-                  onExternalDrop={onExternalDrop}
-                  moveAppointmentToDate={moveAppointmentToDate}
-                />
-              )
-            }}
-          />
+                return (
+                  <div
+                    key={index}
+                    className="absolute top-0 h-full w-full"
+                    style={{ 
+                      left: index * containerWidth, 
+                      width: containerWidth 
+                    }}
+                  >
+                    <DayColumn
+                      day={day}
+                      today={today}
+                      currentDate={currentDate}
+                      appointments={dayAppointments}
+                      lang={lang}
+                      containerWidth={containerWidth}
+                      setCurrentDate={setCurrentDate}
+                      onDragOver={handleDragOver}
+                      onDrop={handleDrop}
+                      onAppointmentClick={handleAppointmentClick}
+                      onExternalDrop={onExternalDrop}
+                      moveAppointmentToDate={moveAppointmentToDate}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          </div>
         )}
       </div>
     </div>
   )
 }
+
