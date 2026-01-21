@@ -39,7 +39,7 @@ export function AuthModal({ isOpen, onOpenChange, onSignIn, t }: AuthModalProps)
               <div className="text-center mb-4">
                 <div className="flex justify-center mb-6">
                   <Image
-                    src="/hatching-quail-icon.webp"
+                    src="/web-app-manifest-192x192.png"
                     alt="Moment LBS"
                     width={80}
                     height={80}

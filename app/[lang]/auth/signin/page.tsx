@@ -19,7 +19,7 @@ export default async function SignInPage({ params }: SignInPageProps) {
         <div className="text-center mb-8">
           <div className="flex justify-center mb-6">
             <Image
-              src="/hatching-quail-icon.webp"
+              src="/web-app-manifest-192x192.png"
               alt="Moment LBS"
               width={80}
               height={80}

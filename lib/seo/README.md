@@ -169,7 +169,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 ```typescript
 icons: {
-  icon: '/hatching-quail-icon.webp',
+  icon: '/web-app-manifest-192x192.png',
 }
 ```
 

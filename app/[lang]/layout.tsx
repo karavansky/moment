@@ -9,8 +9,7 @@ import { WebVitals } from '@/components/WebVitals'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import { getSidebarState } from '@/lib/sidebar-actions'
 
-const baseUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ||  'http://localhost:3000'
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
 // Экспорт viewport отдельно (требование Next.js 14+)
 export const viewport: Viewport = {
@@ -58,12 +57,13 @@ export async function generateMetadata({
   })
   // x-default указывает на корневой URL (универсальная страница)
   languages['x-default'] = `${baseUrl}/`
-  //       icon: '/hatching-quail-icon.webp',
+  //       icon: '/web-app-manifest-192x192.png',
 
   return {
     metadataBase: new URL(baseUrl),
     title: 'Reliable time and location tracking for care & field services.',
-    description: 'Moment LBS: The smartest way to manage your mobile workforce. Instantly track time and GPS location for care workers and field staff via your browser. No installation required — start optimizing your business operations in seconds.',
+    description:
+      'Moment LBS: The smartest way to manage your mobile workforce. Instantly track time and GPS location for care workers and field staff via your browser. No installation required — start optimizing your business operations in seconds.',
     alternates: {
       canonical: `${baseUrl}/${lang}`,
       languages,
@@ -87,7 +87,7 @@ export async function generateMetadata({
         'Moment LBS: The smartest way to manage your mobile workforce. Instantly track time and GPS location for care workers and field staff via your browser. No installation required — start optimizing your business operations in seconds.',
       images: [
         {
-          url: '/hatching-quail-icon-200.webp',
+          url: '/web-app-manifest-192x192.png',
           width: 200,
           height: 200,
           alt: 'Moment LBS Application Interface',
@@ -99,7 +99,7 @@ export async function generateMetadata({
       title: 'Moment LBS - Reliable time and location tracking for care & field services.',
       description:
         'Moment LBS: The smartest way to manage your mobile workforce. Instantly track time and GPS location for care workers and field staff via your browser. No installation required — start optimizing your business operations in seconds.',
-      images: ['/hatching-quail-icon-200.webp'],
+      images: ['/web-app-manifest-192x192.png'],
     },
     keywords: [
       'Field staff tracking app',
@@ -167,7 +167,10 @@ export default async function RootLayout({
         {/* Google Analytics */}
         {isProduction && <GoogleAnalytics gaId="G-HB6BYNFW9F" />}
       </head>
-      <body suppressHydrationWarning className="h-dvh overflow-hidden antialiased md:subpixel-antialiased">
+      <body
+        suppressHydrationWarning
+        className="h-dvh overflow-hidden antialiased md:subpixel-antialiased"
+      >
         {/* Blocking script to prevent flash - executes BEFORE any rendering */}
         <script
           // Без defer/async - блокирующий скрипт, выполнится немедленно
@@ -206,9 +209,7 @@ export default async function RootLayout({
         >
           <div className="flex h-dvh overflow-hidden">
             <LayoutClient>
-              <main className="flex-1 overflow-auto pt-16">
-                {children}
-              </main>
+              <main className="flex-1 overflow-auto pt-16">{children}</main>
             </LayoutClient>
           </div>
         </Providers>

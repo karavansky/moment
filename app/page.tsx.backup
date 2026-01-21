@@ -72,7 +72,7 @@ export async function generateMetadata(): Promise<Metadata> {
       languages,
     },
     icons: {
-      icon: '/hatching-quail-icon.webp',
+      icon: '/web-app-manifest-192x192.png',
     },
     openGraph: {
       type: 'website',

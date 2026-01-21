@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: SlaPageProps): Promise<Metada
     dict.sla.hero.description,
     '/support',
     lang,
-    '/hatching-quail-icon-200.webp'
+    '/web-app-manifest-192x192.png'
   )
 }
 

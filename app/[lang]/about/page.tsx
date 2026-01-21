@@ -23,7 +23,7 @@ export async function generateMetadata({
     dict.seo.about.description,
     '/about',
     lang,
-    '/hatching-quail-icon-200.webp'
+    '/web-app-manifest-192x192.png'
   )
 }
 

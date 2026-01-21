@@ -37,7 +37,7 @@ export const defaultMetadata: Metadata = {
       'Take control of your business with poultry management software. Track incubation, hatching, brooding, feeding, and selling processes.',
     images: [
       {
-        url: '/hatching-quail-icon.webp',
+        url: '/web-app-manifest-192x192.png',
         width: 200,
         height: 200,
         alt: 'QuailBreeder Application Interface',
@@ -60,7 +60,7 @@ export function generateOrganizationJsonLd() {
     '@type': 'Organization',
     name: 'QuailBreeder',
     url: baseUrl,
-    logo: `${baseUrl}/hatching-quail-icon.webp`,
+    logo: `${baseUrl}/web-app-manifest-192x192.png`,
     description: 'Poultry management software for quail breeding operations',
     contactPoint: {
       '@type': 'ContactPoint',

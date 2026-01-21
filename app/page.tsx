@@ -74,7 +74,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(baseUrl),
     title: 'Reliable time and location tracking for care & field services.',
-    description: 'Moment LBS: The smartest way to manage your mobile workforce. Instantly track time and GPS location for care workers and field staff via your browser. No installation required — start optimizing your business operations in seconds.',
+    description:
+      'Moment LBS: The smartest way to manage your mobile workforce. Instantly track time and GPS location for care workers and field staff via your browser. No installation required — start optimizing your business operations in seconds.',
     alternates: {
       canonical: `${baseUrl}/`,
       languages,
@@ -98,7 +99,7 @@ export async function generateMetadata(): Promise<Metadata> {
         'Moment LBS: The smartest way to manage your mobile workforce. Instantly track time and GPS location for care workers and field staff via your browser. No installation required — start optimizing your business operations in seconds.',
       images: [
         {
-          url: '/hatching-quail-icon-200.webp',
+          url: '/web-app-manifest-192x192.png',
           width: 200,
           height: 200,
           alt: 'Moment LBS Application Interface',
@@ -110,7 +111,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: 'Moment LBS - Reliable time and location tracking for care & field services.',
       description:
         'Moment LBS: The smartest way to manage your mobile workforce. Instantly track time and GPS location for care workers and field staff via your browser. No installation required — start optimizing your business operations in seconds.',
-      images: ['/hatching-quail-icon-200.webp'],
+      images: ['/web-app-manifest-192x192.png'],
     },
     keywords: [
       'Field staff tracking app',

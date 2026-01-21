@@ -29,7 +29,7 @@ export default async function SupportPage({ params }: SupportPageProps) {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
               <Image
-                src="/hatching-quail-icon.webp"
+                src="/web-app-manifest-192x192.png"
                 alt="Quail Breeder"
                 width={40}
                 height={40}
