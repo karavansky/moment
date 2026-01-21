@@ -174,7 +174,7 @@ const DayColumn = React.memo(
         onDrop={e => onDrop(e, day)}
         className={`
       shrink-0 h-full cursor-pointer snap-center p-0
-      ${isCurrentDay ? 'ring-2 ring-primary' : ''}
+      ${isCurrentDay ? '' : ''}
     `}
         style={{ width: containerWidth }}
       >
@@ -223,7 +223,7 @@ const DayColumn = React.memo(
                           <div className="absolute -left-1 w-2 h-2 rounded-full bg-red-500 top-1/2 -translate-y-1/2" />
                         </div>
                       )}
-                      <div className="w-12 shrink-0 border-r border-gray-200 dark:border-gray-800 relative">
+                      <div className="w-12 shrink-0  relative">
                         <span className="absolute top-1 right-1 text-xs text-default-500 bg-background px-1">
                           {`${String(hour).padStart(2, '0')}:00`}
                         </span>
@@ -400,6 +400,11 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
           containerWidthRef.current = entry.contentRect.width
           setIsMainResizing(true)
 
+          // Safety fallback: ensure we don't stay hidden forever
+          const safetyTimeout = setTimeout(() => {
+             setIsMainResizing(false)
+          }, 500)
+
           if (scrollTimeoutRef.current) {
             clearTimeout(scrollTimeoutRef.current)
           }
@@ -429,8 +434,8 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
                 if (scroller.scrollWidth >= targetScroll - 10) {
                   scroller.scrollLeft = targetScroll
                   setMainScrollLeft(targetScroll) // Force update virtualization state immediately
-                  console.log(`[ResizeObserver] Main: Scrolled to index ${currentDayIndex} (px: ${targetScroll})`)
                   setIsMainResizing(false)
+                  clearTimeout(safetyTimeout)
                 } else if (attempts < maxAttempts) {
                   attempts++
                   requestAnimationFrame(attemptScroll)
@@ -439,12 +444,14 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
                   scroller.scrollLeft = targetScroll
                   setMainScrollLeft(targetScroll)
                   setIsMainResizing(false)
+                  clearTimeout(safetyTimeout)
                 }
               }
               
               attemptScroll()
             } else {
               setIsMainResizing(false)
+              clearTimeout(safetyTimeout)
             }
             setTimeout(() => {
               isProgrammaticScroll.current = false
@@ -476,6 +483,11 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
           headerWidthRef.current = entry.contentRect.width
           setIsHeaderResizing(true)
 
+          // Safety fallback
+          const safetyTimeout = setTimeout(() => {
+             setIsHeaderResizing(false)
+          }, 500)
+
           if (resizeTimeoutRef.current) {
             clearTimeout(resizeTimeoutRef.current)
           }
@@ -502,8 +514,8 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
                 if (scroller.scrollWidth >= targetScroll - 10) {
                    scroller.scrollLeft = targetScroll
                    setHeaderScrollLeft(targetScroll) // Force update virtualization state immediately
-                   console.log(`[ResizeObserver] Header: Scrolled to index ${weekIndex} (px: ${targetScroll})`)
                    setIsHeaderResizing(false)
+                   clearTimeout(safetyTimeout)
                 } else if (attempts < maxAttempts) {
                    attempts++
                    requestAnimationFrame(attemptScroll)
@@ -512,12 +524,14 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
                    scroller.scrollLeft = targetScroll
                    setHeaderScrollLeft(targetScroll)
                    setIsHeaderResizing(false)
+                   clearTimeout(safetyTimeout)
                 }
               }
               
               attemptScroll()
             } else {
               setIsHeaderResizing(false)
+              clearTimeout(safetyTimeout)
             }
             setTimeout(() => {
               isHeaderProgrammaticScroll.current = false
