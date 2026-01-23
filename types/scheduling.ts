@@ -1,6 +1,17 @@
 // Модели данных для системы планирования услуг (Location-based Services)
 // Основано на Swift моделях из iOS приложения
 
+// Notifications
+export interface Notif {
+  id: string
+  userID: string
+  type: 'info' | 'success' | 'warning' | 'error'
+  title: string
+  message: string
+  date: Date
+  isRead: boolean
+}
+
 // Категория клиентов
 export interface Groupe {
   id: string

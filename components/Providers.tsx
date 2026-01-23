@@ -9,6 +9,9 @@ import { useRouter } from 'next/navigation'
 import { SidebarProvider } from '@/contexts/SidebarContext'
 import { SchedulingProvider } from '@/contexts/SchedulingContext'
 import { PlatformProvider } from '@/contexts/PlatformContext'
+import { Toast, toastQueue } from "@heroui/react"
+import { NotificationObserver } from './NotificationObserver'; 
+import { DemoNotificationWorker } from './DemoNotificationWorker'
 
 export interface ProvidersProps {
   children: React.ReactNode
@@ -84,9 +87,12 @@ export function Providers({ children, themeProps, dictionary, lang, initialSideb
           <PlatformProvider>
             <SidebarProvider initialExpanded={initialSidebarExpanded}>
               <HeroUIThemeWrapper>
+                <Toast.Container queue={toastQueue} placement="top" />
                 <ServerLanguageContext.Provider value={lang}>
                   <DictionaryContext.Provider value={memoizedDictionary}>
                     <SchedulingProvider>
+                      <NotificationObserver />
+                      <DemoNotificationWorker />
                       <div className="min-h-screen flex flex-col">{children}</div>
                     </SchedulingProvider>
                   </DictionaryContext.Provider>
