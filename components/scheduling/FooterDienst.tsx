@@ -130,6 +130,80 @@ const DraggableItem = ({
   )
 }
 
+// DOM Clone version for non-iOS devices
+const DraggableItemClone = ({
+  item,
+  type,
+  onDragStart,
+}: {
+  item: Client | Worker
+  type: 'client' | 'worker'
+  onDragStart: (e: React.DragEvent, type: 'client' | 'worker', id: string) => void
+}) => {
+  const name =
+    type === 'client'
+      ? (item as Client).surname + ' ' + (item as Client).name
+      : (item as Worker).surname + ' ' + (item as Worker).name
+
+  const handleDragStartLocal = (e: React.DragEvent) => {
+    console.log('[DraggableItemClone] Drag start', { type, name })
+    onDragStart(e, type, item.id)
+
+    // --- DOM Clone Logic ---
+    try {
+      const target = e.currentTarget as HTMLElement
+
+      // Clone the dragged element
+      const clone = target.cloneNode(true) as HTMLElement
+
+      // Style the clone
+      clone.style.position = 'fixed'
+      clone.style.top = '-9999px'
+      clone.style.left = '-9999px'
+      clone.style.width = `${target.offsetWidth}px`
+      clone.style.height = `${target.offsetHeight}px`
+      clone.style.pointerEvents = 'none'
+      clone.style.zIndex = '9999'
+      clone.style.opacity = '0.9'
+
+      // Add to DOM
+      document.body.appendChild(clone)
+
+      // Calculate offset for drag image
+      const rect = target.getBoundingClientRect()
+      const offsetX = e.clientX - rect.left
+      const offsetY = e.clientY - rect.top
+
+      // Set drag image
+      e.dataTransfer.setDragImage(clone, offsetX, offsetY)
+
+      // Cleanup after drag starts
+      setTimeout(() => {
+        if (document.body.contains(clone)) {
+          document.body.removeChild(clone)
+        }
+      }, 0)
+    } catch (err) {
+      console.error('[DraggableItemClone] Error creating DOM clone drag image:', err)
+    }
+  }
+
+  return (
+    <div
+      draggable
+      onDragStart={handleDragStartLocal}
+      className="flex flex-row gap-3 p-3 border border-divider cursor-grab active:cursor-grabbing hover:border-primary transition-colors bg-white dark:bg-gray-800 rounded-xl shadow-sm"
+    >
+      <div className="flex flex-col justify-center gap-1 flex-1">
+        <div className="text-sm font-semibold whitespace-nowrap">{name}</div>
+      </div>
+    </div>
+  )
+}
+
+// Export both components for external use
+export { DraggableItem, DraggableItemClone }
+
 export default memo(FooterDienst)
 function FooterDienst({ className }: FooterDienstProps) {
   const lang = useLanguage()
@@ -198,6 +272,9 @@ function FooterDienst({ className }: FooterDienstProps) {
 
   const itemsToDisplay = activeTab === 'client' ? filteredClients : filteredWorkers
 
+  // Determine which draggable component to use based on platform
+  const DraggableComponent = isReady && isMobile ? DraggableItem : DraggableItemClone
+
   return (
     <div className="flex-none h-32 shrink-0">
       <Card className="h-full p-0 ">
@@ -210,7 +287,7 @@ function FooterDienst({ className }: FooterDienstProps) {
             <div className="flex flex-row gap-4 h-full items-center">
               {/* List */}
               {itemsToDisplay.map(item => (
-                <DraggableItem
+                <DraggableComponent
                   key={item.id}
                   item={item}
                   type={activeTab === 'staff' ? 'worker' : 'client'}
