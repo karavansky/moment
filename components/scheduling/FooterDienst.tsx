@@ -153,26 +153,36 @@ const DraggableItemClone = ({
     try {
       const target = e.currentTarget as HTMLElement
 
-      // Clone the dragged element
+      // Add visual feedback to original element
+      target.style.opacity = '0.5'
+
+      // Clone the dragged element (deep clone with all children)
       const clone = target.cloneNode(true) as HTMLElement
+
+      // Match canvas size from DraggableItem for consistency
+      const width = 200
+      const height = 64
 
       // Style the clone
       clone.style.position = 'fixed'
       clone.style.top = '-9999px'
       clone.style.left = '-9999px'
-      clone.style.width = `${target.offsetWidth}px`
-      clone.style.height = `${target.offsetHeight}px`
+      clone.style.width = `${width}px`
+      clone.style.height = `${height}px`
+      clone.style.minWidth = `${width}px`
+      clone.style.minHeight = `${height}px`
       clone.style.pointerEvents = 'none'
       clone.style.zIndex = '9999'
-      clone.style.opacity = '0.9'
+      clone.style.opacity = '1'
+      clone.style.transform = 'scale(1)'
+      clone.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.3)'
 
       // Add to DOM
       document.body.appendChild(clone)
 
-      // Calculate offset for drag image
-      const rect = target.getBoundingClientRect()
-      const offsetX = e.clientX - rect.left
-      const offsetY = e.clientY - rect.top
+      // Calculate offset similar to DraggableItem
+      let offsetX = width / 2
+      let offsetY = height / 2
 
       // Set drag image
       e.dataTransfer.setDragImage(clone, offsetX, offsetY)
@@ -188,10 +198,17 @@ const DraggableItemClone = ({
     }
   }
 
+  const handleDragEnd = (e: React.DragEvent) => {
+    // Restore original element opacity
+    const target = e.currentTarget as HTMLElement
+    target.style.opacity = '1'
+  }
+
   return (
     <div
       draggable
       onDragStart={handleDragStartLocal}
+      onDragEnd={handleDragEnd}
       className="flex flex-row gap-3 p-3 border border-divider cursor-grab active:cursor-grabbing hover:border-primary transition-colors bg-white dark:bg-gray-800 rounded-xl shadow-sm"
     >
       <div className="flex flex-col justify-center gap-1 flex-1">
