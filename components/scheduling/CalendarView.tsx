@@ -101,7 +101,7 @@ function CalendarView({
  // console.log('isMobileLayout:', isMobileLayout, 'isMobile:', isMobile, 'isCompact:', isCompact)
   // Constants for row heights
   const MIN_WEEK_HEIGHT = isMobileLayout ? 60 : 104
-  const HEADER_HEIGHT = isMobileLayout ? 36 : 46
+  const HEADER_HEIGHT = isMobileLayout ? 38 : 46
   const DAY_HEADER_HEIGHT_DESKTOP = 30 // Approximate height of day number header
 
   // Helper to estimate appointment card height based on content
@@ -128,7 +128,7 @@ function CalendarView({
       if (isMobileLayout) {
         // Mobile/Compact logic: max 2 appointments + "..."
         let maxDayHeight = 0
-        const APP_HEIGHT_MOBILE = 50 // Compact appointment height for mobile
+        const APP_HEIGHT_MOBILE = 40 // Compact appointment height for mobile
         const DOTS_HEIGHT = 15 // Height for "..."
 
         week.days.forEach(day => {
@@ -287,12 +287,12 @@ function CalendarView({
   return (
     <div className="w-full h-full flex flex-col overflow-hidden select-none">
       {/* Заголовки дней недели */}
-      <div className="z-10 bg-background/95 backdrop-blur-sm border-b border-divider rounded-2xl shadow-sm shrink-0">
+      <div className="z-10 bg-background/95 backdrop-blur-sm rounded-2xl shadow-sm shrink-0">
         <div className="grid grid-cols-7 gap-0">
           {WEEKDAY_HEADERS_SHORT.map((dayShort, index) => (
             <div
               key={index}
-              className="lg:min-w-30 p-2 sm:p-3 text-center font-semibold text-default-700 bg-default-50 border-r border-divider last:border-r-0 select-none"
+              className="lg:min-w-30 p-2 sm:p-3 text-center font-semibold text-default-700 bg-default-50 select-none"
             >
               {/* Показываем короткие названия на мобильных, полные на десктопе */}
               <span className="sm:hidden">{dayShort}</span>

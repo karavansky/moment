@@ -321,9 +321,7 @@ function DayView({
             pt-0.5 pb-0.5
             flex flex-col
             rounded-xl
-             bg-cyan-500
             ${isPressed ? 'scale-[0.95] bg-surface-quaternary' : ''}
-            ${isToday && !isPast ? 'border-l-2 border-primary' : 'border-l border-divider'}
             ${
               isDragOver
                 ? canDrop

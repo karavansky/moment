@@ -223,18 +223,18 @@ const DayColumn = React.memo(
                     >
                       {isCurrentHour && (
                         <div
-                          className="absolute left-0 right-0 z-20 pointer-events-none flex items-center"
+                          className="absolute left-0 right-0 -z-10 ... pointer-events-none flex items-center"
                           style={{
                             top: `${(currentMinute / 60) * 100}%`,
                             transform: 'translateY(-50%)',
                           }}
                         >
-                          <div className="w-full h-0.5 bg-red-500 opacity-50" />
+                          <div className="w-full h-0.5 bg-red-500 opacity-30" />
                           <div className="absolute -left-1 w-2 h-2 rounded-full bg-red-500 top-1/2 -translate-y-1/2" />
                         </div>
                       )}
                       <div className="w-12 shrink-0  relative">
-                        <span className="absolute top-1 right-1 text-xs text-default-500 bg-background px-1">
+                        <span className="absolute top-1 right-1 text-xs text-default-500 px-1">
                           {`${String(hour).padStart(2, '0')}:00`}
                         </span>
                       </div>

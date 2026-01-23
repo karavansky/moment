@@ -23,8 +23,8 @@ const WeekView = forwardRef<HTMLDivElement, WeekViewProps>(
         {/* Название месяца (если это первая неделя месяца) */}
         {week.monthName && (
           <>
-            <Separator />
-            <div className="bg-default-100 px-3 sm:px-4 pt-2 pb-0 border-b border-divider select-none shrink-0">
+            <Separator className='mt-2'/>
+            <div className="bg-default-100 px-3 sm:px-4 pt-2 pb-0 select-none shrink-0">
               <h2 className="text-base sm:text-lg font-bold text-foreground">{week.monthName}</h2>
             </div>
           </>
