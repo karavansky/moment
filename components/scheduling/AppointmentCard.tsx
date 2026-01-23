@@ -346,7 +346,7 @@ function AppointmentCard({
     >
       {/* Desktop версия (≥ 800px) - полная информация в Card */}
       <div
-        className={`${forceDesktopView ? 'block' : 'hidden lg:block'} hover:scale-[1.02] transition-transform mb-2 shadow-xl rounded-md p-1! bg-content1 dark:bg-gray-800`}
+        className={`${forceDesktopView ? 'block' : 'hidden lg:block'} hover:scale-[1.02] transition-transform mb-2 shadow-xl rounded-xl p-1! bg-content1 dark:bg-gray-800`}
       >
         <div className="flex flex-col gap-1.5 p-1">
           {/* Header: Client name + Report indicator */}
