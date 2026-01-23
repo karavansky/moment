@@ -7,6 +7,7 @@ import TruncatedChip from './TruncatedChip'
 import { Appointment } from '@/types/scheduling'
 import { formatTime } from '@/lib/calendar-utils'
 import { Clock, MapPin, User, CheckCircle, CircleAlert } from 'lucide-react'
+import { usePlatformContext } from '@/contexts/PlatformContext'
 
 interface AppointmentCardProps {
   appointment: Appointment
@@ -21,6 +22,10 @@ function AppointmentCard({
   isDraggable = true,
   forceDesktopView = false,
 }: AppointmentCardProps) {
+  const { isMobile, isReady } = usePlatformContext()
+  const [isPressed, setIsPressed] = useState(false)
+  const [isDraggingState, setIsDraggingState] = useState(false)
+
   const hasReport = appointment.reports && appointment.reports.length > 0
 
   // Мемоизируем проверку прошлого
@@ -53,14 +58,18 @@ function AppointmentCard({
     return 'accent'
   }, [hasReport, appointment.date])
 
-  const handleDragStart = useCallback(
+  // Canvas-based drag handler for iOS
+  const handleDragStartCanvas = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
       if (!isDraggable) {
         e.preventDefault()
         return
       }
 
-      console.log('[AppointmentCard] Drag start', { id: appointment.id })
+      console.log('[AppointmentCard] Drag start (Canvas)', { id: appointment.id })
+      setIsDraggingState(true)
+      setIsPressed(false)
+
       e.dataTransfer.effectAllowed = 'move'
       e.dataTransfer.setData(
         'application/json',
@@ -170,6 +179,95 @@ function AppointmentCard({
     ]
   )
 
+  // DOM Clone-based drag handler for desktop
+  const handleDragStartClone = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      if (!isDraggable) {
+        e.preventDefault()
+        return
+      }
+
+      console.log('[AppointmentCard] Drag start (Clone)', { id: appointment.id })
+      setIsDraggingState(true)
+      setIsPressed(false)
+
+      e.dataTransfer.effectAllowed = 'move'
+      e.dataTransfer.setData(
+        'application/json',
+        JSON.stringify({
+          appointmentId: appointment.id,
+          sourceDate: appointment.date.toISOString(),
+        })
+      )
+
+      // --- DOM Clone Logic ---
+      try {
+        const target = e.currentTarget as HTMLElement
+
+        // Add visual feedback to original element
+        target.style.opacity = '0.5'
+
+        // Clone the dragged element
+        const clone = target.cloneNode(true) as HTMLElement
+
+        // Scale for drag image
+        const scale = 1.25
+
+        // Style the clone - use CSS zoom for better drag image support
+        clone.style.position = 'fixed'
+        clone.style.top = '-9999px'
+        clone.style.left = '-9999px'
+        clone.style.pointerEvents = 'none'
+        clone.style.zIndex = '9999'
+        clone.style.opacity = '1'
+        clone.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.3)'
+        // @ts-ignore - zoom is not in TypeScript definitions but works in all browsers
+        clone.style.zoom = scale
+
+        // Add to DOM
+        document.body.appendChild(clone)
+
+        // Calculate offset - cursor position relative to element
+        const rect = target.getBoundingClientRect()
+        const offsetX = (e.clientX - rect.left) * scale
+        const offsetY = (e.clientY - rect.top) * scale
+
+        // Set drag image
+        e.dataTransfer.setDragImage(clone, offsetX, offsetY)
+
+        // Cleanup after drag starts
+        setTimeout(() => {
+          if (document.body.contains(clone)) {
+            document.body.removeChild(clone)
+          }
+        }, 0)
+      } catch (err) {
+        console.error('[AppointmentCard] Error creating DOM clone drag image:', err)
+      }
+    },
+    [isDraggable, appointment.id, appointment.date]
+  )
+
+  const handleMouseDown = useCallback(() => {
+    if (isDraggable) {
+      setIsPressed(true)
+    }
+  }, [isDraggable])
+
+  const handleMouseUp = useCallback(() => {
+    setIsPressed(false)
+  }, [])
+
+  const handleDragEnd = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    const target = e.currentTarget as HTMLElement
+    target.style.opacity = '1'
+    setIsDraggingState(false)
+    setIsPressed(false)
+  }, [])
+
+  // Select appropriate drag handler based on platform
+  const handleDragStart = isReady && isMobile ? handleDragStartCanvas : handleDragStartClone
+
   // Контент для tooltip на мобильной версии
   const tooltipContent = (
     <div className="space-y-1 min-w-50">
@@ -225,7 +323,11 @@ function AppointmentCard({
   return (
     <div
       draggable={isDraggable}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
       onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
       onClick={e => {
         e.stopPropagation() // Prevent DayView button from triggering
         onClick?.()
@@ -234,11 +336,17 @@ function AppointmentCard({
         ${isDraggable ? 'cursor-move' : 'cursor-pointer'}
         relative
         select-none
+        transition-all
       `}
+      style={{
+        opacity: isDraggingState ? 0.5 : 1,
+        transform: isPressed && isDraggable ? 'scale(1.25)' : 'scale(1)',
+        boxShadow: isPressed && isDraggable ? '0 8px 24px rgba(0, 0, 0, 0.2)' : undefined,
+      }}
     >
       {/* Desktop версия (≥ 800px) - полная информация в Card */}
       <div
-        className={`${forceDesktopView ? 'block' : 'hidden lg:block'} hover:scale-[1.02] transition-transform mb-2 shadow-xl rounded-md p-1! bg-content1`}
+        className={`${forceDesktopView ? 'block' : 'hidden lg:block'} hover:scale-[1.02] transition-transform mb-2 shadow-xl rounded-md p-1! bg-content1 dark:bg-gray-800`}
       >
         <div className="flex flex-col gap-1.5 p-1">
           {/* Header: Client name + Report indicator */}
