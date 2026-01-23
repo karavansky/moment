@@ -140,13 +140,26 @@ const DraggableItemClone = ({
   type: 'client' | 'worker'
   onDragStart: (e: React.DragEvent, type: 'client' | 'worker', id: string) => void
 }) => {
+  const [isDragging, setIsDragging] = useState(false)
+  const [isPressed, setIsPressed] = useState(false)
+
   const name =
     type === 'client'
       ? (item as Client).surname + ' ' + (item as Client).name
       : (item as Worker).surname + ' ' + (item as Worker).name
 
+  const handleMouseDown = () => {
+    setIsPressed(true)
+  }
+
+  const handleMouseUp = () => {
+    setIsPressed(false)
+  }
+
   const handleDragStartLocal = (e: React.DragEvent) => {
     console.log('[DraggableItemClone] Drag start', { type, name })
+    setIsDragging(true)
+    setIsPressed(false)
     onDragStart(e, type, item.id)
 
     // --- DOM Clone Logic ---
@@ -159,30 +172,27 @@ const DraggableItemClone = ({
       // Clone the dragged element (deep clone with all children)
       const clone = target.cloneNode(true) as HTMLElement
 
-      // Match canvas size from DraggableItem for consistency
-      const width = 200
-      const height = 64
+      // Scale for drag image
+      const scale = 1.25
 
-      // Style the clone
+      // Style the clone - use CSS zoom for better drag image support
       clone.style.position = 'fixed'
       clone.style.top = '-9999px'
       clone.style.left = '-9999px'
-      clone.style.width = `${width}px`
-      clone.style.height = `${height}px`
-      clone.style.minWidth = `${width}px`
-      clone.style.minHeight = `${height}px`
       clone.style.pointerEvents = 'none'
       clone.style.zIndex = '9999'
       clone.style.opacity = '1'
-      clone.style.transform = 'scale(1)'
       clone.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.3)'
+      // @ts-ignore - zoom is not in TypeScript definitions but works in all browsers
+      clone.style.zoom = scale
 
       // Add to DOM
       document.body.appendChild(clone)
 
-      // Calculate offset similar to DraggableItem
-      let offsetX = width / 2
-      let offsetY = height / 2
+      // Calculate offset - cursor position relative to element
+      const rect = target.getBoundingClientRect()
+      const offsetX = (e.clientX - rect.left) * scale
+      const offsetY = (e.clientY - rect.top) * scale
 
       // Set drag image
       e.dataTransfer.setDragImage(clone, offsetX, offsetY)
@@ -202,14 +212,24 @@ const DraggableItemClone = ({
     // Restore original element opacity
     const target = e.currentTarget as HTMLElement
     target.style.opacity = '1'
+    setIsDragging(false)
+    setIsPressed(false)
   }
 
   return (
     <div
       draggable
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
       onDragStart={handleDragStartLocal}
       onDragEnd={handleDragEnd}
-      className="flex flex-row gap-3 p-3 border border-divider cursor-grab active:cursor-grabbing hover:border-primary transition-colors bg-white dark:bg-gray-800 rounded-xl shadow-sm"
+      className="flex flex-row gap-3 p-3 border border-divider cursor-grab active:cursor-grabbing hover:border-primary transition-all bg-white dark:bg-gray-800 rounded-xl shadow-sm"
+      style={{
+        opacity: isDragging ? 0.5 : 1,
+        transform: isPressed ? 'scale(1.25)' : 'scale(1)',
+        boxShadow: isPressed ? '0 8px 24px rgba(0, 0, 0, 0.2)' : undefined,
+      }}
     >
       <div className="flex flex-col justify-center gap-1 flex-1">
         <div className="text-sm font-semibold whitespace-nowrap">{name}</div>
