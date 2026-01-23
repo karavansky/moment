@@ -310,7 +310,8 @@ function FooterDienst({ className }: FooterDienstProps) {
   const itemsToDisplay = activeTab === 'client' ? filteredClients : filteredWorkers
 
   // Determine which draggable component to use based on platform
-  const DraggableComponent = isReady && isMobile ? DraggableItem : DraggableItemClone
+//  const DraggableComponent = isReady && isMobile ? DraggableItem : DraggableItemClone
+  const DraggableComponent = DraggableItemClone
 
   return (
     <div className="flex-none h-32 shrink-0">
