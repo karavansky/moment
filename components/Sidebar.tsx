@@ -163,7 +163,7 @@ export default function Sidebar() {
               const active = isActive(item.href)
 
               return (
-                <Link key={item.href} href={item.href} underline="none" className={`w-full`}>
+                <Link key={item.href} href={item.href} className={`w-full no-underline`}>
                   <Button
                     variant="ghost"
                     className={`w-full justify-start ${
@@ -190,7 +190,7 @@ export default function Sidebar() {
                   const active = isActive(item.href)
 
                   return (
-                    <Link key={item.href} href={item.href} underline="none" className={`w-full`}>
+                    <Link key={item.href} href={item.href} className={`w-full no-underline`}>
                       <Button
                         variant="ghost"
                         className={`w-full justify-start ${
@@ -219,7 +219,7 @@ export default function Sidebar() {
                   const active = isActive(item.href)
 
                   return (
-                    <Link key={item.href} href={item.href} underline="none" className={`w-full`}>
+                    <Link key={item.href} href={item.href} className={`w-full no-underline`}>
                       <Button
                         variant="ghost"
                         className={`w-full justify-start ${
