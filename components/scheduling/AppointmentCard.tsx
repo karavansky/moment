@@ -181,7 +181,7 @@ function AppointmentCard({
 
       <div className="flex items-center gap-1.5 text-xs">
         <User className="w-3 h-3 shrink-0" />
-        <span>{appointment.worker ? appointment.worker.workerName : 'Unknown Worker'}</span>
+        <span>{appointment.worker ? appointment.worker.surname + ' ' + appointment.worker.name : 'Unknown Worker'}</span>
       </div>
 
       <div className="flex items-center gap-1.5 text-xs">
@@ -255,7 +255,7 @@ function AppointmentCard({
           {/* Worker */}
           <div className="flex items-center gap-1.5 text-xs text-default-600">
             <User className="w-3 h-3 shrink-0" />
-            <span className="truncate">{appointment.worker?.workerName || 'Unknown Worker'}</span>
+            <span className="truncate">{appointment.worker ? appointment.worker.surname + ' ' + appointment.worker.name : 'Unknown Worker'}</span>
           </div>
 
           {/* Time */}

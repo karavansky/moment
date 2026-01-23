@@ -78,7 +78,7 @@ function StaffSelect({
                 </option>
                 {teamWorkers.map(worker => (
                   <option key={worker.id} value={worker.id} >
-                    {worker.workerName}
+                    {worker.surname + ' ' + worker.name}
                   </option>
                 ))}
               </React.Fragment>
@@ -115,8 +115,8 @@ function StaffSelect({
                 <ListBox.Section>
                   <Header>{team.teamName}</Header>
                   {teamWorkers.map(worker => (
-                    <ListBox.Item key={worker.id} textValue={worker.workerName} id={worker.id}>
-                      {worker.workerName}
+                    <ListBox.Item key={worker.id} textValue={worker.surname + ' ' + worker.name} id={worker.id}>
+                      {worker.surname + ' ' + worker.name}
                       <ListBox.ItemIndicator />
                     </ListBox.Item>
                   ))}
