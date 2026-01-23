@@ -337,7 +337,7 @@ function DayView({
           <div className="px-0.5 mb-0.5 shrink-0 text-center">
             <span
               className={`
-                text-[14px] font-semibold inline-flex items-center justify-center select-none
+                text-[14px] font-normal inline-flex items-center justify-center select-none
                 ${
                   isToday && !isPast
                     ? 'bg-danger text-white rounded-full w-5 h-5'
