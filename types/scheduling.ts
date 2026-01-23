@@ -43,11 +43,26 @@ export interface Team {
 export interface Worker {
   id: string
   firmaID: string
-  workerName: string
+  name: string
+  surname: string
+  email : string
+  phone?: string
+  phone2?: string
   teamId: string
   team?: Team
   appointments?: Appointment[]
   reports?: Report[]
+  isAdress : boolean
+  status: number
+  country?: string
+  street?: string
+  postalCode?: string
+  city?: string
+  houseNumber?: string
+  apartment?: string
+  district?: string
+  latitude?: number
+  longitude?: number
 }
 
 // Назначение (встреча/визит)

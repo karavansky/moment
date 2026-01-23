@@ -74,130 +74,196 @@ export const getAllSampleObjects = () => {
   const worker_1: Worker = {
     id: generateId(),
     firmaID: firmaID,
-    workerName: 'Schmidt',
+    name: 'Tom',
+    surname: 'Hanks',
     teamId: team1.id,
     team: team1,
+    isAdress: false,
+    status: 0,
+    email: 'tom.hanks@example.com',
   }
 
   const worker_2: Worker = {
     id: generateId(),
     firmaID: firmaID,
-    workerName: 'Müller',
+    name: 'Leonardo',
+    surname: 'DiCaprio',
     teamId: team2.id,
     team: team2,
-  }
+    isAdress: false,
+    status: 0,
+    email: 'leonardo.dicaprio@example.com',
+    }
 
   const worker_3: Worker = {
     id: generateId(),
     firmaID: firmaID,
-    workerName: 'Meyer',
+    name: 'Brad',
+    surname: 'Pitt',
     teamId: team1.id,
     team: team1,
+    isAdress: false,
+    status: 0,
+    email: 'brad.pitt@example.com',
   }
 
   const worker_4: Worker = {
     id: generateId(),
     firmaID: firmaID,
-    workerName: 'Schulz',
+    name: 'Johnny',
+    surname: 'Depp',
     teamId: team1.id,
     team: team1,
-  }
+    isAdress: false,
+    status: 0,
+    email: 'johnny.depp@example.com',
+    }
 
   const worker_5: Worker = {
     id: generateId(),
     firmaID: firmaID,
-    workerName: 'Schneider',
+    name: 'Robert',
+    surname: 'Downey',
     teamId: team1.id,
     team: team1,
+    isAdress: false,
+    status: 0,
+    email: 'robert.downey@example.com',
+
   }
 
   const worker_6: Worker = {
     id: generateId(),
     firmaID: firmaID,
-    workerName: 'Hoffmann',
+    name: 'Denzel',
+    surname: 'Washington',
     teamId: team1.id,
     team: team1,
+    isAdress: false,
+    status: 0,
+    email: 'denzel.washington@example.com',
   }
 
   const worker_7: Worker = {
     id: generateId(),
     firmaID: firmaID,
-    workerName: 'Becker',
+    name: 'Morgan',
+    surname: 'Freeman',
     teamId: team1.id,
     team: team1,
+    isAdress: false,
+    status: 0,
+    email: 'morgan.freeman@example.com',
   }
 
   const worker_8: Worker = {
     id: generateId(),
     firmaID: firmaID,
-    workerName: 'Fischer',
+    name: 'Matt',
+    surname: 'Damon',
     teamId: team1.id,
     team: team1,
+    isAdress: false,
+    status: 0,
+    email: 'matt.damon@example.com',
   }
 
   // Workers - Team 2 (Reinigung)
   const worker_11: Worker = {
     id: generateId(),
     firmaID: firmaID,
-    workerName: 'Schmidt',
+    name: 'Ryan',
+    surname: 'Gosling',
     teamId: team2.id,
     team: team2,
+    isAdress: false,
+    status: 0,
+    email: 'ryan.gosling@example.com',
+
   }
 
   const worker_21: Worker = {
     id: generateId(),
     firmaID: firmaID,
-    workerName: 'Müller',
+    name: 'Chris',
+    surname: 'Hemsworth',
     teamId: team2.id,
     team: team2,
+    isAdress: false,
+    status: 0,
+    email: 'chris.hemsworth@example.com',
   }
 
   const worker_31: Worker = {
     id: generateId(),
     firmaID: firmaID,
-    workerName: 'Meyer',
+    name: 'Scarlett',
+    surname: 'Johansson',
     teamId: team2.id,
     team: team2,
+    isAdress: false,
+    status: 0,
+    email: 'scarlett.johansson@example.com',
   }
 
   const worker_41: Worker = {
     id: generateId(),
     firmaID: firmaID,
-    workerName: 'Schulz',
+    name: 'Meryl',
+    surname: 'Streep',
     teamId: team2.id,
     team: team2,
+    isAdress: false,
+    status: 0,
+    email: 'meryl.streep@example.com',
   }
 
   const worker_51: Worker = {
     id: generateId(),
     firmaID: firmaID,
-    workerName: 'Schneider',
+    name: 'Angelina',
+    surname: 'Jolie',
     teamId: team2.id,
     team: team2,
+    isAdress: false,
+    status: 0,
+    email: 'angelina.jolie@example.com',
   }
 
   const worker_61: Worker = {
     id: generateId(),
     firmaID: firmaID,
-    workerName: 'Hoffmann',
+    name: 'Nicole',
+    surname: 'Kidman',
     teamId: team2.id,
     team: team2,
+    isAdress: false,
+    status: 0,
+    email: 'nicole.kidman@example.com',
   }
 
   const worker_71: Worker = {
     id: generateId(),
     firmaID: firmaID,
-    workerName: 'Becker',
+    name: 'Natalie',
+    surname: 'Portman',
     teamId: team2.id,
     team: team2,
+    isAdress: false,
+    status: 0,
+    email: 'natalie.portman@example.com',
   }
 
   const worker_81: Worker = {
     id: generateId(),
     firmaID: firmaID,
-    workerName: 'Fischer',
+    name: 'Julia',
+    surname: 'Roberts',
     teamId: team2.id,
     team: team2,
+    isAdress: false,
+    status: 0,
+    email: 'julia.roberts@example.com',
   }
 
   // Clients
@@ -205,9 +271,9 @@ export const getAllSampleObjects = () => {
     id: generateId(),
     firmaID: firmaID,
     status: 0,
-    name: 'Lena',
-    surname: 'Wagner',
-    email: 'lena.wagner@example.com',
+    name: 'Emma',
+    surname: 'Stone',
+    email: 'emma.stone@example.com',
     street: 'Burgstarsse',
     postalCode: '53177',
     city: 'München',
@@ -222,9 +288,9 @@ export const getAllSampleObjects = () => {
     id: generateId(),
     firmaID: firmaID,
     status: 0,
-    name: 'Max',
-    surname: 'Zimmermann',
-    email: 'max.zimmermann@example.com',
+    name: 'Jennifer',
+    surname: 'Lawrence',
+    email: 'jennifer.lawrence@example.com',
     country: 'DE',
     street: 'Karl-Friedrich-Schinkel-Str',
     postalCode: '53127',
@@ -238,9 +304,9 @@ export const getAllSampleObjects = () => {
     id: generateId(),
     firmaID: firmaID,
     status: 1,
-    name: 'Wolfgang',
-    surname: 'Woller',
-    email: 'wolfgang.woller@example.com',
+    name: 'Anne',
+    surname: 'Hathaway',
+    email: 'anne.hathaway@example.com',
     street: 'Burgstarsse',
     postalCode: '53177',
     city: 'München',
@@ -714,3 +780,36 @@ export const generateDateAppointmentViews = (
 
 // Экспорт функции для получения полного набора мок-данных
 export default getAllSampleObjects
+
+{/* 
+
+Workers (Team 1 - Pflege):
+
+worker_1: Tom Hanks
+worker_2: Leonardo DiCaprio
+worker_3: Brad Pitt
+worker_4: Johnny Depp
+worker_5: Robert Downey
+worker_6: Denzel Washington
+worker_7: Morgan Freeman
+worker_8: Matt Damon
+
+Workers (Team 2 - Reinigung):
+
+worker_11: Ryan Gosling
+worker_21: Chris Hemsworth
+worker_31: Scarlett Johansson
+worker_41: Meryl Streep
+worker_51: Angelina Jolie
+worker_61: Nicole Kidman
+worker_71: Natalie Portman
+worker_81: Julia Roberts
+
+Clients:
+
+client_1: Emma Stone
+client_2: Jennifer Lawrence
+client_3: Anne Hathaway
+client_4: George Clooney (уже был)
+
+  */}

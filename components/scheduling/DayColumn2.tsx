@@ -41,7 +41,6 @@ const DayColumn = React.memo(
     const [now, setNow] = useState(new Date())
     const isToday = isSameDate(day, now)
     const [dragOverHour, setDragOverHour] = useState<number | null>(null)
-    const [dragOverInvalidHour, setDragOverInvalidHour] = useState<number | null>(null)
 
     useEffect(() => {
       const interval = setInterval(() => setNow(new Date()), 60000)
@@ -94,7 +93,6 @@ const DayColumn = React.memo(
     const handleHourDragOver = (e: React.DragEvent<HTMLDivElement>, hour: number) => {
       e.preventDefault()
       e.stopPropagation()
-      console.log('handleHourDragOver called, hour:', hour)
 
       const targetDate = new Date(day)
       targetDate.setHours(hour, 0, 0, 0)
@@ -102,30 +100,24 @@ const DayColumn = React.memo(
 
       // Разрешаем, если день в будущем или сегодня (но час не прошел)
       if (getOnlyDate(targetDate) < getOnlyDate(now)) {
-        console.log('Past day detected, setting invalid hour:', hour)
         e.dataTransfer.dropEffect = 'none'
         setDragOverHour(null)
-        setDragOverInvalidHour(hour)
         return
       }
       if (isSameDate(targetDate, now) && hour < now.getHours()) {
-        console.log('Past hour detected, setting invalid hour:', hour)
         e.dataTransfer.dropEffect = 'none'
         setDragOverHour(null)
-        setDragOverInvalidHour(hour)
         return
       }
 
       e.dataTransfer.dropEffect = 'move'
       setDragOverHour(hour)
-      setDragOverInvalidHour(null)
     }
 
     const handleHourDrop = (e: React.DragEvent<HTMLDivElement>, hour: number) => {
       e.preventDefault()
       e.stopPropagation()
       setDragOverHour(null)
-      setDragOverInvalidHour(null)
 
       const targetDate = new Date(day)
       targetDate.setHours(hour, 0, 0, 0)
@@ -177,7 +169,7 @@ const DayColumn = React.memo(
                   const isCurrentHour = isToday && hour === now.getHours()
                   const currentMinute = now.getMinutes()
                   const isDragOver = dragOverHour === hour
-                  const isDragOverInvalid = dragOverInvalidHour === hour
+
                   // Определяем, является ли час прошедшим
                   const isPastHour =
                     getOnlyDate(day) < getOnlyDate(now) || (isToday && hour < now.getHours())
@@ -187,12 +179,11 @@ const DayColumn = React.memo(
                       key={hour}
                       className={`flex min-h-12 border-t border-gray-200 dark:border-gray-800 shrink-0 rounded-lg relative ${
                         isDragOver ? 'bg-success/50' : ''
-                      } ${isDragOverInvalid ? 'bg-danger/70 ring-2 ring-danger' : isPastHour ? 'bg-danger/30' : ''}`}
+                      } ${isPastHour ? 'bg-danger/50' : ''}`}
                       onDragOver={e => handleHourDragOver(e, hour)}
                       onDragLeave={e => {
                         if (e.currentTarget.contains(e.relatedTarget as Node)) return
                         setDragOverHour(null)
-                        setDragOverInvalidHour(null)
                       }}
                       onDrop={e => handleHourDrop(e, hour)}
                     >

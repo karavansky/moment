@@ -101,7 +101,7 @@ function CalendarView({
 
   // Constants for row heights
   const MIN_WEEK_HEIGHT = isMobileLayout ? 60 : 104
-  const HEADER_HEIGHT = isMobileLayout ? 40 : 46
+  const HEADER_HEIGHT = isMobileLayout ? 36 : 46
   const DAY_HEADER_HEIGHT_DESKTOP = 30 // Approximate height of day number header
 
   // Helper to estimate appointment card height based on content

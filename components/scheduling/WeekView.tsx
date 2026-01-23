@@ -31,7 +31,7 @@ const WeekView = forwardRef<HTMLDivElement, WeekViewProps>(
         )}
 
         {/* Дни недели */}
-        <div className="grid grid-cols-7 gap-0.5 sm:gap-1 bg-divider p-0.5 sm:p-1 flex-1 min-h-0">
+        <div className="grid grid-cols-7 gap-0.5 sm:gap-1 bg-divider p-0.5 sm:p-1 flex-1 min-h-0 ">
           {week.days.map(day => (
             <DayView
               key={day.id}

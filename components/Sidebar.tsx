@@ -50,13 +50,13 @@ const menuItems: MenuItem[] = [
 
 const crmSubItems: MenuItem[] = [
   { icon: UserStar, label: 'Kunden', href: '/clients' },
-  { icon: Users, label: 'Fachkräfte', href: '/personal' },
+  { icon: Users, label: 'Fachkräfte', href: '/staff' },
   { icon: Van, label: 'Fahrzeug', href: '/transport' },
 ]
 
 const otherItems: MenuItem[] = [
-  { icon: ClipboardPlus, label: 'Kunden', href: '/contacts' },
-  { icon: ClipboardMinus, label: 'Fachkräfte', href: '/personal' },
+  { icon: ClipboardPlus, label: 'Kunden', href: '/clients' },
+  { icon: ClipboardMinus, label: 'Fachkräfte', href: '/staff' },
   { icon: BookOpen, label: 'Fahrtenbuch', href: '/transport' },
 ]
 

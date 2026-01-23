@@ -19,11 +19,14 @@ function ClientOverview({ client, isCreateNew = false, className }: ClientOvervi
   const lang = useLanguage()
 
   return (
-    <div className={`flex flex-col gap-4 ${className || ''}`}>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start justify-items-center md:justify-items-stretch">
-        <ClientContacts client={client} isCreateNew={isCreateNew} />
-        <ClientAdress key={client.id} client={client} isCreateNew={isCreateNew} />
+    <div className={`flex flex-col gap-4 h-full overflow-y-auto ${className || ''}`}>
+      <div className="flex flex-col md:grid md:grid-cols-2 gap-4">
+        <div className="w-full">
+          <ClientContacts client={client} isCreateNew={isCreateNew} />
+        </div>
+        <div className="w-full">
+          <ClientAdress key={client.id} client={client} isCreateNew={isCreateNew} />
+        </div>
       </div>
     </div>
   )

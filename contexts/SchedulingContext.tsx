@@ -59,6 +59,9 @@ interface SchedulingActions {
   addClient: (client: Client) => void;
   updateClient: (client: Client) => void;
   deleteClient: (id: string) => void;
+  addWorker: (worker: Worker) => void;
+  updateWorker: (worker: Worker) => void;
+  deleteWorker: (id: string) => void;
   refreshData: () => void;
 }
 
@@ -233,7 +236,33 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         appointments: prev.appointments.filter((apt) => apt.clientID !== id),
       }));
     },
+    addWorker: (worker) => {
+      console.log('Adding new worker:', worker);
+      setState((prev) => ({
+        ...prev,
+        workers: [...prev.workers, worker],
+      }));
+    },
 
+    updateWorker: (updatedWorker) => {
+      console.log('Updating worker:', updatedWorker);
+      setState((prev) => ({
+        ...prev,
+        workers: prev.workers.map((worker) =>
+          worker.id === updatedWorker.id ? updatedWorker : worker
+        ),
+      }));
+    },
+
+    deleteWorker: (id) => {
+      console.log('Deleting worker:', id);
+      setState((prev) => ({
+        ...prev,
+        workers: prev.workers.filter((worker) => worker.id !== id),
+        // Также удаляем все связанные appointments
+        appointments: prev.appointments.filter((apt) => apt.workerId !== id),
+      }));
+    },
     refreshData: () => {
       loadMockData();
     },
@@ -264,7 +293,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         workers: state.workers
           .filter(w => w.teamId === team.id)
           .sort((a, b) =>
-            a.workerName.localeCompare(b.workerName, undefined, {
+            a.surname.localeCompare(b.surname, undefined, {
               sensitivity: 'base',
               numeric: true,
             })

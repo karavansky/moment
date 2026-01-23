@@ -3,7 +3,7 @@
 import { useState, useTransition, useRef, useEffect, useCallback, memo } from 'react'
 import { useLanguage } from '@/hooks/useLanguage'
 import { Button, Card, ScrollShadow, Separator } from '@heroui/react'
-import { Client } from '@/types/scheduling'
+import { Client, Worker } from '@/types/scheduling'
 import { usePlatformContext } from '@/contexts/PlatformContext'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { lightLayout } from '@heroui/theme'
@@ -18,14 +18,14 @@ const DraggableItem = ({
   type,
   onDragStart,
 }: {
-  item: any
+  item: Client | Worker
   type: 'client' | 'worker'
   onDragStart: (e: React.DragEvent, type: 'client' | 'worker', id: string) => void
 }) => {
   const name =
     type === 'client'
       ? (item as Client).surname + ' ' + (item as Client).name
-      : (item as any).workerName
+      : (item as Worker).surname + ' ' + (item as Worker).name
 
   const handleDragStartLocal = (e: React.DragEvent) => {
     console.log('[DraggableItem] Drag start', { type, name })
@@ -209,7 +209,7 @@ function FooterDienst({ className }: FooterDienstProps) {
           >
             <div className="flex flex-row gap-4 h-full items-center">
               {/* List */}
-              {itemsToDisplay.slice(0, 10).map(item => (
+              {itemsToDisplay.map(item => (
                 <DraggableItem
                   key={item.id}
                   item={item}

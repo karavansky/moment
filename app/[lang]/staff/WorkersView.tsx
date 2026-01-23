@@ -3,29 +3,30 @@
 import ClientsTable from '@/components/ClientsTable'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { useLanguage } from '@/hooks/useLanguage'
-import { Client } from '@/types/scheduling'
+import { Client, Worker } from '@/types/scheduling'
 import { useState, useTransition } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import ClientDetail from './ClientDetail'
+import WorkerDetail from './WorkerDetail'
+import WorkersTable from '@/components/WorkersTable'
 
-export default function ClientsView() {
-  const { clients, groups, isLoading, firmaID } = useScheduling()
+export default function WorkersView() {
+  const { workers, teams, isLoading, firmaID } = useScheduling()
   const lang = useLanguage()
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null)
+  const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null)
   const [isCreateNew, setIsCreateNew] = useState(false)
   const [isPending, startTransition] = useTransition()
 
-  const onSelectClient = (client: Client) => {
+  const onSelectWorker = (worker: Worker) => {
     startTransition(() => {
-      setSelectedClient(client)
+      setSelectedWorker(worker)
       setIsCreateNew(false)
     })
   }
 
-  const onAddNewClient = () => {
+  const onAddNewWorker = () => {
     startTransition(() => {
       // Создаем пустой объект клиента с дефолтными значениями
-      const newClient: Client = {
+      const newWorker: Worker = {
         id: crypto.randomUUID(),
         firmaID: firmaID,
         status: 0,
@@ -42,15 +43,18 @@ export default function ClientsView() {
         district: '',
         latitude: 0,
         longitude: 0,
+        teamId: '',
+        team: undefined,
+        isAdress: false,
       }
-      setSelectedClient(newClient)
+      setSelectedWorker(newWorker)
       setIsCreateNew(true)
     })
   }
 
-  const onCloseClientDetail = () => {
+  const onCloseWorkerDetail = () => {
     startTransition(() => {
-      setSelectedClient(null)
+      setSelectedWorker(null)
       setIsCreateNew(false)
     })
   }
@@ -58,14 +62,14 @@ export default function ClientsView() {
   return (
     <div
       className={`w-full flex flex-col gap-1 px-1 sm:px-6 ${
-        selectedClient ? 'h-full overflow-hidden' : 'h-full sm:overflow-hidden overflow-auto'
+        selectedWorker ? 'h-full overflow-hidden' : 'h-full sm:overflow-hidden overflow-auto'
       }`}
     >
       <div
         className={`transition-opacity duration-200 h-full flex flex-col ${isPending ? 'opacity-50' : 'opacity-100'}`}
       >
         <AnimatePresence mode="wait">
-          {selectedClient ? (
+          {selectedWorker ? (
             <motion.div
               key="detail"
               initial={{ opacity: 0, x: 20 }}
@@ -74,9 +78,9 @@ export default function ClientsView() {
               transition={{ duration: 0.3, ease: 'easeInOut' }}
               className="h-full flex flex-col"
             >
-              <ClientDetail
-                client={selectedClient}
-                onClose={onCloseClientDetail}
+              <WorkerDetail
+                worker={selectedWorker}
+                onClose={onCloseWorkerDetail}
                 isCreateNew={isCreateNew}
                 className="pt-2"
               />
@@ -90,19 +94,19 @@ export default function ClientsView() {
               transition={{ duration: 0.3, ease: 'easeInOut' }}
               className="h-full flex flex-col"
             >
-              <ClientsTable
-                list={clients}
+              <WorkersTable
+                list={workers}
                 isLoading={isLoading}
-                titel="Clients"
+                titel="Workers"
                 onRowClick={id => {
                   console.log('Clicked row:', id)
-                  const client = clients.find(c => String(c.id) === String(id))
-                  if (client) {
-                    onSelectClient(client)
+                  const worker = workers.find(c => String(c.id) === String(id))
+                  if (worker) {
+                    onSelectWorker(worker)
                   }
                 }}
-                onAddNew={onAddNewClient}
-                groups={groups}
+                onAddNew={onAddNewWorker}
+                teams={teams}
                 className="pt-2"
               />
             </motion.div>

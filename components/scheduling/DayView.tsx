@@ -32,7 +32,7 @@ function DayView({
   const { isMobile, isReady } = usePlatformContext()
   // Ref для таймера задержки снятия выделения
   const dragLeaveTimerRef = useRef<NodeJS.Timeout | null>(null)
-  
+
   // Глобальный слушатель для надежного сброса состояния при окончании любого перетаскивания
   useEffect(() => {
     const handleGlobalDragEnd = () => {
@@ -229,6 +229,7 @@ function DayView({
             ${isToday && !isPast ? 'border-2 border-primary' : ''}
             ${isDragOver && canDrop ? 'bg-success/50 border-2 border-success' : ''}
             ${isDragOver && !canDrop ? 'bg-danger/50 border-2 border-danger' : ''}
+           
           `}
         >
           <Card.Content className="p-0">
@@ -249,7 +250,7 @@ function DayView({
                     ${isPast ? 'opacity-50' : ''}
                   `}
                 >
-                  {day.day} 
+                  {day.day}
                 </span>
               </div>
 
@@ -281,7 +282,7 @@ function DayView({
             )}
 
             {/* Appointments */}
-            <div className="space-y-1 " onMouseDown={(e) => e.stopPropagation()}>
+            <div className="space-y-1 " onMouseDown={e => e.stopPropagation()}>
               {day.appointments.map(appointment => (
                 <AppointmentCard
                   key={appointment.id}
@@ -294,7 +295,7 @@ function DayView({
           </Card.Content>
         </Card>
 
-        {/* Mobile версия (< 800px) - прозрачный div с минимальными отступами */}
+        {/* Mobile версия (< 800px) - прозрачный div с минимальными отступами bg-transparent */}
         <div
           className={`
             lg:hidden
@@ -302,6 +303,7 @@ function DayView({
             pt-0.5 pb-0.5
             flex flex-col
             rounded-xl
+             bg-cyan-500
             ${isPressed ? 'scale-[0.95] bg-surface-quaternary' : ''}
             ${isToday && !isPast ? 'border-l-2 border-primary' : 'border-l border-divider'}
             ${
@@ -311,7 +313,7 @@ function DayView({
                   : '!bg-danger/50'
                 : isSelected
                   ? 'bg-primary/5'
-                  : 'bg-transparent'
+                  : ''
             }
           `}
         >
@@ -348,7 +350,7 @@ function DayView({
           )}
 
           {/* Appointments */}
-          <div className="space-y-2 flex-1" onMouseDown={(e) => e.stopPropagation()}>
+          <div className="space-y-2 flex-1" onMouseDown={e => e.stopPropagation()}>
             {day.appointments.slice(0, 3).map(appointment => (
               <AppointmentCard
                 key={appointment.id}
@@ -359,7 +361,9 @@ function DayView({
             ))}
             {day.appointments.length > 3 && (
               <div className="flex justify-center h-2 items-start">
-                <span className="text-[10px] leading-none text-default-400 font-bold select-none">...</span>
+                <span className="text-[10px] leading-none text-default-400 font-bold select-none">
+                  ...
+                </span>
               </div>
             )}
           </div>

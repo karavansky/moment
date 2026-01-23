@@ -3,23 +3,23 @@
 import { useState, useTransition, useRef, useEffect, useCallback, memo } from 'react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { useLanguage } from '@/hooks/useLanguage'
-import { Client } from '@/types/scheduling'
+import { Client, Worker } from '@/types/scheduling'
 import { Button, Separator } from '@heroui/react'
 import { FilePenLine, Undo2, UserStar, History } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import ClientOverview from './ClientOverview'
-import ClientHistory from './ClientHistory'
+import WorkerOverview from './WorkerOverview'
+import WorkerHistory from './WorkerHistory'
 
-interface ClientDetailProps {
-  client: Client
+interface WorkerDetailProps {
+  worker: Worker
   onClose: () => void
   isCreateNew?: boolean
   className?: string
 }
 
-export default memo(ClientDetail)
-function ClientDetail({ client, onClose, isCreateNew = false, className }: ClientDetailProps) {
-  const { clients, groups, isLoading, selectedDate, selectedAppointment, setSelectedAppointment } =
+export default memo(WorkerDetail)
+function WorkerDetail({ worker, onClose, isCreateNew = false, className }: WorkerDetailProps) {
+  const { workers, teams, isLoading, selectedDate, selectedAppointment, setSelectedAppointment } =
     useScheduling()
   const lang = useLanguage()
   const [activeTab, setActiveTab] = useState<'overview' | 'history'>('overview')
@@ -68,7 +68,7 @@ function ClientDetail({ client, onClose, isCreateNew = false, className }: Clien
           <Undo2 className="w-5 h-5 text-primary" />
         </Button>
         <h2 className="text-2xl font-semibold">
-          {isCreateNew ? 'New Client' : `${client.surname} ${client.name}`}
+          {isCreateNew ? 'New Worker' : `${worker.surname} ${worker.name}`}
         </h2>
       </div>
       <div className="flex flex-col relative mb-4 shrink-0">
@@ -112,7 +112,7 @@ function ClientDetail({ client, onClose, isCreateNew = false, className }: Clien
               transition={{ duration: 0.3, ease: 'easeInOut' }}
               className="h-full"
             >
-              <ClientOverview client={client} isCreateNew={isCreateNew} className="pt-2" />
+              <WorkerOverview worker={worker} isCreateNew={isCreateNew} className="pt-2" />
             </motion.div>
           ) : (
             <motion.div
@@ -123,7 +123,7 @@ function ClientDetail({ client, onClose, isCreateNew = false, className }: Clien
               transition={{ duration: 0.3, ease: 'easeInOut' }}
               className="h-full"
             >
-              <ClientHistory client={client} className="pt-2" />
+              <WorkerHistory worker={worker} className="pt-2" />
             </motion.div>
           )}
         </AnimatePresence>

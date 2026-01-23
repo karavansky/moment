@@ -20,21 +20,14 @@ import {
 import { SortDescriptor } from '@heroui/table'
 import { motion, AnimatePresence } from 'framer-motion'
 
-import {
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  PlusIcon,
-  SearchIcon,
-  VerticalDotsIcon,
-} from '@/components/icons'
+import { ChevronDownIcon, PlusIcon, SearchIcon, VerticalDotsIcon } from '@/components/icons'
 import scrollIntoView from 'scroll-into-view-if-needed'
-import { Client, Groupe } from '@/types/scheduling'
+import { Client, Worker, Team } from '@/types/scheduling'
 import { UserStar } from 'lucide-react'
 
-interface GenericTabelleProps {
+interface WorkersTableProps {
   //  list: Record<string, any>[]
-  list: Client[]
+  list: Worker[]
   titel: string
   isLoading: boolean
   initialVisibleColumns?: string[]
@@ -42,14 +35,14 @@ interface GenericTabelleProps {
   onRowClick?: (id: string) => void
   onAddNew?: () => void
   isShowColumns?: boolean
-  groups: Groupe[]
+  teams: Team[]
   className?: string
 }
 
 export const columns = [
-  { name: 'Kunde', uid: 'client', sortable: true },
+  { name: 'Worker', uid: 'worker', sortable: true },
   { name: 'Status', uid: 'status', sortable: true },
-  { name: 'Groupe', uid: 'groupe', sortable: true },
+  { name: 'Team', uid: 'team', sortable: true },
   { name: 'E-Mail', uid: 'email', sortable: true },
   { name: 'Straße', uid: 'strasse', sortable: true },
   { name: 'Hausnummer', uid: 'houseNumber', sortable: true },
@@ -67,9 +60,9 @@ const statusColorMap: Record<string, ChipProps['color']> = {
   paused: 'warning',
   archive: 'danger',
 }
-const INITIAL_VISIBLE_COLUMNS = ['client', 'status', 'groupe']
+const INITIAL_VISIBLE_COLUMNS = ['worker', 'status', 'team']
 
-const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
+const WorkersTable = function WorkersTable(props: WorkersTableProps) {
   const { isShowColumns = false } = props
   const [filterValue, setFilterValue] = React.useState('')
   const [isPending, startTransition] = useTransition()
@@ -87,7 +80,7 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
 
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>(
     props.sortDescriptor || {
-      column: 'client',
+      column: 'worker',
       direction: 'ascending',
     }
   )
@@ -95,12 +88,11 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
   const [visibleColumns, setVisibleColumns] = React.useState<Selection>(
     new Set(INITIAL_VISIBLE_COLUMNS)
   )
-  const [groupFilter, setGroupFilter] = React.useState<Selection>('all')
-  const groupItems = React.useMemo(
-    () => props.groups.map(group => ({ name: group.groupeName, uid: group.id })),
-    [props.groups]
+  const [teamFilter, setTeamFilter] = React.useState<Selection>('all')
+  const teamItems = React.useMemo(
+    () => props.teams.map(team => ({ name: team.teamName, uid: team.id })),
+    [props.teams]
   )
-  console.log('groupItems:', groupItems)
   type TypeList = (typeof list)[0]
 
   const headerColumns = React.useMemo(() => {
@@ -119,10 +111,7 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
         user =>
           user.name.toLowerCase().includes(filterValue.toLowerCase()) ||
           user.surname.toLowerCase().includes(filterValue.toLowerCase()) ||
-          user.email?.toLowerCase().includes(filterValue.toLowerCase()) ||
-          user.street.toLowerCase().includes(filterValue.toLowerCase()) ||
-          user.postalCode.toLowerCase().includes(filterValue.toLowerCase()) ||
-          user.city.toLowerCase().includes(filterValue.toLowerCase())
+          user.email.toLowerCase().includes(filterValue.toLowerCase())
       )
     }
 
@@ -135,20 +124,20 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
       filteredUsers = filteredUsers.filter(user => selectedStatusValues.includes(user.status))
     }
 
-    // Фильтрация по группе
-    if (groupFilter !== 'all' && Array.from(groupFilter).length !== groupItems.length) {
-      const selectedGroupIds = Array.from(groupFilter)
+    // Фильтрация по команде
+    if (teamFilter !== 'all' && Array.from(teamFilter).length !== teamItems.length) {
+      const selectedTeamIds = Array.from(teamFilter)
 
       filteredUsers = filteredUsers.filter(user => {
-        if (user.groupe && typeof user.groupe === 'object' && 'id' in user.groupe) {
-          return selectedGroupIds.includes(user.groupe.id)
+        if (user.team && typeof user.team === 'object' && 'id' in user.team) {
+          return selectedTeamIds.includes(user.team.id)
         }
         return false
       })
     }
 
     return filteredUsers
-  }, [list, filterValue, statusFilter, groupFilter, groupItems, hasSearchFilter])
+  }, [list, filterValue, statusFilter, teamFilter, teamItems, hasSearchFilter])
   /*
   const sorted = React.useMemo(() => {
     if (!list.length) return [] as typeof list
@@ -180,10 +169,10 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
     [startTransition]
   )
 
-  const handleGroupFilterChange = React.useCallback(
+  const handleTeamFilterChange = React.useCallback(
     (keys: Selection) => {
       startTransition(() => {
-        setGroupFilter(keys)
+        setTeamFilter(keys)
       })
     },
     [startTransition]
@@ -232,24 +221,26 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
   }
 
   const sortedItems = React.useMemo(() => {
-    return [...items].sort((a: Client, b: Client) => {
+    return [...items].sort((a: Worker, b: Worker) => {
       let first: any
       let second: any
 
+      // Специальная обработка для поля 'worker', которое является комбинацией surname и name
       switch (sortDescriptor.column) {
-        case 'client':
+        case 'worker':
           first = `${a.surname} ${a.name}`.toLowerCase()
           second = `${b.surname} ${b.name}`.toLowerCase()
           break
-        case 'groupe':
-          first = a.groupe?.groupeName || ''
-          second = b.groupe?.groupeName || ''
+        case 'team':
+          first = a.team?.teamName || ''
+          second = b.team?.teamName || ''
           break
         default:
-          first = a[sortDescriptor.column as keyof Client]
-          second = b[sortDescriptor.column as keyof Client]
+          first = a[sortDescriptor.column as keyof Worker]
+          second = b[sortDescriptor.column as keyof Worker]
           break
       }
+
       // Обработка undefined/null значений
       if (first == null) first = ''
       if (second == null) second = ''
@@ -264,8 +255,8 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
     })
   }, [sortDescriptor, items])
 
-  const renderCell = React.useCallback((user: Client, columnKey: React.Key) => {
-    const cellValue = user[columnKey as keyof Client]
+  const renderCell = React.useCallback((user: Worker, columnKey: React.Key) => {
+    const cellValue = user[columnKey as keyof Worker]
     switch (columnKey) {
       case 'actions':
         return (
@@ -285,7 +276,7 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
             </Dropdown>
           </div>
         )
-      case 'client':
+      case 'worker':
         return (
           <div className="flex flex-col">
             <p className="text-bold text-small ">
@@ -300,11 +291,11 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
             {statusText}
           </Chip>
         )
-      case 'groupe':
+      case 'team':
         return (
           <Chip size="md" color="accent" className="capitalize">
-            {typeof cellValue === 'object' && cellValue !== null && 'groupeName' in cellValue
-              ? cellValue.groupeName
+            {typeof cellValue === 'object' && cellValue !== null && 'teamName' in cellValue
+              ? cellValue.teamName
               : 'N/A'}
           </Chip>
         )
@@ -434,19 +425,19 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
             </Dropdown>
             <Dropdown>
               <Button variant="tertiary">
-                Groupe
+                Team
                 <ChevronDownIcon className="text-small" />
               </Button>
               <Dropdown.Popover>
                 <Dropdown.Menu
                   disallowEmptySelection
-                  aria-label="Group Filter"
-                  selectedKeys={groupFilter}
+                  aria-label="Team Filter"
+                  selectedKeys={teamFilter}
                   selectionMode="multiple"
-                  onSelectionChange={handleGroupFilterChange}
-                  items={groupItems}
+                  onSelectionChange={handleTeamFilterChange}
+                  items={teamItems}
                 >
-                  {groupItems.map(item => (
+                  {teamItems.map(item => (
                     <DropdownItem key={item.uid} id={item.uid} className="capitalize">
                       {item.name}
                       <Dropdown.ItemIndicator />
@@ -463,7 +454,7 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
         </div>
       </div>
     )
-  }, [filterValue, onSearchChange, statusFilter, groupFilter, groupItems])
+  }, [filterValue, onSearchChange, statusFilter, teamFilter, teamItems])
 
   if (!isMounted) {
     return null
@@ -473,7 +464,7 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
     <div className={`flex flex-col gap-4 h-full ${props.className || ''} select-none`}>
       <div className="flex items-center pl-4 gap-2 shrink-0">
         <UserStar className="w-6 h-6 sm:w-6 sm:h-6  text-primary" />
-        <h1 className="text-lg sm:text-2xl font-bold text-foreground">Kunden</h1>
+        <h1 className="text-lg sm:text-2xl font-bold text-foreground">Fachkräfte</h1>
         <TextField
           className="block sm:hidden w-full pl-4 max-w-70"
           name="filter"
@@ -587,4 +578,4 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
   )
 }
 
-export default React.memo(ClientsTable)
+export default React.memo(WorkersTable)

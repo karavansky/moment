@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 echo "🔁 Running CI pipeline..."
-
+git pull
 echo "🔐 Checking Apple JWT expiration..."
 node scripts/check-apple-jwt.js
 JWT_STATUS=$?
