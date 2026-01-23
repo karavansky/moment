@@ -80,7 +80,7 @@ function CalendarView({
 }: CalendarViewProps) {
   const lang = useLanguage()
   const { isMobile } = usePlatformContext()
-  
+
   // Custom hook for media query to match Tailwind 'lg' breakpoint (1024px)
   const useMediaQuery = (query: string) => {
     const [matches, setMatches] = useState(false)
@@ -98,7 +98,7 @@ function CalendarView({
 
   const isCompact = useMediaQuery('(max-width: 1023px)')
   const isMobileLayout = isMobile || isCompact
-
+ // console.log('isMobileLayout:', isMobileLayout, 'isMobile:', isMobile, 'isCompact:', isCompact)
   // Constants for row heights
   const MIN_WEEK_HEIGHT = isMobileLayout ? 60 : 104
   const HEADER_HEIGHT = isMobileLayout ? 36 : 46
@@ -108,7 +108,7 @@ function CalendarView({
   const estimateAppointmentHeight = (app: Appointment) => {
     let height = 12 + 8 // Base padding (approx) + margin-bottom
     height += 50
-   
+
     return height
   }
   // Генерируем названия дней недели на основе текущей локали
@@ -122,7 +122,7 @@ function CalendarView({
 
     weeks.forEach((week, index) => {
       const hasHeader = !!week.monthName
-      
+
       let height = MIN_WEEK_HEIGHT
 
       if (isMobileLayout) {
@@ -130,32 +130,31 @@ function CalendarView({
         let maxDayHeight = 0
         const APP_HEIGHT_MOBILE = 50 // Compact appointment height for mobile
         const DOTS_HEIGHT = 15 // Height for "..."
-        
+
         week.days.forEach(day => {
           let currentDayHeight = 20 // Base padding/header for mobile day
-          
+
           if (day.appointments && day.appointments.length > 0) {
             const count = Math.min(day.appointments.length, 2)
             currentDayHeight += count * APP_HEIGHT_MOBILE
-            
+
             if (day.appointments.length > 2) {
               currentDayHeight += DOTS_HEIGHT
             }
-             // Add some bottom padding
-             currentDayHeight += 5
+            // Add some bottom padding
+            currentDayHeight += 5
           }
-          
+
           if (currentDayHeight > maxDayHeight) {
             maxDayHeight = currentDayHeight
           }
         })
-         height = Math.max(MIN_WEEK_HEIGHT, maxDayHeight)
-
+        height = Math.max(MIN_WEEK_HEIGHT, maxDayHeight)
       } else {
         // Desktop logic: fit all appointments
         // Find the tallest day in this week
         let maxDayHeight = 0
-        
+
         week.days.forEach(day => {
           let currentDayHeight = DAY_HEADER_HEIGHT_DESKTOP
           if (day.appointments) {
@@ -167,9 +166,9 @@ function CalendarView({
             maxDayHeight = currentDayHeight
           }
         })
-        
+
         // Add some padding to the tallest day
-        const contentHeight = maxDayHeight + 20 
+        const contentHeight = maxDayHeight + 20
         height = Math.max(MIN_WEEK_HEIGHT, contentHeight)
       }
 
@@ -276,11 +275,8 @@ function CalendarView({
     // Advance end index until we cover the viewport + overscan
     // We use containerHeight as a dynamic buffer zone
     const buffer = containerHeight || 500
-    
-    while (
-      end < items.length &&
-      currentBottom < scrollTop + containerHeight + buffer
-    ) {
+
+    while (end < items.length && currentBottom < scrollTop + containerHeight + buffer) {
       currentBottom += items[end].height
       end++
     }
@@ -321,10 +317,7 @@ function CalendarView({
               setScrollTop(e.currentTarget.scrollTop)
             }}
           >
-            <div
-              style={{ height: totalHeight, position: 'relative' }}
-              className="w-full"
-            >
+            <div style={{ height: totalHeight, position: 'relative' }} className="w-full">
               {visibleItems.map(item => (
                 <div
                   key={item.week.id}

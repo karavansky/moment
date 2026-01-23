@@ -32,6 +32,24 @@ function DayView({
   const { isMobile, isReady } = usePlatformContext()
   // Ref для таймера задержки снятия выделения
   const dragLeaveTimerRef = useRef<NodeJS.Timeout | null>(null)
+    // Custom hook for media query to match Tailwind 'lg' breakpoint (1024px)
+    const useMediaQuery = (query: string) => {
+      const [matches, setMatches] = useState(false)
+      useEffect(() => {
+        const media = window.matchMedia(query)
+        if (media.matches !== matches) {
+          setMatches(media.matches)
+        }
+        const listener = () => setMatches(media.matches)
+        media.addEventListener('change', listener)
+        return () => media.removeEventListener('change', listener)
+      }, [matches, query])
+      return matches
+    }
+
+  const isCompact = useMediaQuery('(max-width: 1023px)')
+  const isMobileLayout = isMobile || isCompact
+   // console.log('isMobileLayout:', isMobileLayout, 'isMobile:', isMobile, 'isCompact:', isCompact)
 
   // Глобальный слушатель для надежного сброса состояния при окончании любого перетаскивания
   useEffect(() => {
@@ -189,7 +207,7 @@ function DayView({
   if (!day.day || !day.date) {
     return (
       <div
-        className={`lg:min-w-30 ${isMobile ? 'min-h-12' : 'min-h-24'} h-full p-1 sm:p-2 bg-default-50`}
+        className={`lg:min-w-30 ${isMobileLayout ? 'min-h-12' : 'min-h-24'} h-full p-1 sm:p-2 bg-default-50`}
       />
     )
   }
@@ -201,7 +219,7 @@ function DayView({
   return (
     <div
       className={`
-        ${isMobile ? 'min-h-12' : 'min-h-24'} h-full
+        ${isMobileLayout ? 'min-h-12' : 'min-h-24'} h-full
         transition-all duration-200
         select-none 
       `}
