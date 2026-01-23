@@ -56,15 +56,17 @@ const DraggableItem = ({
       // --- Workaround for WebKit alpha channel bug ---
       // Fill the entire canvas with a solid color matching the page background.
       // This avoids transparency, which iOS renders as black corners.
-      ctx.fillStyle = isDark ? '#111827' : '#ffffff' // bg-gray-900 or white
-      ctx.fillRect(0, 0, width, height)
-
+    //  ctx.fillStyle = isDark ? '#111827' : '#ffffff' // bg-gray-900 or white
+     
+      
       // Draw rounded rectangle (fallback for older browsers)
       const x = 2,
         y = 2,
         w = width - 4,
         h = height - 4,
         r = 12
+        /* End workaround ---
+
       ctx.beginPath()
       ctx.moveTo(x + r, y)
       ctx.lineTo(x + w - r, y)
@@ -76,11 +78,13 @@ const DraggableItem = ({
       ctx.lineTo(x, y + r)
       ctx.quadraticCurveTo(x, y, x + r, y)
       ctx.closePath()
-
+*/
       // Fill and Stroke
       ctx.fillStyle = isDark ? '#1f2937' : '#ffffff' // bg-gray-800 or white
-      ctx.fill()
-      ctx.lineWidth = 2
+      ctx.fillRect(0, 0, width, height)
+
+     // ctx.fill()
+     // ctx.lineWidth = 2
       // ctx.strokeStyle = '#006FEE' // primary color
       // ctx.stroke()
 
