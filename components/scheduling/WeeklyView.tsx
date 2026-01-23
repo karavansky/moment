@@ -873,7 +873,7 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
       {/* Header with current date */}
-      <div className="shrink-0 bg-background border-b rounded-2xl border-divider pb-3">
+      <div className="shrink-0 bg-background rounded-2xl pb-3">
         <div className="flex items-center justify-between gap-2 px-2 sm:px-4 mb-3">
           <Button
             onClick={handlePrevWeek}
