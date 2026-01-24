@@ -194,49 +194,33 @@ function CalendarView({
   // State
   const [scrollTop, setScrollTop] = useState(0)
   const [containerHeight, setContainerHeight] = useState(0)
-  const [isResizing, setIsResizing] = useState(false)
+  // Removed isResizing state that was causing visibility issues
   const [isInitialScrollDone, setIsInitialScrollDone] = useState(false)
 
   // Refs
   const containerRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const isProgrammaticScroll = useRef(false)
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // ResizeObserver to handle container size and flicker prevention
+  // ResizeObserver to handle container size
   useEffect(() => {
     if (!containerRef.current) return
     const resizeObserver = new ResizeObserver(entries => {
       for (const entry of entries) {
         if (entry.contentRect.height > 0) {
           setContainerHeight(entry.contentRect.height)
-          setIsResizing(true)
-
-          // Safety fallback
-          const safetyTimeout = setTimeout(() => {
-            setIsResizing(false)
-          }, 500)
-
-          if (scrollTimeoutRef.current) {
-            clearTimeout(scrollTimeoutRef.current)
-          }
-
-          scrollTimeoutRef.current = setTimeout(() => {
-            setIsResizing(false)
-            clearTimeout(safetyTimeout)
-          }, 100)
         }
       }
     })
     resizeObserver.observe(containerRef.current)
     return () => {
       resizeObserver.disconnect()
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
     }
   }, [])
 
   // Initial scroll to today
   useEffect(() => {
+    // Wait for layout to be generally ready (container measured and items calculated)
     if (
       containerHeight > 0 &&
       items.length > 0 &&
@@ -247,25 +231,23 @@ function CalendarView({
         item.week.days.some(day => day.date && isSameDate(day.date, today))
       )
 
+      let targetTop = 0
       if (todayItemIndex !== -1) {
-        const targetTop = items[todayItemIndex].top
-        isProgrammaticScroll.current = true
-        scrollContainerRef.current.scrollTop = targetTop
-        setScrollTop(targetTop)
-
-        // Give it a moment to render at the new position before showing
-        setTimeout(() => {
-          isProgrammaticScroll.current = false
-          setIsInitialScrollDone(true)
-        }, 50)
-      } else {
-        // If today is not found, just show the list at the top
-        // Sync state with DOM scroll in case browser restored scroll position
-        if (scrollContainerRef.current.scrollTop > 0) {
-          setScrollTop(scrollContainerRef.current.scrollTop)
-        }
-        setIsInitialScrollDone(true)
+        targetTop = items[todayItemIndex].top
+      } else if (scrollContainerRef.current.scrollTop > 0) {
+        // If no today target, but browser restored scroll, use that
+        targetTop = scrollContainerRef.current.scrollTop
       }
+
+      // Apply scroll
+      if (scrollContainerRef.current.scrollTop !== targetTop) {
+         scrollContainerRef.current.scrollTop = targetTop
+      }
+      // Sync state
+      setScrollTop(targetTop)
+      
+      // Mark as done immediately
+      setIsInitialScrollDone(true)
     }
   }, [containerHeight, items, today, isInitialScrollDone])
 
@@ -281,7 +263,7 @@ function CalendarView({
 
     // Advance end index until we cover the viewport + overscan
     // We use containerHeight as a dynamic buffer zone
-    const buffer = containerHeight || 500
+    const buffer = containerHeight || 800 // Larger buffer default to ensure coverage
 
     while (end < items.length && currentBottom < scrollTop + containerHeight + buffer) {
       currentBottom += items[end].height
@@ -317,10 +299,9 @@ function CalendarView({
           <div
             ref={scrollContainerRef}
             className={`w-full h-full overflow-y-auto no-scrollbar ${
-              isResizing || !isInitialScrollDone ? 'opacity-0' : 'opacity-100'
-            } transition-opacity duration-75`}
+              !isInitialScrollDone ? 'opacity-0' : 'opacity-100'
+            } transition-opacity duration-150`}
             onScroll={e => {
-              if (isProgrammaticScroll.current) return
               setScrollTop(e.currentTarget.scrollTop)
             }}
           >
