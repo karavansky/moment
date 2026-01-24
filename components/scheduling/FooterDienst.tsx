@@ -126,13 +126,11 @@ const DraggableItem = ({
       draggable
       onDragStart={handleDragStartLocal}
       onContextMenu={(e) => e.preventDefault()}
-      className="flex flex-row gap-3 p-3 border border-divider cursor-grab active:cursor-grabbing hover:border-primary transition-colors bg-white dark:bg-gray-800 rounded-xl shadow-sm"
+      className="flex flex-row gap-3 p-3 border border-divider cursor-grab active:cursor-grabbing hover:border-primary transition-colors bg-white dark:bg-gray-800 rounded-xl shadow-sm select-none"
       style={{
-        touchAction: 'none',
-        WebkitTouchCallout: 'none',
         WebkitUserSelect: 'none',
-        userSelect: 'none',
-      }}
+        WebkitTouchCallout: 'none',
+      } as React.CSSProperties}
     >
       <div className="flex flex-col justify-center gap-1 flex-1">
         <div className="text-sm font-semibold whitespace-nowrap">{name}</div>
@@ -236,16 +234,14 @@ const DraggableItemClone = ({
       onDragStart={handleDragStartLocal}
       onDragEnd={handleDragEnd}
       onContextMenu={(e) => e.preventDefault()}
-      className="flex flex-row gap-3 p-3 border border-divider cursor-grab active:cursor-grabbing hover:border-primary transition-all bg-white dark:bg-gray-800 rounded-xl shadow-sm"
+      className="flex flex-row gap-3 p-3 border border-divider cursor-grab active:cursor-grabbing hover:border-primary transition-all bg-white dark:bg-gray-800 rounded-xl shadow-sm select-none"
       style={{
         opacity: isDragging ? 0.5 : 1,
         transform: isPressed ? 'scale(1.25)' : 'scale(1)',
         boxShadow: isPressed ? '0 8px 24px rgba(0, 0, 0, 0.2)' : undefined,
-        touchAction: 'none',
-        WebkitTouchCallout: 'none',
         WebkitUserSelect: 'none',
-        userSelect: 'none',
-      }}
+        WebkitTouchCallout: 'none',
+      } as React.CSSProperties}
     >
       <div className="flex flex-col justify-center gap-1 flex-1">
         <div className="text-sm font-semibold whitespace-nowrap">{name}</div>
