@@ -215,6 +215,7 @@ const DayColumn = React.memo(
                       key={hour}
                       className={`flex min-h-12 border-t border-gray-200 dark:border-gray-800 shrink-0 rounded-lg relative ${isDragOver ? (isPastHour ? 'bg-danger/50' : 'bg-success/50') : ''}`}
                       onDragOver={e => handleHourDragOver(e, hour)}
+                      onDragEnter={e => e.preventDefault()}
                       onDragLeave={e => {
                         if (e.currentTarget.contains(e.relatedTarget as Node)) return
                         setDragOverHour(null)

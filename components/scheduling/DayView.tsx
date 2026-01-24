@@ -223,6 +223,7 @@ function DayView({
         transition-all duration-200
         select-none
       `}
+      onDragEnter={e => e.preventDefault()}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
