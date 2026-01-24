@@ -124,6 +124,7 @@ const DraggableItem = ({
   return (
     <div
       draggable
+      onContextMenu={(e) => e.preventDefault()}
       onDragStart={handleDragStartLocal}
       className="flex flex-row gap-3 p-3 border border-divider cursor-grab active:cursor-grabbing hover:border-primary transition-colors bg-white dark:bg-gray-800 rounded-xl shadow-sm"
       style={{
@@ -228,6 +229,7 @@ const DraggableItemClone = ({
   return (
     <div
       draggable
+      onContextMenu={(e) => e.preventDefault()}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
