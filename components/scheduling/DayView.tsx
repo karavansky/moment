@@ -176,7 +176,10 @@ function DayView({
       }
 
       try {
-        const rawData = e.dataTransfer.getData('application/json')
+        let rawData = e.dataTransfer.getData('application/json')
+        if (!rawData) {
+          rawData = e.dataTransfer.getData('text/plain')
+        }
         if (!rawData) return
 
         const data = JSON.parse(rawData)

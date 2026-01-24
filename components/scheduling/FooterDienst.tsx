@@ -309,7 +309,9 @@ function FooterDienst({ className }: FooterDienstProps) {
   }, [startTransition])
 
   const handleDragStart = (e: React.DragEvent, type: 'client' | 'worker', id: string) => {
-    e.dataTransfer.setData('application/json', JSON.stringify({ type, id }))
+    const data = JSON.stringify({ type, id })
+    e.dataTransfer.setData('application/json', data)
+    e.dataTransfer.setData('text/plain', data)
     e.dataTransfer.effectAllowed = 'copyMove'
   }
   const filteredClients = selectedGroups === 'All Kunden'
