@@ -10,8 +10,9 @@ export const NotificationObserver = () => {
   // Ref to track processed notification IDs to prevent duplicate toasts
   const processedIds = useRef<Set<string>>(new Set());
 
-  // Ref для хранения активных setTimeout ids
-  const timeoutIdsRef = useRef<Set<NodeJS.Timeout>>(new Set());
+  // Ref to track active timeouts and their associated notification IDs
+  // Map<TimeoutId, NotificationId>
+  const activeTimeouts = useRef<Map<NodeJS.Timeout, string>>(new Map());
 
   useEffect(() => {
     // Находим непрочитанные и необработанные уведомления
@@ -28,6 +29,9 @@ export const NotificationObserver = () => {
     const batch = unprocessedNotifications.slice(0, 3);
 
     batch.forEach((notif, index) => {
+      // Add to processed set immediately to prevent duplicate scheduling
+      processedIds.current.add(notif.id);
+
       // Используем setTimeout с задержкой 100ms + index * 300ms
       // Это даёт браузеру время обработать scroll события
       const timeoutId = setTimeout(() => {
@@ -56,28 +60,35 @@ export const NotificationObserver = () => {
               break;
           }
 
-          // Удаляем из активных таймеров
-          timeoutIdsRef.current.delete(timeoutId);
+          // Удаляем из активных таймеров, так как он выполнился
+          activeTimeouts.current.delete(timeoutId);
         });
-
-        // Add to processed set
-        processedIds.current.add(notif.id);
 
         // Mark as read in the global state
         markNotificationAsRead(notif.id);
       }, 100 + index * 300); // Задержка 100ms для первого, затем +300ms для каждого следующего
 
-      // Сохраняем timeout id
-      timeoutIdsRef.current.add(timeoutId);
+      // Сохраняем timeout id и связанный с ним ID уведомления
+      activeTimeouts.current.set(timeoutId, notif.id);
     });
 
-    // Cleanup
-    return () => {
-      // Отменяем все активные таймеры
-      timeoutIdsRef.current.forEach((id) => clearTimeout(id));
-      timeoutIdsRef.current.clear();
-    };
+    // No cleanup function here intentionally.
+    // We don't want to cancel pending toasts just because the 'notifications' array updated
+    // (which happens when markNotificationAsRead is called for the first toast in a batch).
   }, [notifications, markNotificationAsRead]);
+
+  // Cleanup effect that runs only on unmount
+  useEffect(() => {
+    return () => {
+      // Отменяем все активные таймеры и сбрасываем статус обработки
+      activeTimeouts.current.forEach((notifId, timeoutId) => {
+        clearTimeout(timeoutId);
+        // Remove from processedIds so they can be retried if the component remounts
+        processedIds.current.delete(notifId);
+      });
+      activeTimeouts.current.clear();
+    };
+  }, []);
 
   return null;
 };
