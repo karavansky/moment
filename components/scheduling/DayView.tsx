@@ -221,7 +221,7 @@ function DayView({
       className={`
         ${isMobileLayout ? 'min-h-12' : 'min-h-24'} h-full
         transition-all duration-200
-        select-none 
+        select-none
       `}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}

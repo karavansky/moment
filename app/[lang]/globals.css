@@ -57,6 +57,12 @@
     text-wrap: balance;
   }
 
+  /* Prevent context menu on long press (Android) while allowing drag and drop */
+  .no-context-menu {
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+  }
+
   .animate-fade-in {
     animation: fadeIn 1s ease-out forwards;
   }
