@@ -155,6 +155,9 @@ const DayColumn = React.memo(
       e.stopPropagation()
       setDragOverHour(null)
 
+      const targetDate = new Date(day)
+      targetDate.setHours(hour, 0, 0, 0)
+
       try {
         let rawData = e.dataTransfer.getData('application/json')
         if (!rawData) {
