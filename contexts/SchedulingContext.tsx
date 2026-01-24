@@ -9,7 +9,6 @@ import {
   Groupe,
   User,
   Report,
-  Notif,
 } from '@/types/scheduling';
 import getAllSampleObjects from '@/lib/scheduling-mock-data';
 
@@ -39,7 +38,6 @@ interface SchedulingState {
   selectedClient: Client | null;
   selectedDate: Date;
   selectedAppointment: Appointment | null;
-  notifications: Notif[];
 }
 
 // Тип для вычисляемых данных (derived state)
@@ -65,8 +63,6 @@ interface SchedulingActions {
   updateWorker: (worker: Worker) => void;
   deleteWorker: (id: string) => void;
   refreshData: () => void;
-  addNotification: (notification: Notif) => void;
-  markNotificationAsRead: (id: string) => void;
 }
 
 // Комбинированный тип для контекста
@@ -91,7 +87,6 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     selectedClient: null,
     selectedDate: new Date(),
     selectedAppointment: null,
-    notifications: [],
   });
 
   // Инициализация данных при монтировании
@@ -120,7 +115,6 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         selectedClient: null,
         selectedDate: new Date(),
         selectedAppointment: null,
-        notifications: [],
       });
 
 
@@ -214,22 +208,6 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
           ),
         };
       });
-    },
-
-    addNotification: (notification: Notif) => {
-      setState((prev) => ({
-        ...prev,
-        notifications: [...prev.notifications, notification],
-      }));
-    },
-
-    markNotificationAsRead: (id: string) => {
-      setState((prev) => ({
-        ...prev,
-        notifications: prev.notifications.map((notif) =>
-          notif.id === id ? { ...notif, isRead: true } : notif
-        ),
-      }));
     },
 
     addClient: (client: Client) => {

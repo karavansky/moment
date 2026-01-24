@@ -1,22 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import { Button, Card, Separator } from '@heroui/react'
 import {
   Home,
   Users,
-  List,
-  LayoutGrid,
-  Building2,
-  Briefcase,
-  CheckSquare,
-  Package,
-  Send,
-  Zap,
-  ArrowRightLeft,
-  MessageCircle,
-  ShoppingCart,
-  Crown,
   Van,
   X,
   Map,
@@ -27,12 +15,16 @@ import {
   BookOpen,
   ArrowLeftToLine,
   ArrowRightToLine,
+  UserCog,
+  Building2,
+  ShieldCheck,
+  Bell,
 } from 'lucide-react'
 import { Link } from '@heroui/react'
 import { usePathname } from 'next/navigation'
 import { LogoMoment } from './icons'
-import { useRouter } from 'next/navigation'
 import { useSidebar } from '@/contexts/SidebarContext'
+import { SimpleTooltip } from './SimpleTooltip'
 
 interface MenuItem {
   icon: React.ElementType
@@ -42,6 +34,13 @@ interface MenuItem {
   badgeColor?: 'default' | 'primary' | 'success' | 'warning' | 'danger'
 }
 
+interface MenuSection {
+  title: string
+  items: MenuItem[]
+  activeColor?: string
+}
+
+// Вынесли данные за пределы компонента для предотвращения пересоздания
 const menuItems: MenuItem[] = [
   { icon: Home, label: 'Home', href: '/' },
   { icon: Calendar1, label: 'Dienstplan', href: '/dienstplan' },
@@ -54,44 +53,193 @@ const crmSubItems: MenuItem[] = [
   { icon: Van, label: 'Fahrzeug', href: '/transport' },
 ]
 
-const otherItems: MenuItem[] = [
-  { icon: ClipboardPlus, label: 'Kunden', href: '/clients' },
-  { icon: ClipboardMinus, label: 'Fachkräfte', href: '/staff' },
-  { icon: BookOpen, label: 'Fahrtenbuch', href: '/transport' },
+const reportsItems: MenuItem[] = [
+  { icon: ClipboardPlus, label: 'Kunden', href: '/reports/clients' },
+  { icon: ClipboardMinus, label: 'Fachkräfte', href: '/reports/staff' },
+  { icon: BookOpen, label: 'Fahrtenbuch', href: '/reports/transport' },
 ]
+
+const settingsItems: MenuItem[] = [
+  { icon: UserCog, label: 'Personal', href: '/settings/personal' },
+  { icon: Building2, label: 'Organisation', href: '/settings/organisation' },
+  { icon: ShieldCheck, label: 'Users', href: '/settings/users' },
+  { icon: Bell, label: 'Notifications', href: '/notifications' },
+]
+
+const menuSections: MenuSection[] = [
+  { title: 'CRM', items: crmSubItems, activeColor: 'bg-success/10 text-success' },
+  { title: 'Bericht', items: reportsItems, activeColor: 'bg-primary/10 text-primary' },
+  { title: 'Settings', items: settingsItems, activeColor: 'bg-primary/10 text-primary' },
+]
+
+// Мемоизированный компонент для элементов меню
+const MenuItemComponent = memo(({
+  item,
+  isActive,
+  onClick,
+  activeClassName = 'bg-primary/10 text-primary',
+  isExpanded = true
+}: {
+  item: MenuItem
+  isActive: boolean
+  onClick: () => void
+  activeClassName?: string
+  isExpanded?: boolean
+}) => {
+  const Icon = item.icon
+
+  const buttonContent = (
+    <Button
+      variant="ghost"
+      className={`w-full justify-start ${
+        isActive ? activeClassName : 'text-default-700'
+      }`}
+      onPress={onClick}
+    >
+      <Icon className="w-5 h-5 mr-3" />
+      <span className="sidebar-label">{item.label}</span>
+    </Button>
+  )
+
+  return (
+    <Link key={item.href} href={item.href} className="w-full no-underline">
+      <SimpleTooltip
+        content={item.label}
+        placement="right"
+        isDisabled={isExpanded}
+        delay={100}
+        wrapperClassName="w-full"
+      >
+        {buttonContent}
+      </SimpleTooltip>
+    </Link>
+  )
+})
+
+MenuItemComponent.displayName = 'MenuItemComponent'
+
+// Мемоизированный компонент для секций меню
+const MenuSectionComponent = memo(({
+  section,
+  isActive,
+  onLinkClick,
+  isExpanded = true
+}: {
+  section: MenuSection
+  isActive: (href: string) => boolean
+  onLinkClick: () => void
+  isExpanded?: boolean
+}) => {
+  return (
+    <div className="mt-6">
+      <div className="section-header px-3 py-2 text-xs font-semibold text-default-500 uppercase tracking-wider">
+        {section.title}
+      </div>
+      <Separator className="section-separator mb-6" />
+      {section.items.map(item => (
+        <MenuItemComponent
+          key={item.href}
+          item={item}
+          isActive={isActive(item.href)}
+          onClick={onLinkClick}
+          activeClassName={section.activeColor}
+          isExpanded={isExpanded}
+        />
+      ))}
+    </div>
+  )
+})
+
+MenuSectionComponent.displayName = 'MenuSectionComponent'
+
+// Мемоизированный компонент для footer
+const SidebarFooter = memo(() => {
+  return (
+    <div
+      className="sidebar-footer p-4 border-t border-divider shrink-0"
+      suppressHydrationWarning
+    >
+      <Card className="p-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">
+            QB
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-medium text-foreground truncate">Moment LBS</div>
+            <div className="text-xs text-default-500 truncate">moment-lbs.app</div>
+          </div>
+        </div>
+      </Card>
+    </div>
+  )
+})
+
+SidebarFooter.displayName = 'SidebarFooter'
+
+// Мемоизированный компонент для toggle button
+const ToggleButton = memo(({ onToggle }: { onToggle: () => void }) => {
+  return (
+    <div className="flex justify-end pr-2.5 pt-3" suppressHydrationWarning>
+      <Button
+        isIconOnly
+        variant="tertiary"
+        size="sm"
+        onPress={onToggle}
+        className="w-10 h-10 rounded-full shadow-xl relative"
+      >
+        {/* Рендерим обе иконки, управляем видимостью через CSS */}
+        <ArrowLeftToLine className="absolute inset-0 m-auto toggle-icon-collapse" />
+        <ArrowRightToLine className="absolute inset-0 m-auto toggle-icon-expand" />
+      </Button>
+    </div>
+  )
+})
+
+ToggleButton.displayName = 'ToggleButton'
 
 export default function Sidebar() {
   const pathname = usePathname()
-  const router = useRouter()
 
   // Получаем состояние из контекста
-  const { isOpen, toggleOpen, toggleExpanded } = useSidebar()
+  const { isOpen, isExpanded, toggleOpen, toggleExpanded } = useSidebar()
 
   // Для SSR всегда начинаем с false (desktop режим)
   const [isMobile, setIsMobile] = useState(false)
 
-  // Определяем мобильный режим
+  // Определяем мобильный режим с debounce для оптимизации
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
     }
 
     checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+
+    // Debounced resize handler для уменьшения количества вызовов
+    let timeoutId: NodeJS.Timeout
+    const handleResize = () => {
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(checkMobile, 150)
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => {
+      clearTimeout(timeoutId)
+      window.removeEventListener('resize', handleResize)
+    }
   }, [])
 
-  const isActive = (href: string) => {
+  // Мемоизированная функция проверки активного пути
+  const isActive = useCallback((href: string) => {
     if (href === '/') return pathname === '/'
     return pathname.startsWith(href)
-  }
+  }, [pathname])
 
-  // На мобильном закрываем при клике на ссылку
-  const handleLinkClick = () => {
+  // Мемоизированный обработчик клика для мобильных устройств
+  const handleLinkClick = useCallback(() => {
     if (isMobile && isOpen) {
       toggleOpen()
     }
-  }
+  }, [isMobile, isOpen, toggleOpen])
 
   return (
     <>
@@ -139,138 +287,37 @@ export default function Sidebar() {
           )}
         </div>
         {/* Toggle Button - только на desktop */}
-        {!isMobile && (
-          <div className="flex justify-end pr-2.5 pt-3" suppressHydrationWarning>
-            <Button
-              isIconOnly
-              variant="tertiary"
-              size="sm"
-              onPress={toggleExpanded}
-              className="w-10 h-10 rounded-full shadow-xl relative"
-            >
-              {/* Рендерим обе иконки, управляем видимостью через CSS */}
-              <ArrowLeftToLine className="absolute inset-0 m-auto toggle-icon-collapse" />
-              <ArrowRightToLine className="absolute inset-0 m-auto toggle-icon-expand" />
-            </Button>
-          </div>
-        )}
+        {!isMobile && <ToggleButton onToggle={toggleExpanded} />}
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4" suppressHydrationWarning>
-          <div className="px-2 space-y-1 ">
+          <div className="px-2 space-y-1">
             {/* Main Menu Items */}
-            {menuItems.map(item => {
-              const Icon = item.icon
-              const active = isActive(item.href)
+            {menuItems.map(item => (
+              <MenuItemComponent
+                key={item.href}
+                item={item}
+                isActive={isActive(item.href)}
+                onClick={handleLinkClick}
+                isExpanded={isExpanded}
+              />
+            ))}
 
-              return (
-                <Link key={item.href} href={item.href} className={`w-full no-underline`}>
-                  <Button
-                    variant="ghost"
-                    className={`w-full justify-start ${
-                      active ? 'bg-primary/10 text-primary' : 'text-default-700'
-                    }`}
-                    onPress={handleLinkClick}
-                  >
-                    <Icon className="w-5 h-5 mr-3" />
-                    <span className="sidebar-label">{item.label}</span>
-                  </Button>
-                </Link>
-              )
-            })}
-
-            {/* CRM Section */}
-            <div className="mt-6">
-              {/* Всегда рендерим оба элемента, управляем видимостью через CSS */}
-              <div className="section-header px-3 py-2 text-xs font-semibold text-default-500 uppercase tracking-wider">
-                CRM
-              </div>
-              <Separator className="section-separator mb-6" />
-                {crmSubItems.map(item => {
-                  const Icon = item.icon
-                  const active = isActive(item.href)
-
-                  return (
-                    <Link key={item.href} href={item.href} className={`w-full no-underline`}>
-                      <Button
-                        variant="ghost"
-                        className={`w-full justify-start ${
-                          active ? 'bg-success/10 text-success' : 'text-default-600'
-                        }`}
-                        onPress={handleLinkClick}
-                      >
-                        <Icon className="w-5 h-5 mr-3" />
-                        <span className="sidebar-label">{item.label}</span>
-                      </Button>
-                    </Link>
-                  )
-                })}
-            </div>
-
-            {/* Other Items */}
-            <div className="mt-6">
-              {/* Всегда рендерим оба элемента, управляем видимостью через CSS */}
-              <div className="section-header px-3 py-2 text-xs font-semibold text-default-500 uppercase tracking-wider">
-                Bericht
-              </div>
-              <Separator className="section-separator mb-6" />
-
-                {otherItems.map(item => {
-                  const Icon = item.icon
-                  const active = isActive(item.href)
-
-                  return (
-                    <Link key={item.href} href={item.href} className={`w-full no-underline`}>
-                      <Button
-                        variant="ghost"
-                        className={`w-full justify-start ${
-                          active ? 'bg-primary/10 text-primary' : 'text-default-600'
-                        }`}
-                        onPress={handleLinkClick}
-                      >
-                        <Icon className="w-5 h-5 mr-3" />
-                        <span className="sidebar-label">{item.label}</span>
-                      </Button>
-                    </Link>
-                  )
-                })}
-            </div>
+            {/* Dynamic Sections (CRM, Reports, Settings) */}
+            {menuSections.map(section => (
+              <MenuSectionComponent
+                key={section.title}
+                section={section}
+                isActive={isActive}
+                onLinkClick={handleLinkClick}
+                isExpanded={isExpanded}
+              />
+            ))}
           </div>
         </nav>
 
         {/* Footer - User/Settings */}
-        <div
-          className="sidebar-footer p-4 border-t border-divider shrink-0"
-          suppressHydrationWarning
-        >
-          <Card className="p-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">
-                QB
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-foreground truncate">Moment LBS</div>
-                <div className="text-xs text-default-500 truncate">moment-lbs.app</div>
-              </div>
-            </div>
-          </Card>
-        </div>
+        <SidebarFooter />
       </aside>
     </>
   )
 }
-/*
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-background border border-divider flex items-center justify-center hover:bg-default-100 transition-colors"
-          >
-            <svg
-              className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-
-          */

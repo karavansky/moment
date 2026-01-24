@@ -96,7 +96,7 @@ export function SidebarProvider({
   }, [])
 
   // Мемоизируем context value для предотвращения лишних ре-рендеров
-  // toggleOpen и toggleExpanded не включаем в зависимости так как они стабильные через useCallback
+  // toggleOpen и toggleExpanded стабильные через useCallback, но все равно включаем для корректности
   const contextValue = useMemo(
     () => ({
       isOpen,
@@ -107,7 +107,7 @@ export function SidebarProvider({
       toggleExpanded,
       isHydrated,
     }),
-    [isOpen, isExpanded, isHydrated]
+    [isOpen, isExpanded, isHydrated, toggleOpen, toggleExpanded]
   )
 
   return (

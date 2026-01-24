@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useScheduling } from '@/contexts/SchedulingContext';
+import { useEffect, useRef } from 'react';
+import { useNotifications } from '@/contexts/NotificationContext';
 import { Notif } from '@/types/scheduling';
 import { generateId } from '@/lib/generateId'; // Assuming you have a generateId utility, or I'll use a simple one
 
@@ -9,14 +9,24 @@ import { generateId } from '@/lib/generateId'; // Assuming you have a generateId
 const simpleId = () => Math.random().toString(36).substr(2, 9);
 
 export const DemoNotificationWorker = () => {
-  const { addNotification } = useScheduling();
+  const { addNotification } = useNotifications();
+
+  // Используем ref для хранения актуальной версии addNotification
+  const addNotificationRef = useRef(addNotification);
+
+  // Обновляем ref при изменении addNotification
+  useEffect(() => {
+    addNotificationRef.current = addNotification;
+  }, [addNotification]);
 
   useEffect(() => {
+    console.log('🔔 [Demo Worker] Mounting...');
+
     // Function to generate a random notification
     const generateRandomNotification = () => {
       const types: Notif['type'][] = ['info', 'success', 'warning', 'error'];
       const randomType = types[Math.floor(Math.random() * types.length)];
-      
+
       const titles = {
         info: ['New Message', 'System Update', 'Shift Reminder'],
         success: ['Task Completed', 'Sync Successful', 'Payment Received'],
@@ -48,7 +58,8 @@ export const DemoNotificationWorker = () => {
       };
 
       console.log('🔔 [Demo Worker] Generating notification:', newNotification.title);
-      addNotification(newNotification);
+      // Используем ref для вызова актуальной версии addNotification
+      addNotificationRef.current(newNotification);
     };
 
     // Set up interval to generate notifications every 15-45 seconds (randomized)
@@ -60,8 +71,13 @@ export const DemoNotificationWorker = () => {
       }
     }, 5000);
 
-    return () => clearInterval(intervalId);
-  }, [addNotification]);
+    console.log('🔔 [Demo Worker] Interval started:', intervalId);
+
+    return () => {
+      console.log('🔔 [Demo Worker] Cleaning up interval:', intervalId);
+      clearInterval(intervalId);
+    };
+  }, []); // Пустой массив - интервал создается только один раз, используем ref для актуальности
 
   return null; // Invisible component
 };

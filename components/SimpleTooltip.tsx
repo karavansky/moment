@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect, useId } from 'react'
+import React, { useState, useRef, useEffect, useId, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 
 type Placement = 'top' | 'bottom' | 'left' | 'right'
@@ -40,7 +40,7 @@ export const SimpleTooltip: React.FC<SimpleTooltipProps> = ({
   const hideTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const tooltipId = useId()
 
-  const updatePosition = () => {
+  const updatePosition = useCallback(() => {
     if (triggerRef.current && tooltipRef.current) {
       const triggerRect = triggerRef.current.getBoundingClientRect()
       const tooltipRect = tooltipRef.current.getBoundingClientRect()
@@ -115,7 +115,7 @@ export const SimpleTooltip: React.FC<SimpleTooltipProps> = ({
       setPosition({ top, left })
       setActualPlacement(finalPlacement)
     }
-  }
+  }, [placement, offset, showArrow])
 
   const handleMouseEnter = () => {
     if (isDisabled) return
@@ -158,16 +158,41 @@ export const SimpleTooltip: React.FC<SimpleTooltipProps> = ({
   useEffect(() => {
     if (isVisible) {
       updatePosition()
+
+      // Throttle для оптимизации - обновляем позицию не чаще раз в 100ms
+      let rafId: number | null = null
+      let lastUpdate = 0
+
+      const throttledUpdate = () => {
+        const now = Date.now()
+        if (now - lastUpdate >= 100) {
+          lastUpdate = now
+          updatePosition()
+        } else {
+          // Если вызов слишком частый, планируем следующий через RAF
+          if (rafId === null) {
+            rafId = requestAnimationFrame(() => {
+              rafId = null
+              updatePosition()
+              lastUpdate = Date.now()
+            })
+          }
+        }
+      }
+
       // Обновляем позицию при скролле или ресайзе
-      window.addEventListener('scroll', updatePosition, true)
-      window.addEventListener('resize', updatePosition)
+      window.addEventListener('scroll', throttledUpdate, true)
+      window.addEventListener('resize', throttledUpdate)
 
       return () => {
-        window.removeEventListener('scroll', updatePosition, true)
-        window.removeEventListener('resize', updatePosition)
+        window.removeEventListener('scroll', throttledUpdate, true)
+        window.removeEventListener('resize', throttledUpdate)
+        if (rafId !== null) {
+          cancelAnimationFrame(rafId)
+        }
       }
     }
-  }, [isVisible])
+  }, [isVisible, updatePosition])
 
   // Очистка таймеров при размонтировании
   useEffect(() => {
