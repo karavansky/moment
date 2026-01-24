@@ -237,7 +237,12 @@ function CalendarView({
 
   // Initial scroll to today
   useEffect(() => {
-    if (containerHeight > 0 && items.length > 0 && scrollContainerRef.current) {
+    if (
+      containerHeight > 0 &&
+      items.length > 0 &&
+      scrollContainerRef.current &&
+      !isInitialScrollDone
+    ) {
       const todayItemIndex = items.findIndex(item =>
         item.week.days.some(day => day.date && isSameDate(day.date, today))
       )
@@ -255,12 +260,14 @@ function CalendarView({
         }, 50)
       } else {
         // If today is not found, just show the list at the top
+        // Sync state with DOM scroll in case browser restored scroll position
+        if (scrollContainerRef.current.scrollTop > 0) {
+          setScrollTop(scrollContainerRef.current.scrollTop)
+        }
         setIsInitialScrollDone(true)
       }
     }
-    // Run only once when ready
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [containerHeight]) // Trigger when container is measured
+  }, [containerHeight, items, today, isInitialScrollDone])
 
   // Calculate visible range
   const visibleItems = useMemo(() => {
