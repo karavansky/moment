@@ -3,18 +3,99 @@
 import { useEffect, useRef } from 'react';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { Notif } from '@/types/scheduling';
-import { generateId } from '@/lib/generateId'; // Assuming you have a generateId utility, or I'll use a simple one
 
-// Simple ID generator if import fails or to keep it self-contained
 const simpleId = () => Math.random().toString(36).substr(2, 9);
+
+// Predefined array of demo notifications with actionProps
+const DEMO_NOTIFICATIONS: Omit<Notif, 'id' | 'date' | 'isRead'>[] = [
+  {
+    userID: 'system-demo',
+    type: 'info',
+    title: 'Welcome!',
+    message: 'Welcome to Moment! Click to learn more about features.',
+    actionProps: {
+      children: 'Learn More',
+      href: '/help',
+      variant: 'primary',
+    },
+  },
+  {
+    userID: 'system-demo',
+    type: 'success',
+    title: 'Sync Completed',
+    message: 'All appointments have been synchronized with the server.',
+    actionProps: {
+      children: 'View Changes',
+      variant: 'secondary',
+    },
+  },
+  {
+    userID: 'system-demo',
+    type: 'warning',
+    title: 'Upcoming Appointment',
+    message: 'You have an appointment with John Doe in 30 minutes.',
+    actionProps: {
+      children: 'View Details',
+      variant: 'primary',
+    },
+  },
+  {
+    userID: 'system-demo',
+    type: 'error',
+    title: 'Connection Lost',
+    message: 'Unable to connect to the server. Please check your internet connection.',
+    actionProps: {
+      children: 'Retry',
+      variant: 'primary',
+    },
+  },
+  {
+    userID: 'system-demo',
+    type: 'info',
+    title: 'New Message',
+    message: 'You have received a new message from dispatch.',
+    actionProps: {
+      children: 'Read Message',
+      variant: 'primary',
+    },
+  },
+  {
+    userID: 'system-demo',
+    type: 'success',
+    title: 'Task Completed',
+    message: 'Job #1234 has been marked as complete.',
+    actionProps: {
+      children: 'View Report',
+      variant: 'secondary',
+    },
+  },
+  {
+    userID: 'system-demo',
+    type: 'warning',
+    title: 'Late Arrival',
+    message: 'Worker Michael is running 15 minutes late for the next appointment.',
+    actionProps: {
+      children: 'Notify Client',
+      variant: 'primary',
+    },
+  },
+  {
+    userID: 'system-demo',
+    type: 'info',
+    title: 'Schedule Update',
+    message: 'Tomorrow\'s schedule has been updated with 3 new appointments.',
+    actionProps: {
+      children: 'View Schedule',
+      variant: 'secondary',
+    },
+  },
+];
 
 export const DemoNotificationWorker = () => {
   const { addNotification } = useNotifications();
-
-  // Используем ref для хранения актуальной версии addNotification
   const addNotificationRef = useRef(addNotification);
+  const currentIndexRef = useRef(0);
 
-  // Обновляем ref при изменении addNotification
   useEffect(() => {
     addNotificationRef.current = addNotification;
   }, [addNotification]);
@@ -22,62 +103,42 @@ export const DemoNotificationWorker = () => {
   useEffect(() => {
     console.log('🔔 [Demo Worker] Mounting...');
 
-    // Function to generate a random notification
-    const generateRandomNotification = () => {
-      const types: Notif['type'][] = ['info', 'success', 'warning', 'error'];
-      const randomType = types[Math.floor(Math.random() * types.length)];
+    const showNextNotification = () => {
+      const index = currentIndexRef.current;
 
-      const titles = {
-        info: ['New Message', 'System Update', 'Shift Reminder'],
-        success: ['Task Completed', 'Sync Successful', 'Payment Received'],
-        warning: ['Low Battery', 'Late Arrival', 'Connection Unstable'],
-        error: ['Sync Failed', 'Login Error', 'GPS Signal Lost']
-      };
+      if (index >= DEMO_NOTIFICATIONS.length) {
+        console.log('🔔 [Demo Worker] All notifications shown, restarting from beginning');
+        currentIndexRef.current = 0;
+        return;
+      }
 
-      const messages = {
-        info: ['You have a new message from dispatch.', 'System maintenance scheduled for tonight.', 'Don\'t forget your shift tomorrow.'],
-        success: ['Job #1234 marked as complete.', 'Data synchronized with server.', 'Client payment processed.'],
-        warning: ['Device battery is below 15%.', 'Worker is 10 mins late for appointment.', 'Internet connection is spotty.'],
-        error: ['Failed to upload report photos.', 'Invalid credentials provided.', 'Cannot locate device.']
-      };
-
-      const titleList = titles[randomType];
-      const messageList = messages[randomType];
-
-      const title = titleList[Math.floor(Math.random() * titleList.length)];
-      const message = messageList[Math.floor(Math.random() * messageList.length)];
-
-      const newNotification: Notif = {
+      const template = DEMO_NOTIFICATIONS[index];
+      const notification: Notif = {
+        ...template,
         id: simpleId(),
-        userID: 'system-demo',
-        type: randomType,
-        title: title,
-        message: message,
         date: new Date(),
-        isRead: false
+        isRead: false,
       };
 
-      console.log('🔔 [Demo Worker] Generating notification:', newNotification.title);
-      // Используем ref для вызова актуальной версии addNotification
-      addNotificationRef.current(newNotification);
+      console.log(`🔔 [Demo Worker] Showing notification ${index + 1}/${DEMO_NOTIFICATIONS.length}:`, notification.title);
+      addNotificationRef.current(notification);
+
+      currentIndexRef.current = index + 1;
     };
 
-    // Set up interval to generate notifications every 15-45 seconds (randomized)
-    // For demo purposes, we start with a fixed interval initially
-    const intervalId = setInterval(() => {
-      // 30% chance to generate a notification each tick (e.g. every 5s check)
-      if (Math.random() > 0.7) {
-        generateRandomNotification();
-      }
-    }, 5000);
+    // Show first notification immediately
+    showNextNotification();
 
-    console.log('🔔 [Demo Worker] Interval started:', intervalId);
+    // Set up interval for 30 seconds
+    const intervalId = setInterval(showNextNotification, 30000);
+
+    console.log('🔔 [Demo Worker] Interval started (30s):', intervalId);
 
     return () => {
       console.log('🔔 [Demo Worker] Cleaning up interval:', intervalId);
       clearInterval(intervalId);
     };
-  }, []); // Пустой массив - интервал создается только один раз, используем ref для актуальности
+  }, []);
 
-  return null; // Invisible component
+  return null;
 };

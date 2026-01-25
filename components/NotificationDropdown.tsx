@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { Dropdown, Button } from '@heroui/react'
 import { Bell, X, Info, CheckCircle, AlertTriangle, XCircle } from 'lucide-react'
 import { useNotifications } from '@/contexts/NotificationContext'
@@ -34,6 +34,7 @@ function formatTimeAgo(date: Date): string {
 
 export function NotificationDropdown({ tooltipContent = 'Notifications' }: NotificationDropdownProps) {
   const { notifications, markNotificationAsRead, clearAllNotifications } = useNotifications()
+  const [open, setOpen] = useState(false);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
   const sortedNotifications = useCallback(() => {
@@ -53,12 +54,13 @@ export function NotificationDropdown({ tooltipContent = 'Notifications' }: Notif
     (e: React.MouseEvent) => {
       e.stopPropagation()
       clearAllNotifications()
+      setOpen(false)
     },
     [clearAllNotifications]
   )
 
   return (
-    <Dropdown>
+    <Dropdown isOpen={open} onOpenChange={setOpen}>
       <SimpleTooltip content={tooltipContent}>
         <div className="relative">
           <Button
@@ -76,10 +78,10 @@ export function NotificationDropdown({ tooltipContent = 'Notifications' }: Notif
           )}
         </div>
       </SimpleTooltip>
-      <Dropdown.Popover className="w-96 max-h-125 border-none shadow-2xl p-0 rounded-3xl bg-inherit backdrop-blur-md outline-none ring-0">
+      <Dropdown.Popover className="w-96 max-h-125 border-none shadow-2xl p-0 rounded-3xl bg-inherit backdrop-blur-[3px] outline-none ring-0 ">
         <div className="flex flex-col gap-3 p-2">
           {/* Header */}
-          <div className="flex items-center justify-between px-2">
+          <div className="flex items-center justify-between px-2  ">
             <h2 className="text-xl font-semibold text-sand-50 dark:text-white">
               Notifications
             </h2>
@@ -95,9 +97,9 @@ export function NotificationDropdown({ tooltipContent = 'Notifications' }: Notif
           {/* Notifications List */}
           <div className="flex flex-col gap-2 overflow-y-auto max-h-105 px-1">
             {sortedNotifications.length === 0 ? (
-              <div className="rounded-2xl bg-inherit dark:bg-inherit backdrop-blur-md p-8 text-center shadow-lg">
-                <Bell className="w-10 h-10 mx-auto mb-3 text-gray-400 dark:text-gray-500" />
-                <p className="text-gray-500 dark:text-gray-400">No notifications</p>
+              <div className="rounded-2xl bg-white/30 dark:bg-gray-800/50 p-8 text-center backdrop-blur-sm">
+                <Bell className="w-10 h-10 mx-auto mb-3 text-gray-700 dark:text-gray-200" />
+                <p className="text-gray-700 dark:text-gray-200 font-medium">No notifications</p>
               </div>
             ) : (
               sortedNotifications.map((notification) => (
@@ -118,20 +120,24 @@ export function NotificationDropdown({ tooltipContent = 'Notifications' }: Notif
                         {formatTimeAgo(notification.date)}
                       </span>
                     </div>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm truncate">
+                    <p className="text-gray-500 dark:text-gray-400 text-sm ">
                       {notification.message}
                     </p>
                   </div>
 
-                  {/* Dismiss Button */}
+                  {/* Action Button */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
+                      notification.actionProps?.onPress?.()
+                      if (notification.actionProps?.href) {
+                        window.location.href = notification.actionProps.href
+                      }
                       handleNotificationClick(notification.id)
                     }}
                     className="shrink-0 px-4 py-1.5 text-sm font-medium text-white bg-gray-800 dark:bg-gray-600 rounded-full hover:bg-gray-700 dark:hover:bg-gray-500 transition-colors"
                   >
-                    Dismiss
+                    {notification.actionProps?.children || 'Dismiss'}
                   </button>
                 </div>
               ))

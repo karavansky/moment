@@ -40,17 +40,29 @@ export const NotificationObserver = () => {
           queueMicrotask(() => {
             const title = notif.title || 'Notification'
             const description = notif.message
+
+            // Use actionProps from notification or default Dismiss button
+            const actionProps = notif.actionProps
+              ? {
+                  ...notif.actionProps,
+                  onPress: () => {
+                    notif.actionProps?.onPress?.()
+                    markNotificationAsRead(notif.id)
+                  },
+                }
+              : {
+                  children: 'Dismiss',
+                  onPress: () => {
+                    markNotificationAsRead(notif.id)
+                    toast.clear()
+                  },
+                  variant: 'tertiary' as const,
+                }
+
             const options = {
               description,
               timeout: 5000,
-              actionProps: {
-                children: 'Dismiss',
-                onPress: () => {
-                  markNotificationAsRead(notif.id)
-                  toast.clear()
-                },
-                variant: 'tertiary' as const,
-              },
+              actionProps,
             }
 
             switch (notif.type) {

@@ -2,16 +2,24 @@
 // Основано на Swift моделях из iOS приложения
 
 // Notifications
+export interface NotifActionProps {
+  children: string
+  onPress?: () => void
+  variant?: 'primary' | 'secondary' | 'tertiary'
+  href?: string
+}
+
 export interface Notif {
   id: string
   userID: string
   type: 'info' | 'success' | 'warning' | 'error'
   title: string
-  link?: string 
+  link?: string
   linkText?: string
   message: string
   date: Date
   isRead: boolean
+  actionProps?: NotifActionProps
 }
 
 // Категория клиентов
