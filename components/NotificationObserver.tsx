@@ -45,8 +45,11 @@ export const NotificationObserver = () => {
               timeout: 5000,
               actionProps: {
                 children: 'Dismiss',
-                onPress: () => toast.clear(),
-                variant: 'tertiary' as const
+                onPress: () => {
+                  markNotificationAsRead(notif.id)
+                  toast.clear()
+                },
+                variant: 'tertiary' as const,
               },
             }
 
@@ -71,7 +74,7 @@ export const NotificationObserver = () => {
           })
 
           // Mark as read in the global state
-          markNotificationAsRead(notif.id)
+          // markNotificationAsRead(notif.id)
         },
         100 + index * 300
       ) // Задержка 100ms для первого, затем +300ms для каждого следующего

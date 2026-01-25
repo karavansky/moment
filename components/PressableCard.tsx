@@ -24,7 +24,7 @@ type LinkProps = BaseProps & {
 
 type PressableCardProps = ButtonProps | LinkProps
 
-const MotionCard = motion(Card)
+const MotionCard = motion.create(Card)
 
 export function PressableCard(props: PressableCardProps) {
   const { children, className, loading = false } = props

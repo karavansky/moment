@@ -15,6 +15,8 @@ import {
 import { AuthModal } from './AuthModal'
 import { localizedLink } from '@/utils/localizedLink'
 import { SupportedLocale } from '@/config/locales'
+import { CircleQuestionMark } from 'lucide-react'
+import { SimpleTooltip } from './SimpleTooltip'
 
 // Protected routes that require authentication
 const PROTECTED_ROUTES = ['/tickets', '/admin']
@@ -208,14 +210,16 @@ function SupportButtonsComponent({ lang, onAction, t }: SupportButtonsProps) {
       <Button
         size="md"
         variant='tertiary'
-        className="min-w-unit-20 h-10 rounded-xl  text-sand-200 hover:text- dark:text-white dark:hover:text-white data-[hover=true]:bg-yellow-800/50 dark:data-[hover=true]:bg-gray-700/50 gap-2 flex flex-row items-center px-3"
+        className="min-w-unit-20 h-10 rounded-4xl  text-sand-200 hover:text- dark:text-white dark:hover:text-white data-[hover=true]:bg-yellow-800/50 dark:data-[hover=true]:bg-gray-700/50 gap-2 flex flex-row items-center px-3"
         onPress={() => {
           onAction?.()
           router.push(localizedLink('support', lang))
           //onOpen()
         }}
       >
-        <span className=" shrink-0">{t('navbar.support')}</span>
+        <SimpleTooltip content={t('navbar.support_tooltip', 'Get support or contact us')}>
+          <CircleQuestionMark className='w-6 h-6' />
+        </SimpleTooltip>
       </Button>
       <AuthModal
         isOpen={isOpen}

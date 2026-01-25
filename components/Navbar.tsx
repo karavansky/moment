@@ -2,15 +2,15 @@
 
 import { useState, useCallback } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Button } from '@heroui/react'
 import { useTranslation } from './Providers'
 import { useLanguage } from '@/hooks/useLanguage'
 import { localizedLink } from '@/utils/localizedLink'
 import LanguageSwitcher from './LanguageSwitcher'
 import { ThemeSwitch } from './theme-switch'
-import { MenuIcon, CloseIcon, LogoMoment } from './icons'
+import { MenuIcon } from './icons'
 import { SupportButtons } from './SupportButtons'
+import { NotificationDropdown } from './NotificationDropdown'
 
 interface NavbarProps {
   onMenuToggle?: () => void
@@ -43,6 +43,7 @@ export default function Navbar({
           {/* Mobile Center Section: App Store Badge + Language Switcher + Sidebar Menu Button */}
           <div className="lg:hidden flex items-center gap-3">
             <SupportButtons lang={lang} onAction={handleSupportAction} t={t} />
+            <NotificationDropdown tooltipContent={t('navbar.notification_tooltip', 'Notifications')} />
             <div className="flex items-center">
               <LanguageSwitcher currentLang={lang} />
             </div>
@@ -61,18 +62,7 @@ export default function Navbar({
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-6">
-            <Link
-              href={localizedLink('about', lang)}
-              className="text-sand-200 hover:text-sand-100 dark:text-gray-300 dark:hover:text-white transition-colors text-sm font-medium text-right"
-            >
-              {t('navbar.about')}
-            </Link>
-            <Link
-              href={localizedLink('get-started', lang)}
-              className="text-sand-200 hover:text-sand-100 dark:text-gray-300 dark:hover:text-white transition-colors text-sm font-medium text-right"
-            >
-              {t('navbar.get_started')}
-            </Link>
+            <NotificationDropdown tooltipContent={t('navbar.notification_tooltip', 'Notifications')} />
             {/*  <Link
               href={localizedLink('terms-of-use', lang)}
               className="text-sand-200 hover:text-sand-100 dark:text-gray-300 dark:hover:text-white transition-colors text-sm font-medium text-right"
