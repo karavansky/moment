@@ -129,10 +129,10 @@ export const DemoNotificationWorker = () => {
     // Show first notification immediately
    // showNextNotification();
 
-    // Set up interval for 30 seconds
-    const intervalId = setInterval(showNextNotification, 30000);
+    // Set up interval for 60 seconds
+    const intervalId = setInterval(showNextNotification, 60000);
 
-    console.log('🔔 [Demo Worker] Interval started (30s):', intervalId);
+    console.log('🔔 [Demo Worker] Interval started (60s):', intervalId);
 
     return () => {
       console.log('🔔 [Demo Worker] Cleaning up interval:', intervalId);
