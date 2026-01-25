@@ -18,6 +18,20 @@ const typeIcons: Record<Notif['type'], React.ReactNode> = {
   error: <XCircle className="w-6 h-6 text-gray-600 dark:text-gray-400" strokeWidth={1.5} />,
 }
 
+function formatTimeAgo(date: Date): string {
+  const now = new Date()
+  const diffMs = now.getTime() - new Date(date).getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMins / 60)
+  const diffDays = Math.floor(diffHours / 24)
+
+  if (diffMins < 1) return 'Now'
+  if (diffMins < 60) return `${diffMins}m`
+  if (diffHours < 24) return `${diffHours}h`
+  if (diffDays === 1) return 'Yesterday'
+  return `${diffDays}d ago`
+}
+
 export function NotificationDropdown({ tooltipContent = 'Notifications' }: NotificationDropdownProps) {
   const { notifications, markNotificationAsRead, clearAllNotifications } = useNotifications()
 
@@ -89,16 +103,21 @@ export function NotificationDropdown({ tooltipContent = 'Notifications' }: Notif
               sortedNotifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className="flex items-center gap-3 px-4 py-3 rounded-full bg-gray-100 dark:bg-gray-800 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
+                  className="flex items-center gap-3 px-4 py-3 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
                 >
                   {/* Icon */}
                   <div className="shrink-0">{typeIcons[notification.type]}</div>
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">
-                      {notification.title}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-gray-900 dark:text-white text-sm">
+                        {notification.title}
+                      </p>
+                      <span className="text-xs text-gray-400 dark:text-gray-500">
+                        {formatTimeAgo(notification.date)}
+                      </span>
+                    </div>
                     <p className="text-gray-500 dark:text-gray-400 text-sm truncate">
                       {notification.message}
                     </p>
