@@ -96,9 +96,9 @@ function CalendarView({
     return matches
   }
 
-  const isCompact = useMediaQuery('(max-width: 1023px)')
+  const isCompact = useMediaQuery('(max-width: 640px)')
   const isMobileLayout = isMobile || isCompact
- // console.log('isMobileLayout:', isMobileLayout, 'isMobile:', isMobile, 'isCompact:', isCompact)
+  console.log('isMobileLayout:', isMobileLayout, 'isMobile:', isMobile, 'isCompact:', isCompact)
   // Constants for row heights
   const MIN_WEEK_HEIGHT = isMobileLayout ? 60 : 104
   const HEADER_HEIGHT = isMobileLayout ? 38 : 46

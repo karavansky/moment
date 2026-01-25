@@ -7,6 +7,8 @@ export interface Notif {
   userID: string
   type: 'info' | 'success' | 'warning' | 'error'
   title: string
+  link?: string 
+  linkText?: string
   message: string
   date: Date
   isRead: boolean
