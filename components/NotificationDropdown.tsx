@@ -78,7 +78,10 @@ export function NotificationDropdown({ tooltipContent = 'Notifications' }: Notif
           )}
         </div>
       </SimpleTooltip>
-      <Dropdown.Popover className="w-96 max-h-125 border-none shadow-2xl p-0 rounded-3xl bg-inherit backdrop-blur-[3px] outline-none ring-0 ">
+      <Dropdown.Popover
+        className="max-h-125 border-none shadow-2xl p-0 rounded-3xl bg-inherit backdrop-blur-[3px] outline-none ring-0"
+        style={{ width: '75vw', maxWidth: '400px' }}
+      >
         <div className="flex flex-col gap-3 p-2">
           {/* Header */}
           <div className="flex items-center justify-between px-2  ">
@@ -105,27 +108,30 @@ export function NotificationDropdown({ tooltipContent = 'Notifications' }: Notif
               sortedNotifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className="flex items-center gap-3 px-4 py-3 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 rounded-2xl sm:rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
                 >
-                  {/* Icon */}
-                  <div className="shrink-0">{typeIcons[notification.type]}</div>
+                  {/* Top row: Icon + Content */}
+                  <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+                    {/* Icon */}
+                    <div className="shrink-0 mt-0.5 sm:mt-0">{typeIcons[notification.type]}</div>
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-gray-900 dark:text-white text-sm">
-                        {notification.title}
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-gray-900 dark:text-white text-sm">
+                          {notification.title}
+                        </p>
+                        <span className="text-xs text-gray-400 dark:text-gray-500">
+                          {formatTimeAgo(notification.date)}
+                        </span>
+                      </div>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">
+                        {notification.message}
                       </p>
-                      <span className="text-xs text-gray-400 dark:text-gray-500">
-                        {formatTimeAgo(notification.date)}
-                      </span>
                     </div>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm ">
-                      {notification.message}
-                    </p>
                   </div>
 
-                  {/* Action Button */}
+                  {/* Action Button - full width on mobile, auto on desktop */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
@@ -135,7 +141,7 @@ export function NotificationDropdown({ tooltipContent = 'Notifications' }: Notif
                       }
                       handleNotificationClick(notification.id)
                     }}
-                    className="shrink-0 px-4 py-1.5 text-sm font-medium text-white bg-gray-800 dark:bg-gray-600 rounded-full hover:bg-gray-700 dark:hover:bg-gray-500 transition-colors"
+                    className="shrink-0 w-full sm:w-auto px-4 py-2 sm:py-1.5 text-sm font-medium text-white bg-gray-800 dark:bg-gray-600 rounded-full hover:bg-gray-700 dark:hover:bg-gray-500 transition-colors"
                   >
                     {notification.actionProps?.children || 'Dismiss'}
                   </button>
