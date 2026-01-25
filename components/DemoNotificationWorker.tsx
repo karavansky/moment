@@ -108,7 +108,7 @@ export const DemoNotificationWorker = () => {
 
       if (index >= DEMO_NOTIFICATIONS.length) {
         console.log('🔔 [Demo Worker] All notifications shown, restarting from beginning');
-        currentIndexRef.current = 0;
+     //   currentIndexRef.current = 0;
         return;
       }
 
@@ -127,7 +127,7 @@ export const DemoNotificationWorker = () => {
     };
 
     // Show first notification immediately
-    showNextNotification();
+   // showNextNotification();
 
     // Set up interval for 30 seconds
     const intervalId = setInterval(showNextNotification, 30000);

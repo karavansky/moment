@@ -32,15 +32,17 @@ function formatTimeAgo(date: Date): string {
   return `${diffDays}d ago`
 }
 
-export function NotificationDropdown({ tooltipContent = 'Notifications' }: NotificationDropdownProps) {
+export function NotificationDropdown({
+  tooltipContent = 'Notifications',
+}: NotificationDropdownProps) {
   const { notifications, markNotificationAsRead, clearAllNotifications } = useNotifications()
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false)
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length
+  const unreadCount = notifications.filter(n => !n.isRead).length
   const sortedNotifications = useCallback(() => {
-    return [...notifications].filter((n) => !n.isRead).sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    )
+    return [...notifications]
+      .filter(n => !n.isRead)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   }, [notifications])()
 
   const handleNotificationClick = useCallback(
@@ -61,23 +63,23 @@ export function NotificationDropdown({ tooltipContent = 'Notifications' }: Notif
 
   return (
     <Dropdown isOpen={open} onOpenChange={setOpen}>
-      <SimpleTooltip content={tooltipContent}>
-        <div className="relative">
-          <Button
-            size="md"
-            variant="tertiary"
-            className="min-w-unit-10 h-10 rounded-4xl text-sand-200 hover:text- dark:text-white dark:hover:text-white data-[hover=true]:bg-yellow-800/50 dark:data-[hover=true]:bg-gray-700/50 px-3"
-            aria-label="Notifications"
-          >
+      <div className="relative">
+        <Button
+          size="md"
+          variant="tertiary"
+          className="min-w-unit-10 h-10 rounded-4xl text-sand-200 hover:text- dark:text-white dark:hover:text-white data-[hover=true]:bg-yellow-800/50 dark:data-[hover=true]:bg-gray-700/50 px-3"
+          aria-label="Notifications"
+        >
+          <SimpleTooltip content={tooltipContent}>
             <Bell className="w-6 h-6" />
-          </Button>
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-5 h-5 px-1 text-xs font-bold text-white bg-red-500 rounded-full">
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </span>
-          )}
-        </div>
-      </SimpleTooltip>
+          </SimpleTooltip>
+        </Button>
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-5 h-5 px-1 text-xs font-bold text-white bg-red-500 rounded-full">
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
+      </div>
       <Dropdown.Popover
         className="max-h-125 border-none shadow-2xl p-0 rounded-3xl bg-inherit backdrop-blur-[3px] outline-none ring-0"
         style={{ width: '75vw', maxWidth: '400px' }}
@@ -85,9 +87,7 @@ export function NotificationDropdown({ tooltipContent = 'Notifications' }: Notif
         <div className="flex flex-col gap-3 p-2">
           {/* Header */}
           <div className="flex items-center justify-between px-2  ">
-            <h2 className="text-xl font-semibold text-sand-50 dark:text-white">
-              Notifications
-            </h2>
+            <h2 className="text-xl font-semibold text-sand-50 dark:text-white">Notifications</h2>
             <button
               onClick={handleClearAll}
               className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200/50 dark:bg-gray-700/50 hover:bg-gray-300/50 dark:hover:bg-gray-600/50 transition-colors"
@@ -105,7 +105,7 @@ export function NotificationDropdown({ tooltipContent = 'Notifications' }: Notif
                 <p className="text-gray-700 dark:text-gray-200 font-medium">No notifications</p>
               </div>
             ) : (
-              sortedNotifications.map((notification) => (
+              sortedNotifications.map(notification => (
                 <div
                   key={notification.id}
                   className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 rounded-2xl sm:rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
@@ -133,7 +133,7 @@ export function NotificationDropdown({ tooltipContent = 'Notifications' }: Notif
 
                   {/* Action Button - full width on mobile, auto on desktop */}
                   <button
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation()
                       notification.actionProps?.onPress?.()
                       if (notification.actionProps?.href) {
