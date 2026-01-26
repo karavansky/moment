@@ -4,7 +4,9 @@ import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { CalendarWeek, isSameDate } from '@/lib/calendar-utils'
 import WeekView from './WeekView'
 import { useLanguage } from '@/hooks/useLanguage'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { usePlatformContext } from '@/contexts/PlatformContext'
+import { CalendarDragProvider } from '@/contexts/CalendarDragContext'
 import type { Appointment } from '@/types/scheduling'
 
 interface CalendarViewProps {
@@ -70,9 +72,17 @@ const findStartIndex = (items: VirtualItem[], scrollTop: number) => {
   return Math.max(0, low)
 }
 
+// Helper to estimate appointment card height (moved outside component)
+const estimateAppointmentHeight = () => {
+  return 12 + 8 + 50 // Base padding + margin-bottom + content
+}
+
+// Stable default date to avoid new Date() on every render
+const DEFAULT_TODAY = new Date()
+
 function CalendarView({
   weeks,
-  today = new Date(),
+  today = DEFAULT_TODAY,
   selectedDate,
   onAppointmentPress,
   onExternalDrop,
@@ -80,41 +90,16 @@ function CalendarView({
 }: CalendarViewProps) {
   const lang = useLanguage()
   const { isMobile } = usePlatformContext()
-
-  // Custom hook for media query to match Tailwind 'lg' breakpoint (1024px)
-  const useMediaQuery = (query: string) => {
-    const [matches, setMatches] = useState(false)
-    useEffect(() => {
-      const media = window.matchMedia(query)
-      if (media.matches !== matches) {
-        setMatches(media.matches)
-      }
-      const listener = () => setMatches(media.matches)
-      media.addEventListener('change', listener)
-      return () => media.removeEventListener('change', listener)
-    }, [matches, query])
-    return matches
-  }
-
   const isCompact = useMediaQuery('(max-width: 640px)')
   const isMobileLayout = isMobile || isCompact
-  console.log('isMobileLayout:', isMobileLayout, 'isMobile:', isMobile, 'isCompact:', isCompact)
-  // Constants for row heights
+  console.log('Rendering CalendarView with isMobileLayout:', isMobileLayout)
   const MIN_WEEK_HEIGHT = isMobileLayout ? 60 : 104
   const HEADER_HEIGHT = isMobileLayout ? 38 : 46
-  const DAY_HEADER_HEIGHT_DESKTOP = 30 // Approximate height of day number header
-
-  // Helper to estimate appointment card height based on content
-  const estimateAppointmentHeight = (app: Appointment) => {
-    let height = 12 + 8 // Base padding (approx) + margin-bottom
-    height += 50
-
-    return height
-  }
+  const DAY_HEADER_HEIGHT_DESKTOP = 30
   // Генерируем названия дней недели на основе текущей локали
   const WEEKDAY_HEADERS_FULL = useMemo(() => getWeekdayFullNames(lang), [lang])
   const WEEKDAY_HEADERS_SHORT = useMemo(() => getWeekdayShortNames(lang), [lang])
-
+  
   // Pre-calculate positions for all weeks
   const { items, totalHeight } = useMemo(() => {
     let currentTop = 0
@@ -158,8 +143,8 @@ function CalendarView({
         week.days.forEach(day => {
           let currentDayHeight = DAY_HEADER_HEIGHT_DESKTOP
           if (day.appointments) {
-            day.appointments.forEach(app => {
-              currentDayHeight += estimateAppointmentHeight(app)
+            day.appointments.forEach(() => {
+              currentDayHeight += estimateAppointmentHeight()
             })
           }
           if (currentDayHeight > maxDayHeight) {
@@ -200,7 +185,33 @@ function CalendarView({
   // Refs
   const containerRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const scrollRafRef = useRef<number | null>(null)
+  const lastScrollTopRef = useRef(0)
+
+  // Throttled scroll handler using requestAnimationFrame
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const newScrollTop = e.currentTarget.scrollTop
+    lastScrollTopRef.current = newScrollTop
+
+    // Cancel previous frame if pending
+    if (scrollRafRef.current !== null) {
+      return // Skip if we already have a pending update
+    }
+
+    scrollRafRef.current = requestAnimationFrame(() => {
+      setScrollTop(lastScrollTopRef.current)
+      scrollRafRef.current = null
+    })
+  }, [])
+
+  // Cleanup for scroll RAF on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollRafRef.current !== null) {
+        cancelAnimationFrame(scrollRafRef.current)
+      }
+    }
+  }, [])
 
   // ResizeObserver to handle container size
   useEffect(() => {
@@ -274,6 +285,7 @@ function CalendarView({
   }, [items, scrollTop, containerHeight])
 
   return (
+    <CalendarDragProvider>
     <div className="w-full h-full flex flex-col overflow-hidden select-none">
       {/* Заголовки дней недели */}
       <div className="z-10 bg-background/95 backdrop-blur-sm rounded-2xl shadow-sm shrink-0">
@@ -301,9 +313,7 @@ function CalendarView({
             className={`w-full h-full overflow-y-auto no-scrollbar ${
               !isInitialScrollDone ? 'opacity-0' : 'opacity-100'
             } transition-opacity duration-150`}
-            onScroll={e => {
-              setScrollTop(e.currentTarget.scrollTop)
-            }}
+            onScroll={handleScroll}
           >
             <div style={{ height: totalHeight, position: 'relative' }} className="w-full">
               {visibleItems.map(item => (
@@ -334,6 +344,7 @@ function CalendarView({
         )}
       </div>
     </div>
+    </CalendarDragProvider>
   )
 }
 

@@ -11,14 +11,14 @@ import { usePlatformContext } from '@/contexts/PlatformContext'
 
 interface AppointmentCardProps {
   appointment: Appointment
-  onClick?: () => void
+  onAppointmentClick?: (appointmentId: string) => void
   isDraggable?: boolean
   forceDesktopView?: boolean
 }
 
 function AppointmentCard({
   appointment,
-  onClick,
+  onAppointmentClick,
   isDraggable = true,
   forceDesktopView = false,
 }: AppointmentCardProps) {
@@ -332,7 +332,7 @@ function AppointmentCard({
       onDragEnd={handleDragEnd}
       onClick={e => {
         e.stopPropagation() // Prevent DayView button from triggering
-        onClick?.()
+        onAppointmentClick?.(appointment.id)
       }}
       className={`
         ${isDraggable ? 'cursor-move' : 'cursor-pointer'}

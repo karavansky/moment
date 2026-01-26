@@ -740,7 +740,7 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
                             <AppointmentCard
                               key={appointment.id}
                               appointment={appointment}
-                              onClick={() => handleAppointmentClick(appointment.id)}
+                              onAppointmentClick={handleAppointmentClick}
                               isDraggable={false}
                               forceDesktopView={true}
                             />

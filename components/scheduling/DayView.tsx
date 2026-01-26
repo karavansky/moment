@@ -1,13 +1,15 @@
 'use client'
 
-import React, { useState, useCallback, memo, useMemo, useRef, useEffect } from 'react'
-import { Card, Chip } from '@heroui/react'
+import React, { useState, useCallback, memo, useMemo, useRef } from 'react'
+import { Card } from '@heroui/react'
 import { CalendarDay, getOnlyDate, isSameDate } from '@/lib/calendar-utils'
 import AppointmentCard from './AppointmentCard'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { Calendar } from 'lucide-react'
 import type { Appointment } from '@/types/scheduling'
 import { usePlatformContext } from '@/contexts/PlatformContext'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { useDragEndReset } from '@/contexts/CalendarDragContext'
 
 interface DayViewProps {
   day: CalendarDay
@@ -29,51 +31,28 @@ function DayView({
   const { setSelectedDate, setSelectedAppointment, moveAppointmentToDate } = useScheduling()
   const [isDragOver, setIsDragOver] = useState(false)
   const [isPressed, setIsPressed] = useState(false)
-  const { isMobile, isReady } = usePlatformContext()
-  // Ref для таймера задержки снятия выделения
-  const dragLeaveTimerRef = useRef<NodeJS.Timeout | null>(null)
-    // Custom hook for media query to match Tailwind 'lg' breakpoint (1024px)
-    const useMediaQuery = (query: string) => {
-      const [matches, setMatches] = useState(false)
-      useEffect(() => {
-        const media = window.matchMedia(query)
-        if (media.matches !== matches) {
-          setMatches(media.matches)
-        }
-        const listener = () => setMatches(media.matches)
-        media.addEventListener('change', listener)
-        return () => media.removeEventListener('change', listener)
-      }, [matches, query])
-      return matches
-    }
-
+  const { isMobile } = usePlatformContext()
   const isCompact = useMediaQuery('(max-width: 1023px)')
   const isMobileLayout = isMobile || isCompact
-   // console.log('isMobileLayout:', isMobileLayout, 'isMobile:', isMobile, 'isCompact:', isCompact)
 
-  // Глобальный слушатель для надежного сброса состояния при окончании любого перетаскивания
-  useEffect(() => {
-    const handleGlobalDragEnd = () => {
-      // Принудительно убираем подсветку, когда перетаскивание закончилось где угодно на странице
-      if (dragLeaveTimerRef.current) {
-        clearTimeout(dragLeaveTimerRef.current)
-        dragLeaveTimerRef.current = null
-      }
-      setIsDragOver(false)
-    }
+  // Ref для таймера задержки снятия выделения
+  const dragLeaveTimerRef = useRef<NodeJS.Timeout | null>(null)
 
-    // Событие 'dragend' не всплывает, поэтому слушаем на window
-    window.addEventListener('dragend', handleGlobalDragEnd)
-    return () => {
-      window.removeEventListener('dragend', handleGlobalDragEnd)
+  // Reset drag state when global dragend occurs (via context)
+  const resetDragState = useCallback(() => {
+    if (dragLeaveTimerRef.current) {
+      clearTimeout(dragLeaveTimerRef.current)
+      dragLeaveTimerRef.current = null
     }
+    setIsDragOver(false)
   }, [])
+
+  useDragEndReset(resetDragState)
 
   // Оптимизация: вычисляем today один раз при рендере, а не на каждом dragover
   const today = useMemo(() => getOnlyDate(new Date()), [])
 
   const handleDayClick = useCallback(() => {
-    console.log('Day clicked:', day.date)
     setIsPressed(true)
     if (day.date) {
       if (onDayPress) {
@@ -82,7 +61,7 @@ function DayView({
         setSelectedDate(day.date)
       }
     }
-  }, [day.date, setSelectedDate, onDayPress, setIsPressed])
+  }, [day.date, setSelectedDate, onDayPress])
 
   const handleAppointmentClick = useCallback(
     (appointmentId: string) => {
@@ -110,7 +89,6 @@ function DayView({
 
   // Handlers for manual pressed state
   const handleMouseDown = useCallback(() => {
-    console.log('MouseDown on day:', day.date)
     if (day.date && canDropHere(day.date)) {
       setIsPressed(true)
     }
@@ -309,7 +287,7 @@ function DayView({
                 <AppointmentCard
                   key={appointment.id}
                   appointment={appointment}
-                  onClick={() => handleAppointmentClick(appointment.id)}
+                  onAppointmentClick={handleAppointmentClick}
                   isDraggable={!isPast}
                 />
               ))}
@@ -375,7 +353,7 @@ function DayView({
               <AppointmentCard
                 key={appointment.id}
                 appointment={appointment}
-                onClick={() => handleAppointmentClick(appointment.id)}
+                onAppointmentClick={handleAppointmentClick}
                 isDraggable={!isPast}
               />
             ))}
