@@ -12,10 +12,10 @@ interface NotificationDropdownProps {
 }
 
 const typeIcons: Record<Notif['type'], React.ReactNode> = {
-  info: <Info className="w-6 h-6 text-gray-600 dark:text-gray-400" strokeWidth={1.5} />,
-  success: <CheckCircle className="w-6 h-6 text-gray-600 dark:text-gray-400" strokeWidth={1.5} />,
-  warning: <AlertTriangle className="w-6 h-6 text-gray-600 dark:text-gray-400" strokeWidth={1.5} />,
-  error: <XCircle className="w-6 h-6 text-gray-600 dark:text-gray-400" strokeWidth={1.5} />,
+  info: <Info className="w-6 h-6" strokeWidth={2} color='#338ef7' />,
+  success: <CheckCircle className="w-6 h-6" strokeWidth={1.5} color='#28a745' />,
+  warning: <AlertTriangle className="w-6 h-6" strokeWidth={1.5} color='#ffc107' />,
+  error: <XCircle className="w-6 h-6" strokeWidth={1.5} color='#dc3545' />,
 }
 
 function formatTimeAgo(date: Date): string {
@@ -153,7 +153,7 @@ export function NotificationDropdown({
                       }
                       handleNotificationClick(notification.id)
                     }}
-                    className="shrink-0 w-full sm:w-auto px-4 py-2 sm:py-1.5 text-sm font-medium text-white bg-gray-800 dark:bg-gray-600 rounded-full hover:bg-gray-700 dark:hover:bg-gray-500 transition-colors"
+                    className="shrink-0 w-full sm:w-auto px-4 py-2 sm:py-1.5 text-sm font-medium text-white bg-gray-700 dark:bg-gray-600 rounded-full hover:bg-gray-700 dark:hover:bg-gray-500 transition-colors"
                   >
                     {notification.actionProps?.children || 'Dismiss'}
                   </button>

@@ -229,6 +229,11 @@
     display: none !important;
   }
 
+  /* Leaflet map z-index to stay below sidebar */
+  .leaflet-container {
+    z-index: 30;
+  }
+
   /* Leaflet map styles for dark mode */
   .dark .leaflet-container {
     background: #1f2937;

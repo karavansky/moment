@@ -101,6 +101,11 @@ export interface Appointment {
   worker?: Worker
   client?: Client
   reports?: Report[]
+  isOpen: boolean
+  latitude?: number
+  longitude?: number
+  openedAt?: Date
+  closedAt?: Date
 }
 
 // Отчет о выполненной работе

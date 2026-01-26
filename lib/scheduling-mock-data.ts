@@ -25,7 +25,11 @@ const addHours = (date: Date, hours: number): Date => {
   result.setHours(result.getHours() + hours)
   return result
 }
-
+const addMinutes = (date: Date, minutes: number): Date => {
+  const result = new Date(date)
+  result.setMinutes(result.getMinutes() + minutes)
+  return result
+}
 // Функция для получения только даты без времени
 const getOnlyDate = (date: Date): Date => {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate())
@@ -292,12 +296,12 @@ export const getAllSampleObjects = () => {
     surname: 'Lawrence',
     email: 'jennifer.lawrence@example.com',
     country: 'DE',
-    street: 'Karl-Friedrich-Schinkel-Str',
-    postalCode: '53127',
-    city: 'Bonn-Ippendorf',
-    houseNumber: '157',
-    latitude: 0,
-    longitude: 0,
+    street: 'Taunusstraße',
+    postalCode: '51105',
+    city: 'Köln',
+    houseNumber: '5',
+    latitude: 50.9346808,
+    longitude: 6.9977416,
     groupe: group2,
   }
   const client_3: Client = {
@@ -373,6 +377,7 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_1.id,
     worker: worker_1,
+    isOpen: false,
   }
 
   const appointment_2: Appointment = {
@@ -388,6 +393,7 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_2.id,
     worker: worker_2,
+    isOpen: false,
   }
 
   const appointment_3: Appointment = {
@@ -403,6 +409,7 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_3.id,
     worker: worker_3,
+    isOpen: false,
   }
 
   const appointment_4: Appointment = {
@@ -418,6 +425,7 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_4.id,
     worker: worker_4,
+    isOpen: false,
   }
 
   const appointment_5: Appointment = {
@@ -433,6 +441,7 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_5.id,
     worker: worker_5,
+    isOpen: false,
   }
 
   const appointment_6: Appointment = {
@@ -448,6 +457,10 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_6.id,
     worker: worker_6,
+    isOpen: true,
+    latitude: 50.9346808,
+    longitude: 6.9977416,
+    openedAt: addMinutes(appointmentDate_6, -3),
   }
 
   const appointment_7: Appointment = {
@@ -463,6 +476,7 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_7.id,
     worker: worker_7,
+    isOpen: false,
   }
 
   const appointment_8: Appointment = {
@@ -478,6 +492,7 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_8.id,
     worker: worker_8,
+    isOpen: false,
   }
 
   // Дополнительные appointments на следующие месяцы
@@ -494,6 +509,7 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_11.id,
     worker: worker_11,
+    isOpen: false,
   }
 
   const appointment_10: Appointment = {
@@ -509,6 +525,7 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_21.id,
     worker: worker_21,
+    isOpen: false,
   }
 
   const appointment_11: Appointment = {
@@ -524,6 +541,7 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_31.id,
     worker: worker_31,
+    isOpen: false,
   }
 
   const appointment_12: Appointment = {
@@ -539,6 +557,7 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_41.id,
     worker: worker_41,
+    isOpen: false,
   }
 
   const appointment_13: Appointment = {
@@ -554,6 +573,7 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_51.id,
     worker: worker_51,
+    isOpen: false,
   }
 
   const appointment_14: Appointment = {
@@ -569,6 +589,7 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_61.id,
     worker: worker_61,
+    isOpen: false,
   }
 
   const appointment_15: Appointment = {
@@ -584,6 +605,7 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_71.id,
     worker: worker_71,
+    isOpen: false,
   }
 
   const appointment_16: Appointment = {
@@ -599,6 +621,7 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_81.id,
     worker: worker_81,
+    isOpen: false,
   }
 
   const appointment_17: Appointment = {
@@ -614,6 +637,7 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_1.id,
     worker: worker_1,
+    isOpen: false,
   }
 
   const appointment_18: Appointment = {
@@ -629,6 +653,7 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_2.id,
     worker: worker_2,
+    isOpen: false,
   }
 
   const appointment_19: Appointment = {
@@ -644,6 +669,7 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_3.id,
     worker: worker_3,
+    isOpen: false,
   }
 
   const appointment_20: Appointment = {
@@ -659,6 +685,7 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_4.id,
     worker: worker_4,
+    isOpen: false,
   }
 
   // Reports

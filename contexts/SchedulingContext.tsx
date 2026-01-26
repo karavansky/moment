@@ -40,10 +40,16 @@ interface SchedulingState {
   selectedAppointment: Appointment | null;
 }
 
+// Appointment с обязательным client для отображения на карте
+export interface AppointmentWithClient extends Appointment {
+  client: Client;
+}
+
 // Тип для вычисляемых данных (derived state)
 interface SchedulingDerived {
   groupedClients: GroupedClients[];
   teamsWithWorkers: TeamsWithWorkers[];
+  todayAppointments: AppointmentWithClient[];
 }
 
 // Тип для действий (actions)
@@ -303,13 +309,34 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
       .filter(({ workers }) => workers.length > 0);
   }, [state.teams, state.workers]);
 
+  // Appointments на сегодня с привязанными клиентами (для карты)
+  const todayAppointments = useMemo<AppointmentWithClient[]>(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return state.appointments
+      .filter(apt => {
+        const aptDate = new Date(apt.date);
+        aptDate.setHours(0, 0, 0, 0);
+        return aptDate.getTime() === today.getTime();
+      })
+      .map(apt => {
+        const client = state.clients.find(c => c.id === apt.clientID);
+        if (!client) return null;
+        return { ...apt, client };
+      })
+      .filter((apt): apt is AppointmentWithClient => apt !== null)
+      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+  }, [state.appointments, state.clients]);
+
   // Мемоизируем contextValue для предотвращения лишних ре-рендеров потребителей контекста
   const contextValue: SchedulingContextType = useMemo(() => ({
     ...state,
     ...actions,
     groupedClients,
     teamsWithWorkers,
-  }), [state, actions, groupedClients, teamsWithWorkers]);
+    todayAppointments,
+  }), [state, actions, groupedClients, teamsWithWorkers, todayAppointments]);
 
   return (
     <SchedulingContext.Provider value={contextValue}>
