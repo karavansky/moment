@@ -126,17 +126,25 @@ export const DemoNotificationWorker = () => {
       currentIndexRef.current = index + 1;
     };
 
-    // Show first notification immediately
-   // showNextNotification();
+    // Show first notification after 30 seconds, then every 60 seconds
+    let intervalId: NodeJS.Timeout | null = null;
 
-    // Set up interval for 60 seconds
-    const intervalId = setInterval(showNextNotification, 60000);
+    const initialTimeoutId = setTimeout(() => {
+      showNextNotification();
 
-    console.log('🔔 [Demo Worker] Interval started (60s):', intervalId);
+      // Start interval for subsequent notifications
+      intervalId = setInterval(showNextNotification, 60000);
+      console.log('🔔 [Demo Worker] Interval started (60s):', intervalId);
+    }, 30000);
+
+    console.log('🔔 [Demo Worker] Initial timeout started (30s):', initialTimeoutId);
 
     return () => {
-      console.log('🔔 [Demo Worker] Cleaning up interval:', intervalId);
-      clearInterval(intervalId);
+      console.log('🔔 [Demo Worker] Cleaning up timers');
+      clearTimeout(initialTimeoutId);
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
     };
   }, []);
 
