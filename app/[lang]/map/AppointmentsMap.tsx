@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, memo, useMemo, useEffect, useState } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import ReactDOMServer from 'react-dom/server'
@@ -57,6 +57,59 @@ const createCustomIcon = () => {
     iconAnchor: [size / 2, size * 0.84],
     popupAnchor: [0, -size * 0.75],
   })
+}
+
+// Компонент маркера с управлением видимостью tooltip
+const AppointmentMarker = ({ apt, icon }: { apt: AppointmentWithClient; icon: L.DivIcon }) => {
+  const [isPopupOpen, setIsPopupOpen] = useState(false)
+
+  return (
+    <Marker
+      position={[apt.client.latitude, apt.client.longitude]}
+      icon={icon}
+      eventHandlers={{
+        popupopen: () => setIsPopupOpen(true),
+        popupclose: () => setIsPopupOpen(false),
+      }}
+    >
+      {apt.isOpen && apt.openedAt && !isPopupOpen && (
+        <Tooltip permanent direction="top" offset={[0, -35]} className="timer-tooltip">
+          <ElapsedTimer openedAt={apt.openedAt} />
+        </Tooltip>
+      )}
+      <Popup>
+        <div className="text-sm p-1 min-w-50">
+          <div className="font-semibold text-gray-900 mb-2">
+            {apt.client.name} {apt.client.surname}
+          </div>
+          <div className="text-gray-600 mb-2">
+            {apt.client.street} {apt.client.houseNumber}
+            {apt.client.apartment && `, ${apt.client.apartment}`}
+            <br />
+            {apt.client.postalCode} {apt.client.city}
+          </div>
+          <div className="border-t border-gray-200 pt-2 mt-2">
+            <div className="flex justify-between">
+              <span className="text-gray-500">Zeit:</span>
+              <span className="font-medium">
+                {timeFormatter.format(new Date(apt.startTime))} - {timeFormatter.format(new Date(apt.endTime))}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Dauer:</span>
+              <span>{apt.duration} Min.</span>
+            </div>
+            {apt.isOpen && apt.openedAt && (
+              <div className="flex justify-between">
+                <span className="text-gray-500">Current:</span>
+                <ElapsedTimer openedAt={apt.openedAt} />
+              </div>
+            )}
+          </div>
+        </div>
+      </Popup>
+    </Marker>
+  )
 }
 
 // Компонент для подстройки bounds карты под все маркеры
@@ -132,43 +185,7 @@ function AppointmentsMap() {
           <MapBoundsController appointments={todayAppointments} />
           {tileLayer}
           {todayAppointments.map((apt) => (
-            <Marker
-              key={apt.id}
-              position={[apt.client.latitude, apt.client.longitude]}
-              icon={customIcon.current}
-            >
-              <Popup>
-                <div className="text-sm p-1 min-w-50">
-                  <div className="font-semibold text-gray-900 mb-2">
-                    {apt.client.name} {apt.client.surname}
-                  </div>
-                  <div className="text-gray-600 mb-2">
-                    {apt.client.street} {apt.client.houseNumber}
-                    {apt.client.apartment && `, ${apt.client.apartment}`}
-                    <br />
-                    {apt.client.postalCode} {apt.client.city}
-                  </div>
-                  <div className="border-t border-gray-200 pt-2 mt-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Zeit:</span>
-                      <span className="font-medium">
-                        {timeFormatter.format(new Date(apt.startTime))} - {timeFormatter.format(new Date(apt.endTime))}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Dauer:</span>
-                      <span>{apt.duration} Min.</span>
-                    </div>
-                    {apt.isOpen && apt.openedAt && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Current:</span>
-                        <ElapsedTimer openedAt={apt.openedAt} />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </Popup>
-            </Marker>
+            <AppointmentMarker key={apt.id} apt={apt} icon={customIcon.current} />
           ))}
         </MapContainer>
       </div>

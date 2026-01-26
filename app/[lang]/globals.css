@@ -281,6 +281,26 @@
     transform: scale(1.1);
   }
 
+  /* Timer tooltip над маркером */
+  .timer-tooltip {
+    background: rgba(22, 163, 74, 0.95) !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 4px 8px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .timer-tooltip::before {
+    border-top-color: rgba(22, 163, 74, 0.95) !important;
+  }
+
+  .timer-tooltip .font-mono {
+    color: white !important;
+  }
+
   .no-scrollbar::-webkit-scrollbar {
     display: none; /* Скрывает скроллбар в Chrome, Safari и Opera */
   }
