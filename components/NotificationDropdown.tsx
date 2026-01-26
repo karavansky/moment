@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { Dropdown, Button } from '@heroui/react'
+import { Dropdown, Button, Surface } from '@heroui/react'
 import { Bell, X, Info, CheckCircle, AlertTriangle, XCircle } from 'lucide-react'
 import { useNotifications } from '@/contexts/NotificationContext'
 import { SimpleTooltip } from './SimpleTooltip'
@@ -84,10 +84,12 @@ export function NotificationDropdown({
         className="max-h-125 border-none shadow-2xl p-0 rounded-3xl bg-inherit backdrop-blur-[3px] outline-none ring-0"
         style={{ width: '75vw', maxWidth: '400px' }}
       >
-        <div className="flex flex-col gap-3 p-2">
+        <div className="flex flex-col gap-3 px-2 rounded-2xl ">
           {/* Header */}
           <div className="flex items-center justify-between px-2  ">
-            <h2 className="text-xl font-semibold text-sand-50 dark:text-white">Notifications</h2>
+            <Surface className="flex items-center gap-2 rounded-2xl bg-gray-200/50 dark:bg-gray-700/50 backdrop-blur-[3px]">
+            <h2 className="text-xl font-normal px-2 text-sand-50 dark:text-white">Notifications</h2>
+            </Surface>
             <button
               onClick={handleClearAll}
               className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200/50 dark:bg-gray-700/50 hover:bg-gray-300/50 dark:hover:bg-gray-600/50 transition-colors"
