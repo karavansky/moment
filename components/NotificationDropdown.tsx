@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useEffect, useRef } from 'react'
 import { Dropdown, Button, Surface } from '@heroui/react'
 import { Bell, X, Info, CheckCircle, AlertTriangle, XCircle } from 'lucide-react'
 import { useNotifications } from '@/contexts/NotificationContext'
@@ -35,8 +35,18 @@ function formatTimeAgo(date: Date): string {
 export function NotificationDropdown({
   tooltipContent = 'Notifications',
 }: NotificationDropdownProps) {
-  const { notifications, markNotificationAsRead, clearAllNotifications } = useNotifications()
+  const { notifications, markNotificationAsRead, clearAllNotifications, closeDropdownSignal } = useNotifications()
   const [open, setOpen] = useState(false)
+  const isFirstRender = useRef(true)
+
+  // Закрываем dropdown когда приходит сигнал
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    setOpen(false)
+  }, [closeDropdownSignal])
 
   const unreadCount = notifications.filter(n => !n.isRead).length
   const sortedNotifications = useCallback(() => {

@@ -5,7 +5,7 @@ import { useNotifications } from '@/contexts/NotificationContext'
 import { toast } from '@heroui/react'
 
 export const NotificationObserver = () => {
-  const { notifications, markNotificationAsRead } = useNotifications()
+  const { notifications, markNotificationAsRead, requestCloseDropdown } = useNotifications()
 
   // Ref to track processed notification IDs to prevent duplicate toasts
   const processedIds = useRef<Set<string>>(new Set())
@@ -60,6 +60,9 @@ export const NotificationObserver = () => {
         () => {
           // Используем queueMicrotask для дополнительной асинхронности
           queueMicrotask(() => {
+            // Закрываем dropdown перед показом toast
+            requestCloseDropdown()
+
             const title = notif.title || 'Notification'
             const description = notif.message
 

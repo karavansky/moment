@@ -8,12 +8,19 @@ interface NotificationContextType {
   addNotification: (notification: Notif) => void;
   markNotificationAsRead: (id: string) => void;
   clearAllNotifications: () => void;
+  closeDropdownSignal: number;
+  requestCloseDropdown: () => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<Notif[]>([]);
+  const [closeDropdownSignal, setCloseDropdownSignal] = useState(0);
+
+  const requestCloseDropdown = useCallback(() => {
+    setCloseDropdownSignal(prev => prev + 1);
+  }, []);
 
   // Мемоизированные actions
   const addNotification = useCallback((notification: Notif) => {
@@ -54,8 +61,10 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
       addNotification,
       markNotificationAsRead,
       clearAllNotifications,
+      closeDropdownSignal,
+      requestCloseDropdown,
     }),
-    [notifications, addNotification, markNotificationAsRead, clearAllNotifications]
+    [notifications, addNotification, markNotificationAsRead, clearAllNotifications, closeDropdownSignal, requestCloseDropdown]
   );
 
   return (
