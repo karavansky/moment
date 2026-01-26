@@ -88,7 +88,7 @@ export function NotificationDropdown({
           {/* Header */}
           <div className="flex items-center justify-between px-2  ">
             <Surface className="flex items-center gap-2 rounded-2xl bg-gray-200/50 dark:bg-gray-700/50 backdrop-blur-[3px]">
-            <h2 className="text-xl font-normal px-2 text-sand-50 dark:text-white">Notifications</h2>
+            <h2 className="text-xl font-normal px-3 text-sand-50 dark:text-white">Notifications</h2>
             </Surface>
             <button
               onClick={handleClearAll}
