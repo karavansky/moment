@@ -15,7 +15,29 @@ export const NotificationObserver = () => {
   const activeTimeouts = useRef<Map<NodeJS.Timeout, string>>(new Map())
 
   useEffect(() => {
-    // Находим непрочитанные и необработанные уведомления
+    // 1. Cleanup: Cancel timeouts for notifications that are no longer valid (read or removed)
+    // and prune processedIds to prevent memory leaks.
+    const currentUnreadIds = new Set(notifications.filter(n => !n.isRead).map(n => n.id))
+
+    // Check active timeouts
+    activeTimeouts.current.forEach((notifId, timeoutId) => {
+      if (!currentUnreadIds.has(notifId)) {
+        clearTimeout(timeoutId)
+        activeTimeouts.current.delete(timeoutId)
+        processedIds.current.delete(notifId)
+      }
+    })
+
+    // Prune processedIds for items that are no longer unread and not pending
+    // We convert values to a Set for O(1) lookup
+    const pendingIds = new Set(activeTimeouts.current.values())
+    for (const id of processedIds.current) {
+      if (!currentUnreadIds.has(id) && !pendingIds.has(id)) {
+        processedIds.current.delete(id)
+      }
+    }
+
+    // 2. Process new notifications
     const unprocessedNotifications = notifications.filter(
       notif => !notif.isRead && !processedIds.current.has(notif.id)
     )
@@ -54,7 +76,6 @@ export const NotificationObserver = () => {
                   children: 'Dismiss',
                   onPress: () => {
                     markNotificationAsRead(notif.id)
-                    toast.clear()
                   },
                   variant: 'tertiary' as const,
                 }
@@ -84,9 +105,6 @@ export const NotificationObserver = () => {
             // Удаляем из активных таймеров, так как он выполнился
             activeTimeouts.current.delete(timeoutId)
           })
-
-          // Mark as read in the global state
-          // markNotificationAsRead(notif.id)
         },
         100 + index * 300
       ) // Задержка 100ms для первого, затем +300ms для каждого следующего
@@ -94,10 +112,6 @@ export const NotificationObserver = () => {
       // Сохраняем timeout id и связанный с ним ID уведомления
       activeTimeouts.current.set(timeoutId, notif.id)
     })
-
-    // No cleanup function here intentionally.
-    // We don't want to cancel pending toasts just because the 'notifications' array updated
-    // (which happens when markNotificationAsRead is called for the first toast in a batch).
   }, [notifications, markNotificationAsRead])
 
   // Cleanup effect that runs only on unmount
