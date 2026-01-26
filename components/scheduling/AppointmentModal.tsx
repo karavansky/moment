@@ -204,6 +204,7 @@ export default function AppointmentModal({
       worker: selectedWorker,
       client: selectedClient,
       reports: appointment?.reports || [],
+      isOpen: false,
     }
 
     if (isEditMode) {
