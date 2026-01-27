@@ -211,3 +211,30 @@ export interface WorkerDraggable {
   id: string
   workerName: string
 }
+
+// Услуга (лист дерева)
+export interface Service {
+  id: string
+  firmaID: string
+  name: string
+  description?: string
+  duration: number // длительность в минутах
+  price?: number
+  parentId: string | null // null для корневых элементов, id группы для вложенных
+  isGroup: false
+  order: number // для сортировки
+}
+
+// Группа услуг (узел дерева)
+export interface ServiceGroup {
+  id: string
+  firmaID: string
+  name: string
+  description?: string
+  parentId: string | null // null для корневых групп, id родительской группы для вложенных
+  isGroup: true
+  order: number
+}
+
+// Объединённый тип для элементов дерева
+export type ServiceTreeItem = Service | ServiceGroup

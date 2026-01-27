@@ -9,6 +9,7 @@ import {
   Groupe,
   User,
   Report,
+  ServiceTreeItem,
 } from '@/types/scheduling';
 import getAllSampleObjects from '@/lib/scheduling-mock-data';
 
@@ -32,6 +33,7 @@ interface SchedulingState {
   clients: Client[];
   appointments: Appointment[];
   reports: Report[];
+  services: ServiceTreeItem[];
   firmaID: string;
   isLoading: boolean;
   selectedWorker: Worker | null;
@@ -68,6 +70,9 @@ interface SchedulingActions {
   addWorker: (worker: Worker) => void;
   updateWorker: (worker: Worker) => void;
   deleteWorker: (id: string) => void;
+  addService: (service: ServiceTreeItem) => void;
+  updateService: (service: ServiceTreeItem) => void;
+  deleteService: (id: string) => void;
   refreshData: () => void;
 }
 
@@ -87,6 +92,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     clients: [],
     appointments: [],
     reports: [],
+    services: [],
     firmaID: '',
     isLoading: true,
     selectedWorker: null,
@@ -115,6 +121,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         clients: mockData.clients,
         appointments: mockData.appointments,
         reports: mockData.reports,
+        services: mockData.services,
         firmaID: mockData.firmaID,
         isLoading: false,
         selectedWorker: null,
@@ -270,6 +277,41 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         appointments: prev.appointments.filter((apt) => apt.workerId !== id),
       }));
     },
+
+    addService: (service) => {
+      console.log('Adding new service:', service);
+      setState((prev) => ({
+        ...prev,
+        services: [...prev.services, service],
+      }));
+    },
+
+    updateService: (updatedService) => {
+      console.log('Updating service:', updatedService);
+      setState((prev) => ({
+        ...prev,
+        services: prev.services.map((service) =>
+          service.id === updatedService.id ? updatedService : service
+        ),
+      }));
+    },
+
+    deleteService: (id) => {
+      console.log('Deleting service:', id);
+      setState((prev) => {
+        // Рекурсивно собираем все ID для удаления (сам элемент + все дочерние)
+        const getChildIds = (parentId: string): string[] => {
+          const children = prev.services.filter((s) => s.parentId === parentId);
+          return children.flatMap((child) => [child.id, ...getChildIds(child.id)]);
+        };
+        const idsToDelete = [id, ...getChildIds(id)];
+        return {
+          ...prev,
+          services: prev.services.filter((service) => !idsToDelete.includes(service.id)),
+        };
+      });
+    },
+
     refreshData: () => {
       loadMockData();
     },

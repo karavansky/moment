@@ -7,6 +7,9 @@ import {
   Report,
   User,
   DateAppointmentView,
+  Service,
+  ServiceGroup,
+  ServiceTreeItem,
 } from '@/types/scheduling'
 
 // Генерация UUID (простая версия для мок-данных)
@@ -713,6 +716,208 @@ export const getAllSampleObjects = () => {
   appointment_1.reports = [report1]
   appointment_5.reports = [report2]
 
+  // Services (дерево услуг)
+  const serviceGroup_1: ServiceGroup = {
+    id: generateId(),
+    firmaID,
+    name: 'Grundpflege',
+    description: 'Grundlegende Pflegeleistungen',
+    parentId: null,
+    isGroup: true,
+    order: 1,
+  }
+
+  const serviceGroup_2: ServiceGroup = {
+    id: generateId(),
+    firmaID,
+    name: 'Behandlungspflege',
+    description: 'Medizinische Behandlungspflege',
+    parentId: null,
+    isGroup: true,
+    order: 2,
+  }
+
+  const serviceGroup_3: ServiceGroup = {
+    id: generateId(),
+    firmaID,
+    name: 'Hauswirtschaft',
+    description: 'Hauswirtschaftliche Versorgung',
+    parentId: null,
+    isGroup: true,
+    order: 3,
+  }
+
+  const serviceGroup_1_1: ServiceGroup = {
+    id: generateId(),
+    firmaID,
+    name: 'Körperpflege',
+    description: 'Körperpflege und Hygiene',
+    parentId: serviceGroup_1.id,
+    isGroup: true,
+    order: 1,
+  }
+
+  const serviceGroup_1_2: ServiceGroup = {
+    id: generateId(),
+    firmaID,
+    name: 'Mobilität',
+    description: 'Hilfe bei der Mobilität',
+    parentId: serviceGroup_1.id,
+    isGroup: true,
+    order: 2,
+  }
+
+  const service_1: Service = {
+    id: generateId(),
+    firmaID,
+    name: 'Ganzkörperwäsche',
+    description: 'Vollständige Körperwäsche',
+    duration: 30,
+    price: 25,
+    parentId: serviceGroup_1_1.id,
+    isGroup: false,
+    order: 1,
+  }
+
+  const service_2: Service = {
+    id: generateId(),
+    firmaID,
+    name: 'Teilwäsche',
+    description: 'Teilweise Körperwäsche',
+    duration: 15,
+    price: 15,
+    parentId: serviceGroup_1_1.id,
+    isGroup: false,
+    order: 2,
+  }
+
+  const service_3: Service = {
+    id: generateId(),
+    firmaID,
+    name: 'Duschen/Baden',
+    description: 'Hilfe beim Duschen oder Baden',
+    duration: 45,
+    price: 35,
+    parentId: serviceGroup_1_1.id,
+    isGroup: false,
+    order: 3,
+  }
+
+  const service_4: Service = {
+    id: generateId(),
+    firmaID,
+    name: 'Hilfe beim Aufstehen',
+    description: 'Unterstützung beim Aufstehen aus dem Bett',
+    duration: 10,
+    price: 10,
+    parentId: serviceGroup_1_2.id,
+    isGroup: false,
+    order: 1,
+  }
+
+  const service_5: Service = {
+    id: generateId(),
+    firmaID,
+    name: 'Transfer Rollstuhl',
+    description: 'Transfer in den Rollstuhl',
+    duration: 15,
+    price: 12,
+    parentId: serviceGroup_1_2.id,
+    isGroup: false,
+    order: 2,
+  }
+
+  const service_6: Service = {
+    id: generateId(),
+    firmaID,
+    name: 'Medikamentengabe',
+    description: 'Verabreichung von Medikamenten',
+    duration: 10,
+    price: 8,
+    parentId: serviceGroup_2.id,
+    isGroup: false,
+    order: 1,
+  }
+
+  const service_7: Service = {
+    id: generateId(),
+    firmaID,
+    name: 'Wundversorgung',
+    description: 'Versorgung von Wunden',
+    duration: 20,
+    price: 20,
+    parentId: serviceGroup_2.id,
+    isGroup: false,
+    order: 2,
+  }
+
+  const service_8: Service = {
+    id: generateId(),
+    firmaID,
+    name: 'Insulininjektion',
+    description: 'Verabreichung von Insulin',
+    duration: 10,
+    price: 10,
+    parentId: serviceGroup_2.id,
+    isGroup: false,
+    order: 3,
+  }
+
+  const service_9: Service = {
+    id: generateId(),
+    firmaID,
+    name: 'Einkaufen',
+    description: 'Einkäufe erledigen',
+    duration: 60,
+    price: 30,
+    parentId: serviceGroup_3.id,
+    isGroup: false,
+    order: 1,
+  }
+
+  const service_10: Service = {
+    id: generateId(),
+    firmaID,
+    name: 'Kochen',
+    description: 'Zubereitung von Mahlzeiten',
+    duration: 45,
+    price: 25,
+    parentId: serviceGroup_3.id,
+    isGroup: false,
+    order: 2,
+  }
+
+  const service_11: Service = {
+    id: generateId(),
+    firmaID,
+    name: 'Wäsche waschen',
+    description: 'Waschen und Trocknen von Wäsche',
+    duration: 30,
+    price: 18,
+    parentId: serviceGroup_3.id,
+    isGroup: false,
+    order: 3,
+  }
+
+  const services: ServiceTreeItem[] = [
+    serviceGroup_1,
+    serviceGroup_2,
+    serviceGroup_3,
+    serviceGroup_1_1,
+    serviceGroup_1_2,
+    service_1,
+    service_2,
+    service_3,
+    service_4,
+    service_5,
+    service_6,
+    service_7,
+    service_8,
+    service_9,
+    service_10,
+    service_11,
+  ]
+
   return {
     user,
     teams: [team1, team2],
@@ -759,6 +964,7 @@ export const getAllSampleObjects = () => {
       appointment_20,
     ],
     reports: [report1, report2],
+    services,
     firmaID,
   }
 }

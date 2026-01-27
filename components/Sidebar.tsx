@@ -19,6 +19,7 @@ import {
   Building2,
   ShieldCheck,
   Bell,
+  HandHeart,
 } from 'lucide-react'
 import { Link } from '@heroui/react'
 import { usePathname } from 'next/navigation'
@@ -51,6 +52,7 @@ const crmSubItems: MenuItem[] = [
   { icon: UserStar, label: 'Kunden', href: '/clients' },
   { icon: Users, label: 'Fachkräfte', href: '/staff' },
   { icon: Van, label: 'Fahrzeug', href: '/transport' },
+  { icon: HandHeart, label: 'Dienstleistungen', href: '/services' },
 ]
 
 const reportsItems: MenuItem[] = [
