@@ -47,7 +47,7 @@ const timeFormatter = new Intl.DateTimeFormat('de-DE', {
 
 // Создаем кастомную иконку с LogoMoment
 const createCustomIcon = () => {
-  const size = 40
+  const size = 56
   const iconHtml = ReactDOMServer.renderToString(<LogoMoment size={size} />)
 
   return L.divIcon({
@@ -73,7 +73,7 @@ const AppointmentMarker = ({ apt, icon }: { apt: AppointmentWithClient; icon: L.
       }}
     >
       {apt.isOpen && apt.openedAt && !isPopupOpen && (
-        <Tooltip permanent direction="top" offset={[0, -35]} className="timer-tooltip">
+        <Tooltip permanent direction="top" offset={[0, -40]} className="timer-tooltip">
           <ElapsedTimer openedAt={apt.openedAt} />
         </Tooltip>
       )}
