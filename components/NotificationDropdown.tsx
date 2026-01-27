@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { Dropdown, Button, Surface } from '@heroui/react'
 import { Bell, X, Info, CheckCircle, AlertTriangle, XCircle } from 'lucide-react'
 import { useNotifications } from '@/contexts/NotificationContext'
@@ -36,6 +37,7 @@ export function NotificationDropdown({
   tooltipContent = 'Notifications',
 }: NotificationDropdownProps) {
   const { notifications, markNotificationAsRead, clearAllNotifications, closeDropdownSignal } = useNotifications()
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const isFirstRender = useRef(true)
 
@@ -149,7 +151,7 @@ export function NotificationDropdown({
                       e.stopPropagation()
                       notification.actionProps?.onPress?.()
                       if (notification.actionProps?.href) {
-                        window.location.href = notification.actionProps.href
+                        router.push(notification.actionProps.href)
                       }
                       handleNotificationClick(notification.id)
                     }}
