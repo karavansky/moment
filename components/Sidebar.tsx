@@ -327,8 +327,6 @@ export default function Sidebar() {
           </div>
         </nav>
 
-        {/* Footer - User/Settings */}
-        <SidebarFooter />
       </aside>
     </>
   )
