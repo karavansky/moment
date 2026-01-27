@@ -5,8 +5,8 @@ import { use } from 'react'
 
 const AppointmentsMap = dynamic(() => import('./AppointmentsMap'), { ssr: false })
 
-export default function MapPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+export default function MapPage({ params }: { params: Promise<{ slug?: string[] }> }) {
+  const { slug } = use(params)
 
-  return <AppointmentsMap slug={id} />
+  return <AppointmentsMap slug={slug?.[0]} />
 }
