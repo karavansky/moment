@@ -94,31 +94,25 @@ const MenuItemComponent = memo(({
   // Добавляем языковой префикс к href
   const localizedHref = item.href === '/' ? `/${lang}` : `/${lang}${item.href}`
 
-  const buttonContent = (
-    <Button
-      variant="ghost"
-      className={`w-full justify-start ${
-        isActive ? activeClassName : 'text-default-700'
-      }`}
-      onPress={onClick}
-    >
-      <Icon className="w-5 h-5 mr-3" />
-      <span className="sidebar-label">{item.label}</span>
-    </Button>
-  )
-
   return (
-    <Link key={item.href} href={localizedHref} className="w-full no-underline">
-      <SimpleTooltip
-        content={item.label}
-        placement="right"
-        isDisabled={isExpanded}
-        delay={100}
-        wrapperClassName="w-full"
+    <SimpleTooltip
+      content={item.label}
+      placement="right"
+      isDisabled={isExpanded}
+      delay={100}
+      wrapperClassName="w-full"
+    >
+      <Link
+        href={localizedHref}
+        onClick={onClick}
+        className={`flex items-center w-full px-4 py-2 rounded-lg transition-colors no-underline ${
+          isActive ? activeClassName : 'text-default-700 hover:bg-default-100'
+        }`}
       >
-        {buttonContent}
-      </SimpleTooltip>
-    </Link>
+        <Icon className="w-5 h-5 mr-3" />
+        <span className="sidebar-label">{item.label}</span>
+      </Link>
+    </SimpleTooltip>
   )
 })
 
