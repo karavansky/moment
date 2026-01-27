@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode, useRef } from 'react';
 import {
   Appointment,
   Worker,
@@ -84,6 +84,8 @@ const SchedulingContext = createContext<SchedulingContextType | undefined>(undef
 
 // Провайдер контекста
 export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const mountIdRef = useRef(Math.random().toString(36).slice(2, 8))
+
   const [state, setState] = useState<SchedulingState>({
     user: null,
     teams: [],
@@ -100,6 +102,14 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     selectedDate: new Date(),
     selectedAppointment: null,
   });
+
+  // Логируем монтирование/размонтирование
+  useEffect(() => {
+    console.log(`🟢 SchedulingProvider MOUNTED [${mountIdRef.current}]`)
+    return () => {
+      console.log(`🔴 SchedulingProvider UNMOUNTED [${mountIdRef.current}]`)
+    }
+  }, [])
 
   // Инициализация данных при монтировании
   useEffect(() => {

@@ -21,7 +21,7 @@ import {
   Bell,
   HandHeart,
 } from 'lucide-react'
-import { Link } from '@heroui/react'
+import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LogoMoment } from './icons'
 import { useSidebar } from '@/contexts/SidebarContext'
@@ -80,15 +80,19 @@ const MenuItemComponent = memo(({
   isActive,
   onClick,
   activeClassName = 'bg-primary/10 text-primary',
-  isExpanded = true
+  isExpanded = true,
+  lang
 }: {
   item: MenuItem
   isActive: boolean
   onClick: () => void
   activeClassName?: string
   isExpanded?: boolean
+  lang: string
 }) => {
   const Icon = item.icon
+  // Добавляем языковой префикс к href
+  const localizedHref = item.href === '/' ? `/${lang}` : `/${lang}${item.href}`
 
   const buttonContent = (
     <Button
@@ -104,7 +108,7 @@ const MenuItemComponent = memo(({
   )
 
   return (
-    <Link key={item.href} href={item.href} className="w-full no-underline">
+    <Link key={item.href} href={localizedHref} className="w-full no-underline">
       <SimpleTooltip
         content={item.label}
         placement="right"
@@ -125,12 +129,14 @@ const MenuSectionComponent = memo(({
   section,
   isActive,
   onLinkClick,
-  isExpanded = true
+  isExpanded = true,
+  lang
 }: {
   section: MenuSection
   isActive: (href: string) => boolean
   onLinkClick: () => void
   isExpanded?: boolean
+  lang: string
 }) => {
   return (
     <div className="mt-6">
@@ -146,6 +152,7 @@ const MenuSectionComponent = memo(({
           onClick={onLinkClick}
           activeClassName={section.activeColor}
           isExpanded={isExpanded}
+          lang={lang}
         />
       ))}
     </div>
@@ -201,6 +208,9 @@ ToggleButton.displayName = 'ToggleButton'
 
 export default function Sidebar() {
   const pathname = usePathname()
+
+  // Извлекаем язык из pathname (первый сегмент после /)
+  const lang = pathname.split('/')[1] || 'en'
 
   // Получаем состояние из контекста
   const { isOpen, isExpanded, toggleOpen, toggleExpanded } = useSidebar()
@@ -301,6 +311,7 @@ export default function Sidebar() {
                 isActive={isActive(item.href)}
                 onClick={handleLinkClick}
                 isExpanded={isExpanded}
+                lang={lang}
               />
             ))}
 
@@ -312,6 +323,7 @@ export default function Sidebar() {
                 isActive={isActive}
                 onLinkClick={handleLinkClick}
                 isExpanded={isExpanded}
+                lang={lang}
               />
             ))}
           </div>

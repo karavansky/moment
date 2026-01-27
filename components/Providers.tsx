@@ -2,7 +2,7 @@
 
 import { HeroUIProvider } from '@heroui/system'
 import { ThemeProvider as NextThemesProvider, ThemeProviderProps, useTheme } from 'next-themes'
-import React, { createContext, useContext, useMemo } from 'react'
+import React, { createContext, useContext, useMemo, useEffect, useRef } from 'react'
 import { SessionProvider } from 'next-auth/react'
 import { AuthProvider } from './AuthProvider'
 import { useRouter } from 'next/navigation'
@@ -76,6 +76,21 @@ function HeroUIThemeWrapper({ children }: { children: React.ReactNode }) {
 }
 
 export function Providers({ children, themeProps, dictionary, lang, initialSidebarExpanded }: ProvidersProps) {
+  const mountIdRef = useRef(Math.random().toString(36).slice(2, 8))
+
+  // Логируем монтирование/размонтирование
+  useEffect(() => {
+    console.log(`🟢 Providers MOUNTED [${mountIdRef.current}], lang=${lang}`)
+    return () => {
+      console.log(`🔴 Providers UNMOUNTED [${mountIdRef.current}]`)
+    }
+  }, [])
+
+  // Логируем изменение props
+  useEffect(() => {
+    console.log(`📦 Providers props changed [${mountIdRef.current}]: lang=${lang}`)
+  }, [lang, dictionary, initialSidebarExpanded])
+
   // Мемоизируем dictionary чтобы контекст не менялся при каждой навигации
   // ВАЖНО: используем только dictionary как зависимость, а не lang!
   // Словарь меняется только когда действительно приходит новый объект
