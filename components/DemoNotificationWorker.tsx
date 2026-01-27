@@ -3,6 +3,8 @@
 import { useEffect, useRef } from 'react';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { Notif } from '@/types/scheduling';
+import { useScheduling } from '@/contexts/SchedulingContext';
+import { Router } from 'next/router';
 
 const simpleId = () => Math.random().toString(36).substr(2, 9);
 
@@ -15,7 +17,7 @@ const DEMO_NOTIFICATIONS: Omit<Notif, 'id' | 'date' | 'isRead'>[] = [
     message: 'Welcome to Moment! Click to learn more about features.',
     actionProps: {
       children: 'Learn More',
-      href: '/help',
+      href: '/map/001',
       variant: 'primary',
     },
   },
@@ -92,6 +94,8 @@ const DEMO_NOTIFICATIONS: Omit<Notif, 'id' | 'date' | 'isRead'>[] = [
 ];
 
 export const DemoNotificationWorker = () => {
+    const { openAppointment } = useScheduling()
+  
   const { addNotification } = useNotifications();
   const addNotificationRef = useRef(addNotification);
   const currentIndexRef = useRef(0);
@@ -130,6 +134,7 @@ export const DemoNotificationWorker = () => {
     let intervalId: NodeJS.Timeout | null = null;
 
     const initialTimeoutId = setTimeout(() => {
+      openAppointment('001'); // Open appointment with ID '001'
       showNextNotification();
 
       // Start interval for subsequent notifications

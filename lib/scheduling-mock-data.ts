@@ -448,7 +448,7 @@ export const getAllSampleObjects = () => {
   }
 
   const appointment_6: Appointment = {
-    id: generateId(),
+    id: "001", //generateId(),
     userID: worker_6.id,
     clientID: client_2.id,
     client: client_2,
@@ -460,10 +460,10 @@ export const getAllSampleObjects = () => {
     fahrzeit: 0,
     workerId: worker_6.id,
     worker: worker_6,
-    isOpen: true,
+    isOpen: false,
     latitude: 50.9346808,
     longitude: 6.9977416,
-    openedAt: addMinutes(appointmentDate_6, -3),
+   // openedAt: addMinutes(appointmentDate_6, -3),
   }
 
   const appointment_7: Appointment = {

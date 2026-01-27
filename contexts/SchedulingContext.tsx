@@ -74,6 +74,7 @@ interface SchedulingActions {
   updateService: (service: ServiceTreeItem) => void;
   deleteService: (id: string) => void;
   refreshData: () => void;
+  openAppointment: (appointmentId: string) => void;
 }
 
 // Комбинированный тип для контекста
@@ -325,6 +326,22 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     refreshData: () => {
       loadMockData();
     },
+
+    openAppointment: (appointmentId) => {
+      setState((prev) => {
+        const appointment = prev.appointments.find((apt) => apt.id === appointmentId);
+        if (!appointment) return prev;
+
+        return {
+          ...prev,
+          appointments: prev.appointments.map((apt) =>
+            apt.id === appointmentId
+              ? { ...apt, isOpen: true, openedAt: new Date() }
+              : apt
+          ),
+        };
+      });
+    }
   }), []); // Без зависимостей, так как все функции используют setState с функциональным обновлением
 
   // Группировка клиентов по группам - вычисляется при изменении clients или groups

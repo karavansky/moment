@@ -60,11 +60,19 @@ const createCustomIcon = () => {
 }
 
 // Компонент маркера с управлением видимостью tooltip
-const AppointmentMarker = ({ apt, icon }: { apt: AppointmentWithClient; icon: L.DivIcon }) => {
-  const [isPopupOpen, setIsPopupOpen] = useState(false)
+const AppointmentMarker = ({ apt, icon, isSelected }: { apt: AppointmentWithClient; icon: L.DivIcon; isSelected?: boolean }) => {
+  const [isPopupOpen, setIsPopupOpen] = useState(isSelected ?? false)
+  const markerRef = useRef<L.Marker>(null)
+
+  useEffect(() => {
+    if (isSelected && markerRef.current) {
+      markerRef.current.openPopup()
+    }
+  }, [isSelected])
 
   return (
     <Marker
+      ref={markerRef}
       position={[apt.client.latitude, apt.client.longitude]}
       icon={icon}
       eventHandlers={{
@@ -136,11 +144,14 @@ const MapBoundsController = ({ appointments }: { appointments: AppointmentWithCl
 
   return null
 }
+interface AppointmentsMapProps {
+  slug?: string;
+}
 
-function AppointmentsMap() {
+function AppointmentsMap({ slug }: AppointmentsMapProps) {
   const { todayAppointments, isLoading } = useScheduling()
   const customIcon = useRef(createCustomIcon())
-
+  
   // Центр Германии как дефолтный центр
   const defaultCenter: [number, number] = [51.1657, 10.4515]
 
@@ -185,7 +196,7 @@ function AppointmentsMap() {
           <MapBoundsController appointments={todayAppointments} />
           {tileLayer}
           {todayAppointments.map((apt) => (
-            <AppointmentMarker key={apt.id} apt={apt} icon={customIcon.current} />
+            <AppointmentMarker key={apt.id} apt={apt} icon={customIcon.current} isSelected={slug === apt.id} />
           ))}
         </MapContainer>
       </div>

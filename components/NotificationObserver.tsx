@@ -3,9 +3,11 @@
 import { useEffect, useRef } from 'react'
 import { useNotifications } from '@/contexts/NotificationContext'
 import { toast } from '@heroui/react'
+import { useRouter } from 'next/navigation';
 
 export const NotificationObserver = () => {
   const { notifications, markNotificationAsRead, requestCloseDropdown } = useNotifications()
+  const router = useRouter();
 
   // Ref to track processed notification IDs to prevent duplicate toasts
   const processedIds = useRef<Set<string>>(new Set())
@@ -67,17 +69,22 @@ export const NotificationObserver = () => {
             const description = notif.message
 
             // Use actionProps from notification or default Dismiss button
+            // toastKey будет присвоен после вызова toast(), но onPress вызовется позже
+            let toastKey: string | undefined;
+
             const actionProps = notif.actionProps
               ? {
                   ...notif.actionProps,
                   onPress: () => {
-                    notif.actionProps?.onPress?.()
+                    if (toastKey) toast.close(toastKey)
+                    if (notif.actionProps?.href) router.push(notif.actionProps.href)
                     markNotificationAsRead(notif.id)
                   },
                 }
               : {
                   children: 'Dismiss',
                   onPress: () => {
+                    if (toastKey) toast.close(toastKey)
                     markNotificationAsRead(notif.id)
                   },
                   variant: 'tertiary' as const,
@@ -91,17 +98,17 @@ export const NotificationObserver = () => {
 
             switch (notif.type) {
               case 'success':
-                toast.success(title, options)
+                toastKey = toast.success(title, options)
                 break
               case 'warning':
-                toast.warning(title, options)
+                toastKey = toast.warning(title, options)
                 break
               case 'error':
-                toast.danger(title, options)
+                toastKey = toast.danger(title, options)
                 break
               case 'info':
               default:
-                toast(title, options)
+                toastKey = toast(title, options)
                 break
             }
 
