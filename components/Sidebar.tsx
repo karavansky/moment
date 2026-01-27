@@ -105,12 +105,12 @@ const MenuItemComponent = memo(({
       <Link
         href={localizedHref}
         onClick={onClick}
-        className={`flex items-center w-full px-4 py-2 rounded-lg transition-colors no-underline ${
+        className={`sidebar-menu-link flex items-center w-full py-2 rounded-lg transition-colors no-underline ${
           isActive ? activeClassName : 'text-default-700 hover:bg-default-100'
         }`}
       >
-        <Icon className="w-5 h-5 mr-3" />
-        <span className="sidebar-label">{item.label}</span>
+        <Icon className="sidebar-menu-icon w-5 h-5 mr-3" />
+        {isExpanded && <span className="sidebar-label">{item.label}</span>}
       </Link>
     </SimpleTooltip>
   )
@@ -212,10 +212,14 @@ export default function Sidebar() {
   // Для SSR всегда начинаем с false (desktop режим)
   const [isMobile, setIsMobile] = useState(false)
 
+  // На мобильном sidebar всегда развернут (игнорируем isExpanded)
+  const displayExpanded = isMobile ? true : isExpanded
+
   // Определяем мобильный режим с debounce для оптимизации
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
+      console.log('Checking mobile sidebar state...', window.innerWidth < 768)
     }
 
     checkMobile()
@@ -304,7 +308,7 @@ export default function Sidebar() {
                 item={item}
                 isActive={isActive(item.href)}
                 onClick={handleLinkClick}
-                isExpanded={isExpanded}
+                isExpanded={displayExpanded}
                 lang={lang}
               />
             ))}
@@ -316,7 +320,7 @@ export default function Sidebar() {
                 section={section}
                 isActive={isActive}
                 onLinkClick={handleLinkClick}
-                isExpanded={isExpanded}
+                isExpanded={displayExpanded}
                 lang={lang}
               />
             ))}

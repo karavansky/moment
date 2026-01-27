@@ -219,6 +219,23 @@
     display: none !important;
   }
 
+  /* Menu link default padding */
+  .sidebar-menu-link {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Center menu icons in collapsed state */
+  .sidebar-collapsed .sidebar-menu-link {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .sidebar-collapsed .sidebar-menu-icon {
+    margin-right: 0;
+  }
+
   /* Footer - по умолчанию виден */
   .sidebar-footer {
     display: block;
@@ -227,6 +244,39 @@
   /* В свернутом состоянии скрываем footer */
   .sidebar-collapsed .sidebar-footer {
     display: none !important;
+  }
+
+  /* На мобильном игнорируем collapsed состояние - sidebar всегда развернут */
+  @media (max-width: 767px) {
+    .sidebar-collapsed .sidebar-main {
+      width: 14rem !important;
+    }
+    .sidebar-collapsed .sidebar-logo-container {
+      transform: none;
+    }
+    .sidebar-collapsed .sidebar-title {
+      display: block !important;
+    }
+    .sidebar-collapsed .section-header {
+      display: block !important;
+    }
+    .sidebar-collapsed .section-separator {
+      display: none !important;
+    }
+    .sidebar-collapsed .sidebar-label {
+      display: block !important;
+    }
+    .sidebar-collapsed .sidebar-menu-link {
+      justify-content: flex-start;
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+    .sidebar-collapsed .sidebar-menu-icon {
+      margin-right: 0.75rem;
+    }
+    .sidebar-collapsed .sidebar-footer {
+      display: block !important;
+    }
   }
 
   /* Leaflet map z-index to stay below sidebar */
