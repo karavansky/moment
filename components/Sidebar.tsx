@@ -26,6 +26,7 @@ import { usePathname } from 'next/navigation'
 import { LogoMoment } from './icons'
 import { useSidebar } from '@/contexts/SidebarContext'
 import { SimpleTooltip } from './SimpleTooltip'
+import { useLanguage } from '@/hooks/useLanguage'
 
 interface MenuItem {
   icon: React.ElementType
@@ -204,7 +205,7 @@ export default function Sidebar() {
   const pathname = usePathname()
 
   // Извлекаем язык из pathname (первый сегмент после /)
-  const lang = pathname.split('/')[1] || 'en'
+  const lang = useLanguage()
 
   // Получаем состояние из контекста
   const { isOpen, isExpanded, toggleOpen, toggleExpanded } = useSidebar()
