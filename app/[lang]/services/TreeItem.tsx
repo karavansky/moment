@@ -89,12 +89,14 @@ const TreeItem = ({
           className="absolute right-2 top-2 bottom-2 flex items-center justify-center rounded-full bg-danger text-white  h-30px "
           style={{ width: DELETE_BUTTON_WIDTH }}
         >
-          <button
+          <Button
+            isIconOnly
+            variant="danger"
+            size='lg'
             onClick={handleDeleteClick}
-            className="flex items-center justify-center w-full h-full "
           >
             <Trash2 className="w-6 h-6" />
-          </button>
+          </Button>
         </div>
 
         {/* Main content */}
