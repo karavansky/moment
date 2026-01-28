@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, memo, useRef } from 'react'
+import React, { useCallback, memo } from 'react'
 import { Button, ButtonRoot, ComboBox, Input, Label, ListBox, TextField } from '@heroui/react'
 import { ChevronDown, Plus, Trash, User } from 'lucide-react'
 import { usePlatformContext } from '@/contexts/PlatformContext'
@@ -28,7 +28,7 @@ function ServiceSelect({
 }: ServiceSelectProps) {
   const { isMobile, isReady } = usePlatformContext()
   const [test, setTest] = React.useState('')
-  const inputRef = useRef<HTMLInputElement>(null)
+  
   // Мемоизация обработчиков
   const handleMobileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,7 +70,6 @@ function ServiceSelect({
         <div className="flex items-center gap-2 w-full">
           <div className="relative flex-1">
             <input
-              ref={inputRef}
               value={test}
               onChange={handleMobileChange}
               onKeyDown={e => {
@@ -86,13 +85,11 @@ function ServiceSelect({
               required
               placeholder="Select service..."
             />
-            <button
-              type="button"
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-default-500 hover:text-default-700"
-              onClick={() => inputRef.current?.focus()}
+            <div
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-default-500 pointer-events-none"
             >
               <ChevronDown size={18} />
-            </button>
+            </div>
             <datalist id="service-options">
               {servicesForSelect.map(({ service, id, path }) => (
                 <option key={id} value={service} label={path || 'empty'} />
