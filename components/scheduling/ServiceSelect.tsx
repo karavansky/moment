@@ -58,7 +58,8 @@ function ServiceSelect({
   if (process.env.NODE_ENV === 'development') {
     console.log("Selected services:", selectedServices)
   }
-  if (isReady && isMobile) {
+  // (isReady && isMobile)
+  if (true) {
     return (
       <TextField className="w-1/2 min-w-0" isRequired name="service" type="text">
         <Label className="text-base font-normal">Dienstleistungen</Label>
