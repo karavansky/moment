@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useCallback, memo } from 'react'
-import { ComboBox, Input, Label, ListBox, TextField } from '@heroui/react'
-import { ChevronDown, User } from 'lucide-react'
+import { Button, ButtonRoot, ComboBox, Input, Label, ListBox, TextField } from '@heroui/react'
+import { ChevronDown, Plus, Trash, User } from 'lucide-react'
 import { usePlatformContext } from '@/contexts/PlatformContext'
 
 interface ServicesForSelect {
@@ -57,35 +57,48 @@ function ServiceSelect({
 
   // --- RENDER FOR MOBILE (iOS/Android) ---
   if (process.env.NODE_ENV === 'development') {
-    console.log("Selected services:", selectedServices)
+    console.log('Selected services:', selectedServices)
   }
   // (isReady && isMobile)
   if (true) {
     return (
-      <TextField className="w-1/2 min-w-0" isRequired name="service" type="text">
+      <TextField className="w-full min-w-0" isRequired name="service" type="text">
         <Label className="text-base font-normal">Dienstleistungen</Label>
-        <div className="relative w-full">
+        <div className="flex items-center justify-between relative w-full">
           <Input
             value={test}
             onChange={handleMobileChange}
+            onKeyDown={e => {
+              // Блокируем ввод с клавиатуры, разрешаем только Tab и выбор из списка
+              if (e.key !== 'Tab' && e.key !== 'Enter' && e.key !== 'Escape') {
+                e.preventDefault()
+              }
+            }}
             autoComplete="off"
             list="service-options"
-            className="text-lg font-normal md:text-base w-full pr-10 "
+            inputMode="none"
+            className="text-lg font-normal md:text-base w-full cursor-pointer"
             required
-            placeholder='Select service...'
+            placeholder="Select service..."
           />
           <datalist id="service-options">
             {servicesForSelect.map(({ service, id, path }) => (
               <option key={id} value={service} label={path || 'empty'} />
             ))}
           </datalist>
+          <Button isIconOnly size="sm" variant="tertiary" onPress={() => setTest('')}>
+            <Trash size={16} />
+          </Button>
+          <Button isIconOnly size="sm" variant="primary" onPress={() => setTest('')}>
+            <Plus size={16} />
+          </Button>
         </div>
       </TextField>
     )
   }
-//          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-default-500">
-//            <ChevronDown size={16} />
-//          </div>
+  //          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-default-500">
+  //            <ChevronDown size={16} />
+  //          </div>
 
   // --- RENDER FOR DESKTOP ---
   return (
@@ -108,11 +121,7 @@ function ServiceSelect({
         <ComboBox.Popover>
           <ListBox>
             {servicesForSelect.map(({ service, id, path }) => (
-              <ListBox.Item
-                key={id}
-                textValue={path ? `${path} - ${service}` : service}
-                id={id}
-              >
+              <ListBox.Item key={id} textValue={path ? `${path} - ${service}` : service} id={id}>
                 {path ? `${path} - ${service}` : service}
                 <ListBox.ItemIndicator />
               </ListBox.Item>
