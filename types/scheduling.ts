@@ -91,6 +91,7 @@ export interface Appointment {
   id: string
   userID: string
   clientID: string
+  services: Service[]
   date: Date
   isFixedTime: boolean
   startTime: Date

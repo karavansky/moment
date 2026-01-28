@@ -366,357 +366,7 @@ export const getAllSampleObjects = () => {
   const appointmentDate_19 = addDays(currentDate, 55) // через 55 дней
   const appointmentDate_20 = addDays(currentDate, 60) // через 2 месяца
 
-  // Appointments
-  const appointment_1: Appointment = {
-    id: generateId(),
-    userID: worker_1.id,
-    clientID: client_1.id,
-    client: client_1,
-    date: getOnlyDate(appointmentDate_1),
-    isFixedTime: false,
-    startTime: appointmentDate_1,
-    endTime: addHours(appointmentDate_1, 1),
-    duration: 90,
-    fahrzeit: 0,
-    workerId: worker_1.id,
-    worker: worker_1,
-    isOpen: false,
-  }
-
-  const appointment_2: Appointment = {
-    id: generateId(),
-    userID: worker_2.id,
-    clientID: client_1.id,
-    client: client_1,
-    date: getOnlyDate(appointmentDate_2),
-    isFixedTime: false,
-    startTime: appointmentDate_2,
-    endTime: addHours(appointmentDate_2, 1),
-    duration: 60,
-    fahrzeit: 0,
-    workerId: worker_2.id,
-    worker: worker_2,
-    isOpen: false,
-  }
-
-  const appointment_3: Appointment = {
-    id: generateId(),
-    userID: worker_3.id,
-    clientID: client_1.id,
-    client: client_1,
-    date: getOnlyDate(appointmentDate_3),
-    isFixedTime: false,
-    startTime: appointmentDate_3,
-    endTime: addHours(appointmentDate_3, 1),
-    duration: 30,
-    fahrzeit: 0,
-    workerId: worker_3.id,
-    worker: worker_3,
-    isOpen: false,
-  }
-
-  const appointment_4: Appointment = {
-    id: generateId(),
-    userID: worker_4.id,
-    clientID: client_1.id,
-    client: client_1,
-    date: getOnlyDate(appointmentDate_4),
-    isFixedTime: false,
-    startTime: appointmentDate_4,
-    endTime: addHours(appointmentDate_4, 1),
-    duration: 30,
-    fahrzeit: 0,
-    workerId: worker_4.id,
-    worker: worker_4,
-    isOpen: false,
-  }
-
-  const appointment_5: Appointment = {
-    id: generateId(),
-    userID: worker_5.id,
-    clientID: client_2.id,
-    client: client_2,
-    date: getOnlyDate(appointmentDate_5),
-    isFixedTime: false,
-    startTime: appointmentDate_5,
-    endTime: addHours(appointmentDate_5, 1),
-    duration: 60,
-    fahrzeit: 0,
-    workerId: worker_5.id,
-    worker: worker_5,
-    isOpen: false,
-  }
-
-  const appointment_6: Appointment = {
-    id: "001", //generateId(),
-    userID: worker_6.id,
-    clientID: client_2.id,
-    client: client_2,
-    date: getOnlyDate(appointmentDate_6),
-    isFixedTime: false,
-    startTime: appointmentDate_6,
-    endTime: addHours(appointmentDate_6, 1),
-    duration: 30,
-    fahrzeit: 0,
-    workerId: worker_6.id,
-    worker: worker_6,
-    isOpen: false,
-    latitude: 50.9346808,
-    longitude: 6.9977416,
-   // openedAt: addMinutes(appointmentDate_6, -3),
-  }
-
-  const appointment_7: Appointment = {
-    id: generateId(),
-    userID: worker_7.id,
-    clientID: client_2.id,
-    client: client_2,
-    date: getOnlyDate(appointmentDate_7),
-    isFixedTime: false,
-    startTime: appointmentDate_7,
-    endTime: addHours(appointmentDate_7, 1),
-    duration: 30,
-    fahrzeit: 0,
-    workerId: worker_7.id,
-    worker: worker_7,
-    isOpen: false,
-  }
-
-  const appointment_8: Appointment = {
-    id: generateId(),
-    userID: worker_8.id,
-    clientID: client_2.id,
-    client: client_2,
-    date: getOnlyDate(appointmentDate_8),
-    isFixedTime: false,
-    startTime: appointmentDate_8,
-    endTime: addHours(appointmentDate_8, 1),
-    duration: 30,
-    fahrzeit: 0,
-    workerId: worker_8.id,
-    worker: worker_8,
-    isOpen: false,
-  }
-
-  // Дополнительные appointments на следующие месяцы
-  const appointment_9: Appointment = {
-    id: generateId(),
-    userID: worker_11.id,
-    clientID: client_1.id,
-    client: client_1,
-    date: getOnlyDate(appointmentDate_9),
-    isFixedTime: false,
-    startTime: appointmentDate_9,
-    endTime: addHours(appointmentDate_9, 1),
-    duration: 60,
-    fahrzeit: 0,
-    workerId: worker_11.id,
-    worker: worker_11,
-    isOpen: false,
-  }
-
-  const appointment_10: Appointment = {
-    id: generateId(),
-    userID: worker_21.id,
-    clientID: client_2.id,
-    client: client_2,
-    date: getOnlyDate(appointmentDate_10),
-    isFixedTime: true,
-    startTime: appointmentDate_10,
-    endTime: addHours(appointmentDate_10, 1),
-    duration: 45,
-    fahrzeit: 0,
-    workerId: worker_21.id,
-    worker: worker_21,
-    isOpen: false,
-  }
-
-  const appointment_11: Appointment = {
-    id: generateId(),
-    userID: worker_31.id,
-    clientID: client_1.id,
-    client: client_1,
-    date: getOnlyDate(appointmentDate_11),
-    isFixedTime: false,
-    startTime: appointmentDate_11,
-    endTime: addHours(appointmentDate_11, 1),
-    duration: 30,
-    fahrzeit: 0,
-    workerId: worker_31.id,
-    worker: worker_31,
-    isOpen: false,
-  }
-
-  const appointment_12: Appointment = {
-    id: generateId(),
-    userID: worker_41.id,
-    clientID: client_2.id,
-    client: client_2,
-    date: getOnlyDate(appointmentDate_12),
-    isFixedTime: true,
-    startTime: appointmentDate_12,
-    endTime: addHours(appointmentDate_12, 1),
-    duration: 90,
-    fahrzeit: 0,
-    workerId: worker_41.id,
-    worker: worker_41,
-    isOpen: false,
-  }
-
-  const appointment_13: Appointment = {
-    id: generateId(),
-    userID: worker_51.id,
-    clientID: client_1.id,
-    client: client_1,
-    date: getOnlyDate(appointmentDate_13),
-    isFixedTime: false,
-    startTime: appointmentDate_13,
-    endTime: addHours(appointmentDate_13, 1),
-    duration: 60,
-    fahrzeit: 0,
-    workerId: worker_51.id,
-    worker: worker_51,
-    isOpen: false,
-  }
-
-  const appointment_14: Appointment = {
-    id: generateId(),
-    userID: worker_61.id,
-    clientID: client_2.id,
-    client: client_2,
-    date: getOnlyDate(appointmentDate_14),
-    isFixedTime: true,
-    startTime: appointmentDate_14,
-    endTime: addHours(appointmentDate_14, 1),
-    duration: 45,
-    fahrzeit: 0,
-    workerId: worker_61.id,
-    worker: worker_61,
-    isOpen: false,
-  }
-
-  const appointment_15: Appointment = {
-    id: generateId(),
-    userID: worker_71.id,
-    clientID: client_1.id,
-    client: client_1,
-    date: getOnlyDate(appointmentDate_15),
-    isFixedTime: false,
-    startTime: appointmentDate_15,
-    endTime: addHours(appointmentDate_15, 1),
-    duration: 30,
-    fahrzeit: 0,
-    workerId: worker_71.id,
-    worker: worker_71,
-    isOpen: false,
-  }
-
-  const appointment_16: Appointment = {
-    id: generateId(),
-    userID: worker_81.id,
-    clientID: client_2.id,
-    client: client_2,
-    date: getOnlyDate(appointmentDate_16),
-    isFixedTime: true,
-    startTime: appointmentDate_16,
-    endTime: addHours(appointmentDate_16, 1),
-    duration: 60,
-    fahrzeit: 0,
-    workerId: worker_81.id,
-    worker: worker_81,
-    isOpen: false,
-  }
-
-  const appointment_17: Appointment = {
-    id: generateId(),
-    userID: worker_1.id,
-    clientID: client_1.id,
-    client: client_1,
-    date: getOnlyDate(appointmentDate_17),
-    isFixedTime: false,
-    startTime: appointmentDate_17,
-    endTime: addHours(appointmentDate_17, 1),
-    duration: 90,
-    fahrzeit: 0,
-    workerId: worker_1.id,
-    worker: worker_1,
-    isOpen: false,
-  }
-
-  const appointment_18: Appointment = {
-    id: generateId(),
-    userID: worker_2.id,
-    clientID: client_2.id,
-    client: client_2,
-    date: getOnlyDate(appointmentDate_18),
-    isFixedTime: true,
-    startTime: appointmentDate_18,
-    endTime: addHours(appointmentDate_18, 1),
-    duration: 45,
-    fahrzeit: 0,
-    workerId: worker_2.id,
-    worker: worker_2,
-    isOpen: false,
-  }
-
-  const appointment_19: Appointment = {
-    id: generateId(),
-    userID: worker_3.id,
-    clientID: client_1.id,
-    client: client_1,
-    date: getOnlyDate(appointmentDate_19),
-    isFixedTime: false,
-    startTime: appointmentDate_19,
-    endTime: addHours(appointmentDate_19, 1),
-    duration: 60,
-    fahrzeit: 0,
-    workerId: worker_3.id,
-    worker: worker_3,
-    isOpen: false,
-  }
-
-  const appointment_20: Appointment = {
-    id: generateId(),
-    userID: worker_4.id,
-    clientID: client_2.id,
-    client: client_2,
-    date: getOnlyDate(appointmentDate_20),
-    isFixedTime: true,
-    startTime: appointmentDate_20,
-    endTime: addHours(appointmentDate_20, 1),
-    duration: 30,
-    fahrzeit: 0,
-    workerId: worker_4.id,
-    worker: worker_4,
-    isOpen: false,
-  }
-
-  // Reports
-  const report1: Report = {
-    id: generateId(),
-    firmaID: firmaID,
-    worker: worker_1,
-    photos: 'twinlake',
-    appointmentId: appointment_1.id,
-    appointment: appointment_1,
-    workerId: worker_1.id,
-  }
-
-  const report2: Report = {
-    id: generateId(),
-    firmaID: firmaID,
-    worker: worker_1,
-    photos: 'chilkoottrail',
-    appointmentId: appointment_1.id,
-    appointment: appointment_1,
-    workerId: worker_1.id,
-  }
-
-  // Добавляем reports к appointments
-  appointment_1.reports = [report1]
-  appointment_5.reports = [report2]
-
-  // Services (дерево услуг)
+    // Services (дерево услуг)
   const serviceGroup_1: ServiceGroup = {
     id: generateId(),
     firmaID,
@@ -765,6 +415,16 @@ export const getAllSampleObjects = () => {
     parentId: serviceGroup_1.id,
     isGroup: true,
     order: 2,
+  }
+
+  const serviceGroup_3_1: ServiceGroup = {
+    id: generateId(),
+    firmaID,
+    name: 'Bei Bedarf',
+    description: 'Verschiedene hauswirtschaftliche Tätigkeiten',
+    parentId: serviceGroup_3.id,
+    isGroup: true,
+    order: 1,
   }
 
   const service_1: Service = {
@@ -898,6 +558,389 @@ export const getAllSampleObjects = () => {
     isGroup: false,
     order: 3,
   }
+  const service_12: Service = {
+    id: generateId(),
+    firmaID,
+    name: '30 Minuten',
+    description: 'Hilfe',
+    duration: 30,
+    price: 18,
+    parentId: serviceGroup_3_1.id,
+    isGroup: false,
+    order: 1,
+  }
+  
+  // Appointments
+  const appointment_1: Appointment = {
+    id: generateId(),
+    userID: worker_1.id,
+    clientID: client_1.id,
+    client: client_1,
+    date: getOnlyDate(appointmentDate_1),
+    isFixedTime: false,
+    startTime: appointmentDate_1,
+    endTime: addHours(appointmentDate_1, 1),
+    duration: 90,
+    fahrzeit: 0,
+    workerId: worker_1.id,
+    worker: worker_1,
+    isOpen: false,
+    services: [],
+  }
+
+  const appointment_2: Appointment = {
+    id: generateId(),
+    userID: worker_2.id,
+    clientID: client_1.id,
+    client: client_1,
+    date: getOnlyDate(appointmentDate_2),
+    isFixedTime: false,
+    startTime: appointmentDate_2,
+    endTime: addHours(appointmentDate_2, 1),
+    duration: 60,
+    fahrzeit: 0,
+    workerId: worker_2.id,
+    worker: worker_2,
+    isOpen: false,
+    services: [],
+  }
+
+  const appointment_3: Appointment = {
+    id: generateId(),
+    userID: worker_3.id,
+    clientID: client_1.id,
+    client: client_1,
+    date: getOnlyDate(appointmentDate_3),
+    isFixedTime: false,
+    startTime: appointmentDate_3,
+    endTime: addHours(appointmentDate_3, 1),
+    duration: 30,
+    fahrzeit: 0,
+    workerId: worker_3.id,
+    worker: worker_3,
+    isOpen: false,
+    services: [],
+  }
+
+  const appointment_4: Appointment = {
+    id: generateId(),
+    userID: worker_4.id,
+    clientID: client_1.id,
+    client: client_1,
+    date: getOnlyDate(appointmentDate_4),
+    isFixedTime: false,
+    startTime: appointmentDate_4,
+    endTime: addHours(appointmentDate_4, 1),
+    duration: 30,
+    fahrzeit: 0,
+    workerId: worker_4.id,
+    worker: worker_4,
+    isOpen: false,
+    services: [],
+  }
+
+  const appointment_5: Appointment = {
+    id: generateId(),
+    userID: worker_5.id,
+    clientID: client_2.id,
+    client: client_2,
+    date: getOnlyDate(appointmentDate_5),
+    isFixedTime: false,
+    startTime: appointmentDate_5,
+    endTime: addHours(appointmentDate_5, 1),
+    duration: 60,
+    fahrzeit: 0,
+    workerId: worker_5.id,
+    worker: worker_5,
+    isOpen: false,
+    services: [],
+  }
+
+  const appointment_6: Appointment = {
+    id: "001", //generateId(),
+    userID: worker_6.id,
+    clientID: client_2.id,
+    client: client_2,
+    date: getOnlyDate(appointmentDate_6),
+    isFixedTime: false,
+    startTime: appointmentDate_6,
+    endTime: addHours(appointmentDate_6, 1),
+    duration: 30,
+    fahrzeit: 0,
+    workerId: worker_6.id,
+    worker: worker_6,
+    isOpen: false,
+    latitude: 50.9346808,
+    longitude: 6.9977416,
+    services: [service_12],
+   // openedAt: addMinutes(appointmentDate_6, -3),
+  }
+
+  const appointment_7: Appointment = {
+    id: generateId(),
+    userID: worker_7.id,
+    clientID: client_2.id,
+    client: client_2,
+    date: getOnlyDate(appointmentDate_7),
+    isFixedTime: false,
+    startTime: appointmentDate_7,
+    endTime: addHours(appointmentDate_7, 1),
+    duration: 30,
+    fahrzeit: 0,
+    workerId: worker_7.id,
+    worker: worker_7,
+    isOpen: false,
+    services: [],
+  }
+
+  const appointment_8: Appointment = {
+    id: generateId(),
+    userID: worker_8.id,
+    clientID: client_2.id,
+    client: client_2,
+    date: getOnlyDate(appointmentDate_8),
+    isFixedTime: false,
+    startTime: appointmentDate_8,
+    endTime: addHours(appointmentDate_8, 1),
+    duration: 30,
+    fahrzeit: 0,
+    workerId: worker_8.id,
+    worker: worker_8,
+    isOpen: false,
+    services: [],
+  }
+
+  // Дополнительные appointments на следующие месяцы
+  const appointment_9: Appointment = {
+    id: generateId(),
+    userID: worker_11.id,
+    clientID: client_1.id,
+    client: client_1,
+    date: getOnlyDate(appointmentDate_9),
+    isFixedTime: false,
+    startTime: appointmentDate_9,
+    endTime: addHours(appointmentDate_9, 1),
+    duration: 60,
+    fahrzeit: 0,
+    workerId: worker_11.id,
+    worker: worker_11,
+    isOpen: false,
+    services: [],
+  }
+
+  const appointment_10: Appointment = {
+    id: generateId(),
+    userID: worker_21.id,
+    clientID: client_2.id,
+    client: client_2,
+    date: getOnlyDate(appointmentDate_10),
+    isFixedTime: true,
+    startTime: appointmentDate_10,
+    endTime: addHours(appointmentDate_10, 1),
+    duration: 45,
+    fahrzeit: 0,
+    workerId: worker_21.id,
+    worker: worker_21,
+    isOpen: false,
+    services: [],
+  }
+
+  const appointment_11: Appointment = {
+    id: generateId(),
+    userID: worker_31.id,
+    clientID: client_1.id,
+    client: client_1,
+    date: getOnlyDate(appointmentDate_11),
+    isFixedTime: false,
+    startTime: appointmentDate_11,
+    endTime: addHours(appointmentDate_11, 1),
+    duration: 30,
+    fahrzeit: 0,
+    workerId: worker_31.id,
+    worker: worker_31,
+    isOpen: false,
+    services: [],
+  }
+
+  const appointment_12: Appointment = {
+    id: generateId(),
+    userID: worker_41.id,
+    clientID: client_2.id,
+    client: client_2,
+    date: getOnlyDate(appointmentDate_12),
+    isFixedTime: true,
+    startTime: appointmentDate_12,
+    endTime: addHours(appointmentDate_12, 1),
+    duration: 90,
+    fahrzeit: 0,
+    workerId: worker_41.id,
+    worker: worker_41,
+    isOpen: false,
+    services: [],
+  }
+
+  const appointment_13: Appointment = {
+    id: generateId(),
+    userID: worker_51.id,
+    clientID: client_1.id,
+    client: client_1,
+    date: getOnlyDate(appointmentDate_13),
+    isFixedTime: false,
+    startTime: appointmentDate_13,
+    endTime: addHours(appointmentDate_13, 1),
+    duration: 60,
+    fahrzeit: 0,
+    workerId: worker_51.id,
+    worker: worker_51,
+    isOpen: false,
+    services: [],
+  }
+
+  const appointment_14: Appointment = {
+    id: generateId(),
+    userID: worker_61.id,
+    clientID: client_2.id,
+    client: client_2,
+    date: getOnlyDate(appointmentDate_14),
+    isFixedTime: true,
+    startTime: appointmentDate_14,
+    endTime: addHours(appointmentDate_14, 1),
+    duration: 45,
+    fahrzeit: 0,
+    workerId: worker_61.id,
+    worker: worker_61,
+    isOpen: false,
+    services: [],
+  }
+
+  const appointment_15: Appointment = {
+    id: generateId(),
+    userID: worker_71.id,
+    clientID: client_1.id,
+    client: client_1,
+    date: getOnlyDate(appointmentDate_15),
+    isFixedTime: false,
+    startTime: appointmentDate_15,
+    endTime: addHours(appointmentDate_15, 1),
+    duration: 30,
+    fahrzeit: 0,
+    workerId: worker_71.id,
+    worker: worker_71,
+    isOpen: false,
+    services: [],
+  }
+
+  const appointment_16: Appointment = {
+    id: generateId(),
+    userID: worker_81.id,
+    clientID: client_2.id,
+    client: client_2,
+    date: getOnlyDate(appointmentDate_16),
+    isFixedTime: true,
+    startTime: appointmentDate_16,
+    endTime: addHours(appointmentDate_16, 1),
+    duration: 60,
+    fahrzeit: 0,
+    workerId: worker_81.id,
+    worker: worker_81,
+    isOpen: false,
+    services: [],
+  }
+
+  const appointment_17: Appointment = {
+    id: generateId(),
+    userID: worker_1.id,
+    clientID: client_1.id,
+    client: client_1,
+    date: getOnlyDate(appointmentDate_17),
+    isFixedTime: false,
+    startTime: appointmentDate_17,
+    endTime: addHours(appointmentDate_17, 1),
+    duration: 90,
+    fahrzeit: 0,
+    workerId: worker_1.id,
+    worker: worker_1,
+    isOpen: false,
+    services: [],
+  }
+
+  const appointment_18: Appointment = {
+    id: generateId(),
+    userID: worker_2.id,
+    clientID: client_2.id,
+    client: client_2,
+    date: getOnlyDate(appointmentDate_18),
+    isFixedTime: true,
+    startTime: appointmentDate_18,
+    endTime: addHours(appointmentDate_18, 1),
+    duration: 45,
+    fahrzeit: 0,
+    workerId: worker_2.id,
+    worker: worker_2,
+    isOpen: false,
+    services: [],
+  }
+
+  const appointment_19: Appointment = {
+    id: generateId(),
+    userID: worker_3.id,
+    clientID: client_1.id,
+    client: client_1,
+    date: getOnlyDate(appointmentDate_19),
+    isFixedTime: false,
+    startTime: appointmentDate_19,
+    endTime: addHours(appointmentDate_19, 1),
+    duration: 60,
+    fahrzeit: 0,
+    workerId: worker_3.id,
+    worker: worker_3,
+    isOpen: false,
+    services: [],
+  }
+
+  const appointment_20: Appointment = {
+    id: generateId(),
+    userID: worker_4.id,
+    clientID: client_2.id,
+    client: client_2,
+    date: getOnlyDate(appointmentDate_20),
+    isFixedTime: true,
+    startTime: appointmentDate_20,
+    endTime: addHours(appointmentDate_20, 1),
+    duration: 30,
+    fahrzeit: 0,
+    workerId: worker_4.id,
+    worker: worker_4,
+    isOpen: false,
+    services: [],
+  }
+
+  // Reports
+  const report1: Report = {
+    id: generateId(),
+    firmaID: firmaID,
+    worker: worker_1,
+    photos: 'twinlake',
+    appointmentId: appointment_1.id,
+    appointment: appointment_1,
+    workerId: worker_1.id,
+  }
+
+  const report2: Report = {
+    id: generateId(),
+    firmaID: firmaID,
+    worker: worker_1,
+    photos: 'chilkoottrail',
+    appointmentId: appointment_1.id,
+    appointment: appointment_1,
+    workerId: worker_1.id,
+  }
+
+  // Добавляем reports к appointments
+  appointment_1.reports = [report1]
+  appointment_5.reports = [report2]
+
+
 
   const services: ServiceTreeItem[] = [
     serviceGroup_1,
@@ -905,6 +948,7 @@ export const getAllSampleObjects = () => {
     serviceGroup_3,
     serviceGroup_1_1,
     serviceGroup_1_2,
+    serviceGroup_3_1,
     service_1,
     service_2,
     service_3,
@@ -916,6 +960,7 @@ export const getAllSampleObjects = () => {
     service_9,
     service_10,
     service_11,
+    service_12,
   ]
 
   return {

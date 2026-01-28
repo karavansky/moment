@@ -136,12 +136,12 @@ export default function ServicesTree() {
         </div>
         <div className="flex gap-1">
           <SimpleTooltip content="Alle aufklappen">
-            <Button size="sm" onPress={handleExpandAll}>
+            <Button size="sm" variant='tertiary' onPress={handleExpandAll}>
               <Expand className="w-5 h-5" />
             </Button>
           </SimpleTooltip>
           <SimpleTooltip content="Alle zuklappen">
-            <Button size="sm" onPress={handleCollapseAll}>
+            <Button size="sm" variant='tertiary' onPress={handleCollapseAll}>
               <ListCollapse className="w-5 h-5" />
             </Button>
           </SimpleTooltip>
