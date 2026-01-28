@@ -77,7 +77,6 @@ function ServiceSelect({
             autoComplete="off"
             list="service-options"
             inputMode="none"
-            className="text-lg font-normal md:text-base w-full cursor-pointer"
             required
             placeholder="Select service..."
           />
