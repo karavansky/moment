@@ -70,7 +70,7 @@ function ServiceSelect({
             onChange={handleMobileChange}
             autoComplete="off"
             list="service-options"
-            className="text-lg font-normal md:text-base w-full pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0"
+            className="text-lg font-normal md:text-base w-full pr-10 "
             required
             placeholder='Select service...'
           />
