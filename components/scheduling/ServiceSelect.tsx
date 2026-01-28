@@ -60,9 +60,11 @@ function ServiceSelect({
     console.log('Selected services:', selectedServices)
   }
   // (isReady && isMobile)
+   //   <TextField className="w-full min-w-0" isRequired name="service" type="text">
+
   if (true) {
     return (
-      <TextField className="w-full min-w-0" isRequired name="service" type="text">
+      <div className="w-full min-w-0" >
         <Label className="text-base font-normal">Dienstleistungen</Label>
         <div className="flex items-center justify-between relative w-full">
           <Input
@@ -93,7 +95,7 @@ function ServiceSelect({
             <Plus size={16} />
           </Button>
         </div>
-      </TextField>
+      </div>
     )
   }
   //          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-default-500">
