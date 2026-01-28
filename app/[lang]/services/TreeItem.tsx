@@ -115,13 +115,17 @@ const TreeItem = ({
           whileTap={{ scale: 0.98 }}
         >
           {item.isGroup ? (
-            <button onClick={handleToggleClick} className="p-1 hover:bg-default-200 rounded">
+            <Button 
+            isIconOnly
+            size="sm" 
+            variant="tertiary"
+            onClick={handleToggleClick} className="p-1 hover:bg-default-200 ">
               {isExpanded ? (
                 <ChevronDown className="w-4 h-4 text-default-500" />
               ) : (
                 <ChevronRight className="w-4 h-4 text-default-500" />
               )}
-            </button>
+            </Button>
           ) : (
             <div className="w-6" />
           )}
