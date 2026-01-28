@@ -127,7 +127,7 @@ export default function ServicesTree() {
   }
 
   return (
-    <div className="flex flex-col h-full p-4 gap-4">
+    <div className="flex flex-col h-full p-2 gap-4">
       <div className="flex items-center justify-between">
         <div className="flex items-start gap-2"> 
         <HandHeart className="w-8 h-8" />
