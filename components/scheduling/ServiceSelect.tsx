@@ -69,12 +69,23 @@ function ServiceSelect({
         <Label className="text-base font-normal">Dienstleistungen</Label>
         <div className="flex items-center gap-2 w-full">
           <div className="relative flex-1">
+            <style>{`
+              #service-input-id::-webkit-calendar-picker-indicator {
+                opacity: 1 !important;
+                display: block !important;
+                visibility: visible !important;
+                color: black !important;
+                background-color: transparent !important;
+                cursor: pointer !important;
+              }
+            `}</style>
             <input
+              id="service-input-id"
               value={test}
               onChange={handleMobileChange}
               autoComplete="off"
               list="service-options"
-              className="text-lg font-normal md:text-base w-full border border-divider rounded-lg px-3 py-2 bg-default-50 [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:block"
+              className="text-lg font-normal md:text-base w-full border border-divider rounded-lg px-3 py-2 bg-default-50"
               required
               placeholder="Select service..."
             />
