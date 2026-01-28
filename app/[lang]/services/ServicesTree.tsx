@@ -16,6 +16,7 @@ export default function ServicesTree() {
   const [editItem, setEditItem] = useState<ServiceTreeItem | null>(null)
   const [parentIdForNew, setParentIdForNew] = useState<string | null>(null)
   const [deleteConfirmItem, setDeleteConfirmItem] = useState<ServiceTreeItem | null>(null)
+  const [openSwipeId, setOpenSwipeId] = useState<string | null>(null)
 
   // Root items (parentId === null)
   const rootItems = useMemo(
@@ -151,7 +152,7 @@ export default function ServicesTree() {
         </div>
       </div>
 
-      <Card className="flex-1 overflow-auto p-2">
+      <Card className="flex-1 surface overflow-auto p-2">
         {rootItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-default-400 py-12">
             <Folder className="w-12 h-12 mb-4" />
@@ -171,6 +172,8 @@ export default function ServicesTree() {
               onEdit={handleEdit}
               onDelete={handleDelete}
               onAddChild={handleAddChild}
+              openSwipeId={openSwipeId}
+              setOpenSwipeId={setOpenSwipeId}
             />
           ))
         )}

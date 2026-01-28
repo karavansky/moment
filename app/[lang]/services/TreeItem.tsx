@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Button } from '@heroui/react'
 import { ChevronDown, ChevronRight, Folder, FileText, Plus, Trash2 } from 'lucide-react'
 import { useScheduling } from '@/contexts/SchedulingContext'
@@ -17,6 +17,8 @@ const TreeItem = ({
   onEdit,
   onDelete,
   onAddChild,
+  openSwipeId,
+  setOpenSwipeId,
 }: {
   item: ServiceTreeItem
   level: number
@@ -26,15 +28,26 @@ const TreeItem = ({
   onEdit: (item: ServiceTreeItem) => void
   onDelete: (id: string) => void
   onAddChild: (parentId: string) => void
+  openSwipeId: string | null
+  setOpenSwipeId: (id: string | null) => void
 }) => {
   const isExpanded = expandedIds.has(item.id)
   const hasChildren = children.length > 0
+  const isOpen = openSwipeId === item.id
 
   // Animation controls
   const controls = useAnimation()
-  const [isOpen, setIsOpen] = useState(false)
   const DELETE_BUTTON_WIDTH = 80
   const SWIPE_THRESHOLD = 30
+
+  // Sync animation with isOpen state
+  useEffect(() => {
+    if (isOpen) {
+      controls.start({ x: -DELETE_BUTTON_WIDTH, transition: { type: "spring", stiffness: 400, damping: 40 } })
+    } else {
+      controls.start({ x: 0, transition: { type: "spring", stiffness: 400, damping: 40 } })
+    }
+  }, [isOpen, controls, DELETE_BUTTON_WIDTH])
 
   const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const offset = info.offset.x
@@ -42,19 +55,34 @@ const TreeItem = ({
 
     // Open if dragged far enough left or flicked left
     if (offset < -SWIPE_THRESHOLD || velocity < -300) {
-      setIsOpen(true)
-      controls.start({ x: -DELETE_BUTTON_WIDTH, transition: { type: "spring", stiffness: 400, damping: 40 } })
+      setOpenSwipeId(item.id)
     } else {
-      // Close
-      setIsOpen(false)
-      controls.start({ x: 0, transition: { type: "spring", stiffness: 400, damping: 40 } })
+      setOpenSwipeId(null)
+    }
+  }
+
+  const handleWheel = (e: React.WheelEvent) => {
+    // Only handle if horizontal scroll is dominant
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      const isScrollingRight = e.deltaX > 0
+      
+      // If scrolling right (positive deltaX), we want to move content left to reveal the button on the right
+      if (isScrollingRight) {
+        if (!isOpen && e.deltaX > 10) {
+           setOpenSwipeId(item.id)
+        }
+      } else {
+        // Scrolling left (negative deltaX), we want to close
+        if (isOpen && e.deltaX < -10) {
+           setOpenSwipeId(null)
+        }
+      }
     }
   }
 
   const handleContentClick = () => {
     if (isOpen) {
-      setIsOpen(false)
-      controls.start({ x: 0, transition: { type: "spring", stiffness: 400, damping: 40 } })
+      setOpenSwipeId(null)
     } else {
       onEdit(item)
     }
@@ -62,12 +90,7 @@ const TreeItem = ({
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    // We assume onDelete might handle its own confirmation or state update.
-    // If it deletes immediately, this component unmounts.
-    // If it shows a dialog, we might want to close the swipe or keep it open.
-    // Let's close it for safety/cleanliness.
-    setIsOpen(false)
-    controls.start({ x: 0 })
+    setOpenSwipeId(null)
     onDelete(item.id)
   }
 
@@ -81,9 +104,15 @@ const TreeItem = ({
     onAddChild(item.id)
   }
 
+  const handlePointerDown = () => {
+    if (openSwipeId && openSwipeId !== item.id) {
+        setOpenSwipeId(null)
+    }
+  }
+
   return (
     <div>
-      <div className="relative overflow-hidden  bg-zinc-100 dark:bg-zinc-900">
+      <div className="relative overflow-hidden ">
         {/* Delete button behind */}
         <div
           className="absolute right-2 top-2 bottom-2 flex items-center justify-center rounded-full bg-danger text-white  h-30px "
@@ -110,6 +139,8 @@ const TreeItem = ({
           dragConstraints={{ left: -DELETE_BUTTON_WIDTH, right: 0 }}
           dragElastic={{ right: 0.05, left: 0.1 }}
           onDragEnd={handleDragEnd}
+          onWheel={handleWheel}
+          onPointerDown={handlePointerDown}
           animate={controls}
           onClick={handleContentClick}
           whileTap={{ scale: 0.98 }}
@@ -176,6 +207,8 @@ const TreeItem = ({
               onEdit={onEdit}
               onDelete={onDelete}
               onAddChild={onAddChild}
+              openSwipeId={openSwipeId}
+              setOpenSwipeId={setOpenSwipeId}
             />
           ))}
         </div>
@@ -193,6 +226,8 @@ const TreeItemContainer = ({
   onEdit,
   onDelete,
   onAddChild,
+  openSwipeId,
+  setOpenSwipeId,
 }: {
   item: ServiceTreeItem
   level: number
@@ -201,6 +236,8 @@ const TreeItemContainer = ({
   onEdit: (item: ServiceTreeItem) => void
   onDelete: (id: string) => void
   onAddChild: (parentId: string) => void
+  openSwipeId: string | null
+  setOpenSwipeId: (id: string | null) => void
 }) => {
   const { services } = useScheduling()
   const children = useMemo(
@@ -218,6 +255,8 @@ const TreeItemContainer = ({
       onEdit={onEdit}
       onDelete={onDelete}
       onAddChild={onAddChild}
+      openSwipeId={openSwipeId}
+      setOpenSwipeId={setOpenSwipeId}
     />
   )
 }
