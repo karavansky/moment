@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useRef, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { Button } from '@heroui/react'
 import { ChevronDown, ChevronRight, Folder, FileText, Plus, Trash2 } from 'lucide-react'
-import type { TouchEvent } from 'react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { ServiceTreeItem, Service } from '@/types/scheduling'
+import { motion, useAnimation, PanInfo } from 'framer-motion'
 
 // Swipeable Tree Item
 const TreeItem = ({
@@ -30,64 +30,44 @@ const TreeItem = ({
   const isExpanded = expandedIds.has(item.id)
   const hasChildren = children.length > 0
 
-  // Swipe state
-  const [swipeOffset, setSwipeOffset] = useState(0)
-  const [isSwiping, setIsSwiping] = useState(false)
-  const touchStartX = useRef(0)
-  const touchStartY = useRef(0)
-  const isHorizontalSwipe = useRef(false)
-
-  const SWIPE_THRESHOLD = 80 // px to reveal delete button
+  // Animation controls
+  const controls = useAnimation()
+  const [isOpen, setIsOpen] = useState(false)
   const DELETE_BUTTON_WIDTH = 80
+  const SWIPE_THRESHOLD = 30
 
-  const handleTouchStart = (e: TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX
-    touchStartY.current = e.touches[0].clientY
-    isHorizontalSwipe.current = false
-    setIsSwiping(true)
-  }
+  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const offset = info.offset.x
+    const velocity = info.velocity.x
 
-  const handleTouchMove = (e: TouchEvent) => {
-    if (!isSwiping) return
-
-    const deltaX = touchStartX.current - e.touches[0].clientX
-    const deltaY = Math.abs(touchStartY.current - e.touches[0].clientY)
-
-    // Determine if this is a horizontal swipe
-    if (!isHorizontalSwipe.current && Math.abs(deltaX) > 10) {
-      isHorizontalSwipe.current = deltaY < Math.abs(deltaX)
-    }
-
-    if (!isHorizontalSwipe.current) return
-
-    // Only allow swipe left (positive deltaX)
-    const newOffset = Math.max(0, Math.min(DELETE_BUTTON_WIDTH, deltaX))
-    setSwipeOffset(newOffset)
-  }
-
-  const handleTouchEnd = () => {
-    setIsSwiping(false)
-    // Snap to either open or closed
-    if (swipeOffset > SWIPE_THRESHOLD / 2) {
-      setSwipeOffset(DELETE_BUTTON_WIDTH)
+    // Open if dragged far enough left or flicked left
+    if (offset < -SWIPE_THRESHOLD || velocity < -300) {
+      setIsOpen(true)
+      controls.start({ x: -DELETE_BUTTON_WIDTH, transition: { type: "spring", stiffness: 400, damping: 40 } })
     } else {
-      setSwipeOffset(0)
+      // Close
+      setIsOpen(false)
+      controls.start({ x: 0, transition: { type: "spring", stiffness: 400, damping: 40 } })
     }
   }
 
-  const handleClick = () => {
-    // Only trigger edit if not swiped
-    if (swipeOffset === 0) {
+  const handleContentClick = () => {
+    if (isOpen) {
+      setIsOpen(false)
+      controls.start({ x: 0, transition: { type: "spring", stiffness: 400, damping: 40 } })
+    } else {
       onEdit(item)
-    } else {
-      // Reset swipe
-      setSwipeOffset(0)
     }
   }
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    setSwipeOffset(0)
+    // We assume onDelete might handle its own confirmation or state update.
+    // If it deletes immediately, this component unmounts.
+    // If it shows a dialog, we might want to close the swipe or keep it open.
+    // Let's close it for safety/cleanliness.
+    setIsOpen(false)
+    controls.start({ x: 0 })
     onDelete(item.id)
   }
 
@@ -118,19 +98,19 @@ const TreeItem = ({
         </div>
 
         {/* Main content */}
-        <div
-          className="flex items-center gap-2 py-3 px-2 rounded-3xl cursor-pointer bg-zinc-100 dark:bg-zinc-900 hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700"
+        <motion.div
+          className="flex items-center gap-2 py-3 px-2 rounded-3xl cursor-pointer bg-zinc-100 dark:bg-zinc-900 hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700 relative z-10"
           style={{
             paddingLeft: `${level * 10 + 8}px`,
-            transform: `translateX(-${swipeOffset}px)`,
-            transition: isSwiping
-              ? 'none'
-              : 'transform 0.2s ease-out, background-color 0.2s, color 0.2s',
+            touchAction: 'pan-y'
           }}
-          onClick={handleClick}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
+          drag="x"
+          dragConstraints={{ left: -DELETE_BUTTON_WIDTH, right: 0 }}
+          dragElastic={{ right: 0.05, left: 0.1 }}
+          onDragEnd={handleDragEnd}
+          animate={controls}
+          onClick={handleContentClick}
+          whileTap={{ scale: 0.98 }}
         >
           {item.isGroup ? (
             <button onClick={handleToggleClick} className="p-1 hover:bg-default-200 rounded">
@@ -175,7 +155,7 @@ const TreeItem = ({
               <Plus className="w-4 h-4 text-default-500" />
             </Button>
           )}
-        </div>
+        </motion.div>
       </div>
 
       {item.isGroup && isExpanded && hasChildren && (
