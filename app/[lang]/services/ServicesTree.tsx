@@ -115,7 +115,7 @@ export default function ServicesTree() {
       <div className="flex items-center justify-between">
         <HandHeart className="w-6 h-6" />
         <h1 className="text-2xl font-semibold">Dienstleistungen</h1>
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           <Button  size="sm" onPress={handleExpandAll}>
             <Tooltip >
               <Expand className="w-5 h-5 " />
