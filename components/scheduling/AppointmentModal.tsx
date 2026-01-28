@@ -314,7 +314,7 @@ export default function AppointmentModal({
               {/* Services Selection */}
               <ServiceSelect
                 servicesForSelect={servicesForSelect}
-                selectedServices={""} 
+                selectedServices={"Ganzkörperwäsche"} 
                 onSelectionChange={serviceId => {
                   console.log('Selected service ID:', serviceId)
                 //  setFormData(prev => ({ ...prev, services: serviceId }))

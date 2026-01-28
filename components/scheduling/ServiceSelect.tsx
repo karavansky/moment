@@ -78,7 +78,7 @@ function ServiceSelect({
           </div>
           <datalist id="service-options">
             {servicesForSelect.map(({ service, id, path }) => (
-              <option key={id} value={service} label={path || undefined} />
+              <option key={id} value={service} label={path || 'empty'} />
             ))}
           </datalist>
         </div>
