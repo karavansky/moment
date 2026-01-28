@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button, Modal, Label, TextField, Input, AlertDialog } from '@heroui/react'
 import type { ChangeEvent } from 'react'
 import { Folder, FileText, Trash2, AlertTriangle } from 'lucide-react'
@@ -38,6 +38,23 @@ const ServiceModal = ({
       : ''
   )
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsGroup(editItem?.isGroup ?? false)
+      setName(editItem?.name ?? '')
+      setDescription(editItem?.description ?? '')
+      setDuration(
+        editItem && !editItem.isGroup ? (editItem as Service).duration.toString() : '30'
+      )
+      setPrice(
+        editItem && !editItem.isGroup && (editItem as Service).price
+          ? (editItem as Service).price!.toString()
+          : ''
+      )
+      setShowDeleteConfirm(false)
+    }
+  }, [isOpen, editItem])
 
   const handleSave = () => {
     const baseItem = {

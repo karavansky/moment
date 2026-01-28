@@ -119,11 +119,13 @@ const TreeItem = ({
 
         {/* Main content */}
         <div
-          className="flex items-center gap-2 py-3 px-2 bg-zinc-100 dark:bg-zinc-900 hover:bg-default-200 rounded-lg cursor-pointer transition-transform"
+          className="flex items-center gap-2 py-3 px-2 rounded-3xl cursor-pointer bg-zinc-100 dark:bg-zinc-900 hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700"
           style={{
-            paddingLeft: `${level * 20 + 8}px`,
+            paddingLeft: `${level * 10 + 8}px`,
             transform: `translateX(-${swipeOffset}px)`,
-            transition: isSwiping ? 'none' : 'transform 0.2s ease-out',
+            transition: isSwiping
+              ? 'none'
+              : 'transform 0.2s ease-out, background-color 0.2s, color 0.2s',
           }}
           onClick={handleClick}
           onTouchStart={handleTouchStart}
