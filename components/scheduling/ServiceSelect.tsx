@@ -2,7 +2,7 @@
 
 import React, { useCallback, memo } from 'react'
 import { Button, ButtonRoot, ComboBox, Input, Label, ListBox, TextField } from '@heroui/react'
-import { ChevronDown, Plus, Trash, User } from 'lucide-react'
+import { Plus, Trash, User } from 'lucide-react'
 import { usePlatformContext } from '@/contexts/PlatformContext'
 
 interface ServicesForSelect {
@@ -72,24 +72,12 @@ function ServiceSelect({
             <input
               value={test}
               onChange={handleMobileChange}
-              onKeyDown={e => {
-                // Блокируем ввод с клавиатуры, разрешаем только Tab и выбор из списка
-                if (e.key !== 'Tab' && e.key !== 'Enter' && e.key !== 'Escape') {
-                  e.preventDefault()
-                }
-              }}
               autoComplete="off"
               list="service-options"
-              inputMode="none"
-              className="text-lg select-none font-normal md:text-base w-full pr-8 border border-divider rounded-lg px-3 py-2 bg-default-50"
+              className="text-lg font-normal md:text-base w-full border border-divider rounded-lg px-3 py-2 bg-default-50 [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:block"
               required
               placeholder="Select service..."
             />
-            <div
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-default-500 pointer-events-none"
-            >
-              <ChevronDown size={18} />
-            </div>
             <datalist id="service-options">
               {servicesForSelect.map(({ service, id, path }) => (
                 <option key={id} value={service} label={path || 'empty'} />
