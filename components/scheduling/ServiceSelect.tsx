@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, memo } from 'react'
+import React, { useCallback, memo, useRef } from 'react'
 import { Button, ButtonRoot, ComboBox, Input, Label, ListBox, TextField } from '@heroui/react'
 import { ChevronDown, Plus, Trash, User } from 'lucide-react'
 import { usePlatformContext } from '@/contexts/PlatformContext'
@@ -28,6 +28,7 @@ function ServiceSelect({
 }: ServiceSelectProps) {
   const { isMobile, isReady } = usePlatformContext()
   const [test, setTest] = React.useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
   // Мемоизация обработчиков
   const handleMobileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,28 +67,38 @@ function ServiceSelect({
     return (
       <div className="w-full min-w-0" >
         <Label className="text-base font-normal">Dienstleistungen</Label>
-        <div className="flex items-center justify-between relative w-full">
-          <input
-            value={test}
-            onChange={handleMobileChange}
-            onKeyDown={e => {
-              // Блокируем ввод с клавиатуры, разрешаем только Tab и выбор из списка
-              if (e.key !== 'Tab' && e.key !== 'Enter' && e.key !== 'Escape') {
-                e.preventDefault()
-              }
-            }}
-            autoComplete="off"
-            list="service-options"
-            inputMode="none"
-            className="text-lg font-normal md:text-base w-full "
-            required
-            placeholder="Select service..."
-          />
-          <datalist id="service-options">
-            {servicesForSelect.map(({ service, id, path }) => (
-              <option key={id} value={service} label={path || 'empty'} />
-            ))}
-          </datalist>
+        <div className="flex items-center gap-2 w-full">
+          <div className="relative flex-1">
+            <input
+              ref={inputRef}
+              value={test}
+              onChange={handleMobileChange}
+              onKeyDown={e => {
+                // Блокируем ввод с клавиатуры, разрешаем только Tab и выбор из списка
+                if (e.key !== 'Tab' && e.key !== 'Enter' && e.key !== 'Escape') {
+                  e.preventDefault()
+                }
+              }}
+              autoComplete="off"
+              list="service-options"
+              inputMode="none"
+              className="text-lg font-normal md:text-base w-full pr-8 border border-divider rounded-lg px-3 py-2 bg-default-50"
+              required
+              placeholder="Select service..."
+            />
+            <button
+              type="button"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-default-500 hover:text-default-700"
+              onClick={() => inputRef.current?.focus()}
+            >
+              <ChevronDown size={18} />
+            </button>
+            <datalist id="service-options">
+              {servicesForSelect.map(({ service, id, path }) => (
+                <option key={id} value={service} label={path || 'empty'} />
+              ))}
+            </datalist>
+          </div>
           <Button isIconOnly size="sm" variant="tertiary" onPress={() => setTest('')}>
             <Trash size={16} />
           </Button>
