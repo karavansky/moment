@@ -24,6 +24,12 @@ interface TeamsWithWorkers {
   workers: Worker[];
 }
 
+interface ServicesForSelect {
+  service: string;
+  id: string;
+  path: string;
+}
+
 // Тип для состояния планирования
 interface SchedulingState {
   user: User | null;
@@ -52,6 +58,7 @@ interface SchedulingDerived {
   groupedClients: GroupedClients[];
   teamsWithWorkers: TeamsWithWorkers[];
   todayAppointments: AppointmentWithClient[];
+  servicesForSelect: ServicesForSelect[];
 }
 
 // Тип для действий (actions)
@@ -344,6 +351,41 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   }), []); // Без зависимостей, так как все функции используют setState с функциональным обновлением
 
+  // Конвертация дерева услуг в формат для select
+  // Конвертация дерева услуг в плоский массив для datalist
+  const servicesForSelect = useMemo<ServicesForSelect[]>(() => {
+    // Вспомогательная функция: найти элемент по id
+    const findById = (id: string): ServiceTreeItem | undefined =>
+      state.services.find(s => s.id === id);
+
+    // Вспомогательная функция: построить полный path от корня до parentId
+    const buildFullPath = (parentId: string | null): string => {
+      const pathParts: string[] = [];
+      let currentId = parentId;
+
+      while (currentId) {
+        const item = findById(currentId);
+        if (item && item.isGroup) {
+          pathParts.unshift(item.name);
+          currentId = item.parentId;
+        } else {
+          break;
+        }
+      }
+
+      return pathParts.join(' - ');
+    };
+
+    // Берём только листья (Service, isGroup = false)
+    return state.services
+      .filter(s => !s.isGroup)
+      .map(service => ({
+        service: service.name,
+        id: service.id,
+        path: buildFullPath(service.parentId),
+      }));
+  }, [state.services]);
+
   // Группировка клиентов по группам - вычисляется при изменении clients или groups
   const groupedClients = useMemo<GroupedClients[]>(() => {
     return state.groups
@@ -405,7 +447,8 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     groupedClients,
     teamsWithWorkers,
     todayAppointments,
-  }), [state, actions, groupedClients, teamsWithWorkers, todayAppointments]);
+    servicesForSelect,
+  }), [state, actions, groupedClients, teamsWithWorkers, todayAppointments, servicesForSelect]);
 
   return (
     <SchedulingContext.Provider value={contextValue}>

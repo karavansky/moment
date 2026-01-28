@@ -11,6 +11,7 @@ import DatePicker from '@/components/ui/DatePicker'
 import StaffSelect from './StaffSelect'
 import ClientSelect from './ClientSelect'
 import { usePlatformContext } from '@/contexts/PlatformContext'
+import ServiceSelect from './ServiceSelect'
 
 interface AppointmentModalProps {
   isOpen: boolean
@@ -40,6 +41,7 @@ export default function AppointmentModal({
     deleteAppointment,
     groupedClients,
     teamsWithWorkers,
+    servicesForSelect,
   } = useScheduling()
 
   const isEditMode = !!appointment
@@ -267,7 +269,7 @@ export default function AppointmentModal({
   }
   if (!isReady) return null
 
-  //console.log('Rendering AppointmentModal with formData:', formData, 'and errors:', errors)
+  console.log('Rendering AppointmentModal with servicesForSelect:', servicesForSelect)
   return (
     <Modal>
       <Modal.Backdrop
@@ -309,7 +311,19 @@ export default function AppointmentModal({
               />
 
               <Separator />
+              {/* Services Selection */}
+              <ServiceSelect
+                servicesForSelect={servicesForSelect}
+                selectedServices={""} 
+                onSelectionChange={serviceId => {
+                  console.log('Selected service ID:', serviceId)
+                //  setFormData(prev => ({ ...prev, services: serviceId }))
+                  setErrors(prev => ({ ...prev, services: '' }))
+                }}
+                error={errors.services}
+              />
 
+              <Separator />
               {/* Worker Selection */}
               <StaffSelect
                 teamsWithWorkers={teamsWithWorkers}
