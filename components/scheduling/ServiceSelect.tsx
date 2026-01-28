@@ -65,7 +65,7 @@ function ServiceSelect({
       <TextField className="w-full min-w-0" isRequired name="service" type="text">
         <Label className="text-base font-normal">Dienstleistungen</Label>
         <div className="flex items-center justify-between relative w-full">
-          <Input
+          <input
             value={test}
             onChange={handleMobileChange}
             onKeyDown={e => {
