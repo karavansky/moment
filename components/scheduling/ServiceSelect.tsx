@@ -74,9 +74,6 @@ function ServiceSelect({
             required
             placeholder='Select service...'
           />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-default-500">
-            <ChevronDown size={16} />
-          </div>
           <datalist id="service-options">
             {servicesForSelect.map(({ service, id, path }) => (
               <option key={id} value={service} label={path || 'empty'} />
@@ -86,6 +83,9 @@ function ServiceSelect({
       </TextField>
     )
   }
+//          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-default-500">
+//            <ChevronDown size={16} />
+//          </div>
 
   // --- RENDER FOR DESKTOP ---
   return (
