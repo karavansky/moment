@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from 'react'
 import { Button, Card, Spinner, AlertDialog, Tooltip } from '@heroui/react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { ServiceTreeItem } from '@/types/scheduling'
-import { Folder, AlertTriangle, Plus, Expand, ListCollapse } from 'lucide-react'
+import { Folder, AlertTriangle, Plus, Expand, ListCollapse, HandHeart } from 'lucide-react'
 import TreeItemContainer from './TreeItem'
 import ServiceModal from './ServiceModal'
 
@@ -113,6 +113,7 @@ export default function ServicesTree() {
   return (
     <div className="flex flex-col h-full p-4 gap-4">
       <div className="flex items-center justify-between">
+        <HandHeart className="w-6 h-6" />
         <h1 className="text-2xl font-semibold">Dienstleistungen</h1>
         <div className="flex gap-2">
           <Button  size="sm" onPress={handleExpandAll}>
