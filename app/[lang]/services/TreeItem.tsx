@@ -169,7 +169,7 @@ const TreeItem = ({
               isIconOnly
               size="sm"
               variant="tertiary"
-              onPress={handleAddClick as any}
+              onClick={handleAddClick}
               aria-label="Kind hinzufügen"
             >
               <Plus className="w-4 h-4 text-default-500" />
