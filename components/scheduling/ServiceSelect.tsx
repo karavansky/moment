@@ -27,7 +27,7 @@ function ServiceSelect({
   className,
 }: ServiceSelectProps) {
   const { isMobile, isReady } = usePlatformContext()
-
+  const [test, setTest] = React.useState('')
   // Мемоизация обработчиков
   const handleMobileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,9 +38,10 @@ function ServiceSelect({
       if (found) {
         console.log('Mobile selected service:', found)
         onSelectionChange(found.id)
+        setTest(found.service)
         return
       }
-
+      setTest(selectedName)
       // Если не нашли точное совпадение - пользователь ещё печатает
       onSelectionChange(selectedName)
     },
@@ -65,7 +66,7 @@ function ServiceSelect({
         <Label className="text-base font-normal">Dienstleistungen</Label>
         <div className="relative w-full">
           <Input
-            value={selectedServices}
+            value={test}
             onChange={handleMobileChange}
             autoComplete="off"
             list="service-options"
