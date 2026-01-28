@@ -83,7 +83,7 @@ const TreeItem = ({
 
   return (
     <div>
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden  bg-zinc-100 dark:bg-zinc-900">
         {/* Delete button behind */}
         <div
           className="absolute right-2 top-2 bottom-2 flex items-center justify-center rounded-full bg-danger text-white  h-30px "
@@ -101,7 +101,7 @@ const TreeItem = ({
 
         {/* Main content */}
         <motion.div
-          className="flex items-center gap-2 py-3 px-2 rounded-3xl cursor-pointer bg-zinc-100 dark:bg-zinc-900 hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700 relative z-10"
+          className="flex items-center gap-2 py-3 px-2 rounded-3xl cursor-pointer  bg-zinc-100 dark:bg-zinc-900 hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700 relative z-10"
           style={{
             paddingLeft: `${level * 10 + 8}px`,
             touchAction: 'pan-y'
