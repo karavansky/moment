@@ -86,7 +86,7 @@ const TreeItem = ({
       <div className="relative overflow-hidden">
         {/* Delete button behind */}
         <div
-          className="absolute right-2 top-2 bottom-2 flex items-center justify-center rounded-full bg-danger text-white  h-full "
+          className="absolute right-2 top-2 bottom-2 flex items-center justify-center rounded-full bg-danger text-white  h-30px "
           style={{ width: DELETE_BUTTON_WIDTH }}
         >
           <button
