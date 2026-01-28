@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useMemo, useCallback } from 'react'
-import { Button, Card, Spinner, AlertDialog, Tooltip } from '@heroui/react'
+import { Button, Card, Spinner, AlertDialog } from '@heroui/react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { ServiceTreeItem } from '@/types/scheduling'
 import { Folder, AlertTriangle, Plus, Expand, ListCollapse, HandHeart } from 'lucide-react'
 import TreeItemContainer from './TreeItem'
 import ServiceModal from './ServiceModal'
+import { SimpleTooltip } from '@/components/SimpleTooltip'
 
 export default function ServicesTree() {
   const { services, isLoading, addService, updateService, deleteService } = useScheduling()
@@ -22,12 +23,21 @@ export default function ServicesTree() {
     [services]
   )
 
-  // Check if item has children
+  // Optimization: Pre-calculate which items have children for O(1) lookup
+  const parentIdsWithChildren = useMemo(() => {
+    const ids = new Set<string>()
+    services.forEach(s => {
+      if (s.parentId) ids.add(s.parentId)
+    })
+    return ids
+  }, [services])
+
+  // Check if item has children (O(1))
   const hasChildren = useCallback(
     (itemId: string) => {
-      return services.some(s => s.parentId === itemId)
+      return parentIdsWithChildren.has(itemId)
     },
-    [services]
+    [parentIdsWithChildren]
   )
 
   const handleToggle = useCallback((id: string) => {
@@ -42,65 +52,71 @@ export default function ServicesTree() {
     })
   }, [])
 
-  const handleExpandAll = () => {
+  const handleExpandAll = useCallback(() => {
     const allGroupIds = services.filter(s => s.isGroup).map(s => s.id)
     setExpandedIds(new Set(allGroupIds))
-  }
+  }, [services])
 
-  const handleCollapseAll = () => {
+  const handleCollapseAll = useCallback(() => {
     setExpandedIds(new Set())
-  }
+  }, [])
 
-  const handleEdit = (item: ServiceTreeItem) => {
+  const handleEdit = useCallback((item: ServiceTreeItem) => {
     setEditItem(item)
     setParentIdForNew(null)
     setIsModalOpen(true)
-  }
+  }, [])
 
-  const handleDelete = (id: string) => {
-    const item = services.find(s => s.id === id)
-    if (!item) return
+  const handleDelete = useCallback(
+    (id: string) => {
+      const item = services.find(s => s.id === id)
+      if (!item) return
 
-    if (item.isGroup && hasChildren(id)) {
-      setDeleteConfirmItem(item)
-    } else {
-      deleteService(id)
-    }
-  }
+      if (item.isGroup && hasChildren(id)) {
+        setDeleteConfirmItem(item)
+      } else {
+        deleteService(id)
+      }
+    },
+    [services, hasChildren, deleteService]
+  )
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = useCallback(() => {
     if (deleteConfirmItem) {
       deleteService(deleteConfirmItem.id)
       setDeleteConfirmItem(null)
     }
-  }
+  }, [deleteConfirmItem, deleteService])
 
-  const handleAddChild = (parentId: string) => {
+  const handleAddChild = useCallback((parentId: string) => {
     setEditItem(null)
     setParentIdForNew(parentId)
     setExpandedIds(prev => new Set([...prev, parentId]))
     setIsModalOpen(true)
-  }
+  }, [])
 
-  const handleAddRoot = () => {
+  const handleAddRoot = useCallback(() => {
     setEditItem(null)
     setParentIdForNew(null)
     setIsModalOpen(true)
-  }
+  }, [])
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsModalOpen(false)
     setEditItem(null)
     setParentIdForNew(null)
-  }
+  }, [])
 
-  const handleSave = (item: ServiceTreeItem) => {
-    if (editItem) {
-      updateService(item)
-    } else {
-      addService(item)
-    }
-  }
+  const handleSave = useCallback(
+    (item: ServiceTreeItem) => {
+      if (editItem) {
+        updateService(item)
+      } else {
+        addService(item)
+      }
+    },
+    [editItem, updateService, addService]
+  )
 
   if (isLoading) {
     return (
@@ -113,25 +129,21 @@ export default function ServicesTree() {
   return (
     <div className="flex flex-col h-full p-4 gap-4">
       <div className="flex items-center justify-between">
-        <HandHeart className="w-6 h-6" />
-        <h1 className="text-2xl font-semibold">Dienstleistungen</h1>
+        <div className="flex items-start gap-2"> 
+        <HandHeart className="w-8 h-8" />
+        <h1 className="text-2xl font-semibold truncate">Dienstleistungen</h1>
+        </div>
         <div className="flex gap-1">
-          <Button  size="sm" onPress={handleExpandAll}>
-            <Tooltip >
-              <Expand className="w-5 h-5 " />
-              <Tooltip.Content>
-                <p>Alle aufklappen</p>
-              </Tooltip.Content>
-            </Tooltip>
-          </Button>
-          <Button size="sm" onPress={handleCollapseAll}>
-            <Tooltip >
-              <ListCollapse className="w-5 h-5 " />
-              <Tooltip.Content>
-                <p>Alle zuklappen</p>
-              </Tooltip.Content>
-            </Tooltip>
-          </Button>
+          <SimpleTooltip content="Alle aufklappen">
+            <Button size="sm" onPress={handleExpandAll}>
+              <Expand className="w-5 h-5" />
+            </Button>
+          </SimpleTooltip>
+          <SimpleTooltip content="Alle zuklappen">
+            <Button size="sm" onPress={handleCollapseAll}>
+              <ListCollapse className="w-5 h-5" />
+            </Button>
+          </SimpleTooltip>
           <Button variant="primary" onPress={handleAddRoot}>
             <Plus className="w-4 h-4 mr-2" />
             Neu
