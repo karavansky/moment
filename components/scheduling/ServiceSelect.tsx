@@ -88,6 +88,8 @@ function ServiceSelect({
               className="text-lg font-normal md:text-base w-full border border-divider rounded-lg px-3 py-2 bg-default-50"
               required
               placeholder="Select service..."
+              type="text"
+              autoFocus
             />
             <datalist id="service-options">
               {servicesForSelect.map(({ service, id, path }) => (
