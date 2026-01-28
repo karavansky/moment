@@ -61,6 +61,8 @@ export default function AppointmentModal({
             isDuration: true,
             isDriveTime: false,
             isFixedTime: false,
+            services: appointment.services || [],
+            reports: appointment.reports ||  [], 
           }
         : {
             clientID: '',
@@ -73,6 +75,8 @@ export default function AppointmentModal({
             isDuration: false,
             isDriveTime: false,
             isFixedTime: false,
+            services: [],
+            reports: [],
           }
       : appointment
         ? {
@@ -86,6 +90,8 @@ export default function AppointmentModal({
             isDuration: appointment.duration > 0,
             isDriveTime: appointment.fahrzeit > 0,
             isFixedTime: appointment.isFixedTime,
+            services: appointment.services || [],
+            reports: appointment.reports || [],
           }
         : {
             clientID: '',
@@ -98,6 +104,8 @@ export default function AppointmentModal({
             isDuration: false,
             isDriveTime: false,
             isFixedTime: false,
+            services: [],
+            reports: [],
           }
   )
   if (process.env.NODE_ENV === 'development') {
@@ -122,6 +130,8 @@ export default function AppointmentModal({
         isDuration: appointment.duration > 0,
         isDriveTime: appointment.fahrzeit > 0,
         isFixedTime: appointment.isFixedTime,
+        services: appointment.services || [],
+        reports: appointment.reports || [],
       })
     } else if (isNewAppointment && appointment) {
       // Handle template appointment (e.g. from drag & drop)
@@ -136,6 +146,8 @@ export default function AppointmentModal({
         isDuration: true,
         isDriveTime: false,
         isFixedTime: false,
+        services: appointment.services || [],
+        reports: appointment.reports || [],
       })
     } else if (selectedDate) {
       setFormData(prev => ({
@@ -205,6 +217,7 @@ export default function AppointmentModal({
       client: selectedClient,
       reports: appointment?.reports || [],
       isOpen: false,
+      services: appointment?.services || [], // 
     }
 
     if (isEditMode) {
@@ -237,6 +250,8 @@ export default function AppointmentModal({
       isDuration: false,
       isDriveTime: false,
       isFixedTime: false,
+      services: [],
+      reports: [],
     })
     setErrors({})
     onClose()
