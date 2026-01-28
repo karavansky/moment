@@ -70,6 +70,10 @@ function ServiceSelect({
         <div className="flex items-center gap-2 w-full">
           <div className="relative flex-1">
             <style>{`
+              #service-input-id {
+                appearance: auto !important;
+                -webkit-appearance: auto !important;
+              }
               #service-input-id::-webkit-calendar-picker-indicator {
                 opacity: 1 !important;
                 display: block !important;
