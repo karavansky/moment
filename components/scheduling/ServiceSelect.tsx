@@ -95,7 +95,7 @@ function ServiceSelect({
    //   <TextField className="w-full min-w-0" isRequired name="service" type="text">
 //               <option value="">Bitte wählen...</option>
 
-  if (true) {
+  if (isReady && isMobile) {
     return (
       <div className="w-full min-w-0">
         <Label className="text-base font-normal">Dienstleistungen</Label>
