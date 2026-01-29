@@ -70,17 +70,21 @@ function ServiceSelect({
         <div className="flex items-center gap-2 w-full">
           <div className="relative flex-1">
             <style>{`
-              #service-input-id {
-                appearance: auto !important;
-                -webkit-appearance: auto !important;
-              }
               #service-input-id::-webkit-calendar-picker-indicator {
                 opacity: 1 !important;
                 display: block !important;
                 visibility: visible !important;
-                color: black !important;
+                color: inherit !important;
                 background-color: transparent !important;
                 cursor: pointer !important;
+                width: 20px !important;
+                height: 20px !important;
+                position: absolute !important;
+                right: 8px !important;
+                top: 50% !important;
+                transform: translateY(-50%) !important;
+                pointer-events: auto !important;
+                z-index: 10 !important;
               }
             `}</style>
             <input
@@ -89,11 +93,10 @@ function ServiceSelect({
               onChange={handleMobileChange}
               autoComplete="off"
               list="service-options"
-              className="text-lg font-normal md:text-base w-full border border-divider rounded-lg px-3 py-2 bg-default-50"
+              className="text-lg font-normal md:text-base w-full border border-divider rounded-lg pl-3 pr-10 py-2 bg-default-50"
               required
               placeholder="Select service..."
               type="text"
-              autoFocus
             />
             <datalist id="service-options">
               {servicesForSelect.map(({ service, id, path }) => (
