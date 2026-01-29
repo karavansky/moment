@@ -6,15 +6,25 @@ import { Plus, Trash, User } from 'lucide-react'
 import { usePlatformContext } from '@/contexts/PlatformContext'
 import { useScheduling } from '@/contexts/SchedulingContext'
 
-interface ServicesForSelect {
-  service: string;
+interface ServiceOption {
   id: string;
-  isGroup: boolean;
+  name: string;
   numbering: string;
 }
 
+interface ServiceGroupForSelect {
+  id: string;
+  label: string;
+  options: ServiceOption[];
+}
+
+interface ServicesForSelect {
+  rootServices: ServiceOption[];
+  groups: ServiceGroupForSelect[];
+}
+
 interface ServiceSelectProps {
-  servicesForSelect: ServicesForSelect[]
+  servicesForSelect: ServicesForSelect
   selectedServices: string
   onSelectionChange: (serviceId: string) => void
   error?: string
@@ -33,24 +43,14 @@ function ServiceSelect({
 
   const { services } = useScheduling()
 
-    // Мемоизация обработчиков
+  // Мемоизация обработчиков
   const handleMobileChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const selectedName = e.target.value
-
-      // Найти service по name в servicesForSelect
-      const found = servicesForSelect.find(s => s.service === selectedName)
-      if (found) {
-        console.log('Mobile selected service:', found)
-        onSelectionChange(found.id)
-        setTest(found.service)
-        return
-      }
-      setTest(selectedName)
-      // Если не нашли точное совпадение - пользователь ещё печатает
-      onSelectionChange(selectedName)
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const selectedId = e.target.value
+      onSelectionChange(selectedId)
+      setTest(selectedId)
     },
-    [onSelectionChange, servicesForSelect]
+    [onSelectionChange]
   )
 
   const handleDesktopChange = useCallback(
@@ -75,17 +75,21 @@ function ServiceSelect({
           <div className="relative flex-1">
             <select
               value={test}
-              onChange={(e) => {
-                console.log('Mobile selected service:', e.target.value)
-              }}
-              >
-              {servicesForSelect.map(({ service, id, numbering, isGroup }) =>
-              isGroup ? (
-                <option key={id} disabled>{numbering} {service}</option>
-              ) : (
-                <option key={id} value={id}>{numbering} {service}</option>
-              )
-            )}
+              onChange={handleMobileChange}
+            >
+              <option value="">Bitte wählen...</option>
+              {/* Корневые услуги без группы */}
+              {servicesForSelect.rootServices.map(({ id, name, numbering }) => (
+                <option key={id} value={id}>{numbering} {name}</option>
+              ))}
+              {/* Группы с услугами */}
+              {servicesForSelect.groups.map(({ id, label, options }) => (
+                <optgroup key={id} label={label}>
+                  {options.map(({ id: optionId, name, numbering }) => (
+                    <option key={optionId} value={optionId}>{numbering} {name}</option>
+                  ))}
+                </optgroup>
+              ))}
             </select>
           </div>
           <Button isIconOnly size="sm" variant="tertiary" onPress={() => setTest('')}>
@@ -122,12 +126,25 @@ function ServiceSelect({
         </ComboBox.InputGroup>
         <ComboBox.Popover>
           <ListBox>
-            {servicesForSelect.map(({ service, id, numbering}) => (
-              <ListBox.Item key={id} textValue={numbering ? `${numbering} - ${service}` : service} id={id}>
-                {numbering ? `${numbering} - ${service}` : service}
+            {/* Корневые услуги */}
+            {servicesForSelect.rootServices.map(({ id, name, numbering }) => (
+              <ListBox.Item key={id} textValue={`${numbering} ${name}`} id={id}>
+                {numbering} {name}
                 <ListBox.ItemIndicator />
               </ListBox.Item>
             ))}
+            {/* Группы с услугами */}
+            {servicesForSelect.groups.flatMap(({ label, options }) => [
+              <ListBox.Item key={`header-${label}`} textValue={label} isDisabled>
+                <span className="font-semibold text-default-500">{label}</span>
+              </ListBox.Item>,
+              ...options.map(({ id: optionId, name, numbering }) => (
+                <ListBox.Item key={optionId} textValue={`${numbering} ${name}`} id={optionId}>
+                  <span className="pl-4">{numbering} {name}</span>
+                  <ListBox.ItemIndicator />
+                </ListBox.Item>
+              )),
+            ])}
           </ListBox>
         </ComboBox.Popover>
       </ComboBox>

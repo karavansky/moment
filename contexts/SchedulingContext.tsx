@@ -24,11 +24,21 @@ interface TeamsWithWorkers {
   workers: Worker[];
 }
 
-interface ServicesForSelect {
-  service: string;
+interface ServiceOption {
   id: string;
-  isGroup: boolean;
+  name: string;
   numbering: string;
+}
+
+interface ServiceGroupForSelect {
+  id: string;
+  label: string;
+  options: ServiceOption[];
+}
+
+interface ServicesForSelect {
+  rootServices: ServiceOption[];
+  groups: ServiceGroupForSelect[];
 }
 
 // Тип для состояния планирования
@@ -59,7 +69,7 @@ interface SchedulingDerived {
   groupedClients: GroupedClients[];
   teamsWithWorkers: TeamsWithWorkers[];
   todayAppointments: AppointmentWithClient[];
-  servicesForSelect: ServicesForSelect[];
+  servicesForSelect: ServicesForSelect;
 }
 
 // Тип для действий (actions)
@@ -352,50 +362,75 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   }), []); // Без зависимостей, так как все функции используют setState с функциональным обновлением
 
-  // Конвертация дерева услуг в плоский формат для select с иерархической нумерацией
-  const servicesForSelect = useMemo<ServicesForSelect[]>(() => {
-    const result: ServicesForSelect[] = [];
+  // Конвертация дерева услуг в формат для select с optgroup
+  const servicesForSelect = useMemo<ServicesForSelect>(() => {
+    const rootServices: ServiceOption[] = [];
+    const groups: ServiceGroupForSelect[] = [];
 
-    // Рекурсивная функция для обхода дерева
-    const processChildren = (parentId: string | null, prefix: string) => {
-      // Получаем все элементы с данным parentId
+    // Рекурсивная функция для обхода дерева и сбора групп с услугами
+    const processGroup = (parentId: string | null, prefix: string) => {
       const children = state.services.filter(s => s.parentId === parentId);
 
       let counter = 1;
 
-      // Сначала добавляем услуги (isGroup = false)
+      // Сначала обрабатываем услуги (isGroup = false)
       const services = children.filter(s => !s.isGroup);
+      const serviceOptions: ServiceOption[] = [];
+
       for (const service of services) {
         const numbering = prefix ? `${prefix}${counter}.` : `${counter}.`;
-        result.push({
-          service: service.name,
+        serviceOptions.push({
           id: service.id,
-          isGroup: false,
+          name: service.name,
           numbering,
         });
         counter++;
       }
 
-      // Затем добавляем группы (isGroup = true) и рекурсивно их содержимое
-      const groups = children.filter(s => s.isGroup);
-      for (const group of groups) {
-        const numbering = prefix ? `${prefix}${counter}.` : `${counter}.`;
-        result.push({
-          service: group.name,
-          id: group.id,
-          isGroup: true,
-          numbering,
-        });
-        // Рекурсивно обрабатываем содержимое группы
-        processChildren(group.id, numbering);
+      // Если это корневой уровень и есть услуги — добавляем в rootServices
+      if (parentId === null && serviceOptions.length > 0) {
+        rootServices.push(...serviceOptions);
+      }
+
+      // Обрабатываем подгруппы (isGroup = true)
+      const subgroups = children.filter(s => s.isGroup);
+      for (const group of subgroups) {
+        const groupNumbering = prefix ? `${prefix}${counter}.` : `${counter}.`;
+
+        // Получаем услуги непосредственно в этой группе
+        const groupChildren = state.services.filter(s => s.parentId === group.id);
+        const groupServices = groupChildren.filter(s => !s.isGroup);
+
+        // Если в группе есть услуги — добавляем как optgroup
+        if (groupServices.length > 0) {
+          let serviceCounter = 1;
+          const options: ServiceOption[] = groupServices.map(service => {
+            const numbering = `${groupNumbering}${serviceCounter}.`;
+            serviceCounter++;
+            return {
+              id: service.id,
+              name: service.name,
+              numbering,
+            };
+          });
+
+          groups.push({
+            id: group.id,
+            label: `${groupNumbering} ${group.name}`,
+            options,
+          });
+        }
+
+        // Рекурсивно обрабатываем вложенные группы
+        processGroup(group.id, groupNumbering);
         counter++;
       }
     };
 
-    // Начинаем с корневых элементов (parentId = null)
-    processChildren(null, '');
+    // Начинаем с корневых элементов
+    processGroup(null, '');
 
-    return result;
+    return { rootServices, groups };
   }, [state.services]);
 
   // Группировка клиентов по группам - вычисляется при изменении clients или groups
