@@ -4,13 +4,11 @@ import React, { useCallback, memo } from 'react'
 import { Button, ButtonRoot, ComboBox, Input, Label, ListBox, TextField } from '@heroui/react'
 import { Plus, Trash, User } from 'lucide-react'
 import { usePlatformContext } from '@/contexts/PlatformContext'
-import { useScheduling } from '@/contexts/SchedulingContext'
 
 interface ServicesForSelect {
-  service: string;
-  id: string;
-  isGroup: boolean;
-  numbering: string;
+  service: string
+  id: string
+  path: string
 }
 
 interface ServiceSelectProps {
@@ -30,10 +28,8 @@ function ServiceSelect({
 }: ServiceSelectProps) {
   const { isMobile, isReady } = usePlatformContext()
   const [test, setTest] = React.useState('')
-
-  const { services } = useScheduling()
-
-    // Мемоизация обработчиков
+  
+  // Мемоизация обработчиков
   const handleMobileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const selectedName = e.target.value
@@ -73,20 +69,40 @@ function ServiceSelect({
         <Label className="text-base font-normal">Dienstleistungen</Label>
         <div className="flex items-center gap-2 w-full">
           <div className="relative flex-1">
-            <select
+            <style>{`
+              #service-input-id::-webkit-calendar-picker-indicator {
+                opacity: 1 !important;
+                display: block !important;
+                visibility: visible !important;
+                color: inherit !important;
+                background-color: transparent !important;
+                cursor: pointer !important;
+                width: 20px !important;
+                height: 20px !important;
+                position: absolute !important;
+                right: 8px !important;
+                top: 50% !important;
+                transform: translateY(-50%) !important;
+                pointer-events: auto !important;
+                z-index: 10 !important;
+              }
+            `}</style>
+            <input
+              id="service-input-id"
               value={test}
-              onChange={(e) => {
-                console.log('Mobile selected service:', e.target.value)
-              }}
-              >
-              {servicesForSelect.map(({ service, id, numbering, isGroup }) =>
-              isGroup ? (
-                <option key={id} disabled>{numbering} {service}</option>
-              ) : (
-                <option key={id} value={id}>{numbering} {service}</option>
-              )
-            )}
-            </select>
+              onChange={handleMobileChange}
+              autoComplete="off"
+              list="service-options"
+              className="text-lg font-normal md:text-base w-full border border-divider rounded-lg pl-3 pr-10 py-2"
+              required
+              placeholder="Select service..."
+              type="text"
+            />
+            <datalist id="service-options">
+              {servicesForSelect.map(({ service, id, path }) => (
+                <option key={id} value={service} label={path || 'empty'} />
+              ))}
+            </datalist>
           </div>
           <Button isIconOnly size="sm" variant="tertiary" onPress={() => setTest('')}>
             <Trash size={16} />
@@ -122,9 +138,9 @@ function ServiceSelect({
         </ComboBox.InputGroup>
         <ComboBox.Popover>
           <ListBox>
-            {servicesForSelect.map(({ service, id, numbering}) => (
-              <ListBox.Item key={id} textValue={numbering ? `${numbering} - ${service}` : service} id={id}>
-                {numbering ? `${numbering} - ${service}` : service}
+            {servicesForSelect.map(({ service, id, path }) => (
+              <ListBox.Item key={id} textValue={path ? `${path} - ${service}` : service} id={id}>
+                {path ? `${path} - ${service}` : service}
                 <ListBox.ItemIndicator />
               </ListBox.Item>
             ))}

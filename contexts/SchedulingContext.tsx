@@ -27,7 +27,8 @@ interface TeamsWithWorkers {
 interface ServicesForSelect {
   service: string;
   id: string;
-  path: string;
+  isGroup: boolean;
+  numbering: string;
 }
 
 // Тип для состояния планирования
@@ -351,39 +352,50 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   }), []); // Без зависимостей, так как все функции используют setState с функциональным обновлением
 
-  // Конвертация дерева услуг в формат для select
-  // Конвертация дерева услуг в плоский массив для datalist
+  // Конвертация дерева услуг в плоский формат для select с иерархической нумерацией
   const servicesForSelect = useMemo<ServicesForSelect[]>(() => {
-    // Вспомогательная функция: найти элемент по id
-    const findById = (id: string): ServiceTreeItem | undefined =>
-      state.services.find(s => s.id === id);
+    const result: ServicesForSelect[] = [];
 
-    // Вспомогательная функция: построить полный path от корня до parentId
-    const buildFullPath = (parentId: string | null): string => {
-      const pathParts: string[] = [];
-      let currentId = parentId;
+    // Рекурсивная функция для обхода дерева
+    const processChildren = (parentId: string | null, prefix: string) => {
+      // Получаем все элементы с данным parentId
+      const children = state.services.filter(s => s.parentId === parentId);
 
-      while (currentId) {
-        const item = findById(currentId);
-        if (item && item.isGroup) {
-          pathParts.unshift(item.name);
-          currentId = item.parentId;
-        } else {
-          break;
-        }
+      let counter = 1;
+
+      // Сначала добавляем услуги (isGroup = false)
+      const services = children.filter(s => !s.isGroup);
+      for (const service of services) {
+        const numbering = prefix ? `${prefix}${counter}.` : `${counter}.`;
+        result.push({
+          service: service.name,
+          id: service.id,
+          isGroup: false,
+          numbering,
+        });
+        counter++;
       }
 
-      return pathParts.join(' - ');
+      // Затем добавляем группы (isGroup = true) и рекурсивно их содержимое
+      const groups = children.filter(s => s.isGroup);
+      for (const group of groups) {
+        const numbering = prefix ? `${prefix}${counter}.` : `${counter}.`;
+        result.push({
+          service: group.name,
+          id: group.id,
+          isGroup: true,
+          numbering,
+        });
+        // Рекурсивно обрабатываем содержимое группы
+        processChildren(group.id, numbering);
+        counter++;
+      }
     };
 
-    // Берём только листья (Service, isGroup = false)
-    return state.services
-      .filter(s => !s.isGroup)
-      .map(service => ({
-        service: service.name,
-        id: service.id,
-        path: buildFullPath(service.parentId),
-      }));
+    // Начинаем с корневых элементов (parentId = null)
+    processChildren(null, '');
+
+    return result;
   }, [state.services]);
 
   // Группировка клиентов по группам - вычисляется при изменении clients или groups

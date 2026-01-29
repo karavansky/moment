@@ -42,6 +42,7 @@ export default function AppointmentModal({
     groupedClients,
     teamsWithWorkers,
     servicesForSelect,
+    services,
   } = useScheduling()
 
   const isEditMode = !!appointment
