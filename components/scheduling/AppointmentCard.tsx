@@ -281,7 +281,11 @@ function AppointmentCard({
 
       <div className="flex items-center gap-1.5 text-xs">
         <User className="w-3 h-3 shrink-0" />
-        <span>{appointment.worker ? appointment.worker.surname + ' ' + appointment.worker.name : 'Unknown Worker'}</span>
+        <span>
+          {appointment.worker && appointment.worker.length > 0
+            ? appointment.worker.map(w => `${w.surname} ${w.name}`).join(', ')
+            : 'Unknown Worker'}
+        </span>
       </div>
 
       <div className="flex items-center gap-1.5 text-xs">
@@ -362,10 +366,14 @@ function AppointmentCard({
             {isPastWithoutReport && <CircleAlert className="w-4 h-4 text-danger shrink-0" />}
           </div>
 
-          {/* Worker */}
+          {/* Worker(s) */}
           <div className="flex items-center gap-1.5 text-xs text-default-600">
             <User className="w-3 h-3 shrink-0" />
-            <span className="truncate">{appointment.worker ? appointment.worker.surname + ' ' + appointment.worker.name : 'Unknown Worker'}</span>
+            <span className="truncate">
+              {appointment.worker && appointment.worker.length > 0
+                ? appointment.worker.map(w => `${w.surname} ${w.name}`).join(', ')
+                : 'Unknown Worker'}
+            </span>
           </div>
 
           {/* Time */}
