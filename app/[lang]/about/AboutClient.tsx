@@ -31,6 +31,17 @@ export default function AboutClient() {
   return (
     <div className="w-full pb-6 pt-12 md:pt-12 px-0 md:px-6 lg:px-20">
       {/* HERO */}
+      <label htmlFor="ice-cream-choice">Choose a flavor:</label>
+      <input list="ice-cream-flavors" id="ice-cream-choice" name="ice-cream-choice" />
+
+      <datalist id="ice-cream-flavors">
+        <option value="Chocolate"></option>
+        <option value="Coconut"></option>
+        <option value="Mint"></option>
+        <option value="Strawberry"></option>
+        <option value="Vanilla"></option>
+      </datalist>
+
       <Card className="relative rounded-2xl p-4 md:p-12 shadow-2xl border border-gray-100 dark:border-gray-800">
         <Card.Content>
           <div className="flex flex-col md:flex-row items-center gap-8">
@@ -88,10 +99,7 @@ export default function AboutClient() {
 
       {/* STORY */}
       <article id="story" className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-        
-        <Card
-          className="md:col-span-2 rounded-2xl p-5 shadow-2xl border border-gray-100  dark:border-gray-800 "
-        >
+        <Card className="md:col-span-2 rounded-2xl p-5 shadow-2xl border border-gray-100  dark:border-gray-800 ">
           <CardHeader>
             <h2 className="text-2xl font-bold">{t('about.cardStory.title')}</h2>
           </CardHeader>
@@ -118,9 +126,7 @@ export default function AboutClient() {
           </Card.Content>
         </Card>
 
-        <Card
-          className="bg-amber-50 dark:shadow-gray-800/90  border border-amber-100  dark:border-gray-800 dark:bg-gray-800/90  rounded-2xl p-6 shadow-2xl"
-        >
+        <Card className="bg-amber-50 dark:shadow-gray-800/90  border border-amber-100  dark:border-gray-800 dark:bg-gray-800/90  rounded-2xl p-6 shadow-2xl">
           <h3 className="text-2xl font-bold">{t('about.cardFounder.founder')}</h3>
           <p className="mt-6">{t('about.cardFounder.text')}</p>
 
@@ -136,9 +142,7 @@ export default function AboutClient() {
       </article>
 
       {/* FEATURES / VALUE */}
-      <Card
-        className="mt-12 rounded-2xl p-6 shadow-2xl border border-gray-100  dark:border-gray-800 "
-      >
+      <Card className="mt-12 rounded-2xl p-6 shadow-2xl border border-gray-100  dark:border-gray-800 ">
         <CardHeader>
           <h2 className="text-2xl font-bold">{t('about.cardWhy.title')}</h2>
         </CardHeader>
