@@ -583,7 +583,7 @@ export const getAllSampleObjects = () => {
     duration: 90,
     fahrzeit: 0,
     workerId: worker_1.id,
-    worker: worker_1,
+    worker: [worker_1],
     isOpen: false,
     services: [],
   }
@@ -600,7 +600,7 @@ export const getAllSampleObjects = () => {
     duration: 60,
     fahrzeit: 0,
     workerId: worker_2.id,
-    worker: worker_2,
+    worker: [worker_2],
     isOpen: false,
     services: [],
   }
@@ -617,7 +617,7 @@ export const getAllSampleObjects = () => {
     duration: 30,
     fahrzeit: 0,
     workerId: worker_3.id,
-    worker: worker_3,
+    worker: [worker_3],
     isOpen: false,
     services: [],
   }
@@ -634,7 +634,7 @@ export const getAllSampleObjects = () => {
     duration: 30,
     fahrzeit: 0,
     workerId: worker_4.id,
-    worker: worker_4,
+    worker: [worker_4],
     isOpen: false,
     services: [],
   }
@@ -651,7 +651,7 @@ export const getAllSampleObjects = () => {
     duration: 60,
     fahrzeit: 0,
     workerId: worker_5.id,
-    worker: worker_5,
+    worker: [worker_5],
     isOpen: false,
     services: [],
   }
@@ -668,7 +668,7 @@ export const getAllSampleObjects = () => {
     duration: 30,
     fahrzeit: 0,
     workerId: worker_6.id,
-    worker: worker_6,
+    worker: [worker_6],
     isOpen: false,
     latitude: 50.9346808,
     longitude: 6.9977416,
@@ -688,7 +688,7 @@ export const getAllSampleObjects = () => {
     duration: 30,
     fahrzeit: 0,
     workerId: worker_7.id,
-    worker: worker_7,
+    worker: [worker_7],
     isOpen: false,
     services: [],
   }
@@ -705,7 +705,7 @@ export const getAllSampleObjects = () => {
     duration: 30,
     fahrzeit: 0,
     workerId: worker_8.id,
-    worker: worker_8,
+    worker: [worker_8],
     isOpen: false,
     services: [],
   }
@@ -723,7 +723,7 @@ export const getAllSampleObjects = () => {
     duration: 60,
     fahrzeit: 0,
     workerId: worker_11.id,
-    worker: worker_11,
+    worker: [worker_11],
     isOpen: false,
     services: [],
   }
@@ -740,7 +740,7 @@ export const getAllSampleObjects = () => {
     duration: 45,
     fahrzeit: 0,
     workerId: worker_21.id,
-    worker: worker_21,
+    worker: [worker_21],
     isOpen: false,
     services: [],
   }
@@ -757,7 +757,7 @@ export const getAllSampleObjects = () => {
     duration: 30,
     fahrzeit: 0,
     workerId: worker_31.id,
-    worker: worker_31,
+    worker: [worker_31],
     isOpen: false,
     services: [],
   }
@@ -774,7 +774,7 @@ export const getAllSampleObjects = () => {
     duration: 90,
     fahrzeit: 0,
     workerId: worker_41.id,
-    worker: worker_41,
+    worker: [worker_41],
     isOpen: false,
     services: [],
   }
@@ -791,7 +791,7 @@ export const getAllSampleObjects = () => {
     duration: 60,
     fahrzeit: 0,
     workerId: worker_51.id,
-    worker: worker_51,
+    worker: [worker_51],
     isOpen: false,
     services: [],
   }
@@ -808,7 +808,7 @@ export const getAllSampleObjects = () => {
     duration: 45,
     fahrzeit: 0,
     workerId: worker_61.id,
-    worker: worker_61,
+    worker: [worker_61],
     isOpen: false,
     services: [],
   }
@@ -825,7 +825,7 @@ export const getAllSampleObjects = () => {
     duration: 30,
     fahrzeit: 0,
     workerId: worker_71.id,
-    worker: worker_71,
+    worker: [worker_71],
     isOpen: false,
     services: [],
   }
@@ -842,7 +842,7 @@ export const getAllSampleObjects = () => {
     duration: 60,
     fahrzeit: 0,
     workerId: worker_81.id,
-    worker: worker_81,
+    worker: [worker_81],
     isOpen: false,
     services: [],
   }
@@ -859,7 +859,7 @@ export const getAllSampleObjects = () => {
     duration: 90,
     fahrzeit: 0,
     workerId: worker_1.id,
-    worker: worker_1,
+    worker: [worker_1],
     isOpen: false,
     services: [],
   }
@@ -876,7 +876,7 @@ export const getAllSampleObjects = () => {
     duration: 45,
     fahrzeit: 0,
     workerId: worker_2.id,
-    worker: worker_2,
+    worker: [worker_2],
     isOpen: false,
     services: [],
   }
@@ -893,7 +893,7 @@ export const getAllSampleObjects = () => {
     duration: 60,
     fahrzeit: 0,
     workerId: worker_3.id,
-    worker: worker_3,
+    worker: [worker_3],
     isOpen: false,
     services: [],
   }
@@ -910,7 +910,7 @@ export const getAllSampleObjects = () => {
     duration: 30,
     fahrzeit: 0,
     workerId: worker_4.id,
-    worker: worker_4,
+    worker: [worker_4],
     isOpen: false,
     services: [],
   }

@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { Modal, Button, Separator, Label, Switch, TextField, FieldError } from '@heroui/react'
 import { useScheduling } from '@/contexts/SchedulingContext'
-import { Appointment, Service } from '@/types/scheduling'
+import { Appointment, Service, Worker } from '@/types/scheduling'
 import { Clock, Save, Trash2, Car } from 'lucide-react'
 import { formatTime } from '@/lib/calendar-utils'
 import { parseDate, Time, today, getLocalTimeZone } from '@internationalized/date'
@@ -55,7 +55,7 @@ export default function AppointmentModal({
         ? {
             // Handle template appointment (e.g. from drag & drop)
             clientID: appointment.clientID || '',
-            workerId: appointment.workerId || '',
+            workers: appointment.worker || [],
             date: new Date(selectedDate || appointment.date),
             startHour: 0,
             startMinute: 0,
@@ -65,11 +65,11 @@ export default function AppointmentModal({
             isDriveTime: false,
             isFixedTime: false,
             services: appointment.services || [],
-            reports: appointment.reports ||  [], 
+            reports: appointment.reports ||  [],
           }
         : {
             clientID: '',
-            workerId: '',
+            workers: [] as Worker[],
             date: new Date(),
             startHour: 0,
             startMinute: 0,
@@ -84,7 +84,7 @@ export default function AppointmentModal({
       : appointment
         ? {
             clientID: appointment.clientID,
-            workerId: appointment.workerId,
+            workers: appointment.worker || [],
             date: new Date(appointment.date),
             startHour: appointment.isFixedTime ? new Date(appointment.startTime).getHours() : 0,
             startMinute: appointment.isFixedTime ? new Date(appointment.startTime).getMinutes() : 0,
@@ -98,7 +98,7 @@ export default function AppointmentModal({
           }
         : {
             clientID: '',
-            workerId: '',
+            workers: [] as Worker[],
             date: new Date(),
             startHour: 0,
             startMinute: 0,
@@ -117,6 +117,8 @@ export default function AppointmentModal({
   }
   const [isDateInvalid, setIsDateInvalid] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const timeInputRef = useRef<HTMLInputElement>(null)
+
 
   // Initialize form data when appointment or selectedDate changes
   useEffect(() => {
@@ -124,7 +126,7 @@ export default function AppointmentModal({
       const startTime = new Date(appointment.startTime)
       setFormData({
         clientID: appointment.clientID,
-        workerId: appointment.workerId,
+        workers: appointment.worker || [],
         date: new Date(appointment.date),
         startHour: appointment.isFixedTime ? startTime.getHours() : 0,
         startMinute: appointment.isFixedTime ? startTime.getMinutes() : 0,
@@ -140,7 +142,7 @@ export default function AppointmentModal({
       // Handle template appointment (e.g. from drag & drop)
       setFormData({
         clientID: appointment.clientID || '',
-        workerId: appointment.workerId || '',
+        workers: appointment.worker || [],
         date: new Date(selectedDate || appointment.date),
         startHour: 0,
         startMinute: 0,
@@ -169,15 +171,10 @@ export default function AppointmentModal({
     return end
   }, [formData.date, formData.startHour, formData.startMinute, formData.duration])
 
-  // Get selected client and worker info for saving
+  // Get selected client info for saving
   const selectedClient = useMemo(
     () => clients.find(c => c.id === formData.clientID),
     [clients, formData.clientID]
-  )
-
-  const selectedWorker = useMemo(
-    () => workers.find(w => w.id === formData.workerId),
-    [workers, formData.workerId]
   )
 
   // Validation
@@ -187,8 +184,8 @@ export default function AppointmentModal({
     if (!formData.clientID) {
       newErrors.clientID = 'Bitte wählen Sie einen Kunden'
     }
-    if (!formData.workerId) {
-      newErrors.workerId = 'Bitte wählen Sie einen Fachkraft'
+    if (formData.workers.length === 0) {
+      newErrors.workers = 'Bitte wählen Sie mindestens eine Fachkraft'
     }
     if (formData.isDuration && formData.duration <= 0) {
       newErrors.duration = 'Dauer muss größer als 0 sein'
@@ -215,12 +212,12 @@ export default function AppointmentModal({
       duration: formData.duration,
       endTime,
       fahrzeit: formData.fahrzeit,
-      workerId: formData.workerId,
-      worker: selectedWorker,
+      workerId: formData.workers[0]?.id || '',
+      worker: formData.workers,
       client: selectedClient,
       reports: appointment?.reports || [],
       isOpen: false,
-      services: appointment?.services || [], // 
+      services: formData.services,
     }
 
     if (isEditMode) {
@@ -244,7 +241,7 @@ export default function AppointmentModal({
   const handleClose = () => {
     setFormData({
       clientID: '',
-      workerId: '',
+      workers: [],
       date: new Date(),
       startHour: 0,
       startMinute: 0,
@@ -334,15 +331,19 @@ export default function AppointmentModal({
               {/* Worker Selection */}
               <StaffSelect
                 teamsWithWorkers={teamsWithWorkers}
-                selectedWorkerId={formData.workerId}
-                onSelectionChange={workerId => {
+                selectedWorkerIds={formData.workers.map(w => w.id)}
+                onSelectionChange={workerIds => {
                   if (process.env.NODE_ENV === 'development') {
-                    console.log('Selected worker ID:', workerId)
+                    console.log('Selected worker IDs:', workerIds)
                   }
-                  setFormData(prev => ({ ...prev, workerId }))
-                  setErrors(prev => ({ ...prev, workerId: '' }))
+                  // Находим полные объекты Worker по ID
+                  const selectedWorkerObjects = workerIds
+                    .map(id => workers.find(w => w.id === id))
+                    .filter((w): w is Worker => w !== undefined)
+                  setFormData(prev => ({ ...prev, workers: selectedWorkerObjects }))
+                  setErrors(prev => ({ ...prev, workers: '' }))
                 }}
-                error={errors.workerId}
+                error={errors.workers}
               />
 
               <Separator />
@@ -385,7 +386,7 @@ export default function AppointmentModal({
                     minValue={today(getLocalTimeZone())}
                     isDisabled={readOnly}
                     //  className="max-w-[256px]"
-                    showTime={formData.isFixedTime}
+                    showTime={false}
                     timeValue={
                       formData.startHour === 0 && formData.startMinute === 0
                         ? null
@@ -411,18 +412,62 @@ export default function AppointmentModal({
                     {isDateInvalid ? 'Das Datum darf nicht in der Vergangenheit liegen' : null}
                   </FieldError>
                 </TextField>
-                <Switch
-                  size="lg"
-                  isSelected={formData.isFixedTime}
-                  onChange={value => {
-                    setFormData(prev => ({ ...prev, isFixedTime: value }))
-                  }}
-                >
-                  <Label className="text-sm">Fest Zeit</Label>
-                  <Switch.Control>
-                    <Switch.Thumb />
-                  </Switch.Control>
-                </Switch>
+                {/* Time picker with Switch overlay trick for iOS */}
+                <div className="relative">
+                  {/* Hidden time input - always rendered, receives clicks when Switch is disabled */}
+                  <input
+                    ref={timeInputRef}
+                    type="time"
+                    value={`${String(formData.startHour).padStart(2, '0')}:${String(formData.startMinute).padStart(2, '0')}`}
+                    onChange={e => {
+                      const [hours, minutes] = e.target.value.split(':').map(Number)
+                      setFormData(prev => ({
+                        ...prev,
+                        startHour: hours || 0,
+                        startMinute: minutes || 0,
+                        isFixedTime: true, // Auto-enable when time is selected
+                      }))
+                    }}
+                    disabled={readOnly}
+                    className={`absolute inset-0 w-full h-full ${formData.isFixedTime ? 'opacity-0 pointer-events-none' : 'opacity-0 cursor-pointer'}`}
+                  />
+                  {/* Visible Switch - pointer-events-none when isFixedTime is false */}
+                  <Switch
+                    size="lg"
+                    isSelected={formData.isFixedTime}
+                    onChange={value => {
+                      setFormData(prev => ({
+                        ...prev,
+                        isFixedTime: value,
+                        // Reset time when disabled
+                        ...(value ? {} : { startHour: 0, startMinute: 0 }),
+                      }))
+                    }}
+                    className={formData.isFixedTime ? '' : 'pointer-events-none'}
+                  >
+                    <Label className="text-sm">Fest Zeit</Label>
+                    <Switch.Control>
+                      <Switch.Thumb />
+                    </Switch.Control>
+                  </Switch>
+                </div>
+                {/* Visible time display when enabled */}
+                {formData.isFixedTime && (
+                  <input
+                    type="time"
+                    value={`${String(formData.startHour).padStart(2, '0')}:${String(formData.startMinute).padStart(2, '0')}`}
+                    onChange={e => {
+                      const [hours, minutes] = e.target.value.split(':').map(Number)
+                      setFormData(prev => ({
+                        ...prev,
+                        startHour: hours || 0,
+                        startMinute: minutes || 0,
+                      }))
+                    }}
+                    disabled={readOnly}
+                    className="px-3 py-2 border border-divider rounded-lg bg-default-50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-70 disabled:cursor-not-allowed"
+                  />
+                )}
               </div>
 
               <Separator />

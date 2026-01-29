@@ -1,10 +1,16 @@
 'use client'
 
-import React, { useCallback, memo } from 'react'
-import { ComboBox, Header, Input, Label, ListBox, Separator, TextField } from '@heroui/react'
-import { User } from 'lucide-react'
+import React, { useCallback, useRef, memo } from 'react'
+import { Button, ComboBox, Header, Input, Label, ListBox, Separator } from '@heroui/react'
+import { Plus, X, User } from 'lucide-react'
 import { Team, Worker } from '@/types/scheduling'
 import { usePlatformContext } from '@/contexts/PlatformContext'
+
+interface WorkerOption {
+  id: string
+  name: string       // "Müller Max"
+  fullPath: string   // "Müller Max - Team Alpha"
+}
 
 interface TeamsWithWorkers {
   team: Team
@@ -13,80 +19,138 @@ interface TeamsWithWorkers {
 
 interface StaffSelectProps {
   teamsWithWorkers: TeamsWithWorkers[]
-  selectedWorkerId: string
-  onSelectionChange: (workerId: string) => void
+  selectedWorkerIds: string[]
+  onSelectionChange: (workerIds: string[]) => void
   error?: string
   className?: string
 }
 
 function StaffSelect({
   teamsWithWorkers,
-  selectedWorkerId,
+  selectedWorkerIds,
   onSelectionChange,
   error,
   className,
 }: StaffSelectProps) {
   const { isMobile, isReady } = usePlatformContext()
+  const selectRef = useRef<HTMLSelectElement>(null)
 
-  // Мемоизация обработчиков
+  // Собираем всех workers в один массив с информацией о команде
+  const allWorkers = React.useMemo(() => {
+    const result: WorkerOption[] = []
+    for (const { team, workers } of teamsWithWorkers) {
+      for (const worker of workers) {
+        result.push({
+          id: worker.id,
+          name: `${worker.surname} ${worker.name}`,
+          fullPath: `${worker.surname} ${worker.name} - ${team.teamName}`,
+        })
+      }
+    }
+    return result
+  }, [teamsWithWorkers])
+
+  // Получаем объекты выбранных workers для отображения чипов
+  const selectedWorkerObjects = React.useMemo(() =>
+    selectedWorkerIds
+      .map(id => allWorkers.find(w => w.id === id))
+      .filter(Boolean) as WorkerOption[],
+    [selectedWorkerIds, allWorkers]
+  )
+
+  // Удаление одного worker из выбранных
+  const handleRemoveWorker = useCallback((idToRemove: string) => {
+    onSelectionChange(selectedWorkerIds.filter(id => id !== idToRemove))
+  }, [selectedWorkerIds, onSelectionChange])
+
+  // Обработчик для mobile select
   const handleMobileChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
-      onSelectionChange(e.target.value)
+      const selectedOptions = Array.from(e.target.selectedOptions)
+      const selectedIds = selectedOptions.map(option => option.value)
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Selected worker IDs:', selectedIds)
+      }
+
+      onSelectionChange(selectedIds)
     },
     [onSelectionChange]
   )
 
+  // Обработчик для desktop
   const handleDesktopChange = useCallback(
     (key: React.Key | null) => {
-      if (key) onSelectionChange(key as string)
+      if (key) onSelectionChange([key as string])
     },
     [onSelectionChange]
   )
 
   // --- RENDER FOR MOBILE (iOS/Android) ---
   if (process.env.NODE_ENV === 'development') {
-    console.log("Selected worker ID:", selectedWorkerId)
+    console.log('Selected worker IDs:', selectedWorkerIds)
   }
-  if (isReady && isMobile) {
+
+  if (true) {
     return (
-      <TextField className="w-1/2 min-w-0 " isRequired>
-        <Label className="text-base font-normal ">Fachkraft</Label>
-        <div
-          className="relative surface surface--tertiary h-11 md:h-10 flex items-center rounded-xl w-full focus-within:outline-none focus-within:ring-0"
-          style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
-        >
-          <select
-            name="staff"
-            value={selectedWorkerId}
-            onChange={handleMobileChange}
-            className="w-full h-full px-2 py-0 text-lg font-normal md:text-base border-0 border-transparent outline-none cursor-pointer bg-transparent appearance-none text-foreground"
-            style={{
-              WebkitAppearance: 'none',
-              MozAppearance: 'none',
-              minHeight: '100%',
-              lineHeight: 'normal',
-              outline: 'none',
-              boxShadow: 'none',
-              WebkitTapHighlightColor: 'transparent',
-            }}
-            required
-          >
-            {teamsWithWorkers.map(({ team, workers: teamWorkers }) => (
-              <React.Fragment key={team.id}>
-                <option value={team.teamName} disabled>
-                  {'👥 ' + team.teamName + ' 👥'}
-                </option>
-                {teamWorkers.map(worker => (
-                  <option key={worker.id} value={worker.id} >
-                    {worker.surname + ' ' + worker.name}
-                  </option>
-                ))}
-              </React.Fragment>
+      <div className="w-full min-w-0">
+        <Label className="text-base font-normal">Fachkräfte</Label>
+
+        {/* Чипы с выбранными workers */}
+        {selectedWorkerObjects.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-2 mb-2">
+            {selectedWorkerObjects.map(({ id, fullPath }) => (
+              <span
+                key={id}
+                className="inline-flex items-center gap-1 px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-sm"
+              >
+                {fullPath}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveWorker(id)}
+                  className="p-0.5 hover:bg-primary-200 rounded-full"
+                >
+                  <X size={14} />
+                </button>
+              </span>
             ))}
-          </select>
-          <User className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-default-500 pointer-events-none z-0" />
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 w-full">
+          {/* Скрытый нативный select для iOS/Android */}
+          <div className="relative flex-1">
+            <select
+              ref={selectRef}
+              name="staff"
+              onChange={handleMobileChange}
+              multiple
+              value={selectedWorkerIds}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            >
+              {teamsWithWorkers.map(({ team, workers: teamWorkers }) => (
+                <optgroup key={team.id} label={team.teamName}>
+                  {teamWorkers.map(worker => (
+                    <option key={worker.id} value={worker.id}>
+                      {worker.surname} {worker.name}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            {/* Видимая кнопка */}
+            <Button
+              variant="secondary"
+              size="sm"
+              className="w-full pointer-events-none"
+            >
+              <Plus size={16} />
+              Fachkraft hinzufügen
+            </Button>
+          </div>
         </div>
-      </TextField>
+        {error && <p className="text-xs text-danger mt-1">{error}</p>}
+      </div>
     )
   }
 
@@ -97,7 +161,7 @@ function StaffSelect({
         isRequired
         className="w-[256px]"
         name="worker"
-        selectedKey={selectedWorkerId}
+        selectedKey={selectedWorkerIds[0] || null}
         onSelectionChange={handleDesktopChange}
       >
         <Label className="text-sm font-medium flex items-center gap-2">
@@ -115,8 +179,8 @@ function StaffSelect({
                 <ListBox.Section>
                   <Header>{team.teamName}</Header>
                   {teamWorkers.map(worker => (
-                    <ListBox.Item key={worker.id} textValue={worker.surname + ' ' + worker.name} id={worker.id}>
-                      {worker.surname + ' ' + worker.name}
+                    <ListBox.Item key={worker.id} textValue={`${worker.surname} ${worker.name}`} id={worker.id}>
+                      {worker.surname} {worker.name}
                       <ListBox.ItemIndicator />
                     </ListBox.Item>
                   ))}

@@ -99,7 +99,7 @@ export interface Appointment {
   endTime: Date
   fahrzeit: number // время в пути (driving time)
   workerId: string
-  worker?: Worker
+  worker: Worker[]
   client?: Client
   reports?: Report[]
   isOpen: boolean

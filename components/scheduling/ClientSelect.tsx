@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useMemo, useCallback, memo } from 'react'
-import { ComboBox, Header, Input, Label, ListBox, Separator, TextField } from '@heroui/react'
+import { ComboBox, Header, Input, Label, ListBox, Separator } from '@heroui/react'
 import { User, MapPin } from 'lucide-react'
 import { Client, Groupe } from '@/types/scheduling'
 import { usePlatformContext } from '@/contexts/PlatformContext'
@@ -67,48 +67,46 @@ function ClientSelect({
   if (isReady && isMobile) {
     return (
       <div className="space-y-2 p-2">
-        <TextField className="w-full min-w-0" isRequired>
-          <Label className="text-base font-normal">Kunde</Label>
-          <div
-            className="relative surface surface--tertiary h-11 md:h-10 flex items-center rounded-xl w-full focus-within:outline-none focus-within:ring-0"
-            style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
+        <Label className="text-base font-normal">Kunde</Label>
+        <div
+          className="relative surface surface--tertiary h-11 md:h-10 flex items-center rounded-xl w-full"
+          style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
+        >
+          <select
+            name="client"
+            value={isNew && !isNewSelected ? 'Kunde auswählen' : selectedClientId}
+            onChange={handleMobileChange}
+            className="h-full w-full bg-transparent border-none outline-none text-foreground text-lg md:text-base ring-0 appearance-none px-3 pr-10 z-10 relative focus:outline-none focus:ring-0 focus:border-none"
+            style={{
+              WebkitAppearance: 'none',
+              MozAppearance: 'none',
+              minHeight: '100%',
+              lineHeight: 'normal',
+              outline: 'none',
+              boxShadow: 'none',
+              WebkitTapHighlightColor: 'transparent',
+              WebkitUserSelect: 'none',
+              WebkitTouchCallout: 'none',
+            }}
+            required
           >
-            <select
-              name="client"
-              value={isNew && !isNewSelected ? 'Kunde auswählen' : selectedClientId}
-              onChange={handleMobileChange}
-              className="w-full h-full px-2 py-0 text-lg font-normal md:text-base border-0 border-transparent outline-none cursor-pointer bg-transparent appearance-none text-foreground"
-              style={{
-                WebkitAppearance: 'none',
-                MozAppearance: 'none',
-                minHeight: '100%',
-                lineHeight: 'normal',
-                outline: 'none',
-                boxShadow: 'none',
-                WebkitTapHighlightColor: 'transparent',
-              }}
-              required
-            >
-              {isNew && !isNewSelected && (<option value="Kunde auswählen" disabled>
+            {isNew && !isNewSelected && (
+              <option value="Kunde auswählen" disabled>
                 Kunde auswählen
-             </option>
+              </option>
             )}
-              {groupedClients.map(({ group, clients: groupClients }) => (
-                <React.Fragment key={group.id}>
-                  <option value={group.groupeName} disabled>
-                    {'👥 ' + group.groupeName + ' 👥'}
+            {groupedClients.map(({ group, clients: groupClients }) => (
+              <optgroup key={group.id} label={group.groupeName}>
+                {groupClients.map(client => (
+                  <option key={client.id} value={client.id}>
+                    {client.surname} {client.name}
                   </option>
-                  {groupClients.map(client => (
-                    <option key={client.id} value={client.id}>
-                      {client.surname} {client.name}
-                    </option>
-                  ))}
-                </React.Fragment>
-              ))}
-            </select>
-            <User className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-default-500 pointer-events-none z-0" />
-          </div>
-        </TextField>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+          <User className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-default-500 pointer-events-none z-0" />
+        </div>
         {error && <p className="text-xs text-danger">{error}</p>}
 
         {/* Selected Client Info */}
