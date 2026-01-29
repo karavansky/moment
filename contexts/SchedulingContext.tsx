@@ -9,6 +9,7 @@ import {
   Groupe,
   User,
   Report,
+  Service,
   ServiceTreeItem,
 } from '@/types/scheduling';
 import getAllSampleObjects from '@/lib/scheduling-mock-data';
@@ -26,8 +27,8 @@ interface TeamsWithWorkers {
 
 interface ServiceOption {
   id: string;
-  name: string;
-  numbering: string;
+  name: string;        // Название с duration и price: "Ganzkörperwäsche, 30 Min, 25€"
+  fullPath: string;    // Полный путь для чипов: "Ganzkörperwäsche - Körperpflege - Grundpflege"
 }
 
 interface ServiceGroupForSelect {
@@ -367,25 +368,55 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     const rootServices: ServiceOption[] = [];
     const groups: ServiceGroupForSelect[] = [];
 
+    // Функция для построения цепочки родителей группы (вершина справа)
+    const buildGroupChain = (groupId: string): string => {
+      const group = state.services.find(s => s.id === groupId && s.isGroup);
+      if (!group) return '';
+
+      const chain: string[] = [group.name];
+      let currentParentId = group.parentId;
+
+      while (currentParentId) {
+        const parent = state.services.find(s => s.id === currentParentId && s.isGroup);
+        if (parent) {
+          chain.push(parent.name);
+          currentParentId = parent.parentId;
+        } else {
+          break;
+        }
+      }
+
+      // chain = ['Körperpflege', 'Grundpflege'] → 'Körperpflege - Grundpflege'
+      return chain.join(' - ');
+    };
+
+    // Функция для построения полного пути услуги (услуга - родители)
+    const buildServiceFullPath = (serviceName: string, parentId: string | null): string => {
+      if (!parentId) return serviceName;
+
+      const parentChain = buildGroupChain(parentId);
+      return parentChain ? `${serviceName} - ${parentChain}` : serviceName;
+    };
+
+    // Функция для форматирования названия услуги с duration и price
+    const formatServiceName = (service: Service): string => {
+      const parts = [service.name];
+      if (service.duration) parts.push(`${service.duration} Min`);
+      if (service.price) parts.push(`${service.price}€`);
+      return parts.join(', ');
+    };
+
     // Рекурсивная функция для обхода дерева и сбора групп с услугами
-    const processGroup = (parentId: string | null, prefix: string) => {
+    const processGroup = (parentId: string | null) => {
       const children = state.services.filter(s => s.parentId === parentId);
 
-      let counter = 1;
-
       // Сначала обрабатываем услуги (isGroup = false)
-      const services = children.filter(s => !s.isGroup);
-      const serviceOptions: ServiceOption[] = [];
-
-      for (const service of services) {
-        const numbering = prefix ? `${prefix}${counter}.` : `${counter}.`;
-        serviceOptions.push({
-          id: service.id,
-          name: service.name,
-          numbering,
-        });
-        counter++;
-      }
+      const services = children.filter((s): s is Service => !s.isGroup);
+      const serviceOptions: ServiceOption[] = services.map(service => ({
+        id: service.id,
+        name: formatServiceName(service),
+        fullPath: buildServiceFullPath(service.name, service.parentId),
+      }));
 
       // Если это корневой уровень и есть услуги — добавляем в rootServices
       if (parentId === null && serviceOptions.length > 0) {
@@ -395,40 +426,32 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
       // Обрабатываем подгруппы (isGroup = true)
       const subgroups = children.filter(s => s.isGroup);
       for (const group of subgroups) {
-        const groupNumbering = prefix ? `${prefix}${counter}.` : `${counter}.`;
-
         // Получаем услуги непосредственно в этой группе
         const groupChildren = state.services.filter(s => s.parentId === group.id);
-        const groupServices = groupChildren.filter(s => !s.isGroup);
+        const groupServices = groupChildren.filter((s): s is Service => !s.isGroup);
 
         // Если в группе есть услуги — добавляем как optgroup
         if (groupServices.length > 0) {
-          let serviceCounter = 1;
-          const options: ServiceOption[] = groupServices.map(service => {
-            const numbering = `${groupNumbering}${serviceCounter}.`;
-            serviceCounter++;
-            return {
-              id: service.id,
-              name: service.name,
-              numbering,
-            };
-          });
+          const options: ServiceOption[] = groupServices.map(service => ({
+            id: service.id,
+            name: formatServiceName(service),
+            fullPath: buildServiceFullPath(service.name, service.parentId),
+          }));
 
           groups.push({
             id: group.id,
-            label: `${groupNumbering} ${group.name}`,
+            label: buildGroupChain(group.id),
             options,
           });
         }
 
         // Рекурсивно обрабатываем вложенные группы
-        processGroup(group.id, groupNumbering);
-        counter++;
+        processGroup(group.id);
       }
     };
 
     // Начинаем с корневых элементов
-    processGroup(null, '');
+    processGroup(null);
 
     return { rootServices, groups };
   }, [state.services]);

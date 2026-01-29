@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Modal, Button, Separator, Label, Switch, TextField, FieldError } from '@heroui/react'
 import { useScheduling } from '@/contexts/SchedulingContext'
-import { Appointment } from '@/types/scheduling'
+import { Appointment, Service } from '@/types/scheduling'
 import { Clock, Save, Trash2, Car } from 'lucide-react'
 import { formatTime } from '@/lib/calendar-utils'
 import { parseDate, Time, today, getLocalTimeZone } from '@internationalized/date'
@@ -315,10 +315,16 @@ export default function AppointmentModal({
               {/* Services Selection */}
               <ServiceSelect
                 servicesForSelect={servicesForSelect}
-                selectedServices={"Ganzkörperwäsche"} 
-                onSelectionChange={serviceId => {
-                  console.log('Selected service ID:', serviceId)
-                //  setFormData(prev => ({ ...prev, services: serviceId }))
+                selectedServices={formData.services.map(s => s.id)}
+                onSelectionChange={serviceIds => {
+                  if (process.env.NODE_ENV === 'development') {
+                    console.log('Selected service IDs:', serviceIds)
+                  }
+                  // Находим полные объекты Service по ID (исключая группы)
+                  const selectedServiceObjects = serviceIds
+                    .map(id => services.find(s => s.id === id))
+                    .filter((s): s is Service => s !== undefined && !s.isGroup)
+                  setFormData(prev => ({ ...prev, services: selectedServiceObjects }))
                   setErrors(prev => ({ ...prev, services: '' }))
                 }}
                 error={errors.services}
