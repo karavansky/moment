@@ -1,25 +1,25 @@
 'use client'
 
 import React, { useCallback, useRef, memo } from 'react'
-import { Button, ComboBox, Input, Label, ListBox } from '@heroui/react'
+import { Autocomplete, Button, EmptyState, Header, Label, ListBox, SearchField, Tag, TagGroup, useFilter } from '@heroui/react'
 import { Plus, X, User } from 'lucide-react'
 import { usePlatformContext } from '@/contexts/PlatformContext'
 
 interface ServiceOption {
-  id: string;
-  name: string;        // Название с duration и price: "Ganzkörperwäsche, 30 Min, 25€"
-  fullPath: string;    // Полный путь для чипов: "Ganzkörperwäsche - Körperpflege - Grundpflege"
+  id: string
+  name: string // Название с duration и price: "Ganzkörperwäsche, 30 Min, 25€"
+  fullPath: string // Полный путь для чипов: "Ganzkörperwäsche - Körperpflege - Grundpflege"
 }
 
 interface ServiceGroupForSelect {
-  id: string;
-  label: string;
-  options: ServiceOption[];
+  id: string
+  label: string
+  options: ServiceOption[]
 }
 
 interface ServicesForSelect {
-  rootServices: ServiceOption[];
-  groups: ServiceGroupForSelect[];
+  rootServices: ServiceOption[]
+  groups: ServiceGroupForSelect[]
 }
 
 interface ServiceSelectProps {
@@ -39,25 +39,30 @@ function ServiceSelect({
 }: ServiceSelectProps) {
   const { isMobile, isReady } = usePlatformContext()
   const selectRef = useRef<HTMLSelectElement>(null)
+  const { contains } = useFilter({ sensitivity: 'base' })
 
   // Собираем все сервисы в один массив для поиска по ID
-  const allServices = React.useMemo(() => [
-    ...servicesForSelect.rootServices,
-    ...servicesForSelect.groups.flatMap(g => g.options)
-  ], [servicesForSelect])
+  const allServices = React.useMemo(
+    () => [...servicesForSelect.rootServices, ...servicesForSelect.groups.flatMap(g => g.options)],
+    [servicesForSelect]
+  )
 
   // Получаем объекты выбранных сервисов для отображения чипов
-  const selectedServiceObjects = React.useMemo(() =>
-    selectedServices
-      .map(id => allServices.find(s => s.id === id))
-      .filter(Boolean) as ServiceOption[],
+  const selectedServiceObjects = React.useMemo(
+    () =>
+      selectedServices
+        .map(id => allServices.find(s => s.id === id))
+        .filter(Boolean) as ServiceOption[],
     [selectedServices, allServices]
   )
 
   // Удаление одного сервиса из выбранных
-  const handleRemoveService = useCallback((idToRemove: string) => {
-    onSelectionChange(selectedServices.filter(id => id !== idToRemove))
-  }, [selectedServices, onSelectionChange])
+  const handleRemoveService = useCallback(
+    (idToRemove: string) => {
+      onSelectionChange(selectedServices.filter(id => id !== idToRemove))
+    },
+    [selectedServices, onSelectionChange]
+  )
 
   // Мемоизация обработчиков
   const handleMobileChange = useCallback(
@@ -81,8 +86,13 @@ function ServiceSelect({
   )
 
   const handleDesktopChange = useCallback(
-    (key: React.Key | null) => {
-      if (key) onSelectionChange([key as string])
+    (keys: React.Key | React.Key[] | null) => {
+      if (!keys) {
+        onSelectionChange([])
+        return
+      }
+      const keysArray = Array.isArray(keys) ? keys : [keys]
+      onSelectionChange(keysArray.map(k => String(k)))
     },
     [onSelectionChange]
   )
@@ -92,8 +102,8 @@ function ServiceSelect({
     console.log('Selected services:', selectedServices)
   }
   // (isReady && isMobile)
-   //   <TextField className="w-full min-w-0" isRequired name="service" type="text">
-//               <option value="">Bitte wählen...</option>
+  //   <TextField className="w-full min-w-0" isRequired name="service" type="text">
+  //               <option value="">Bitte wählen...</option>
 
   if (isReady && isMobile) {
     return (
@@ -134,23 +144,23 @@ function ServiceSelect({
             >
               {/* Корневые услуги без группы */}
               {servicesForSelect.rootServices.map(({ id, name }) => (
-                <option key={id} value={id}>{name}</option>
+                <option key={id} value={id}>
+                  {name}
+                </option>
               ))}
               {/* Группы с услугами */}
               {servicesForSelect.groups.map(({ id, label, options }) => (
                 <optgroup key={id} label={label}>
                   {options.map(({ id: optionId, name }) => (
-                    <option key={optionId} value={optionId}>{name}</option>
+                    <option key={optionId} value={optionId}>
+                      {name}
+                    </option>
                   ))}
                 </optgroup>
               ))}
             </select>
             {/* Видимая кнопка */}
-            <Button
-              variant="secondary"
-              size="sm"
-              className="w-full pointer-events-none"
-            >
+            <Button variant="secondary" size="sm" className="w-full pointer-events-none">
               <Plus size={16} />
               Услугу добавить
             </Button>
@@ -167,45 +177,89 @@ function ServiceSelect({
   // --- RENDER FOR DESKTOP ---
   return (
     <div className="space-y-2 p-2">
-      <ComboBox
+      <Autocomplete
         isRequired
-        className="w-[256px]"
+        fullWidth
         name="service"
-        selectedKey={selectedServices[0] || null}
-        onSelectionChange={handleDesktopChange}
+        value={selectedServices || null}
+        onChange={handleDesktopChange}
+        placeholder="Dienstleistung auswählen..."
+        selectionMode="multiple"
       >
         <Label className="text-sm font-medium flex items-center gap-2">
           <User className="w-4 h-4" />
           Dienstleistungen
         </Label>
-        <ComboBox.InputGroup>
-          <Input placeholder="Suche Fachkraft..." />
-          <ComboBox.Trigger />
-        </ComboBox.InputGroup>
-        <ComboBox.Popover>
-          <ListBox>
-            {/* Корневые услуги */}
-            {servicesForSelect.rootServices.map(({ id, name }) => (
-              <ListBox.Item key={id} textValue={name} id={id}>
-                {name}
-                <ListBox.ItemIndicator />
-              </ListBox.Item>
-            ))}
-            {/* Группы с услугами */}
-            {servicesForSelect.groups.flatMap(({ label, options }) => [
-              <ListBox.Item key={`header-${label}`} textValue={label} isDisabled>
-                <span className="font-semibold text-default-500">{label}</span>
-              </ListBox.Item>,
-              ...options.map(({ id: optionId, name }) => (
-                <ListBox.Item key={optionId} textValue={name} id={optionId}>
-                  <span className="pl-4">{name}</span>
-                  <ListBox.ItemIndicator />
-                </ListBox.Item>
-              )),
-            ])}
-          </ListBox>
-        </ComboBox.Popover>
-      </ComboBox>
+        <Autocomplete.Trigger>
+          <Autocomplete.Value>
+            {({ defaultChildren, isPlaceholder, state }: any) => {
+              if (isPlaceholder || state.selectedItems.length === 0) {
+                return defaultChildren
+              }
+
+              return (
+                <TagGroup
+                  size="lg"
+                  onRemove={(keys: Set<React.Key>) => {
+                    const newSelection = selectedServices.filter(id => !keys.has(id))
+                    onSelectionChange(newSelection)
+                  }}
+                  
+                >
+                  <TagGroup.List>
+                    {state.selectedItems.map((item: any) => {
+                      const service = allServices.find(s => s.id === item.key)
+                      return (
+                        <Tag key={item.key} id={item.key} className='font-normal'>
+                          {service?.fullPath || item.textValue}
+                        </Tag>
+                      )
+                    })}
+                  </TagGroup.List>
+                </TagGroup>
+              )
+            }}
+          </Autocomplete.Value>
+          <Autocomplete.ClearButton />
+          <Autocomplete.Indicator />
+        </Autocomplete.Trigger>
+        <Autocomplete.Popover className="min-w-100">
+          <Autocomplete.Filter filter={contains}>
+            <SearchField autoFocus name="search">
+              <SearchField.Group>
+                <SearchField.SearchIcon />
+                <SearchField.Input placeholder="Suche Dienstleistung..." />
+                <SearchField.ClearButton />
+              </SearchField.Group>
+            </SearchField>
+            <ListBox renderEmptyState={() => <EmptyState>Keine Ergebnisse</EmptyState>}>
+              {/* Корневые услуги */}
+              {servicesForSelect.rootServices.length > 0 && (
+                <ListBox.Section>
+                  {servicesForSelect.rootServices.map(({ id, name }) => (
+                    <ListBox.Item key={id} textValue={name} id={id}>
+                      {name}
+                      <ListBox.ItemIndicator />
+                    </ListBox.Item>
+                  ))}
+                </ListBox.Section>
+              )}
+              {/* Группы с услугами */}
+              {servicesForSelect.groups.map(({ id, label, options }) => (
+                <ListBox.Section key={id}>
+                  <Header>{label}</Header>
+                  {options.map(({ id: optionId, name }) => (
+                    <ListBox.Item key={optionId} textValue={name} id={optionId}>
+                      {name}
+                      <ListBox.ItemIndicator />
+                    </ListBox.Item>
+                  ))}
+                </ListBox.Section>
+              ))}
+            </ListBox>
+          </Autocomplete.Filter>
+        </Autocomplete.Popover>
+      </Autocomplete>
       {error && <p className="text-xs text-danger">{error}</p>}
     </div>
   )

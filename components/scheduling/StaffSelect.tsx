@@ -1,15 +1,15 @@
 'use client'
 
 import React, { useCallback, useRef, memo } from 'react'
-import { Button, ComboBox, Header, Input, Label, ListBox, Separator } from '@heroui/react'
+import { Autocomplete, Button, EmptyState, Header, Label, ListBox, SearchField, Separator, Tag, TagGroup, useFilter } from '@heroui/react'
 import { Plus, X, User } from 'lucide-react'
 import { Team, Worker } from '@/types/scheduling'
 import { usePlatformContext } from '@/contexts/PlatformContext'
 
 interface WorkerOption {
   id: string
-  name: string       // "Müller Max"
-  fullPath: string   // "Müller Max - Team Alpha"
+  name: string // "Müller Max"
+  fullPath: string // "Müller Max - Team Alpha"
 }
 
 interface TeamsWithWorkers {
@@ -34,6 +34,7 @@ function StaffSelect({
 }: StaffSelectProps) {
   const { isMobile, isReady } = usePlatformContext()
   const selectRef = useRef<HTMLSelectElement>(null)
+  const { contains } = useFilter({ sensitivity: 'base' })
 
   // Собираем всех workers в один массив с информацией о команде
   const allWorkers = React.useMemo(() => {
@@ -51,17 +52,21 @@ function StaffSelect({
   }, [teamsWithWorkers])
 
   // Получаем объекты выбранных workers для отображения чипов
-  const selectedWorkerObjects = React.useMemo(() =>
-    selectedWorkerIds
-      .map(id => allWorkers.find(w => w.id === id))
-      .filter(Boolean) as WorkerOption[],
+  const selectedWorkerObjects = React.useMemo(
+    () =>
+      selectedWorkerIds
+        .map(id => allWorkers.find(w => w.id === id))
+        .filter(Boolean) as WorkerOption[],
     [selectedWorkerIds, allWorkers]
   )
 
   // Удаление одного worker из выбранных
-  const handleRemoveWorker = useCallback((idToRemove: string) => {
-    onSelectionChange(selectedWorkerIds.filter(id => id !== idToRemove))
-  }, [selectedWorkerIds, onSelectionChange])
+  const handleRemoveWorker = useCallback(
+    (idToRemove: string) => {
+      onSelectionChange(selectedWorkerIds.filter(id => id !== idToRemove))
+    },
+    [selectedWorkerIds, onSelectionChange]
+  )
 
   // Обработчик для mobile select
   const handleMobileChange = useCallback(
@@ -80,8 +85,13 @@ function StaffSelect({
 
   // Обработчик для desktop
   const handleDesktopChange = useCallback(
-    (key: React.Key | null) => {
-      if (key) onSelectionChange([key as string])
+    (keys: React.Key | React.Key[] | null) => {
+      if (!keys) {
+        onSelectionChange([])
+        return
+      }
+      const keysArray = Array.isArray(keys) ? keys : [keys]
+      onSelectionChange(keysArray.map(k => String(k)))
     },
     [onSelectionChange]
   )
@@ -91,7 +101,7 @@ function StaffSelect({
     console.log('Selected worker IDs:', selectedWorkerIds)
   }
 
-  if (true) {
+  if (isReady && isMobile) {
     return (
       <div className="w-full min-w-0">
         <Label className="text-base font-normal">Fachkräfte</Label>
@@ -139,11 +149,7 @@ function StaffSelect({
               ))}
             </select>
             {/* Видимая кнопка */}
-            <Button
-              variant="secondary"
-              size="sm"
-              className="w-full pointer-events-none"
-            >
+            <Button variant="secondary" size="sm" className="w-full pointer-events-none">
               <Plus size={16} />
               Fachkraft hinzufügen
             </Button>
@@ -157,40 +163,84 @@ function StaffSelect({
   // --- RENDER FOR DESKTOP ---
   return (
     <div className="space-y-2 p-2">
-      <ComboBox
+      <Autocomplete
         isRequired
-        className="w-[256px]"
+        fullWidth
         name="worker"
-        selectedKey={selectedWorkerIds[0] || null}
-        onSelectionChange={handleDesktopChange}
+        value={selectedWorkerIds || null}
+        onChange={handleDesktopChange}
+        placeholder="Fachkraft auswählen..."
+        selectionMode="multiple"
+
       >
         <Label className="text-sm font-medium flex items-center gap-2">
           <User className="w-4 h-4" />
           Fachkraft
         </Label>
-        <ComboBox.InputGroup>
-          <Input placeholder="Suche Fachkraft..." />
-          <ComboBox.Trigger />
-        </ComboBox.InputGroup>
-        <ComboBox.Popover>
-          <ListBox>
-            {teamsWithWorkers.map(({ team, workers: teamWorkers }, index) => (
-              <React.Fragment key={team.id}>
-                <ListBox.Section>
-                  <Header>{team.teamName}</Header>
-                  {teamWorkers.map(worker => (
-                    <ListBox.Item key={worker.id} textValue={`${worker.surname} ${worker.name}`} id={worker.id}>
-                      {worker.surname} {worker.name}
-                      <ListBox.ItemIndicator />
-                    </ListBox.Item>
-                  ))}
-                </ListBox.Section>
-                {index < teamsWithWorkers.length - 1 && <Separator />}
-              </React.Fragment>
-            ))}
-          </ListBox>
-        </ComboBox.Popover>
-      </ComboBox>
+        <Autocomplete.Trigger>
+          <Autocomplete.Value>
+            {({ defaultChildren, isPlaceholder, state }: any) => {
+              if (isPlaceholder || state.selectedItems.length === 0) {
+                return defaultChildren
+              }
+
+              return (
+                <TagGroup
+                  size="lg"
+                  onRemove={(keys: Set<React.Key>) => {
+                    const newSelection = selectedWorkerIds.filter(id => !keys.has(id))
+                    onSelectionChange(newSelection)
+                  }}
+                >
+                  <TagGroup.List>
+                    {state.selectedItems.map((item: any) => {
+                      const worker = allWorkers.find(w => w.id === item.key)
+                      return (
+                        <Tag key={item.key} id={item.key} className="font-normal">
+                          {worker?.fullPath || item.textValue}
+                        </Tag>
+                      )
+                    })}
+                  </TagGroup.List>
+                </TagGroup>
+              )
+            }}
+          </Autocomplete.Value>
+          <Autocomplete.ClearButton />
+          <Autocomplete.Indicator />
+        </Autocomplete.Trigger>
+        <Autocomplete.Popover>
+          <Autocomplete.Filter filter={contains}>
+            <SearchField autoFocus name="search">
+              <SearchField.Group>
+                <SearchField.SearchIcon />
+                <SearchField.Input placeholder="Suche Fachkraft..." />
+                <SearchField.ClearButton />
+              </SearchField.Group>
+            </SearchField>
+            <ListBox renderEmptyState={() => <EmptyState>Keine Ergebnisse</EmptyState>}>
+              {teamsWithWorkers.map(({ team, workers: teamWorkers }, index) => (
+                <React.Fragment key={team.id}>
+                  <ListBox.Section>
+                    <Header>{team.teamName}</Header>
+                    {teamWorkers.map(worker => (
+                      <ListBox.Item
+                        key={worker.id}
+                        textValue={`${worker.surname} ${worker.name}`}
+                        id={worker.id}
+                      >
+                        {worker.surname} {worker.name}
+                        <ListBox.ItemIndicator />
+                      </ListBox.Item>
+                    ))}
+                  </ListBox.Section>
+                  {index < teamsWithWorkers.length - 1 && <Separator />}
+                </React.Fragment>
+              ))}
+            </ListBox>
+          </Autocomplete.Filter>
+        </Autocomplete.Popover>
+      </Autocomplete>
       {error && <p className="text-xs text-danger">{error}</p>}
     </div>
   )
