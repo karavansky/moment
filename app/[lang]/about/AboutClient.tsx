@@ -32,7 +32,7 @@ export default function AboutClient() {
     <div className="w-full pb-6 pt-12 md:pt-12 px-0 md:px-6 lg:px-20">
       {/* HERO */}
       <label htmlFor="ice-cream-choice">Choose a flavor:</label>
-      <input list="ice-cream-flavors" id="ice-cream-choice" name="ice-cream-choice" />
+      <input list="ice-cream-flavors" id="ice-cream-choice" name="ice-cream-choice" placeholder='Foo'/>
 
       <datalist id="ice-cream-flavors">
         <option value="Chocolate"></option>
