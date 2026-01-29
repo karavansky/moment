@@ -2,7 +2,7 @@
 
 import React, { useMemo, useCallback, memo } from 'react'
 import { ComboBox, Header, Input, Label, ListBox, Separator } from '@heroui/react'
-import { User, MapPin } from 'lucide-react'
+import { UserStar, MapPin } from 'lucide-react'
 import { Client, Groupe } from '@/types/scheduling'
 import { usePlatformContext } from '@/contexts/PlatformContext'
 
@@ -105,7 +105,7 @@ function ClientSelect({
               </optgroup>
             ))}
           </select>
-          <User className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-default-500 pointer-events-none z-0" />
+          <UserStar className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-default-500 pointer-events-none z-0" />
         </div>
         {error && <p className="text-xs text-danger">{error}</p>}
 
@@ -139,7 +139,7 @@ function ClientSelect({
         onSelectionChange={handleDesktopChange}
       >
         <Label className="text-sm font-medium flex items-center gap-2">
-          <User className="w-4 h-4" />
+          <UserStar className="w-6 h-6" />
           Kunde
         </Label>
         <ComboBox.InputGroup>

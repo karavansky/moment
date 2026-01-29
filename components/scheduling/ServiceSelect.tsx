@@ -1,8 +1,19 @@
 'use client'
 
 import React, { useCallback, useRef, memo } from 'react'
-import { Autocomplete, Button, EmptyState, Header, Label, ListBox, SearchField, Tag, TagGroup, useFilter } from '@heroui/react'
-import { Plus, X, User } from 'lucide-react'
+import {
+  Autocomplete,
+  Button,
+  EmptyState,
+  Header,
+  Label,
+  ListBox,
+  SearchField,
+  Tag,
+  TagGroup,
+  useFilter,
+} from '@heroui/react'
+import { Plus, X, HandHeart } from 'lucide-react'
 import { usePlatformContext } from '@/contexts/PlatformContext'
 
 interface ServiceOption {
@@ -108,7 +119,10 @@ function ServiceSelect({
   if (isReady && isMobile) {
     return (
       <div className="w-full min-w-0">
-        <Label className="text-base font-normal">Dienstleistungen</Label>
+        <Label className="text-base font-normal">
+          <HandHeart className="w-6 h-6" />
+          Dienstleistungen
+        </Label>
 
         {/* Чипы с выбранными услугами */}
         {selectedServiceObjects.length > 0 && (
@@ -187,7 +201,7 @@ function ServiceSelect({
         selectionMode="multiple"
       >
         <Label className="text-sm font-medium flex items-center gap-2">
-          <User className="w-4 h-4" />
+          <HandHeart className="w-6 h-6" />
           Dienstleistungen
         </Label>
         <Autocomplete.Trigger>
@@ -204,13 +218,12 @@ function ServiceSelect({
                     const newSelection = selectedServices.filter(id => !keys.has(id))
                     onSelectionChange(newSelection)
                   }}
-                  
                 >
                   <TagGroup.List>
                     {state.selectedItems.map((item: any) => {
                       const service = allServices.find(s => s.id === item.key)
                       return (
-                        <Tag key={item.key} id={item.key} className='font-normal'>
+                        <Tag key={item.key} id={item.key} className="font-normal">
                           {service?.fullPath || item.textValue}
                         </Tag>
                       )

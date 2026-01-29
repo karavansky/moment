@@ -2,7 +2,7 @@
 
 import React, { useCallback, useRef, memo } from 'react'
 import { Autocomplete, Button, EmptyState, Header, Label, ListBox, SearchField, Separator, Tag, TagGroup, useFilter } from '@heroui/react'
-import { Plus, X, User } from 'lucide-react'
+import { Plus, X, User, Users } from 'lucide-react'
 import { Team, Worker } from '@/types/scheduling'
 import { usePlatformContext } from '@/contexts/PlatformContext'
 
@@ -174,7 +174,7 @@ function StaffSelect({
 
       >
         <Label className="text-sm font-medium flex items-center gap-2">
-          <User className="w-4 h-4" />
+          <Users className="w-6 h-6" />
           Fachkraft
         </Label>
         <Autocomplete.Trigger>
