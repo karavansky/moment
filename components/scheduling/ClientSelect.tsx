@@ -5,7 +5,8 @@ import { ComboBox, Header, Input, Label, ListBox, Separator } from '@heroui/reac
 import { UserStar, MapPin } from 'lucide-react'
 import { Client, Groupe } from '@/types/scheduling'
 import { usePlatformContext } from '@/contexts/PlatformContext'
-
+import { LogoMoment } from '@/components/icons'
+ 
 interface GroupedClients {
   group: Groupe
   clients: Client[]
@@ -116,7 +117,7 @@ function ClientSelect({
         {selectedClient && (
           <div className="bg-default-50 rounded-lg">
             <div className="flex items-start gap-2 text-sm">
-              <MapPin className="w-4 h-4 mt-0.5 text-default-500" />
+              <LogoMoment className="w-4 h-4 mt-0.5 text-default-500" />
               <div>
                 <p className="text-xs text-default-500">
                   {selectedClient.street} {selectedClient.houseNumber}
@@ -176,9 +177,9 @@ function ClientSelect({
 
       {/* Selected Client Info */}
       {selectedClient && (
-        <div className="pt-1 bg-default-50 rounded-lg">
+        <div className=" bg-default-50 rounded-lg">
           <div className="flex items-start gap-2 text-sm">
-            <MapPin className="w-4 h-4 mt-0.5 text-default-500" />
+            <LogoMoment className="w-4 h-4 mt-0.5 text-default-500" />
             <div>
               <p className="text-xs text-default-500">
                 {selectedClient.street} {selectedClient.houseNumber}

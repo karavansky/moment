@@ -133,13 +133,15 @@ function ServiceSelect({
                 className="inline-flex items-center gap-1 px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-sm"
               >
                 {fullPath}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveService(id)}
-                  className="p-0.5 hover:bg-primary-200 rounded-full"
+                <Button
+                  isIconOnly
+                  size="sm"
+                  variant='tertiary'
+                  onPress={() => handleRemoveService(id)}
+                  className="w-5 h-5 p-0.5 rounded-full"
                 >
-                  <X size={14} />
-                </button>
+                  <X size={4} />
+                </Button>
               </span>
             ))}
           </div>
