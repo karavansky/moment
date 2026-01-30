@@ -65,7 +65,7 @@ export default function AppointmentModal({
             isDriveTime: false,
             isFixedTime: false,
             services: appointment.services || [],
-            reports: appointment.reports ||  [],
+            reports: appointment.reports || [],
           }
         : {
             clientID: '',
@@ -112,13 +112,12 @@ export default function AppointmentModal({
           }
   )
   if (process.env.NODE_ENV === 'development') {
-   // console.log('Initial formData:', formData)
-   // console.log('Appointment prop:', appointment)
+    // console.log('Initial formData:', formData)
+    // console.log('Appointment prop:', appointment)
   }
   const [isDateInvalid, setIsDateInvalid] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const timeInputRef = useRef<HTMLInputElement>(null)
-
 
   // Initialize form data when appointment or selectedDate changes
   useEffect(() => {
@@ -308,7 +307,7 @@ export default function AppointmentModal({
                 isNew={isNewAppointment || !appointment}
               />
 
-              <Separator className='mb-2'/>
+              <Separator className="my-2" />
               {/* Services Selection */}
               <ServiceSelect
                 servicesForSelect={servicesForSelect}
@@ -327,7 +326,7 @@ export default function AppointmentModal({
                 error={errors.services}
               />
 
-              <Separator className='my-2'/>
+              <Separator className="my-2" />
               {/* Worker Selection */}
               <StaffSelect
                 teamsWithWorkers={teamsWithWorkers}
@@ -346,7 +345,7 @@ export default function AppointmentModal({
                 error={errors.workers}
               />
 
-              <Separator className='my-2'/>
+              <Separator className="my-2" />
 
               {/* Date */}
               <div className="flex items-center justify-between flex-row gap-2 w-full">
@@ -577,13 +576,11 @@ export default function AppointmentModal({
                 </div>
               )}
 
-              <Separator />
-
               {/* Footer Buttons */}
-              <div className="flex justify-between pt-4 border-t border-divider">
+              <div className="flex justify-between ">
                 <div>
                   {isEditMode && !readOnly && (
-                    <Button variant="danger" onPress={handleDelete} className="gap-2">
+                    <Button variant="danger" onPress={handleDelete} size='sm' className="gap-2">
                       <Trash2 className="w-4 h-4" />
                       Löschen
                     </Button>
@@ -591,7 +588,7 @@ export default function AppointmentModal({
                 </div>
                 <div className="flex gap-2">
                   {!readOnly && (
-                    <Button variant="primary" onPress={handleSave} className="gap-2">
+                    <Button variant="primary" onPress={handleSave} size='sm' className="gap-2">
                       <Save className="w-4 h-4" />
                       {isEditMode ? 'Speichern' : 'Erstellen'}
                     </Button>

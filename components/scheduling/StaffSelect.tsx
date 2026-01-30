@@ -164,7 +164,7 @@ function StaffSelect({
 
   // --- RENDER FOR DESKTOP ---
   return (
-    <div className="space-y-2 p-2">
+    <div className="space-y-2 ">
       <Autocomplete
         isRequired
         fullWidth

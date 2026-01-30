@@ -190,7 +190,7 @@ function ServiceSelect({
 
   // --- RENDER FOR DESKTOP ---
   return (
-    <div className="space-y-2 p-2">
+    <div className="space-y-2 ">
       <Autocomplete
         isRequired
         fullWidth
@@ -236,7 +236,7 @@ function ServiceSelect({
           <Autocomplete.ClearButton />
           <Autocomplete.Indicator />
         </Autocomplete.Trigger>
-        <Autocomplete.Popover className="min-w-100">
+        <Autocomplete.Popover className="w-full max-w-sm">
           <Autocomplete.Filter filter={contains}>
             <SearchField autoFocus name="search">
               <SearchField.Group>

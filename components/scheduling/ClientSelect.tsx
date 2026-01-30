@@ -66,7 +66,7 @@ function ClientSelect({
   }
   if (isReady && isMobile) {
     return (
-      <div className="space-y-2 p-2">
+      <div className="space-y-2 ">
         <Label className="text-base font-normal flex items-center gap-2">
           <UserStar className="w-6 h-6" />
           Kunde
@@ -133,7 +133,7 @@ function ClientSelect({
 
   // --- RENDER FOR DESKTOP ---
   return (
-    <div className="space-y-2 p-2">
+    <div className="space-y-2 ">
       <ComboBox
         isRequired
         className="w-[256px]"
