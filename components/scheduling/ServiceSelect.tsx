@@ -119,7 +119,7 @@ function ServiceSelect({
   if (isReady && isMobile) {
     return (
       <div className="w-full min-w-0">
-        <Label className="text-base font-normal">
+        <Label className="text-base font-normal flex items-center gap-2">
           <HandHeart className="w-6 h-6" />
           Dienstleistungen
         </Label>

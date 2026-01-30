@@ -62,12 +62,15 @@ function ClientSelect({
 
   // --- RENDER FOR MOBILE (iOS/Android) ---
   if (process.env.NODE_ENV === 'development') {
-    console.log("Selected client ID:", selectedClientId)
+    console.log('Selected client ID:', selectedClientId)
   }
   if (isReady && isMobile) {
     return (
       <div className="space-y-2 p-2">
-        <Label className="text-base font-normal">Kunde</Label>
+        <Label className="text-base font-normal flex items-center gap-2">
+          <UserStar className="w-6 h-6" />
+          Kunde
+        </Label>
         <div
           className="relative surface surface--tertiary h-11 md:h-10 flex items-center rounded-xl w-full"
           style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
