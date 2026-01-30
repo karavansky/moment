@@ -576,86 +576,27 @@ export default function AppointmentModal({
                 </div>
               )}
 
+            </Modal.Body>
+            <Modal.Footer>
               {/* Footer Buttons */}
-              <div className="flex justify-between ">
-                <div>
+              <div className="flex items-center w-full">
                   {isEditMode && !readOnly && (
-                    <Button variant="danger" onPress={handleDelete} size='sm' className="gap-2">
+                    <Button variant="danger" onPress={handleDelete} size='sm' className="gap-2 ">
                       <Trash2 className="w-4 h-4" />
                       Löschen
                     </Button>
                   )}
-                </div>
-                <div className="flex gap-2">
                   {!readOnly && (
-                    <Button variant="primary" onPress={handleSave} size='sm' className="gap-2">
+                    <Button variant="primary" onPress={handleSave} size='sm' className="gap-2 ml-auto">
                       <Save className="w-4 h-4" />
                       {isEditMode ? 'Speichern' : 'Erstellen'}
                     </Button>
                   )}
-                </div>
               </div>
-            </Modal.Body>
+            </Modal.Footer>
           </Modal.Dialog>
         </Modal.Container>
       </Modal.Backdrop>
     </Modal>
   )
 }
-
-/*
-
-
-  
-              <div className="space-y-2">
-                <Label className="text-sm font-medium flex items-center gap-2">
-                  <Car className="w-4 h-4" />
-                  Fahrzeit (Minuten)
-                </Label>
-                <input
-                  type="number"
-                  min={0}
-                  step={5}
-                  value={formData.fahrzeit}
-                  onChange={e =>
-                    setFormData(prev => ({
-                      ...prev,
-                      fahrzeit: parseInt(e.target.value) || 0,
-                    }))
-                  }
-                  disabled={readOnly}
-                  className="w-full px-3 py-2 border border-divider rounded-lg bg-default-50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-70 disabled:cursor-not-allowed"
-                />
-                <p className="text-xs text-default-500">Geschätzte Fahrzeit zum nächsten Termin</p>
-              </div>
-
-                <Label className="text-sm font-medium flex items-center gap-2">
-                  <User className="w-4 h-4" />
-                  Kunde *
-                </Label>
-                <select
-                  value={formData.clientID}
-                  onChange={e => {
-                    setFormData(prev => ({ ...prev, clientID: e.target.value }))
-                    setErrors(prev => ({ ...prev, clientID: '' }))
-                  }}
-                  disabled={readOnly}
-                  className="w-full px-3 py-2 border border-divider rounded-lg bg-default-50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                  <option value="">Kunde auswählen</option>
-                  {clients.map(client => (
-                    <option key={client.id} value={client.id}>
-                      {client.clientName} - {client.strasse} {client.houseNumber}, {client.plz}{' '}
-                      {client.ort}
-                    </option>
-                  ))}
-                </select>
-
-
-
-
-<Button variant="tertiary" onPress={handleClose} className="gap-2">
-                    <X className="w-4 h-4" />
-                    {readOnly ? 'Schließen' : 'Abbrechen'}
-                  </Button>
-*/
