@@ -294,7 +294,7 @@ export default function AppointmentModal({
               </div>
             </Modal.Header>
 
-            <Modal.Body className="gap-4 py-2">
+            <Modal.Body className="gap-4 ">
               {/* Client Selection */}
               <ClientSelect
                 groupedClients={groupedClients}
@@ -308,7 +308,7 @@ export default function AppointmentModal({
                 isNew={isNewAppointment || !appointment}
               />
 
-              <Separator />
+              <Separator className='mb-2'/>
               {/* Services Selection */}
               <ServiceSelect
                 servicesForSelect={servicesForSelect}
@@ -327,7 +327,7 @@ export default function AppointmentModal({
                 error={errors.services}
               />
 
-              <Separator />
+              <Separator className='my-2'/>
               {/* Worker Selection */}
               <StaffSelect
                 teamsWithWorkers={teamsWithWorkers}
@@ -346,7 +346,7 @@ export default function AppointmentModal({
                 error={errors.workers}
               />
 
-              <Separator />
+              <Separator className='my-2'/>
 
               {/* Date */}
               <div className="flex items-center justify-between flex-row gap-2 w-full">

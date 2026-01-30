@@ -114,7 +114,7 @@ function ClientSelect({
 
         {/* Selected Client Info */}
         {selectedClient && (
-          <div className="pt-1 pb-2 bg-default-50 rounded-lg">
+          <div className="bg-default-50 rounded-lg">
             <div className="flex items-start gap-2 text-sm">
               <MapPin className="w-4 h-4 mt-0.5 text-default-500" />
               <div>
@@ -176,7 +176,7 @@ function ClientSelect({
 
       {/* Selected Client Info */}
       {selectedClient && (
-        <div className="pt-1 pb-2 bg-default-50 rounded-lg">
+        <div className="pt-1 bg-default-50 rounded-lg">
           <div className="flex items-start gap-2 text-sm">
             <MapPin className="w-4 h-4 mt-0.5 text-default-500" />
             <div>
