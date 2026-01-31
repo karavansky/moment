@@ -48,7 +48,7 @@ function ServiceSelect({
   error,
   className,
 }: ServiceSelectProps) {
-  const { isMobile, isReady } = usePlatformContext()
+  const { isMobile, isReady , isIOS} = usePlatformContext()
   const selectRef = useRef<HTMLSelectElement>(null)
   const { contains } = useFilter({ sensitivity: 'base' })
 
@@ -116,7 +116,7 @@ function ServiceSelect({
   //   <TextField className="w-full min-w-0" isRequired name="service" type="text">
   //               <option value="">Bitte wählen...</option>
   console.log('isReady:', isReady, 'isMobile:', isMobile)
-  if (isReady && isMobile) {
+  if (isReady && isMobile && isIOS) {
     return (
       <div className="w-full min-w-0">
         <Label className="text-base font-normal flex items-center gap-2">
