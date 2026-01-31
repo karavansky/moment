@@ -27,7 +27,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts", "components/contacts/ContactsLayout.old",  
+    ".next/dev/types/**/*.ts", "components/contacts/ContactsLayout.old", "lib/s3.js",  
   ],
   "exclude": ["node_modules"]
 }
