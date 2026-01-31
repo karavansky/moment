@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useRef, memo } from 'react'
+import React, { useCallback, useRef, memo, useState } from 'react'
 import { Autocomplete, Button, EmptyState, Header, Label, ListBox, SearchField, Separator, Tag, TagGroup, useFilter } from '@heroui/react'
 import { Plus, X, User, Users } from 'lucide-react'
 import { Team, Worker } from '@/types/scheduling'
@@ -35,6 +35,10 @@ function StaffSelect({
   const { isMobile, isReady } = usePlatformContext()
   const selectRef = useRef<HTMLSelectElement>(null)
   const { contains } = useFilter({ sensitivity: 'base' })
+
+  // Для Android: отслеживаем момент focus, чтобы игнорировать ложный onChange
+  const focusTimestampRef = useRef<number>(0)
+  const [isPickerOpen, setIsPickerOpen] = useState(false)
 
   // Собираем всех workers в один массив с информацией о команде
   const allWorkers = React.useMemo(() => {
@@ -73,14 +77,37 @@ function StaffSelect({
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const selectedOptions = Array.from(e.target.selectedOptions)
       const selectedIds = selectedOptions.map(option => option.value)
+      const timeSinceFocus = Date.now() - focusTimestampRef.current
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Selected worker IDs:', selectedIds)
+      console.log('📱 [StaffSelect] handleMobileChange triggered')
+      console.log('  ├─ Event type:', e.type)
+      console.log('  ├─ Event target:', e.target.tagName)
+      console.log('  ├─ selectedOptions count:', selectedOptions.length)
+      console.log('  ├─ selectedOptions values:', selectedOptions.map(o => o.value))
+      console.log('  ├─ Previous selectedWorkerIds:', selectedWorkerIds)
+      console.log('  ├─ New selectedIds:', selectedIds)
+      console.log('  ├─ Time since focus:', timeSinceFocus, 'ms')
+      console.log('  ├─ isPickerOpen:', isPickerOpen)
+      console.log('  └─ select.value:', e.target.value)
+
+      // Android fix: игнорируем onChange с пустым selection, если он произошел
+      // сразу после focus (< 300ms) и у нас были выбранные элементы
+      // Android WebView может иметь задержку до 150-200ms
+      if (selectedIds.length === 0 && selectedWorkerIds.length > 0 && timeSinceFocus < 300) {
+        console.log('  ⚠️ IGNORED: Android false onChange after focus')
+        // Принудительно восстанавливаем selection в DOM
+        if (selectRef.current) {
+          selectedWorkerIds.forEach(id => {
+            const option = selectRef.current?.querySelector(`option[value="${id}"]`) as HTMLOptionElement | null
+            if (option) option.selected = true
+          })
+        }
+        return
       }
 
       onSelectionChange(selectedIds)
     },
-    [onSelectionChange]
+    [onSelectionChange, selectedWorkerIds, isPickerOpen]
   )
 
   // Обработчик для desktop
@@ -97,9 +124,34 @@ function StaffSelect({
   )
 
   // --- RENDER FOR MOBILE (iOS/Android) ---
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Selected worker IDs:', selectedWorkerIds)
-  }
+  console.log('🔄 [StaffSelect] RENDER')
+  console.log('  ├─ isReady:', isReady)
+  console.log('  ├─ isMobile:', isMobile)
+  console.log('  ├─ selectedWorkerIds:', selectedWorkerIds)
+  console.log('  └─ selectedWorkerObjects:', selectedWorkerObjects.map(w => w.id))
+
+  // Обработчики событий для логгирования
+  const handleFocus = useCallback((e: React.FocusEvent<HTMLSelectElement>) => {
+    focusTimestampRef.current = Date.now()
+    setIsPickerOpen(true)
+    console.log('🎯 [StaffSelect] SELECT FOCUS')
+    console.log('  ├─ Current selectedWorkerIds:', selectedWorkerIds)
+    console.log('  ├─ Timestamp:', focusTimestampRef.current)
+    console.log('  └─ select.value:', e.target.value)
+  }, [selectedWorkerIds])
+
+  const handleBlur = useCallback((e: React.FocusEvent<HTMLSelectElement>) => {
+    setIsPickerOpen(false)
+    console.log('👋 [StaffSelect] SELECT BLUR')
+    console.log('  ├─ Current selectedWorkerIds:', selectedWorkerIds)
+    console.log('  ├─ selectedOptions:', Array.from(e.target.selectedOptions).map(o => o.value))
+    console.log('  └─ select.value:', e.target.value)
+  }, [selectedWorkerIds])
+
+  const handleClick = useCallback((_e: React.MouseEvent<HTMLSelectElement>) => {
+    console.log('👆 [StaffSelect] SELECT CLICK')
+    console.log('  └─ Current selectedWorkerIds:', selectedWorkerIds)
+  }, [selectedWorkerIds])
 
   if (isReady && isMobile) {
     return (
@@ -136,6 +188,9 @@ function StaffSelect({
               ref={selectRef}
               name="staff"
               onChange={handleMobileChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              onClick={handleClick}
               multiple
               value={selectedWorkerIds}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
