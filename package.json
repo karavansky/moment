@@ -17,6 +17,7 @@
     "test:db": "node scripts/test-db-connection.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.980.0",
     "@heroui/badge": "^2.2.18",
     "@heroui/date-picker": "^2.3.31",
     "@heroui/pagination": "^2.2.26",
@@ -56,6 +57,17 @@
     "react-hook-form": "^7.71.1",
     "react-leaflet": "^5.0.0",
     "react-window": "^2.2.5"
+  },
+  "overrides": {
+    "@auth/core": {
+      "nodemailer": "7.0.13"
+    },
+    "imap": {
+      "utf7": {
+        "semver": "^5.7.2"
+      }
+    },
+    "fast-xml-parser": "^5.3.4"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
