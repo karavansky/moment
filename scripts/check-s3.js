@@ -14,30 +14,31 @@ async function checkSeaweed() {
   try {
     // List Buckets
     const buckets = await s3Client.send(new ListBucketsCommand({}));
+    // Note: SeaweedFS S3 API might return null for Buckets if empty, or array
     console.log("Buckets found:", buckets.Buckets?.map(b => b.Name));
 
-    if (!buckets.Buckets || buckets.Buckets.length === 0) {
-      console.log("No buckets found.");
-      return;
-    }
-
-    // Check 'images' bucket
+    // Check 'images' bucket explicitly even if ListBuckets is empty (sometimes S3 API behaves differently than Filer)
     const bucketName = "images";
-    if (buckets.Buckets.some(b => b.Name === bucketName)) {
-      console.log(`\nListing files in '${bucketName}':`);
-      const files = await s3Client.send(new ListObjectsCommand({ Bucket: bucketName }));
-      
-      if (files.Contents) {
-        files.Contents.forEach(f => {
-            console.log(` - ${f.Key} (Size: ${f.Size})`);
-            console.log(`   Expected URL path: /api/files/buckets/${bucketName}/${f.Key}`);
-            console.log(`   SeaweedFS Filer path: /buckets/${bucketName}/${f.Key}`);
-        });
-      } else {
-        console.log("Bucket is empty.");
-      }
-    } else {
-      console.log(`Bucket '${bucketName}' does not exist.`);
+    console.log(`\nChecking bucket '${bucketName}' content...`);
+    
+    try {
+        const files = await s3Client.send(new ListObjectsCommand({ Bucket: bucketName }));
+        
+        if (files.Contents) {
+            console.log(`Files in '${bucketName}':`);
+            files.Contents.forEach(f => {
+                console.log(` - ${f.Key} (Size: ${f.Size})`);
+                console.log(`   Expected URL path: /api/files/buckets/${bucketName}/${f.Key}`);
+            });
+        } else {
+            console.log(`Bucket '${bucketName}' is empty (via S3 API).`);
+        }
+    } catch (e) {
+        if (e.name === 'NoSuchBucket') {
+             console.log(`Bucket '${bucketName}' does not exist (via S3 API).`);
+        } else {
+             console.error(`Error listing '${bucketName}':`, e.message);
+        }
     }
 
   } catch (err) {

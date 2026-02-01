@@ -28,38 +28,51 @@ seaweedfs:
 
 ### Nginx Config (`default`)
 
-1.  **Закомментирован/Удален** публичный блок `server { server_name storage.moment-lbs.app ... }`, чтобы никто не мог скачать файлы напрямую.
-2.  **Добавлен** внутренний блок в конфиг домена `moment-lbs.app`:
+**ВАЖНО: Ловушка регулярных выражений**
+Если у вас есть глобальный блок для статики `location ~* \.(jpg|png|...)$`, он перехватит внутренний редирект, если файл имеет такое расширение.
+Чтобы этого избежать, используйте модификатор `^~`, который имеет более высокий приоритет, чем регулярные выражения.
+
+Также используйте `127.0.0.1` вместо `localhost` для избежания конфликтов IPv4/IPv6.
 
 ```nginx
-    # Блок для X-Accel-Redirect
-    location /private-seaweed/ {
+    # ===== PRIVATE STORAGE (X-Accel-Redirect) =====
+    # ^~ предотвращает перехват запроса блоком статики (.png, .jpg)
+    location ^~ /private-seaweed/ {
         internal; # Доступ только внутри Nginx (не из браузера напрямую)
-        rewrite ^/private-seaweed/(.*) /$1 break; # Убираем префикс
-        proxy_pass http://localhost:8888; # Проксируем в Filer
-        proxy_set_header Host $host;
+        
+        # 1. Меняем Host на localhost, чтобы SeaweedFS не путался в доменах
+        proxy_set_header Host "localhost";
+
+        # 2. Убираем префикс
+        rewrite ^/private-seaweed/(.*) /$1 break; 
+        
+        # 3. Используем IP явно
+        proxy_pass http://127.0.0.1:8888; 
     }
 ```
 
+### Cloudflare Real IP
+Для корректного определения IP адресов при использовании Cloudflare, создайте файл `/etc/nginx/conf.d/cloudflare.conf` со списком IP Cloudflare и директивой `real_ip_header CF-Connecting-IP;`.
+
 ## 3. Настройка приложения (Next.js)
 
-### Установка зависимостей
+### Инициализация бакетов
+Бакеты в SeaweedFS не появляются сами по себе при деплое. Их нужно создать скриптом один раз.
+**Скрипт:** `scripts/init-s3.js`
+**Запуск:** `node scripts/init-s3.js` (на сервере)
 
-```bash
-npm install @aws-sdk/client-s3
-```
-
-### Клиент S3 (`lib/s3.ts`)
+### Клиент S3 (`lib/s3.js`)
 
 Используется для **загрузки** (Upload) и **удаления** файлов.
 
-```typescript
+```javascript
 import { S3Client } from "@aws-sdk/client-s3";
 
 export const s3Client = new S3Client({
   region: "us-east-1",
-  // Внутри Docker сети обращаемся по имени сервиса
-  endpoint: process.env.S3_ENDPOINT || "http://seaweedfs:8333",
+  // В продакшене внутри Docker сети можно использовать имя сервиса http://seaweedfs:8333
+  // Но для скриптов с хоста используем localhost
+  endpoint: process.env.S3_ENDPOINT || "http://127.0.0.1:8333",
   credentials: { accessKeyId: "any", secretAccessKey: "any" },
   forcePathStyle: true,
 });
@@ -69,29 +82,34 @@ export const s3Client = new S3Client({
 
 Используется API Route: `app/api/files/[...path]/route.ts`.
 
-- **URL для фронтенда:** `/api/files/buckets/my-bucket/photo.jpg`
+- **URL для фронтенда:** `/api/files/buckets/images/photo.png`
 - **Механизм:** Next.js проверяет сессию -> Отдает заголовок `X-Accel-Redirect` -> Nginx отдает контент.
 
-## 4. Полезные команды
-
-**Перезапуск контейнеров:**
-
-```bash
-cd /home/hronop/mailserver
-docker compose up -d
+```typescript
+// Пример возврата заголовка в route.ts
+return new NextResponse(null, {
+  headers: {
+    'X-Accel-Redirect': `/private-seaweed/${filePath}`,
+    'Content-Type': 'application/octet-stream', // Или реальный тип файла
+  },
+});
 ```
 
-**Применение конфига Nginx:**
+## 4. Диагностика
 
+**Проверка наличия файлов:**
 ```bash
-sudo cp default /etc/nginx/sites-available/default
-sudo nginx -t
-sudo systemctl reload nginx
+node scripts/check-s3.js
 ```
 
-**Проверка работы (с сервера):**
-
+**Проверка прямого доступа (curl с сервера):**
 ```bash
-# Проверка, что Filer отвечает локально
-curl -I http://localhost:8888/
+# Получить список файлов в бакете images
+curl -H "Accept: application/json" http://127.0.0.1:8888/buckets/images/
 ```
+
+**Логи Nginx:**
+```bash
+tail -f /var/log/nginx/error.log
+```
+Если вы видите ошибку 404 при запросе картинки через API, скорее всего сработал location для статики. Проверьте наличие `^~` в конфиге Nginx.
