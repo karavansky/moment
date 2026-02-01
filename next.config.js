@@ -44,7 +44,14 @@ const nextConfig = {
   // Для обновления выполните: npm run generate:routes
   async rewrites() {
     const getGeneratedRewrites = require('./config/rewrites.generated.js')
-    return getGeneratedRewrites()
+    const generated = getGeneratedRewrites()
+    return [
+      ...generated,
+      {
+        source: '/admin/seaweed-proxy/:path*',
+        destination: 'http://127.0.0.1:8888/:path*',
+      },
+    ]
   },
 
   // Security headers
