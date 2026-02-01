@@ -8,19 +8,25 @@ const s3Client = new S3Client({
 });
 
 async function initS3() {
-  const bucketName = "images";
+  const bucketsToCreate = ["images", "temp"];
   console.log(`Checking S3 at ${process.env.S3_ENDPOINT || "http://localhost:8333"}...`);
 
   try {
     const { Buckets } = await s3Client.send(new ListBucketsCommand({}));
-    const exists = Buckets && Buckets.some(b => b.Name === bucketName);
+    const existingNames = Buckets ? Buckets.map(b => b.Name) : [];
 
-    if (exists) {
-      console.log(`✅ Bucket '${bucketName}' already exists.`);
-    } else {
-      console.log(`⚠️ Bucket '${bucketName}' not found. Creating...`);
-      await s3Client.send(new CreateBucketCommand({ Bucket: bucketName }));
-      console.log(`✅ Bucket '${bucketName}' created successfully!`);
+    for (const bucketName of bucketsToCreate) {
+      if (existingNames.includes(bucketName)) {
+        console.log(`✅ Bucket '${bucketName}' already exists.`);
+      } else {
+        console.log(`⚠️ Bucket '${bucketName}' not found. Creating...`);
+        try {
+            await s3Client.send(new CreateBucketCommand({ Bucket: bucketName }));
+            console.log(`✅ Bucket '${bucketName}' created successfully!`);
+        } catch (createErr) {
+            console.error(`❌ Failed to create bucket '${bucketName}':`, createErr.message);
+        }
+      }
     }
   } catch (err) {
     console.error("❌ Error initializing S3:", err);

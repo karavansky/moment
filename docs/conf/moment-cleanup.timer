@@ -1,0 +1,12 @@
+[Unit]
+Description=Run Moment Cleanup Timer daily
+
+[Timer]
+# Запускать каждый день в 03:00 ночи
+OnCalendar=*-*-* 03:00:00
+# Также запустить через 15 минут после загрузки системы, если пропустили
+OnBootSec=15min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

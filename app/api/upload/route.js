@@ -14,7 +14,7 @@ export async function POST(request) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
     const filename = file.name;
-    const bucketName = "images"; // Создайте этот бакет заранее или в коде
+    const bucketName = "temp"; // Загружаем во временный бакет
 
     // Загрузка в SeaweedFS
     await s3Client.send(new PutObjectCommand({

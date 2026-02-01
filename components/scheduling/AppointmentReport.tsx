@@ -86,18 +86,14 @@ export default function AppointmentReport({
     setPhotos(prev => prev.map(p => (p.id === id ? { ...p, note } : p)))
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!appointment || !user) return
 
     // Create a new report object
-    // If we were editing, we would update the existing one in the array.
-    // Here we are simplifying: if existing report exists, we update it, else create new.
-    // Assuming 1 report per appointment for this "edit/add" flow context.
-    
     const existingReports = appointment.reports || []
-    let updatedReports = [...existingReports]
-
-    const reportData: Report = {
+    
+    // Base report data (with potentially temp URLs)
+    const tempReportData: Report = {
       id: existingReports.length > 0 ? existingReports[existingReports.length - 1].id : `rep-${Date.now()}`,
       firmaID: user.firmaID,
       workerId: appointment.workerId,
@@ -107,21 +103,41 @@ export default function AppointmentReport({
       photos: photos,
     }
 
-    if (existingReports.length > 0) {
-      // Update last report
-      updatedReports[updatedReports.length - 1] = reportData
-    } else {
-      // Add new report
-      updatedReports.push(reportData)
-    }
+    try {
+      // 1. Call API to move files and finalize report
+      const response = await fetch('/api/reports/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          appointmentId: appointment.id,
+          report: tempReportData
+        })
+      });
 
-    const updatedAppointment: Appointment = {
-      ...appointment,
-      reports: updatedReports,
-    }
+      if (!response.ok) throw new Error('Failed to save report');
 
-    updateAppointment(updatedAppointment)
-    onClose()
+      const { report: savedReport } = await response.json();
+
+      // 2. Update local state with the saved report (containing permanent URLs)
+      let updatedReports = [...existingReports];
+      if (existingReports.length > 0) {
+        updatedReports[updatedReports.length - 1] = savedReport;
+      } else {
+        updatedReports.push(savedReport);
+      }
+
+      const updatedAppointment: Appointment = {
+        ...appointment,
+        reports: updatedReports,
+      }
+
+      updateAppointment(updatedAppointment);
+      onClose();
+
+    } catch (error) {
+      console.error("Error saving report:", error);
+      alert("Fehler beim Speichern des Berichts");
+    }
   }
 
   if (!appointment) return null
