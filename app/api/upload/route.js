@@ -26,7 +26,7 @@ export async function POST(request) {
 
     return NextResponse.json({ 
       success: true, 
-      url: `https://storage.moment-lbs.app/buckets/${bucketName}/${filename}` 
+      url: `/api/files/buckets/${bucketName}/${filename}` 
     });
 
   } catch (error) {
