@@ -32,96 +32,60 @@ export async function GET(
   
       try {
         // 3. Fetch from SeaweedFS
+        // Clone headers but remove cache validation to ensure we get body to rewrite
+        const headers = new Headers(req.headers)
+        headers.delete('if-none-match')
+        headers.delete('if-modified-since')
+        headers.delete('connection')
+        headers.delete('host') // Let fetch set the host
+
         const response = await fetch(targetUrl, {
           method: req.method,
-          headers: {
-            // Forward necessary headers if needed, or minimal set
-          },
+          headers: headers,
+          cache: 'no-store', // Force network request
         })
         
         console.log('[SeaweedProxy] Response status:', response.status)
   
-        if (!response.ok && response.status !== 304) {       // Allow 404 from seaweed to be shown (e.g. empty folder or file not found)
-       if (response.status === 404) {
-           // Proceed to handle 404 content if it's HTML, otherwise return 404
-       } else {
-           return new NextResponse(response.statusText, { status: response.status })
-       }
-    }
-
-    const contentType = response.headers.get('content-type') || ''
+        if (!response.ok && response.status !== 304) {
+           // Allow 404 from seaweed to be shown (e.g. empty folder or file not found)
+           if (response.status === 404) {
+               // Proceed to handle 404 content if it's HTML
+           } else {
+               return new NextResponse(response.statusText, { status: response.status })
+           }
+        }
     
-    // 4. Handle HTML (Rewrite Links)
-    if (contentType.includes('text/html')) {
-      let text = await response.text()
+        const contentType = response.headers.get('content-type') || ''
+        
+        // 4. Handle HTML (Rewrite Links)
+        if (contentType.includes('text/html')) {
+          let text = await response.text()
+          const originalLen = text.length
 
-      // Simple regex replacement for href="/..." and src="/..."
-      // We want to replace absolute paths starting with / with /api/seaweed-proxy/
-      
-      // Replace href="/..." but not href="//..." (protocol relative)
-      text = text.replace(/href="\/([^”]*)"/g, `href="${PROXY_BASE_PATH}/$1"`)
-      // Replace src="/..."
-      text = text.replace(/src="\/([^”]*)"/g, `src="${PROXY_BASE_PATH}/$1"`)
-      // Replace action="/..." (forms)
-      text = text.replace(/action="\/([^”]*)"/g, `action="${PROXY_BASE_PATH}/$1"`)
-      
-      // Specifically fix the JS redirects or API calls if they use string concatenation
-      // The SeaweedFS script uses `window.location.pathname` which is good.
-      // But `handleDelete` etc use paths from the table which are absolute.
-      
-      // Fix: The table links like <a href="/buckets/"> are handled by href replacement.
-      // The onclick handlers: onclick="handleDelete('\/buckets\/')"
-      // These are JS strings. We might need to replace them too?
-      // "handleDelete('\/buckets\/')" -> the path passed is "/buckets/".
-      // Inside handleDelete: xhr.open('DELETE', url, false);
-      // If url is "/buckets/", it becomes relative to current page?
-      // No, starts with / means root.
-      // So XHR DELETE "/buckets/" goes to domain root.
-      // We need to replace these string literals too.
-      
-      // Replace escaped slashes in JS strings if they start with /
-      // Look for '\/...' inside onclick? Hard to parse with regex safely.
-      // But let's try a global replace of '\/' with '${PROXY_BASE_PATH}/' is dangerous.
-      
-      // Let's replace specifically `handleDelete('\/'` -> `handleDelete('${PROXY_BASE_PATH}/`
-      // and `handleRename('...','\/')`
-      
-      // Better strategy: Inject a script at the top that overrides XMLHttpRequest or wraps the functions?
-      // No, too complex.
-      
-      // Let's try to patch the specific functions in the script tag, or just replace the common patterns.
-      // The SeaweedFS HTML is small and predictable (we saw it).
-      
-      // Replace '/ with '${PROXY_BASE_PATH}/' in specific contexts if possible.
-      // Or just replace all `'/` with `'${PROXY_BASE_PATH}/` ? 
-      // Might break `'/'` (root).
-      
-      // Let's try replacing known JS patterns from the SeaweedFS source we saw.
-      // `onclick="handleRename('etc', '\/')"` -> `... '\/api/seaweed-proxy\/'` ?
-      
-      // Actually, if we just replace `\/` with `${PROXY_BASE_PATH}/` globally it might break closing tags `<\/div>`.
-      // The slash in JS strings is often escaped `\/`.
-      
-      // Let's stick to HTML attributes first.
-      // And for JS:
-      // The script functions use `window.location.origin + window.location.pathname` for `handleCreateDir`. This is fine.
-      // `handleRename`: `var url = basePath + encodeURIComponent(newName);`
-      // `basePath` comes from arguments.
-      // usage: `handleRename('etc', '\/')`. basePath is `\/`.
-      // If we change the argument in HTML to `\/api/seaweed-proxy\/`, it works.
-      
-      // So we need to replace `\/` inside onclick attributes if it represents root.
-      
-      // Let's rely on a broader replacement for the specific JS calls seen in SeaweedFS.
-      text = text.replace(/handleDelete\('\\[\/]/g, `handleDelete('\\${PROXY_BASE_PATH}/')`)
-      text = text.replace(/handleRename\('([^']+)', '\\[\/]/g, `handleRename('$1', '\\${PROXY_BASE_PATH}/')`)
-      
-      return new NextResponse(text, {
-        headers: {
-          'Content-Type': 'text/html',
-        },
-      })
-    }
+          // Regex to match href/src/action with absolute paths starting with /
+          // Supports single/double quotes and whitespace
+          // Captures: 1=attribute name, 2=quote, 3=path content
+          const regex = /(href|src|action)\s*=\s*(["'])\/([^"']*)\2/g
+          
+          let matchCount = 0
+          text = text.replace(regex, (match, attr, quote, path) => {
+            matchCount++
+            return `${attr}=${quote}${PROXY_BASE_PATH}/${path}${quote}`
+          })
+          
+          console.log(`[SeaweedProxy] Rewrote ${matchCount} links. HTML len: ${originalLen} -> ${text.length}`)
+
+          // Handle JS strings for specific SeaweedFS functions
+          text = text.replace(/handleDelete\s*\(\s*'\\\/([^']*)'/g, `handleDelete('\\${PROXY_BASE_PATH}/$1'`)
+          text = text.replace(/handleRename\s*\(\s*'([^']*)'\s*,\s*'\\\/([^']*)'/g, `handleRename('$1', '\\${PROXY_BASE_PATH}/$2'`)
+          
+          return new NextResponse(text, {
+            headers: {
+              'Content-Type': 'text/html',
+            },
+          })
+        }
 
     // 5. Handle Other Content (Stream)
     // For binary files, streams, etc.
