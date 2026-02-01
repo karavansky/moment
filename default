@@ -534,15 +534,12 @@ server {
 
     # ===== PRIVATE STORAGE (X-Accel-Redirect) =====
     # Этот блок доступен ТОЛЬКО через внутренний редирект от Next.js
-    location /private-seaweed/ {
+    location ^~ /private-seaweed/ {
         internal; # Запрещает прямой доступ из браузера
-        # 1. Смена Host на localhost, чтобы SeaweedFS не путался в доменах
-        proxy_set_header Host "localhost";
         # Убираем префикс /private-seaweed/ и проксируем в SeaweedFS
         rewrite ^/private-seaweed/(.*) /$1 break;
-        
         proxy_pass http://127.0.0.1:8888;
-
+        proxy_set_header Host "localhost";
     }
 }
 
