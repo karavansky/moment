@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth'
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { s3Client } from "@/lib/s3";
 
+export const dynamic = 'force-dynamic';
+
 // Типизация для параметров маршрута
 type Props = {
   params: Promise<{
