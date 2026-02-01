@@ -22,23 +22,26 @@ export async function GET(
     return new NextResponse('Forbidden', { status: 403 })
   }
 
-  // 2. Construct Target URL
-  const { path } = await params
-  const pathStr = path ? path.join('/') : ''
-  const searchParams = req.nextUrl.searchParams.toString()
-  const targetUrl = `${SEAWEED_FILER_URL}/${pathStr}${searchParams ? `?${searchParams}` : ''}`
-
-  try {
-    // 3. Fetch from SeaweedFS
-    const response = await fetch(targetUrl, {
-      method: req.method,
-      headers: {
-        // Forward necessary headers if needed, or minimal set
-      },
-    })
-
-    if (!response.ok && response.status !== 304) {
-       // Allow 404 from seaweed to be shown (e.g. empty folder or file not found)
+      // 2. Construct Target URL
+      const { path } = await params
+      const pathStr = path ? path.join('/') : ''
+      const searchParams = req.nextUrl.searchParams.toString()
+      const targetUrl = `${SEAWEED_FILER_URL}/${pathStr}${searchParams ? `?${searchParams}` : ''}`
+  
+      console.log('[SeaweedProxy] Request:', { path: pathStr, targetUrl, method: req.method })
+  
+      try {
+        // 3. Fetch from SeaweedFS
+        const response = await fetch(targetUrl, {
+          method: req.method,
+          headers: {
+            // Forward necessary headers if needed, or minimal set
+          },
+        })
+        
+        console.log('[SeaweedProxy] Response status:', response.status)
+  
+        if (!response.ok && response.status !== 304) {       // Allow 404 from seaweed to be shown (e.g. empty folder or file not found)
        if (response.status === 404) {
            // Proceed to handle 404 content if it's HTML, otherwise return 404
        } else {
