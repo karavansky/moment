@@ -10,6 +10,7 @@ import {
   Service,
   ServiceGroup,
   ServiceTreeItem,
+  Photo,
 } from '@/types/scheduling'
 
 // Генерация UUID (простая версия для мок-данных)
@@ -915,25 +916,54 @@ export const getAllSampleObjects = () => {
     services: [],
   }
 
+  // Photos for Reports
+  const photo1: Photo = {
+    id: generateId(),
+    url: 'photo1.jpg',
+    note: 'Photo 1 description',
+  }
+
+  const photo2: Photo = {
+    id: generateId(),
+    url: 'photo2.jpg',
+    note: 'Photo 2 description',
+  }
+
+  const photo3: Photo = {
+    id: generateId(),
+    url: 'photo3.jpg',
+    note: 'Photo 3 description',
+  } 
+  const photo4: Photo = {
+    id: generateId(),
+    url: 'photo4.jpg',
+    note: 'Photo 4 description',
+  }
+
+  const photosSample1: Photo[] = [photo1, photo2]
+  const photosSample2: Photo[] = [photo3, photo4]
+
   // Reports
   const report1: Report = {
     id: generateId(),
     firmaID: firmaID,
     worker: worker_1,
-    photos: 'twinlake',
+    photos: photosSample1,
     appointmentId: appointment_1.id,
     appointment: appointment_1,
     workerId: worker_1.id,
+    date: appointment_1.date,
   }
 
   const report2: Report = {
     id: generateId(),
     firmaID: firmaID,
     worker: worker_1,
-    photos: 'chilkoottrail',
+    photos: photosSample2,
     appointmentId: appointment_1.id,
     appointment: appointment_1,
     workerId: worker_1.id,
+    date: appointment_1.date,
   }
 
   // Добавляем reports к appointments

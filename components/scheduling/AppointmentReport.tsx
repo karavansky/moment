@@ -1,0 +1,278 @@
+'use client'
+
+import React, { useState, useRef } from 'react'
+import { Modal, Button, Separator, TextArea, TextField } from '@heroui/react'
+import { useScheduling } from '@/contexts/SchedulingContext'
+import { Appointment, Report, Photo } from '@/types/scheduling'
+import { Save, Plus, X, Upload, FileText, Image as ImageIcon } from 'lucide-react'
+import { formatTime } from '@/lib/calendar-utils'
+
+interface AppointmentReportProps {
+  isOpen: boolean
+  onClose: () => void
+  appointment: Appointment | null
+}
+
+export default function AppointmentReport({
+  isOpen,
+  onClose,
+  appointment,
+}: AppointmentReportProps) {
+  const { updateAppointment, user } = useScheduling()
+  const [reportNote, setReportNote] = useState('')
+  const [photos, setPhotos] = useState<Photo[]>([])
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Reset state when opening for a new appointment
+  React.useEffect(() => {
+    if (isOpen && appointment) {
+      // If there are existing reports, maybe load the last one to edit? 
+      // For now, let's assume we are adding a new report or just viewing.
+      // If we want to edit the LAST report:
+      const lastReport = appointment.reports && appointment.reports.length > 0 
+        ? appointment.reports[appointment.reports.length - 1] 
+        : null;
+      
+      if (lastReport) {
+        setReportNote(lastReport.notes || '')
+        setPhotos(lastReport.photos || [])
+      } else {
+        setReportNote('')
+        setPhotos([])
+      }
+    }
+  }, [isOpen, appointment])
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return
+
+    setIsUploading(true)
+    const file = e.target.files[0]
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) throw new Error('Upload failed')
+
+      const data = await response.json()
+      // data.url is the public URL from the upload route
+      const newPhoto: Photo = {
+        id: Date.now().toString(),
+        url: data.url,
+        note: '', // Description for the photo
+      }
+
+      setPhotos(prev => [...prev, newPhoto])
+    } catch (error) {
+      console.error('Error uploading file:', error)
+      alert('Fehler beim Hochladen der Datei')
+    } finally {
+      setIsUploading(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
+  const handleRemovePhoto = (id: string) => {
+    setPhotos(prev => prev.filter(p => p.id !== id))
+  }
+
+  const handlePhotoNoteChange = (id: string, note: string) => {
+    setPhotos(prev => prev.map(p => (p.id === id ? { ...p, note } : p)))
+  }
+
+  const handleSave = () => {
+    if (!appointment || !user) return
+
+    // Create a new report object
+    // If we were editing, we would update the existing one in the array.
+    // Here we are simplifying: if existing report exists, we update it, else create new.
+    // Assuming 1 report per appointment for this "edit/add" flow context.
+    
+    const existingReports = appointment.reports || []
+    let updatedReports = [...existingReports]
+
+    const reportData: Report = {
+      id: existingReports.length > 0 ? existingReports[existingReports.length - 1].id : `rep-${Date.now()}`,
+      firmaID: user.firmaID,
+      workerId: appointment.workerId,
+      appointmentId: appointment.id,
+      date: new Date(),
+      notes: reportNote,
+      photos: photos,
+    }
+
+    if (existingReports.length > 0) {
+      // Update last report
+      updatedReports[updatedReports.length - 1] = reportData
+    } else {
+      // Add new report
+      updatedReports.push(reportData)
+    }
+
+    const updatedAppointment: Appointment = {
+      ...appointment,
+      reports: updatedReports,
+    }
+
+    updateAppointment(updatedAppointment)
+    onClose()
+  }
+
+  if (!appointment) return null
+
+  const startTime = new Date(appointment.startTime)
+  const endTime = new Date(appointment.endTime)
+
+  return (
+    <Modal>
+      <Modal.Backdrop
+        isOpen={isOpen}
+        onOpenChange={open => {
+          if (!open) onClose()
+        }}
+        variant="blur"
+      >
+        <Modal.Container className="max-w-2xl">
+          <Modal.Dialog className="max-h-[90vh] overflow-y-auto">
+            <Modal.CloseTrigger />
+            
+            <Modal.Header>
+              <h2 className="text-xl font-bold">Termin Bericht</h2>
+            </Modal.Header>
+
+            <Modal.Body className="gap-6">
+              {/* Appointment Details (Read-only) */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-default-50 rounded-lg">
+                <div>
+                  <p className="text-xs text-default-500 uppercase font-semibold">Kunde</p>
+                  <p className="font-medium">{appointment.client?.name} {appointment.client?.surname}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-default-500 uppercase font-semibold">Mitarbeiter</p>
+                  <div className="flex flex-wrap gap-1">
+                    {appointment.worker.map(w => (
+                      <span key={w.id} className="bg-primary/10 text-primary px-2 py-0.5 rounded text-sm">
+                        {w.name} {w.surname}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-default-500 uppercase font-semibold">Zeit</p>
+                  <p className="font-medium">
+                    {appointment.date.toLocaleDateString('de-DE')} | {formatTime(startTime)} - {formatTime(endTime)}
+                  </p>
+                </div>
+                <div>
+                   <p className="text-xs text-default-500 uppercase font-semibold">Dauer</p>
+                   <p className="font-medium">{appointment.duration} Min.</p>
+                </div>
+                <div className="col-span-2">
+                   <p className="text-xs text-default-500 uppercase font-semibold">Leistungen</p>
+                   <ul className="list-disc list-inside text-sm">
+                     {appointment.services.map(s => (
+                       <li key={s.id}>{s.name}</li>
+                     ))}
+                   </ul>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Report Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-primary" />
+                  <h3 className="text-lg font-semibold">Bericht</h3>
+                </div>
+
+                <TextArea
+                  label="Notiz"
+                  placeholder="Geben Sie hier Ihre Notizen zum Termin ein..."
+                  rows={3}
+                  value={reportNote}
+                  onChange={(e) => setReportNote(e.target.value)}
+                />
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <ImageIcon className="w-5 h-5 text-primary" />
+                      <h3 className="text-lg font-semibold">Fotos</h3>
+                    </div>
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      onPress={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Foto hinzufügen
+                    </Button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                    />
+                  </div>
+
+                  {isUploading && <p className="text-xs text-default-500">Wird hochgeladen...</p>}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {photos.map((photo) => (
+                      <div key={photo.id} className="border border-divider rounded-lg p-2 space-y-2 relative group">
+                        <div className="relative aspect-video bg-default-100 rounded overflow-hidden">
+                          {/* Note: In a real app with private files, you might need a way to fetch the image with auth headers 
+                              if it's protected. Since the upload route returns a URL, we use that. 
+                              If it's a private URL (like /api/files/...), it should work if the session is active. */}
+                          <img 
+                            src={photo.url} 
+                            alt="Report photo" 
+                            className="w-full h-full object-cover" 
+                          />
+                          <button 
+                            onClick={() => handleRemovePhoto(photo.id)}
+                            className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                        <TextField
+                          placeholder="Beschreibung..."
+                          size="sm"
+                          value={photo.note}
+                          onChange={(e) => handlePhotoNoteChange(photo.id, e.target.value)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+            </Modal.Body>
+
+            <Modal.Footer>
+              <Button variant="ghost" onPress={onClose}>
+                Abbrechen
+              </Button>
+              <Button variant="primary" onPress={handleSave} className="gap-2">
+                <Save className="w-4 h-4" />
+                Speichern
+              </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
+    </Modal>
+  )
+}

@@ -109,15 +109,22 @@ export interface Appointment {
   closedAt?: Date
 }
 
+export interface Photo {
+  id: string
+  note: string
+  url: string
+}
 // Отчет о выполненной работе
 export interface Report {
   id: string
   firmaID: string
-  photos: string // JSON строка или путь к фотографиям
+  photos: Photo[] // Массив фотографий
   workerId: string
   appointmentId: string
   worker?: Worker
   appointment?: Appointment
+  notes?: string
+  date: Date
 }
 
 // Пользователь
@@ -176,7 +183,7 @@ export interface CreateWorkerDTO {
 // DTO для создания отчета
 export interface CreateReportDTO {
   firmaID: string
-  photos: string
+  photos: Photo[]
   workerId: string
   appointmentId: string
 }
