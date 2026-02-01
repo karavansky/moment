@@ -538,7 +538,8 @@ server {
         internal; # Запрещает прямой доступ из браузера
         # Убираем префикс /private-seaweed/ и проксируем в SeaweedFS
         rewrite ^/private-seaweed/(.*) /$1 break;
-        proxy_pass http://localhost:8888;
+        
+        proxy_pass http://127.0.0.1:8888;
         proxy_set_header Host $host;
     }
 }
