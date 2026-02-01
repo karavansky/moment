@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth'
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { s3Client } from "@/lib/s3";
 
 // Типизация для параметров маршрута
 type Props = {
@@ -23,6 +25,40 @@ export async function GET(request: NextRequest, props: Props) {
     if (!fileName.startsWith('demo_')) {
       const session = await auth();
       if (!session) return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    // Логика для локальной разработки (без Nginx)
+    if (process.env.NODE_ENV === 'development') {
+        // Ожидаемый формат path: ['buckets', 'bucketName', 'fileName']
+        if (path[0] === 'buckets' && path.length >= 3) {
+            const bucketName = path[1];
+            const key = path.slice(2).join('/'); // Собираем остальную часть пути как ключ
+
+            try {
+                const command = new GetObjectCommand({
+                    Bucket: bucketName,
+                    Key: key,
+                });
+                
+                const response = await s3Client.send(command);
+                
+                // Преобразуем ReadableStream (web) или Readable (node) в то, что понимает NextResponse
+                // @ts-ignore - типы AWS SDK и Next.js могут немного конфликтовать, но body совместим
+                const stream = response.Body as ReadableStream; 
+
+                const headers = new Headers();
+                if (response.ContentType) headers.set("Content-Type", response.ContentType);
+                if (response.ContentLength) headers.set("Content-Length", response.ContentLength.toString());
+
+                return new NextResponse(stream, { headers });
+            } catch (err: any) {
+                console.error("S3 GetObject error:", err);
+                if (err.name === 'NoSuchKey') {
+                    return new NextResponse("File not found", { status: 404 });
+                }
+                 return new NextResponse("Error fetching file", { status: 500 });
+            }
+        }
     }
 
     // 3. Собираем путь к файлу из массива
