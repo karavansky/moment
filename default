@@ -531,7 +531,56 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
+
+    # ===== PRIVATE STORAGE (X-Accel-Redirect) =====
+    # Этот блок доступен ТОЛЬКО через внутренний редирект от Next.js
+    location /private-seaweed/ {
+        internal; # Запрещает прямой доступ из браузера
+        # Убираем префикс /private-seaweed/ и проксируем в SeaweedFS
+        rewrite ^/private-seaweed/(.*) /$1 break;
+        proxy_pass http://localhost:8888;
+        proxy_set_header Host $host;
+    }
 }
+
+# ===== STORAGE SERVER (SeaweedFS) =====
+# server {
+#     server_name storage.moment-lbs.app;
+#     listen 443 ssl;
+#     listen [::]:443 ssl;
+#     http2 on;
+#     ssl_certificate /etc/letsencrypt/live/moment-lbs.app/fullchain.pem;
+#     ssl_certificate_key /etc/letsencrypt/live/moment-lbs.app/privkey.pem;
+#     include /etc/letsencrypt/options-ssl-nginx.conf;
+#     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+#
+#     # Allow larger uploads
+#     client_max_body_size 100M;
+#
+#     # Disable Directory Listing (Hide UI)
+#     location ~ /$ {
+#         return 403;
+#     }
+#
+#     location / {
+#         # Restrict to Read-Only (Disable DELETE/PUT/POST)
+#         limit_except GET HEAD {
+#             deny all;
+#         }
+#
+#         # Proxy to SeaweedFS Filer (HTTP/WebDAV)
+#         proxy_pass http://localhost:8888;
+#         proxy_http_version 1.1;
+#         proxy_set_header Host $http_host;
+#         proxy_set_header X-Real-IP $remote_addr;
+#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto $scheme;
+#
+#         # Disable buffering for uploads
+#         proxy_request_buffering off;
+#         proxy_buffering off;
+#     }
+# }
 
 # ===== REDIRECT SUBDOMAINS TO MAIN DOMAIN =====
 server {
@@ -613,9 +662,12 @@ server {
     if ($host = dev.moment-lbs.app) {
         return 301 https://$host$request_uri;
     }
+    # if ($host = storage.moment-lbs.app) {
+    #     return 301 https://$host$request_uri;
+    # }
 
     listen 80;
     listen [::]:80;
-    server_name moment-lbs.app ws.moment-lbs.app mail.moment-lbs.app karavansky.moment-lbs.app dev.moment-lbs.app;
+    server_name moment-lbs.app ws.moment-lbs.app mail.moment-lbs.app karavansky.moment-lbs.app dev.moment-lbs.app; # storage.moment-lbs.app;
     return 404;
 }
