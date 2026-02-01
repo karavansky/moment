@@ -84,7 +84,7 @@ docker compose up -d
 **Применение конфига Nginx:**
 
 ```bash
-sudo cp /home/hronop/mailserver/default /etc/nginx/sites-available/default
+sudo cp default /etc/nginx/sites-available/default
 sudo nginx -t
 sudo systemctl reload nginx
 ```
