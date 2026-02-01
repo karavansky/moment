@@ -249,7 +249,6 @@ export default function AppointmentReport({
                         </div>
                         <Input
                           placeholder="Beschreibung..."
-                          size="sm"
                           value={photo.note}
                           onChange={(e) => handlePhotoNoteChange(photo.id, e.target.value)}
                         />
