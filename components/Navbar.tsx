@@ -11,6 +11,7 @@ import { ThemeSwitch } from './theme-switch'
 import { MenuIcon } from './icons'
 import { SupportButtons } from './SupportButtons'
 import { NotificationDropdown } from './NotificationDropdown'
+import { LoginLogout } from './LoginLogout'
 
 interface NavbarProps {
   onMenuToggle?: () => void
@@ -42,6 +43,7 @@ export default function Navbar({
         <div className="flex items-center justify-end h-16">
           {/* Mobile Center Section: App Store Badge + Language Switcher + Sidebar Menu Button */}
           <div className="lg:hidden flex items-center gap-3">
+            <LoginLogout />
             <SupportButtons lang={lang} onAction={handleSupportAction} t={t} />
             <NotificationDropdown tooltipContent={t('navbar.notification_tooltip', 'Notifications')} />
             <div className="flex items-center">
@@ -62,6 +64,8 @@ export default function Navbar({
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-6">
+                        <LoginLogout />
+
             <NotificationDropdown tooltipContent={t('navbar.notification_tooltip', 'Notifications')} />
             {/*  <Link
               href={localizedLink('terms-of-use', lang)}
