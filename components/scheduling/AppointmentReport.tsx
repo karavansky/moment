@@ -1,7 +1,5 @@
-'use client'
-
 import React, { useState, useRef } from 'react'
-import { Modal, Button, Separator, TextArea, TextField } from '@heroui/react'
+import { Modal, Button, Separator, TextArea, TextField, Label, Input } from '@heroui/react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { Appointment, Report, Photo } from '@/types/scheduling'
 import { Save, Plus, X, Upload, FileText, Image as ImageIcon } from 'lucide-react'
@@ -194,13 +192,15 @@ export default function AppointmentReport({
                   <h3 className="text-lg font-semibold">Bericht</h3>
                 </div>
 
-                <TextArea
-                  label="Notiz"
-                  placeholder="Geben Sie hier Ihre Notizen zum Termin ein..."
-                  rows={3}
-                  value={reportNote}
-                  onChange={(e) => setReportNote(e.target.value)}
-                />
+                <TextField>
+                  <Label>Notiz</Label>
+                  <TextArea
+                    placeholder="Geben Sie hier Ihre Notizen zum Termin ein..."
+                    rows={3}
+                    value={reportNote}
+                    onChange={(e) => setReportNote(e.target.value)}
+                  />
+                </TextField>
 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -212,7 +212,7 @@ export default function AppointmentReport({
                       size="sm" 
                       variant="ghost" 
                       onPress={() => fileInputRef.current?.click()}
-                      disabled={isUploading}
+                      isDisabled={isUploading}
                     >
                       <Plus className="w-4 h-4 mr-1" />
                       Foto hinzufügen
@@ -247,7 +247,7 @@ export default function AppointmentReport({
                             <X className="w-3 h-3" />
                           </button>
                         </div>
-                        <TextField
+                        <Input
                           placeholder="Beschreibung..."
                           size="sm"
                           value={photo.note}
