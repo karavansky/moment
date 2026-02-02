@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 // Prevent automatic static optimization
 export const dynamic = 'force-dynamic'
 
-const SEAWEED_FILER_URL = 'http://127.0.0.1:8888'
+const SEAWEED_FILER_URL = process.env.SEAWEED_FILER_URL || 'http://127.0.0.1:8888'
 const PROXY_BASE_PATH = '/api/seaweed-proxy'
 
 export async function GET(
@@ -56,11 +56,10 @@ export async function GET(
            }
         }
     
-        const contentType = response.headers.get('content-type') || ''
-        
-        // 4. Handle HTML (Rewrite Links)
-        if (contentType.includes('text/html')) {
-          let text = await response.text()
+            const contentType = (response.headers.get('content-type') || '').toLowerCase()
+            
+            // 4. Handle HTML (Rewrite Links)
+            if (contentType.includes('text/html')) {          let text = await response.text()
           const originalLen = text.length
 
           // Regex to match href/src/action with absolute paths starting with /
