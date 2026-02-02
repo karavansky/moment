@@ -38,6 +38,7 @@ export async function GET(
         headers.delete('if-modified-since')
         headers.delete('connection')
         headers.delete('host') // Let fetch set the host
+        headers.delete('accept-encoding') // Let fetch handle encoding to ensure we get plain text for rewriting
 
         const response = await fetch(targetUrl, {
           method: req.method,
@@ -98,9 +99,14 @@ export async function GET(
       },
     })
 
-  } catch (error) {
-    console.error('SeaweedFS Proxy Error:', error)
-    return new NextResponse('Internal Server Error', { status: 500 })
+  } catch (error: any) {
+    console.error('SeaweedFS Proxy Error:', {
+      message: error.message,
+      stack: error.stack,
+      cause: error.cause,
+      targetUrl
+    })
+    return new NextResponse(`Internal Server Error: ${error.message}`, { status: 500 })
   }
 }
 
