@@ -6,11 +6,14 @@ import { Button, Avatar, Dropdown, Label } from '@heroui/react'
 import { useCallback, useState } from 'react'
 import type { Selection } from '@heroui/react'
 import { useRouter } from 'next/navigation'
+import { useLanguage } from '@/hooks/useLanguage'
+import { localizedLink } from '@/utils/localizedLink'
 
 export function LoginLogout() {
   const { session, status, signIn, signOut } = useAuth()
   const [selected, setSelected] = useState<Selection>(new Set())
   const router = useRouter()
+  const lang = useLanguage()
 
   const handleLogin = useCallback(
     (keys: Selection) => {
@@ -35,10 +38,9 @@ export function LoginLogout() {
       console.log('Selected key:', selectedKey)
       switch (selectedKey) {
         case 'dashboard':
-          router.push('/admin')
+          router.push(localizedLink('admin', lang ))
           break
         case 'profile':
-          router.push('/profile')
           break
         case 'settings':
           router.push('/admin/settings')
