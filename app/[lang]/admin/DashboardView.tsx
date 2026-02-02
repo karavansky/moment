@@ -7,7 +7,8 @@ import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Seaweed from './Seaweed'
 import { Button, Separator } from '@heroui/react'
-import Dictionary from './tickets/Dictionary'
+import Dictionary from './Dictionary'
+import AdminTicketsList from './AdminTicketsList'
 
 export default function DashboardView() {
   const { clients, groups, isLoading, firmaID } = useScheduling()
@@ -116,29 +117,49 @@ export default function DashboardView() {
         className={`transition-opacity duration-200 flex-1 min-h-0 flex flex-col ${isPending ? 'opacity-50' : 'opacity-100'}`}
       >
         <AnimatePresence mode="wait">
-          {activeTab === 'seaweed' ? (
-            <motion.div
-              key="seaweed"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="h-full"
-            >
-              <Seaweed />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="dict"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="h-full"
-            >
-              <Dictionary />
-            </motion.div>
-          )}
+          {(() => {
+            switch (activeTab) {
+              case 'tickets':
+                return (
+                  <motion.div
+                    key="tickets"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="h-full"
+                  >
+                    <AdminTicketsList />
+                  </motion.div>
+                )
+              case 'seaweed':
+                return (
+                  <motion.div
+                    key="seaweed"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="h-full"
+                  >
+                    <Seaweed />
+                  </motion.div>
+                )
+              case 'dict':
+                return (
+                  <motion.div
+                    key="dict"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="h-full"
+                  >
+                    <Dictionary />
+                  </motion.div>
+                )
+            }
+          })()}
         </AnimatePresence>
       </div>
     </div>

@@ -1,21 +1,21 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import DictionaryTable from './DictionaryTable';
+import React, { useState, useEffect } from 'react'
+import DictionaryTable from './DictionaryTable'
 
 // Импортируем все словари
-import enDict from '@/config/dictionaries/en.json';
-import deDict from '@/config/dictionaries/de.json';
-import ruDict from '@/config/dictionaries/ru.json';
-import frDict from '@/config/dictionaries/fr.json';
-import esDict from '@/config/dictionaries/es.json';
-import ukDict from '@/config/dictionaries/uk.json';
-import ptDict from '@/config/dictionaries/pt.json';
-import trDict from '@/config/dictionaries/tr.json';
-import jaDict from '@/config/dictionaries/ja.json';
-import idDict from '@/config/dictionaries/id.json';
-import itDict from '@/config/dictionaries/it.json';
-import plDict from '@/config/dictionaries/pl.json';
+import enDict from '@/config/dictionaries/en.json'
+import deDict from '@/config/dictionaries/de.json'
+import ruDict from '@/config/dictionaries/ru.json'
+import frDict from '@/config/dictionaries/fr.json'
+import esDict from '@/config/dictionaries/es.json'
+import ukDict from '@/config/dictionaries/uk.json'
+import ptDict from '@/config/dictionaries/pt.json'
+import trDict from '@/config/dictionaries/tr.json'
+import jaDict from '@/config/dictionaries/ja.json'
+import idDict from '@/config/dictionaries/id.json'
+import itDict from '@/config/dictionaries/it.json'
+import plDict from '@/config/dictionaries/pl.json'
 
 const Dictionary = () => {
   // Собираем все словари с ключами языков
@@ -32,28 +32,28 @@ const Dictionary = () => {
     id: idDict,
     it: itDict,
     pl: plDict,
-  };
+  }
 
-  const [dictionaries, setDictionaries] = useState(initialDictionaries);
-  const [isLoading, setIsLoading] = useState(true);
+  const [dictionaries, setDictionaries] = useState(initialDictionaries)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     // Словари уже загружены через импорты
-    setIsLoading(false);
-  }, []);
+    setIsLoading(false)
+  }, [])
 
   const handleSave = (updatedDictionaries: any) => {
-    setDictionaries(updatedDictionaries);
-    console.log('Сохранено:', updatedDictionaries);
-  };
+    setDictionaries(updatedDictionaries)
+    console.log('Сохранено:', updatedDictionaries)
+  }
 
   const handleAddKey = (keyPath: string[], values: { [lang: string]: string }) => {
-    console.log('Добавлен ключ:', { keyPath, values });
-  };
+    console.log('Добавлен ключ:', { keyPath, values })
+  }
 
   const handleDeleteKey = (keyPath: string[]) => {
-    console.log('Удален ключ:', keyPath);
-  };
+    console.log('Удален ключ:', keyPath)
+  }
 
   if (isLoading) {
     return (
@@ -63,14 +63,15 @@ const Dictionary = () => {
           <p className="text-default-500">Загрузка словарей...</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Редактор многоязычных словарей (12 языков)</h1>
       <p className="text-default-500 mb-8">
-        Нажмите на значение, чтобы отредактировать его. Используйте кнопки для загрузки/выгрузки JSON файлов.
+        Нажмите на значение, чтобы отредактировать его. Используйте кнопки для загрузки/выгрузки
+        JSON файлов.
       </p>
 
       <DictionaryTable
@@ -85,7 +86,9 @@ const Dictionary = () => {
         <h3 className="font-semibold mb-2">Инструкция:</h3>
         <ul className="list-disc pl-5 space-y-1 text-sm">
           <li>Нажмите на значение в ячейке для редактирования</li>
-          <li>Используйте кнопки загрузки/выгрузки в панели управления для работы с JSON файлами</li>
+          <li>
+            Используйте кнопки загрузки/выгрузки в панели управления для работы с JSON файлами
+          </li>
           <li>Наведите курсор на значение, чтобы увидеть полный текст</li>
           <li>Прокручивайте таблицу горизонтально для просмотра всех языков</li>
           <li>Колонки "Действия" и "Ключ" закреплены для удобства</li>
@@ -93,7 +96,7 @@ const Dictionary = () => {
         </ul>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Dictionary;
+export default Dictionary

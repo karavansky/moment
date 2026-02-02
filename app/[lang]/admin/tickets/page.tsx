@@ -1,8 +1,8 @@
 import { auth } from '@/lib/auth'
 import { getUserByEmail } from '@/lib/users'
 import { redirect } from 'next/navigation'
-import AdminTicketsList from './AdminTicketsList'
-import Dictionary from './Dictionary'
+import AdminTicketsList from '../AdminTicketsList'
+import Dictionary from '../Dictionary'
 
 export default async function AdminTicketsPage() {
   const session = await auth()
