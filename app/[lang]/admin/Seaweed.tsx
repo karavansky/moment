@@ -1,9 +1,6 @@
 'use client'
-import { auth } from '@/lib/auth'
-import { getUserByEmail } from '@/lib/users'
-import { redirect } from 'next/navigation'
 
-export default async function Seaweed() {
+export default function Seaweed() {
 
   return (
     <div className="container mx-auto pt-24 px-4 py-8 h-[calc(100vh-100px)]">

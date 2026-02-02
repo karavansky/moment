@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import DashboardView from './DashboardView'
 import { SchedulingProvider } from '@/contexts/SchedulingContext';
 
-export default async function ClientsPage() {
+export default async function AdminPage() {
   const session = await auth()
   
 
