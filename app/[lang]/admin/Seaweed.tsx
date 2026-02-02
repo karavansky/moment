@@ -1,3 +1,4 @@
+'use client'
 import { auth } from '@/lib/auth'
 import { getUserByEmail } from '@/lib/users'
 import { redirect } from 'next/navigation'
