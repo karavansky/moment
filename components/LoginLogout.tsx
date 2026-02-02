@@ -4,24 +4,58 @@ import { Image, LogOut, Settings } from 'lucide-react'
 import { useAuth } from './AuthProvider'
 import { Button, Avatar, Dropdown, Label } from '@heroui/react'
 import { useCallback, useState } from 'react'
-import type {Selection} from "@heroui/react";
+import type { Selection } from '@heroui/react'
+import { useRouter } from 'next/navigation'
 
 export function LoginLogout() {
   const { session, status, signIn, signOut } = useAuth()
-  const [selected, setSelected] = useState<Selection>(new Set());
+  const [selected, setSelected] = useState<Selection>(new Set())
+  const router = useRouter()
 
-  const handleLogin = useCallback((keys: Selection) => {
-    console.log('LoginLogout handleLogin called with keys:', keys)
-    if (keys === 'all') return
-    const selectedKey = keys.values().next().value
-    console.log('Selected key:', selectedKey)
-    if (selectedKey === 'item-1') {
-      signIn('google')
-    } else if (selectedKey === 'item-2') {
-      signIn('apple')
-    }
-  }, [signIn])
+  const handleLogin = useCallback(
+    (keys: Selection) => {
+      console.log('LoginLogout handleLogin called with keys:', keys)
+      if (keys === 'all') return
+      const selectedKey = keys.values().next().value
+      console.log('Selected key:', selectedKey)
+      if (selectedKey === 'item-1') {
+        signIn('google')
+      } else if (selectedKey === 'item-2') {
+        signIn('apple')
+      }
+    },
+    [signIn]
+  )
 
+  const handleAdmin = useCallback(
+    (keys: Selection) => {
+      console.log('LoginLogout handleLogin called with keys:', keys)
+      if (keys === 'all') return
+      const selectedKey = keys.values().next().value
+      console.log('Selected key:', selectedKey)
+      switch (selectedKey) {
+        case 'dashboard':
+          router.push('/admin')
+          break
+        case 'profile':
+          router.push('/profile')
+          break
+        case 'settings':
+          router.push('/admin/settings')
+          break
+        case 'new-project':
+          router.push('/admin/s3-storage')
+          break
+        case 'logout':
+          signOut()
+          break
+        default:
+          break
+      }
+
+    },
+    [signIn, router]
+  )
   if (status === 'loading') {
     return <div className="text-sm text-gray-500">Loading...</div>
   }
@@ -48,7 +82,11 @@ export function LoginLogout() {
               </div>
             </div>
           </div>
-          <Dropdown.Menu>
+          <Dropdown.Menu
+            selectionMode="single"
+            selectedKeys={selected}
+            onSelectionChange={handleAdmin}
+          >
             <Dropdown.Item id="dashboard" textValue="Dashboard">
               <Label>Dashboard</Label>
             </Dropdown.Item>
@@ -96,7 +134,11 @@ export function LoginLogout() {
     <Dropdown>
       <Button variant="tertiary">Anmelden</Button>
       <Dropdown.Popover>
-        <Dropdown.Menu selectionMode="single" selectedKeys={selected} onSelectionChange={handleLogin}>
+        <Dropdown.Menu
+          selectionMode="single"
+          selectedKeys={selected}
+          onSelectionChange={handleLogin}
+        >
           <Dropdown.Item id="item-1" textValue="Item 1" className="hover:bg-surface-secondary">
             Sign in with Google
           </Dropdown.Item>
