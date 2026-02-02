@@ -46,22 +46,19 @@ const nextConfig = {
     const getGeneratedRewrites = require('./config/rewrites.generated.js')
     const generatedRewrites = await getGeneratedRewrites()
 
-    // Прокси для SeaweedFS
-    // В Docker используйте имя сервиса (напр. http://filer:8888) через переменную SEAWEED_FILER_URL
-    const seaweedUrl = (process.env.SEAWEED_FILER_URL || 'http://localhost:8888').replace(/\/$/, '')
-    console.log('🔌 SeaweedFS Proxy Destination:', seaweedUrl)
-
-    const proxyRewrite = {
-      source: '/api/seaweed-proxy/:path*',
-      destination: `${seaweedUrl}/:path*`,
+    // Redirect static assets from SeaweedFS to our proxy
+    // This ensures that requests to /seaweedfsstatic/ are routed through our authenticated proxy
+    const seaweedStaticRewrite = {
+      source: '/seaweedfsstatic/:path*',
+      destination: '/api/seaweed-proxy/seaweedfsstatic/:path*',
     }
 
     if (Array.isArray(generatedRewrites)) {
-      return [...generatedRewrites, proxyRewrite]
+      return [...generatedRewrites, seaweedStaticRewrite]
     }
     return {
       ...generatedRewrites,
-      fallback: [...(generatedRewrites.fallback || []), proxyRewrite],
+      fallback: [...(generatedRewrites.fallback || []), seaweedStaticRewrite],
     }
   },
 
