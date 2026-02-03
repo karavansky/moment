@@ -105,6 +105,7 @@ function DienstplanView() {
         isFixedTime: false,
         services: [],
         reports: [],
+        worker: [],
       }
       setSelectedDate(date)
       setSelectedAppointment(template)

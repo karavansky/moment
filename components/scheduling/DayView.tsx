@@ -350,6 +350,7 @@ function DayView({
           {/* Appointments */}
           <div className="space-y-2 flex-1" onMouseDown={e => e.stopPropagation()}>
             {day.appointments.slice(0, 3).map(appointment => (
+              
               <AppointmentCard
                 key={appointment.id}
                 appointment={appointment}

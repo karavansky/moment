@@ -110,12 +110,14 @@ const DraggableItem = ({
       if (e.clientY < height) offsetY = 0
       e.dataTransfer.setDragImage(canvas, offsetX, offsetY)
 
-      // Cleanup
-      setTimeout(() => {
-        if (document.body.contains(canvas)) {
-          document.body.removeChild(canvas)
-        }
-      }, 0)
+      // Cleanup - use double RAF to ensure browser captured the image
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (document.body.contains(canvas)) {
+            document.body.removeChild(canvas)
+          }
+        })
+      })
     } catch (err) {
       console.error('[DraggableItem] Error generating canvas drag image:', err)
     }
@@ -207,12 +209,14 @@ const DraggableItemClone = ({
       // Set drag image
       e.dataTransfer.setDragImage(clone, offsetX, offsetY)
 
-      // Cleanup after drag starts
-      setTimeout(() => {
-        if (document.body.contains(clone)) {
-          document.body.removeChild(clone)
-        }
-      }, 0)
+      // Cleanup after drag starts - use double RAF to ensure browser captured the image
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (document.body.contains(clone)) {
+            document.body.removeChild(clone)
+          }
+        })
+      })
     } catch (err) {
       console.error('[DraggableItemClone] Error creating DOM clone drag image:', err)
     }
