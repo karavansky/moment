@@ -74,7 +74,7 @@ export default function DashboardView() {
   }, [startTransition])
 
   return (
-    <div className={`flex flex-col h-full `}>
+    <div className={`flex flex-col h-full pl-2`}>
       <div className="flex items-center pl-2 gap-2 mb-4 shrink-0">
         <h2 className="text-2xl font-semibold">Dashboard</h2>
       </div>
