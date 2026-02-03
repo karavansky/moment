@@ -8,12 +8,16 @@ import type { Selection } from '@heroui/react'
 import { useRouter } from 'next/navigation'
 import { useLanguage } from '@/hooks/useLanguage'
 import { localizedLink } from '@/utils/localizedLink'
+import { AuthModal } from './AuthModal'
+import { useTranslation } from './Providers'
 
 export function LoginLogout() {
   const { session, status, signIn, signOut } = useAuth()
   const [selected, setSelected] = useState<Selection>(new Set())
   const router = useRouter()
   const lang = useLanguage()
+  const [isOpen, setIsOpen] = useState(false)
+  const { t } = useTranslation()
 
   const handleLogin = useCallback(
     (keys: Selection) => {
@@ -29,7 +33,10 @@ export function LoginLogout() {
     },
     [signIn]
   )
-
+  const handleSignIn = async (provider: 'google' | 'apple') => {
+    // Pass tickets page as callback URL so user lands there after auth
+    await signIn(provider, `/${lang}/tickets`)
+  }
   const handleAdmin = useCallback(
     (keys: Selection) => {
       console.log('LoginLogout handleLogin called with keys:', keys)
@@ -121,35 +128,62 @@ export function LoginLogout() {
 
   if (status === 'authenticated' && session?.user) {
     return (
-      <div className="flex items-center gap-4">
-        <span className="text-sm text-gray-700">
-          Hello, {session.user.name || session.user.email}
-        </span>
-        <Button onClick={() => signOut()} variant="danger-soft" size="sm">
-          Sign Out
-        </Button>
-      </div>
+      <Dropdown>
+        <Dropdown.Trigger className="rounded-full">
+          <Avatar>
+            <Avatar.Image alt={session.user.name || 'User'} src={session.user.image || ''} />
+            <Avatar.Fallback delayMs={600}>JD</Avatar.Fallback>
+          </Avatar>
+        </Dropdown.Trigger>
+        <Dropdown.Popover>
+          <div className="px-3 pt-3 pb-1">
+            <div className="flex items-center gap-2">
+              <Avatar size="sm">
+                <Avatar.Image alt={session.user.name || 'User'} src={session.user.image || ''} />
+                <Avatar.Fallback delayMs={600}>JD</Avatar.Fallback>
+              </Avatar>
+              <div className="flex flex-col gap-0">
+                <p className="text-sm leading-5 font-medium">{session.user.name || 'User'}</p>
+                <p className="text-xs leading-none text-muted">{session.user.email}</p>
+              </div>
+            </div>
+          </div>
+          <Dropdown.Menu
+            selectionMode="single"
+            selectedKeys={selected}
+            onSelectionChange={handleAdmin}
+          >
+            <Dropdown.Item id="profile" textValue="Profile">
+              <Label>Profile</Label>
+            </Dropdown.Item>
+            <Dropdown.Item id="settings" textValue="Settings">
+              <div className="flex w-full items-center justify-between gap-2">
+                <Label>Settings</Label>
+                <Settings className="size-3.5 text-muted" />
+              </div>
+            </Dropdown.Item>
+            <Dropdown.Item id="logout" textValue="Logout" variant="danger">
+              <div className="flex w-full items-center justify-between gap-2">
+                <Label>Log Out</Label>
+                <LogOut className="size-3.5 text-danger" />
+              </div>
+            </Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown.Popover>
+      </Dropdown>
     )
   }
 
   return (
-    <Dropdown>
-      <Button variant="tertiary">Anmelden</Button>
-      <Dropdown.Popover>
-        <Dropdown.Menu
-          selectionMode="single"
-          selectedKeys={selected}
-          onSelectionChange={handleLogin}
-        >
-          <Dropdown.Item id="item-1" textValue="Item 1" className="hover:bg-surface-secondary">
-            Sign in with Google
-          </Dropdown.Item>
-          <Dropdown.Item id="item-2" textValue="Item 1" className="hover:bg-surface-secondary">
-            Sign in with Apple
-          </Dropdown.Item>
-        </Dropdown.Menu>
-      </Dropdown.Popover>
-    </Dropdown>
+    <>
+      <Button variant="tertiary" onPress={() => setIsOpen(true)}>Anmelden</Button>
+      <AuthModal
+        isOpen={isOpen}
+        onOpenChange={() => setIsOpen(false)}
+        onSignIn={handleSignIn}
+        t={t}
+        lang={lang}
+      />    </>
   )
 }
 
