@@ -11,7 +11,7 @@
   },
   "about": {
     "cardIntro": {
-      "title": "QuailBreeder — the tiny farm assistant with a big personality",
+      "title": "Moment LBS — the tiny farm assistant with a big personality",
       "text": "Born in a backyard, raised with coffee and TypeScript. If you breed quails (or simply appreciate efficient tracking and a dash of rural humor), you’re home.",
       "facts": "Quick facts:",
       "fact1": "Built by a programmer who got bitten by quail-fever",
@@ -20,11 +20,11 @@
       "story": "Read the story"
     },
     "cardStory": {
-      "title": "How QuailBreeder came to be",
+      "title": "How Moment LBS came to be",
       "text1": "There’s a fairly personal tale behind this app. In 2012 I left Kyiv and moved to the countryside. City habits meet rural reality — and chaos wins, at least for a while.",
       "text2": "I started a tiny quail farm in my backyard to produce meat. Two years, coffee, and a lot of counting later, I reached ~50 kg of quail meat per week. That meant juggling 14–15 overlapping batches and tracking 3,000+ birds. Paper notes multiplied like quails.",
       "text3": "By training I’m a programmer — so I wrote a PC app to track everything. It worked, but it wasn’t mobile. I still carried paper and transcribed data at the end of each day. Then a back injury forced me to close the farm and focus on the app — which turned out to be the best possible pivot: the next version became mobile-first and packed with practical fields like viability, transport info, and batch timing.",
-      "text4": "Long story short: QuailBreeder exists because someone had to stop losing eggs and start saving time. If you raise quails for meat, this app collects the tiny details you need — without making you learn SQL or wear a lab coat.",
+      "text4": "Long story short: Moment LBS exists because someone had to stop losing eggs and start saving time. If you raise quails for meat, this app collects the tiny details you need — without making you learn SQL or wear a lab coat.",
       "button": "See features"
     },
     "cardFounder": {
@@ -33,10 +33,10 @@
       "funFacts": "Fun facts:",
       "fact1": "The original app started as a Windows utility (yep, nostalgia).",
       "fact2": "It survived a back injury, several software updates, and a few too many eggshells.",
-      "fact3": "The name «QuailBreeder» was not suggested by a marketing committee — it was honest."
+      "fact3": "The name «Moment LBS» was not suggested by a marketing committee — it was honest."
     },
     "cardWhy": {
-      "title": "Why people love QuailBreeder",
+      "title": "Why people love Moment LBS",
       "reason1": {
         "title": "Save time",
         "text": "Fast entry, keepalive posting, and fewer evenings spent transcribing paper notes."
@@ -52,13 +52,13 @@
     },
     "cardPromo": {
       "title": "Ready to stop juggling eggs and paper?",
-      "text": "Try QuailBreeder and get your evenings back.",
+      "text": "Try Moment LBS and get your evenings back.",
       "button": "Start free trial",
       "contact": "Contact us \n(There will soon be a support request tracking system.)"
     }
   },
   "getStarted": {
-    "title": "Getting Started with QuailBreeder",
+    "title": "Getting Started with Moment LBS",
     "intro": "To get started, you have to fill out the three main catalogs of the equipment you are using.",
     "stepsTitle": "Steps to Follow",
     "finalTitle": "Finally",
@@ -161,12 +161,12 @@
   },
   "seo": {
     "home": {
-      "title": "QuailBreeder - Data Analysis and Decision Support Tool for Quail Farming",
+      "title": "Moment LBS - Data Analysis and Decision Support Tool for Quail Farming",
       "description": "All-in-one digital assistant to manage and optimize quail production. Track every step from egg to invoice with accurate accounting and performance analysis."
     },
     "about": {
       "title": "Socially Acceptable Self-Promotion",
-      "description": "How QuailBreeder came to be. The tiny farm assistant with a big personality"
+      "description": "How Moment LBS came to be. The tiny farm assistant with a big personality"
     },
     "getStarted": {
       "title": "Get started",
@@ -269,7 +269,7 @@
       "email": "Email:"
     },
     "lastUpdated": "Last Updated: November 30, 2024",
-    "footer": "© 2024 QuailBreeder. All rights reserved."
+    "footer": "© 2024 Moment LBS. All rights reserved."
   },
   "terms": {
     "title": "Terms of Use",
@@ -286,7 +286,7 @@
     "subscription": {
       "title": "Subscription and Payment",
       "text": "Moment LBS requires a paid monthly auto-renewing subscription called",
-      "name": "QuailBreederSubscription",
+      "name": "Moment LBSSubscription",
       "important": "Important: Payment will be charged to your iTunes Account upon confirmation of purchase. Subscriptions automatically renew unless auto-renew is turned off at least 24 hours before the end of the current period."
     },
     "license": {
@@ -348,10 +348,10 @@
       "email": "Email"
     },
     "lastUpdated": "Last Updated: November 30, 2024",
-    "footer": "© 2024 QuailBreeder. All rights reserved."
+    "footer": "© 2024 Moment LBS. All rights reserved."
   },
   "auth": {
-    "welcome": "Welcome to QuailBreeder",
+    "welcome": "Welcome to Moment LBS",
     "signInToAccess": "Sign in to access support",
     "continueWithGoogle": "Continue with Google",
     "continueWithApple": "Continue with Apple",

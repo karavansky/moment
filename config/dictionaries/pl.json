@@ -11,7 +11,7 @@
   },
   "about": {
     "cardIntro": {
-      "title": "QuailBreeder — mały asystent hodowlany z dużą osobowością",
+      "title": "Moment LBS — mały asystent hodowlany z dużą osobowością",
       "text": "Urodzony na podwórku, wychowany na kawie i TypeScripcie. Jeśli hodujesz przepiórki (lub po prostu doceniasz efektywne śledzenie i odrobinę wiejskiego humoru), jesteś w domu.",
       "facts": "Szybkie fakty:",
       "fact1": "Stworzony przez programistę, którego ugryzł wirus przepiórczej gorączki",
@@ -20,11 +20,11 @@
       "story": "Przeczytaj historię"
     },
     "cardStory": {
-      "title": "Jak powstał QuailBreeder",
+      "title": "Jak powstał Moment LBS",
       "text1": "Za tą aplikacją stoi dość osobista historia. W 2012 roku opuściłem Kijów i przeniosłem się na wieś. Miejskie nawyki spotykają się z wiejską rzeczywistością — i chaos wygrywa, przynajmniej na jakiś czas.",
       "text2": "Założyłem małą hodowlę przepiórek na swoim podwórku, aby produkować mięso. Dwa lata, kawa i wiele liczenia później, osiągnąłem ~50 kg mięsa przepiórczego tygodniowo. To oznaczało żonglowanie 14–15 nakładających się partii i śledzenie ponad 3000 ptaków. Notatki na papierze mnożyły się jak przepiórki.",
       "text3": "Z wykształcenia jestem programistą — więc napisałem aplikację PC, aby wszystko śledzić. Działała, ale nie była mobilna. Wciąż nosiłem ze sobą papier i przepisywałem dane na koniec każdego dnia. Potem kontuzja pleców zmusiła mnie do zamknięcia hodowli i skupienia się na aplikacji — co okazało się najlepszym możliwym zwrotem: kolejna wersja stała się mobilna i wyposażona w praktyczne pola, takie jak przeżywalność, informacje o transporcie i czasowanie partii.",
-      "text4": "Krótko mówiąc: QuailBreeder istnieje, ponieważ ktoś musiał przestać tracić jaja i zacząć oszczędzać czas. Jeśli hodujesz przepiórki na mięso, ta aplikacja zbiera drobne szczegóły, których potrzebujesz — bez zmuszania Cię do nauki SQL czy zakładania fartucha laboratoryjnego.",
+      "text4": "Krótko mówiąc: Moment LBS istnieje, ponieważ ktoś musiał przestać tracić jaja i zacząć oszczędzać czas. Jeśli hodujesz przepiórki na mięso, ta aplikacja zbiera drobne szczegóły, których potrzebujesz — bez zmuszania Cię do nauki SQL czy zakładania fartucha laboratoryjnego.",
       "button": "Zobacz funkcje"
     },
     "cardFounder": {
@@ -33,10 +33,10 @@
       "funFacts": "Ciekawe fakty:",
       "fact1": "Oryginalna aplikacja zaczęła się jako narzędzie Windows (tak, nostalgia).",
       "fact2": "Przetrwała kontuzję pleców, kilka aktualizacji oprogramowania i za dużo skorupek jaj.",
-      "fact3": "Nazwa «QuailBreeder» nie została zasugerowana przez komitet marketingowy — była szczera."
+      "fact3": "Nazwa «Moment LBS» nie została zasugerowana przez komitet marketingowy — była szczera."
     },
     "cardWhy": {
-      "title": "Dlaczego ludzie kochają QuailBreeder",
+      "title": "Dlaczego ludzie kochają Moment LBS",
       "reason1": {
         "title": "Oszczędzaj czas",
         "text": "Szybkie wprowadzanie danych, rejestrowanie KeepAlive i mniej wieczorów spędzonych na przepisywaniu papierowych notatek."
@@ -52,13 +52,13 @@
     },
     "cardPromo": {
       "title": "Gotowy, żeby przestać żonglować jajami i papierem?",
-      "text": "Wypróbuj QuailBreeder i odzyskaj swoje wieczory.",
+      "text": "Wypróbuj Moment LBS i odzyskaj swoje wieczory.",
       "button": "Rozpocznij darmowy okres próbny",
       "contact": "Skontaktuj się z nami \n(Wkrótce będzie dostępny system śledzenia zgłoszeń wsparcia.)"
     }
   },
   "getStarted": {
-    "title": "Rozpoczęcie pracy z QuailBreeder",
+    "title": "Rozpoczęcie pracy z Moment LBS",
     "intro": "Aby rozpocząć, musisz wypełnić trzy główne katalogi używanego sprzętu.",
     "stepsTitle": "Kroki do wykonania",
     "finalTitle": "Na koniec",
@@ -161,12 +161,12 @@
   },
   "seo": {
     "home": {
-      "title": "QuailBreeder - Narzędzie do Analizy Danych i Wspomagania Decyzji w Hodowli Przepiórek",
+      "title": "Moment LBS - Narzędzie do Analizy Danych i Wspomagania Decyzji w Hodowli Przepiórek",
       "description": "Wszechstronny asystent cyfrowy do zarządzania i optymalizacji produkcji przepiórek. Śledź każdy krok od jaja do faktury z precyzyjną księgowością i analizą wydajności."
     },
     "about": {
       "title": "Społecznie Akceptowalna Autopromocja",
-      "description": "Jak powstał QuailBreeder. Mały asystent hodowlany z dużą osobowością"
+      "description": "Jak powstał Moment LBS. Mały asystent hodowlany z dużą osobowością"
     },
     "getStarted": {
       "title": "Rozpocznij",
@@ -269,7 +269,7 @@
       "email": "Email:"
     },
     "lastUpdated": "Ostatnia Aktualizacja: 30 listopada 2024",
-    "footer": "© 2024 QuailBreeder. Wszelkie prawa zastrzeżone."
+    "footer": "© 2024 Moment LBS. Wszelkie prawa zastrzeżone."
   },
   "terms": {
     "title": "Warunki Użytkowania",
@@ -286,7 +286,7 @@
     "subscription": {
       "title": "Subskrypcja i Płatność",
       "text": "Moment LBS wymaga płatnej, automatycznie odnawiającej się subskrypcji miesięcznej o nazwie",
-      "name": "QuailBreederSubscription",
+      "name": "Moment LBSSubscription",
       "important": "Ważne: Płatność zostanie obciążona Twoje konto iTunes po potwierdzeniu zakupu. Subskrypcje odnawiają się automatycznie, chyba że auto-odnawianie zostanie wyłączone co najmniej 24 godziny przed końcem bieżącego okresu."
     },
     "license": {
@@ -348,10 +348,10 @@
       "email": "Email"
     },
     "lastUpdated": "Ostatnia Aktualizacja: 30 listopada 2024",
-    "footer": "© 2024 QuailBreeder. Wszelkie prawa zastrzeżone."
+    "footer": "© 2024 Moment LBS. Wszelkie prawa zastrzeżone."
   },
   "auth": {
-    "welcome": "Witamy w QuailBreeder",
+    "welcome": "Witamy w Moment LBS",
     "signInToAccess": "Zaloguj się, aby uzyskać dostęp do wsparcia",
     "continueWithGoogle": "Kontynuuj przez Google",
     "continueWithApple": "Kontynuuj przez Apple",

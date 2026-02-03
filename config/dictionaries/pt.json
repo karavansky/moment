@@ -2,8 +2,8 @@
   "home": {
     "topmoto": "Ferramenta de Análise de Dados e Suporte à Decisão para a Criação de Codornizes",
     "botmoto": "Avalie a eficiência da ração, as condições de alojamento e a densidade populacional para identificar o desempenho superior e maximizar o rendimento por ciclo.",
-    "what": "O que é QuailBreeder?",
-    "expl": "QuailBreeder é um assistente digital tudo-em-um concebido para gerir e otimizar a sua produção de codornizes. Ele contabiliza com precisão cada passo da sua operação, do ovo à fatura.",
+    "what": "O que é Moment LBS?",
+    "expl": "Moment LBS é um assistente digital tudo-em-um concebido para gerir e otimizar a sua produção de codornizes. Ele contabiliza com precisão cada passo da sua operação, do ovo à fatura.",
     "flow": "Mapa de Fluxo",
     "content": "O processo consiste nas seguintes etapas:",
     "get": "Comece — é rápido",
@@ -11,7 +11,7 @@
   },
   "about": {
     "cardIntro": {
-      "title": "QuailBreeder — o pequeno assistente de quinta com uma grande personalidade",
+      "title": "Moment LBS — o pequeno assistente de quinta com uma grande personalidade",
       "text": "Nascido num quintal, criado com café e TypeScript. Se você cria codornizes (ou simplesmente aprecia um rastreamento eficiente e uma pitada de humor rural), está em casa.",
       "facts": "Fatos rápidos:",
       "fact1": "Construído por um programador que foi mordido pela febre da codorniz",
@@ -20,11 +20,11 @@
       "story": "Leia a história"
     },
     "cardStory": {
-      "title": "Como QuailBreeder surgiu",
+      "title": "Como Moment LBS surgiu",
       "text1": "Há uma história bastante pessoal por trás desta aplicação. Em 2012, deixei Kyiv e mudei-me para o campo. Hábitos da cidade encontram a realidade rural — e o caos vence, pelo menos por um tempo.",
       "text2": "Comecei uma pequena criação de codornizes no meu quintal para produzir carne. Dois anos, café e muitas contagens depois, atingi ~50 kg de carne de codorniz por semana. Isso significava fazer malabarismos com 14 a 15 lotes sobrepostos e rastrear mais de 3.000 aves. As notas de papel multiplicaram-se como as codornizes.",
       "text3": "Por formação, sou programador — então escrevi uma aplicação para PC para rastrear tudo. Funcionou, mas não era móvel. Eu ainda carregava papel e transcrevia dados no final de cada dia. Então, uma lesão nas costas forçou-me a fechar a quinta e a concentrar-me na aplicação — o que acabou por ser o melhor pivô possível: a próxima versão tornou-se mobile-first e embalada com campos práticos como viabilidade, informações de transporte e cronometragem de lotes.",
-      "text4": "Em resumo: O QuailBreeder existe porque alguém tinha que parar de perder ovos e começar a poupar tempo. Se cria codornizes para carne, esta aplicação recolhe os pequenos detalhes de que precisa — sem o obrigar a aprender SQL ou a vestir uma bata de laboratório.",
+      "text4": "Em resumo: O Moment LBS existe porque alguém tinha que parar de perder ovos e começar a poupar tempo. Se cria codornizes para carne, esta aplicação recolhe os pequenos detalhes de que precisa — sem o obrigar a aprender SQL ou a vestir uma bata de laboratório.",
       "button": "Ver funcionalidades"
     },
     "cardFounder": {
@@ -33,10 +33,10 @@
       "funFacts": "Fatos divertidos:",
       "fact1": "A aplicação original começou como um utilitário Windows (sim, nostalgia).",
       "fact2": "Sobreviveu a uma lesão nas costas, várias atualizações de software e cascas de ovos a mais.",
-      "fact3": "O nome «QuailBreeder» não foi sugerido por um comité de marketing — foi honesto."
+      "fact3": "O nome «Moment LBS» não foi sugerido por um comité de marketing — foi honesto."
     },
     "cardWhy": {
-      "title": "Por que as pessoas adoram o QuailBreeder",
+      "title": "Por que as pessoas adoram o Moment LBS",
       "reason1": {
         "title": "Poupe tempo",
         "text": "Entrada rápida, publicação de keepalive e menos noites gastas a transcrever notas de papel."
@@ -52,13 +52,13 @@
     },
     "cardPromo": {
       "title": "Pronto para parar de fazer malabarismos com ovos e papel?",
-      "text": "Experimente QuailBreeder e recupere as suas noites.",
+      "text": "Experimente Moment LBS e recupere as suas noites.",
       "button": "Iniciar teste gratuito",
       "contact": "Contacte-nos \n(Em breve haverá um sistema de rastreamento de pedidos de suporte.)"
     }
   },
   "getStarted": {
-    "title": "Primeiros Passos com QuailBreeder",
+    "title": "Primeiros Passos com Moment LBS",
     "intro": "Para começar, tem de preencher os três catálogos principais do equipamento que está a utilizar.",
     "stepsTitle": "Passos a Seguir",
     "finalTitle": "Finalmente",
@@ -161,12 +161,12 @@
   },
   "seo": {
     "home": {
-      "title": "QuailBreeder - Ferramenta de Análise de Dados e Apoio à Decisão para Criação de Codornizes",
+      "title": "Moment LBS - Ferramenta de Análise de Dados e Apoio à Decisão para Criação de Codornizes",
       "description": "Assistente digital completo para gerir e otimizar a produção de codornizes. Acompanhe cada etapa desde o ovo até à fatura com contabilidade precisa e análise de desempenho."
     },
     "about": {
       "title": "Autopromoção Socialmente Aceitável",
-      "description": "Como QuailBreeder surgiu. O pequeno assistente de quinta com uma grande personalidade"
+      "description": "Como Moment LBS surgiu. O pequeno assistente de quinta com uma grande personalidade"
     },
     "getStarted": {
       "title": "Primeiros Passos",
@@ -269,7 +269,7 @@
       "email": "E-mail:"
     },
     "lastUpdated": "Última Atualização: 30 de novembro de 2024",
-    "footer": "© 2024 QuailBreeder. Todos os direitos reservados."
+    "footer": "© 2024 Moment LBS. Todos os direitos reservados."
   },
   "terms": {
     "title": "Termos de Utilização",
@@ -286,7 +286,7 @@
     "subscription": {
       "title": "Subscrição e Pagamento",
       "text": "O Moment LBS requer uma subscrição mensal paga de renovação automática chamada",
-      "name": "SubscriçãoQuailBreeder",
+      "name": "SubscriçãoMoment LBS",
       "important": "Importante: O pagamento será cobrado na sua Conta iTunes após a confirmação da compra. As subscrições renovam-se automaticamente, a menos que a renovação automática seja desativada pelo menos 24 horas antes do final do período atual."
     },
     "license": {
@@ -348,10 +348,10 @@
       "email": "E-mail"
     },
     "lastUpdated": "Última Atualização: 30 de novembro de 2024",
-    "footer": "© 2024 QuailBreeder. Todos os direitos reservados."
+    "footer": "© 2024 Moment LBS. Todos os direitos reservados."
   },
   "auth": {
-    "welcome": "Bem-vindo ao QuailBreeder",
+    "welcome": "Bem-vindo ao Moment LBS",
     "signInToAccess": "Faça login para acessar o suporte",
     "continueWithGoogle": "Continuar com o Google",
     "continueWithApple": "Continuar com a Apple",

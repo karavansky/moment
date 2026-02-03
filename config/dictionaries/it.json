@@ -11,7 +11,7 @@
   },
   "about": {
     "cardIntro": {
-      "title": "QuailBreeder — il piccolo assistente di fattoria con una grande personalità",
+      "title": "Moment LBS — il piccolo assistente di fattoria con una grande personalità",
       "text": "Nato in un cortile, cresciuto con caffè e TypeScript. Se allevi quaglie (o semplicemente apprezzi il monitoraggio efficiente e un pizzico di umorismo rurale), sei a casa.",
       "facts": "Fatti rapidi:",
       "fact1": "Costruito da un programmatore colpito dalla febbre delle quaglie",
@@ -20,11 +20,11 @@
       "story": "Leggi la storia"
     },
     "cardStory": {
-      "title": "Come è nato QuailBreeder",
+      "title": "Come è nato Moment LBS",
       "text1": "C'è una storia abbastanza personale dietro questa app. Nel 2012 ho lasciato Kyiv e mi sono trasferito in campagna. Abitudini cittadine incontrano la realtà rurale — e il caos vince, almeno per un po'.",
       "text2": "Ho iniziato un piccolo allevamento di quaglie nel mio cortile per produrre carne. Due anni, caffè e un sacco di conteggi dopo, ho raggiunto circa ~50 kg di carne di quaglia a settimana. Questo significava gestire 14-15 lotti sovrapposti e tracciare oltre 3.000 uccelli. Gli appunti di carta si moltiplicavano come le quaglie.",
       "text3": "Per formazione sono un programmatore — così ho scritto un'app per PC per tracciare tutto. Funzionava, ma non era mobile. Continuavo a portare carta e trascrivevo i dati alla fine di ogni giornata. Poi un infortunio alla schiena mi ha costretto a chiudere l'allevamento e concentrarmi sull'app — il che si è rivelato il miglior pivot possibile: la versione successiva è diventata mobile-first e piena di campi pratici come vitalità, informazioni sul trasporto e tempistica dei lotti.",
-      "text4": "Per farla breve: QuailBreeder esiste perché qualcuno doveva smetterla di perdere uova e iniziare a risparmiare tempo. Se allevi quaglie per la carne, questa app raccoglie i piccoli dettagli di cui hai bisogno — senza costringerti a imparare SQL o indossare un camice da laboratorio.",
+      "text4": "Per farla breve: Moment LBS esiste perché qualcuno doveva smetterla di perdere uova e iniziare a risparmiare tempo. Se allevi quaglie per la carne, questa app raccoglie i piccoli dettagli di cui hai bisogno — senza costringerti a imparare SQL o indossare un camice da laboratorio.",
       "button": "Vedi le funzionalità"
     },
     "cardFounder": {
@@ -33,10 +33,10 @@
       "funFacts": "Fatti divertenti:",
       "fact1": "L'app originale è iniziata come un'utility Windows (sì, nostalgia).",
       "fact2": "È sopravvissuta a un infortunio alla schiena, diversi aggiornamenti software e qualche guscio d'uovo di troppo.",
-      "fact3": "Il nome «QuailBreeder» non è stato suggerito da un comitato marketing — era onesto."
+      "fact3": "Il nome «Moment LBS» non è stato suggerito da un comitato marketing — era onesto."
     },
     "cardWhy": {
-      "title": "Perché le persone amano QuailBreeder",
+      "title": "Perché le persone amano Moment LBS",
       "reason1": {
         "title": "Risparmia tempo",
         "text": "Inserimento rapido, registrazione KeepAlive e meno serate trascritte da appunti di carta."
@@ -52,13 +52,13 @@
     },
     "cardPromo": {
       "title": "Pronto a smetterla di destreggiarti tra uova e carta?",
-      "text": "Prova QuailBreeder e riprenditi le tue serate.",
+      "text": "Prova Moment LBS e riprenditi le tue serate.",
       "button": "Inizia la prova gratuita",
       "contact": "Contattaci \n(Presto sarà disponibile un sistema di tracciamento richieste di supporto.)"
     }
   },
   "getStarted": {
-    "title": "Iniziare con QuailBreeder",
+    "title": "Iniziare con Moment LBS",
     "intro": "Per iniziare, devi compilare i tre cataloghi principali delle attrezzature che utilizzi.",
     "stepsTitle": "Passaggi da Seguire",
     "finalTitle": "Infine",
@@ -161,12 +161,12 @@
   },
   "seo": {
     "home": {
-      "title": "QuailBreeder - Strumento di Analisi Dati e Supporto Decisionale per l'Allevamento di Quaglie",
+      "title": "Moment LBS - Strumento di Analisi Dati e Supporto Decisionale per l'Allevamento di Quaglie",
       "description": "Assistente digitale completo per gestire e ottimizzare la produzione di quaglie. Traccia ogni passaggio dall'uovo alla fattura con contabilità precisa e analisi delle prestazioni."
     },
     "about": {
       "title": "Autopromozione Socialmente Accettabile",
-      "description": "Come è nato QuailBreeder. Il piccolo assistente di fattoria con una grande personalità"
+      "description": "Come è nato Moment LBS. Il piccolo assistente di fattoria con una grande personalità"
     },
     "getStarted": {
       "title": "Inizia",
@@ -269,7 +269,7 @@
       "email": "Email:"
     },
     "lastUpdated": "Ultimo Aggiornamento: 30 Novembre 2024",
-    "footer": "© 2024 QuailBreeder. Tutti i diritti riservati."
+    "footer": "© 2024 Moment LBS. Tutti i diritti riservati."
   },
   "terms": {
     "title": "Termini di Utilizzo",
@@ -286,7 +286,7 @@
     "subscription": {
       "title": "Abbonamento e Pagamento",
       "text": "Moment LBS richiede un abbonamento a pagamento con rinnovo automatico mensile chiamato",
-      "name": "QuailBreederSubscription",
+      "name": "Moment LBSSubscription",
       "important": "Importante: Il pagamento verrà addebitato sul tuo account iTunes alla conferma dell'acquisto. Gli abbonamenti si rinnovano automaticamente a meno che il rinnovo automatico non venga disattivato almeno 24 ore prima della fine del periodo corrente."
     },
     "license": {
@@ -348,10 +348,10 @@
       "email": "Email"
     },
     "lastUpdated": "Ultimo Aggiornamento: 30 Novembre 2024",
-    "footer": "© 2024 QuailBreeder. Tutti i diritti riservati."
+    "footer": "© 2024 Moment LBS. Tutti i diritti riservati."
   },
   "auth": {
-    "welcome": "Benvenuto in QuailBreeder",
+    "welcome": "Benvenuto in Moment LBS",
     "signInToAccess": "Accedi per accedere al supporto",
     "continueWithGoogle": "Continua con Google",
     "continueWithApple": "Continua con Apple",

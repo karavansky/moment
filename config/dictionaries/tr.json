@@ -2,8 +2,8 @@
   "home": {
     "topmoto": "Bıldırcın Çiftçiliği İçin Veri Analizi ve Karar Destek Aracı",
     "botmoto": "Üstün performansı belirlemek ve döngü başına verimi en üst düzeye çıkarmak için yem verimliliğini, barınma koşullarını ve stok yoğunluğunu değerlendirin.",
-    "what": "QuailBreeder Nedir?",
-    "expl": "QuailBreeder, bıldırcın üretiminizi yönetmek ve optimize etmek için tasarlanmış hepsi bir arada dijital bir asistandır. İşleminizin her adımını, yumurtadan faturaya kadar doğru bir şekilde kaydeder.",
+    "what": "Moment LBS Nedir?",
+    "expl": "Moment LBS, bıldırcın üretiminizi yönetmek ve optimize etmek için tasarlanmış hepsi bir arada dijital bir asistandır. İşleminizin her adımını, yumurtadan faturaya kadar doğru bir şekilde kaydeder.",
     "flow": "Akış Haritası",
     "content": "Süreç aşağıdaki adımlardan oluşur:",
     "get": "Başlayın — çok hızlı",
@@ -11,7 +11,7 @@
   },
   "about": {
     "cardIntro": {
-      "title": "QuailBreeder — büyük bir kişiliğe sahip küçük çiftlik asistanı",
+      "title": "Moment LBS — büyük bir kişiliğe sahip küçük çiftlik asistanı",
       "text": "Bir arka bahçede doğdu, kahve ve TypeScript ile büyüdü. Eğer bıldırcın yetiştiriyorsanız (veya sadece verimli takibi ve biraz kırsal mizahı takdir ediyorsanız), doğru yerdesiniz.",
       "facts": "Kısa Bilgiler:",
       "fact1": "Bıldırcın ateşine tutulan bir programcı tarafından yapıldı",
@@ -20,11 +20,11 @@
       "story": "Hikayeyi Oku"
     },
     "cardStory": {
-      "title": "QuailBreeder Nasıl Ortaya Çıktı",
+      "title": "Moment LBS Nasıl Ortaya Çıktı",
       "text1": "Bu uygulamanın arkasında oldukça kişisel bir hikaye var. 2012'de Kyiv'den ayrıldım ve kırsala taşındım. Şehir alışkanlıkları kırsal gerçeklikle buluştu — ve en azından bir süre için kaos kazandı.",
       "text2": "Et üretmek için arka bahçemde küçük bir bıldırcın çiftliği kurdum. İki yıl, kahve ve çok sayıda sayım sonrasında haftada ~50 kg bıldırcın etine ulaştım. Bu, 14–15 örtüşen parti ile hokkabazlık yapmak ve 3.000'den fazla kuşu takip etmek demekti. Kağıt notlar bıldırcınlar gibi çoğalıyordu.",
       "text3": "Eğitimim gereği programcıyım, bu yüzden her şeyi takip etmek için bir PC uygulaması yazdım. Çalıştı ama mobil değildi. Hala kağıt taşıyor ve her günün sonunda verileri transkribe ediyordum. Ardından, bir sırt sakatlığı beni çiftliği kapatmaya ve uygulamaya odaklanmaya zorladı — bu da mümkün olan en iyi pivot oldu: bir sonraki sürüm mobil öncelikli hale geldi ve yaşayabilirlik, nakliye bilgileri ve parti zamanlaması gibi pratik alanlarla doluydu.",
-      "text4": "Uzun lafın kısası: QuailBreeder, birinin yumurta kaybetmeyi durdurması ve zaman kazanmaya başlaması gerektiği için var oldu. Eğer et için bıldırcın yetiştiriyorsanız, bu uygulama ihtiyacınız olan küçük detayları toplar — size SQL öğrenmeyi veya laboratuvar önlüğü giymeyi zorunlu kılmaz.",
+      "text4": "Uzun lafın kısası: Moment LBS, birinin yumurta kaybetmeyi durdurması ve zaman kazanmaya başlaması gerektiği için var oldu. Eğer et için bıldırcın yetiştiriyorsanız, bu uygulama ihtiyacınız olan küçük detayları toplar — size SQL öğrenmeyi veya laboratuvar önlüğü giymeyi zorunlu kılmaz.",
       "button": "Özellikleri Gör"
     },
     "cardFounder": {
@@ -33,10 +33,10 @@
       "funFacts": "Eğlenceli bilgiler:",
       "fact1": "Orijinal uygulama bir Windows yardımcı programı olarak başladı (evet, nostalji).",
       "fact2": "Bir sırt sakatlığından, birkaç yazılım güncellemesinden ve çok fazla yumurta kabuğundan sağ çıktı.",
-      "fact3": "«QuailBreeder» ismi bir pazarlama komitesi tarafından önerilmedi — dürüsttü."
+      "fact3": "«Moment LBS» ismi bir pazarlama komitesi tarafından önerilmedi — dürüsttü."
     },
     "cardWhy": {
-      "title": "İnsanlar QuailBreeder'ı Neden Seviyor",
+      "title": "İnsanlar Moment LBS'ı Neden Seviyor",
       "reason1": {
         "title": "Zaman kazanın",
         "text": "Hızlı giriş, keepalive gönderimi ve kağıt notları kopyalayarak geçirilen daha az akşam."
@@ -52,13 +52,13 @@
     },
     "cardPromo": {
       "title": "Yumurtalar ve kağıtlarla hokkabazlık yapmayı bırakmaya hazır mısınız?",
-      "text": "QuailBreeder'ı deneyin ve akşamlarınızı geri kazanın.",
+      "text": "Moment LBS'ı deneyin ve akşamlarınızı geri kazanın.",
       "button": "Ücretsiz denemeyi başlat",
       "contact": "Bize Ulaşın \n(Yakında bir destek talep takip sistemi olacaktır.)"
     }
   },
   "getStarted": {
-    "title": "QuailBreeder ile Başlarken",
+    "title": "Moment LBS ile Başlarken",
     "intro": "Başlamak için, kullandığınız ekipmanın üç ana kataloğunu doldurmanız gerekir.",
     "stepsTitle": "İzlenecek Adımlar",
     "finalTitle": "Sonuç",
@@ -161,12 +161,12 @@
   },
   "seo": {
     "home": {
-      "title": "QuailBreeder - Bıldırcın Yetiştiriciliği için Veri Analizi ve Karar Destek Aracı",
+      "title": "Moment LBS - Bıldırcın Yetiştiriciliği için Veri Analizi ve Karar Destek Aracı",
       "description": "Bıldırcın üretimini yönetmek ve optimize etmek için hepsi bir arada dijital asistan. Yumurtadan faturaya kadar her adımı doğru muhasebe ve performans analiziyle takip edin."
     },
     "about": {
       "title": "Sosyal Olarak Kabul Edilebilir Kendi Kendini Tanıtma",
-      "description": "QuailBreeder Nasıl Ortaya Çıktı. Büyük bir kişiliğe sahip küçük çiftlik asistanı"
+      "description": "Moment LBS Nasıl Ortaya Çıktı. Büyük bir kişiliğe sahip küçük çiftlik asistanı"
     },
     "getStarted": {
       "title": "Başlayın",
@@ -269,7 +269,7 @@
       "email": "E-posta:"
     },
     "lastUpdated": "Son Güncelleme: 30 Kasım 2024",
-    "footer": "© 2024 QuailBreeder. Tüm hakları saklıdır."
+    "footer": "© 2024 Moment LBS. Tüm hakları saklıdır."
   },
   "terms": {
     "title": "Kullanım Şartları",
@@ -286,7 +286,7 @@
     "subscription": {
       "title": "Abonelik ve Ödeme",
       "text": "Moment LBS, şu adla anılan ücretli, aylık otomatik yenilenen bir abonelik gerektirir:",
-      "name": "QuailBreederAboneliği",
+      "name": "Moment LBSAboneliği",
       "important": "Önemli: Ödeme, satın alma onayı üzerine iTunes Hesabınıza tahsil edilecektir. Abonelikler, cari dönemin bitiminden en az 24 saat önce otomatik yenileme kapatılmadığı sürece otomatik olarak yenilenir."
     },
     "license": {
@@ -348,10 +348,10 @@
       "email": "E-posta"
     },
     "lastUpdated": "Son Güncelleme: 30 Kasım 2024",
-    "footer": "© 2024 QuailBreeder. Tüm hakları saklıdır."
+    "footer": "© 2024 Moment LBS. Tüm hakları saklıdır."
   },
   "auth": {
-    "welcome": "QuailBreeder'a Hoş Geldiniz",
+    "welcome": "Moment LBS'a Hoş Geldiniz",
     "signInToAccess": "Destek almak için giriş yapın",
     "continueWithGoogle": "Google ile devam et",
     "continueWithApple": "Apple ile devam et",

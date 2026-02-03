@@ -2,8 +2,8 @@
   "home": {
     "topmoto": "Alat Analisis Data dan Dukungan Keputusan untuk Pembibitan Puyuh",
     "botmoto": "Evaluasi efisiensi pakan, kondisi perumahan, dan kepadatan populasi untuk mengidentifikasi kinerja unggul dan memaksimalkan hasil per siklus.",
-    "what": "Apa itu QuailBreeder?",
-    "expl": "QuailBreeder adalah asisten digital all-in-one yang dirancang untuk mengelola dan mengoptimalkan produksi puyuh Anda. Ini secara akurat mencatat setiap langkah operasi Anda, dari telur hingga faktur.",
+    "what": "Apa itu Moment LBS?",
+    "expl": "Moment LBS adalah asisten digital all-in-one yang dirancang untuk mengelola dan mengoptimalkan produksi puyuh Anda. Ini secara akurat mencatat setiap langkah operasi Anda, dari telur hingga faktur.",
     "flow": "Peta Alur",
     "content": "Prosesnya terdiri dari langkah-langkah berikut:",
     "get": "Mulai — cepat kok",
@@ -11,7 +11,7 @@
   },
   "about": {
     "cardIntro": {
-      "title": "QuailBreeder — asisten pertanian kecil dengan kepribadian besar",
+      "title": "Moment LBS — asisten pertanian kecil dengan kepribadian besar",
       "text": "Lahir di halaman belakang, dibesarkan dengan kopi dan TypeScript. Jika Anda memelihara puyuh (atau hanya menghargai pelacakan yang efisien dan sedikit humor pedesaan), Anda berada di rumah.",
       "facts": "Fakta Singkat:",
       "fact1": "Dibangun oleh seorang programmer yang terkena demam puyuh",
@@ -20,11 +20,11 @@
       "story": "Baca kisahnya"
     },
     "cardStory": {
-      "title": "Bagaimana QuailBreeder Muncul",
+      "title": "Bagaimana Moment LBS Muncul",
       "text1": "Ada cerita yang cukup pribadi di balik aplikasi ini. Pada tahun 2012, saya meninggalkan Kyiv dan pindah ke pedesaan. Kebiasaan kota bertemu dengan realitas pedesaan — dan kekacauan menang, setidaknya untuk sementara.",
       "text2": "Saya memulai peternakan puyuh kecil di halaman belakang saya untuk memproduksi daging. Dua tahun, kopi, dan banyak hitungan kemudian, saya mencapai ~50 kg daging puyuh per minggu. Ini berarti menyulap 14–15 batch yang tumpang tindih dan melacak lebih dari 3.000 burung. Catatan kertas berlipat ganda seperti puyuh.",
       "text3": "Berdasarkan pelatihan, saya seorang programmer — jadi saya menulis aplikasi PC untuk melacak semuanya. Itu berfungsi, tetapi tidak mobile. Saya masih membawa kertas dan menyalin data di akhir setiap hari. Kemudian, cedera punggung memaksa saya untuk menutup peternakan dan fokus pada aplikasi — yang ternyata menjadi pivot terbaik: versi berikutnya menjadi mobile-first dan dikemas dengan bidang-bidang praktis seperti kelangsungan hidup, info transportasi, dan pengaturan waktu batch.",
-      "text4": "Singkatnya: QuailBreeder ada karena seseorang harus berhenti kehilangan telur dan mulai menghemat waktu. Jika Anda memelihara puyuh untuk daging, aplikasi ini mengumpulkan detail kecil yang Anda butuhkan — tanpa memaksa Anda untuk belajar SQL atau mengenakan jas lab.",
+      "text4": "Singkatnya: Moment LBS ada karena seseorang harus berhenti kehilangan telur dan mulai menghemat waktu. Jika Anda memelihara puyuh untuk daging, aplikasi ini mengumpulkan detail kecil yang Anda butuhkan — tanpa memaksa Anda untuk belajar SQL atau mengenakan jas lab.",
       "button": "Lihat Fitur"
     },
     "cardFounder": {
@@ -33,10 +33,10 @@
       "funFacts": "Fakta menarik:",
       "fact1": "Aplikasi asli dimulai sebagai utilitas Windows (ya, nostalgia).",
       "fact2": "Bertahan dari cedera punggung, beberapa pembaruan perangkat lunak, dan terlalu banyak kulit telur.",
-      "fact3": "Nama «QuailBreeder» tidak disarankan oleh komite pemasaran — itu jujur."
+      "fact3": "Nama «Moment LBS» tidak disarankan oleh komite pemasaran — itu jujur."
     },
     "cardWhy": {
-      "title": "Mengapa Orang Menyukai QuailBreeder",
+      "title": "Mengapa Orang Menyukai Moment LBS",
       "reason1": {
         "title": "Hemat waktu",
         "text": "Input cepat, posting keepalive, dan lebih sedikit malam yang dihabiskan untuk menyalin catatan kertas."
@@ -52,13 +52,13 @@
     },
     "cardPromo": {
       "title": "Siap berhenti menyulap telur dan kertas?",
-      "text": "Coba QuailBreeder dan dapatkan kembali malam Anda.",
+      "text": "Coba Moment LBS dan dapatkan kembali malam Anda.",
       "button": "Mulai uji coba gratis",
       "contact": "Hubungi Kami \n(Sistem pelacakan permintaan dukungan akan segera hadir.)"
     }
   },
   "getStarted": {
-    "title": "Memulai dengan QuailBreeder",
+    "title": "Memulai dengan Moment LBS",
     "intro": "Untuk memulai, Anda perlu mengisi tiga katalog utama peralatan yang Anda gunakan.",
     "stepsTitle": "Langkah-Langkah yang Harus Diambil",
     "finalTitle": "Akhirnya",
@@ -161,12 +161,12 @@
   },
   "seo": {
     "home": {
-      "title": "QuailBreeder - Alat Analisis Data dan Dukungan Keputusan untuk Peternakan Burung Puyuh",
+      "title": "Moment LBS - Alat Analisis Data dan Dukungan Keputusan untuk Peternakan Burung Puyuh",
       "description": "Asisten digital lengkap untuk mengelola dan mengoptimalkan produksi burung puyuh. Lacak setiap langkah dari telur hingga faktur dengan akuntansi akurat dan analisis kinerja."
     },
     "about": {
       "title": "Promosi Diri yang Diterima Secara Sosial",
-      "description": "Bagaimana QuailBreeder Muncul. Asisten pertanian kecil dengan kepribadian besar"
+      "description": "Bagaimana Moment LBS Muncul. Asisten pertanian kecil dengan kepribadian besar"
     },
     "getStarted": {
       "title": "Memulai",
@@ -269,7 +269,7 @@
       "email": "Email:"
     },
     "lastUpdated": "Terakhir Diperbarui: 30 November 2024",
-    "footer": "© 2024 QuailBreeder. Semua hak dilindungi undang-undang."
+    "footer": "© 2024 Moment LBS. Semua hak dilindungi undang-undang."
   },
   "terms": {
     "title": "Ketentuan Penggunaan",
@@ -286,7 +286,7 @@
     "subscription": {
       "title": "Langganan dan Pembayaran",
       "text": "Moment LBS memerlukan langganan bulanan berbayar yang diperbarui secara otomatis yang disebut",
-      "name": "LanggananQuailBreeder",
+      "name": "LanggananMoment LBS",
       "important": "Penting: Pembayaran akan dibebankan ke Akun iTunes Anda pada konfirmasi pembelian. Langganan diperbarui secara otomatis kecuali perpanjangan otomatis dimatikan setidaknya 24 jam sebelum akhir periode berjalan."
     },
     "license": {
@@ -348,10 +348,10 @@
       "email": "Email"
     },
     "lastUpdated": "Terakhir Diperbarui: 30 November 2024",
-    "footer": "© 2024 QuailBreeder. Semua hak dilindungi undang-undang."
+    "footer": "© 2024 Moment LBS. Semua hak dilindungi undang-undang."
   },
   "auth": {
-    "welcome": "Selamat datang di QuailBreeder",
+    "welcome": "Selamat datang di Moment LBS",
     "signInToAccess": "Masuk untuk mengakses dukungan",
     "continueWithGoogle": "Lanjutkan dengan Google",
     "continueWithApple": "Lanjutkan dengan Apple",

@@ -2,8 +2,8 @@
   "home": {
     "topmoto": "Outil d'analyse de données et d'aide à la décision pour l'élevage de cailles",
     "botmoto": "Évaluez l'efficacité alimentaire, les conditions de logement et la densité de peuplement pour identifier les performances supérieures et maximiser le rendement par cycle.",
-    "what": "Qu'est-ce que QuailBreeder ?",
-    "expl": "QuailBreeder est un assistant numérique tout-en-un conçu pour gérer et optimiser votre production de cailles. Il rend compte avec précision de chaque étape de votre exploitation, de l'œuf à la facture.",
+    "what": "Qu'est-ce que Moment LBS ?",
+    "expl": "Moment LBS est un assistant numérique tout-en-un conçu pour gérer et optimiser votre production de cailles. Il rend compte avec précision de chaque étape de votre exploitation, de l'œuf à la facture.",
     "flow": "Carte des Flux",
     "content": "Le processus se compose des étapes suivantes :",
     "get": "Commencez — c'est rapide",
@@ -11,7 +11,7 @@
   },
   "about": {
     "cardIntro": {
-      "title": "QuailBreeder — le petit assistant agricole avec une grande personnalité",
+      "title": "Moment LBS — le petit assistant agricole avec une grande personnalité",
       "text": "Né dans un jardin, élevé au café et à TypeScript. Si vous élevez des cailles (ou appréciez simplement un suivi efficace et une touche d'humour rural), vous êtes chez vous.",
       "facts": "Faits en bref :",
       "fact1": "Construit par un programmeur mordu par la fièvre de la caille",
@@ -20,11 +20,11 @@
       "story": "Lire l'histoire"
     },
     "cardStory": {
-      "title": "Comment QuailBreeder est né",
+      "title": "Comment Moment LBS est né",
       "text1": "Il y a une histoire assez personnelle derrière cette application. En 2012, j'ai quitté Kiev et je me suis installé à la campagne. Les habitudes citadines rencontrent la réalité rurale — et le chaos gagne, du moins pour un temps.",
       "text2": "J'ai démarré une petite ferme de cailles dans mon jardin pour produire de la viande. Deux ans, du café et beaucoup de comptage plus tard, j'ai atteint environ 50 kg de viande de caille par semaine. Cela signifiait jongler avec 14 à 15 lots qui se chevauchaient et suivre plus de 3 000 oiseaux. Les notes sur papier se sont multipliées comme des cailles.",
       "text3": "De par ma formation, je suis programmeur — j'ai donc écrit une application PC pour tout suivre. Cela fonctionnait, mais ce n'était pas mobile. Je portais toujours du papier et retranscrivais les données à la fin de chaque journée. Puis, une blessure au dos m'a forcé à fermer la ferme et à me concentrer sur l'application — ce qui s'est avéré être le meilleur pivot possible : la version suivante est devenue mobile-first et remplie de champs pratiques comme la viabilité, les informations de transport et le timing des lots.",
-      "text4": "Pour faire court : QuailBreeder existe parce que quelqu'un devait arrêter de perdre des œufs et commencer à gagner du temps. Si vous élevez des cailles pour la viande, cette application recueille les petits détails dont vous avez besoin — sans vous obliger à apprendre le SQL ou à porter une blouse de laboratoire.",
+      "text4": "Pour faire court : Moment LBS existe parce que quelqu'un devait arrêter de perdre des œufs et commencer à gagner du temps. Si vous élevez des cailles pour la viande, cette application recueille les petits détails dont vous avez besoin — sans vous obliger à apprendre le SQL ou à porter une blouse de laboratoire.",
       "button": "Voir les fonctionnalités"
     },
     "cardFounder": {
@@ -33,10 +33,10 @@
       "funFacts": "Faits amusants :",
       "fact1": "L'application originale a commencé comme un utilitaire Windows (oui, la nostalgie).",
       "fact2": "Elle a survécu à une blessure au dos, à plusieurs mises à jour logicielles et à quelques coquilles d'œufs de trop.",
-      "fact3": "Le nom «QuailBreeder» n'a pas été suggéré par un comité de marketing — il était honnête."
+      "fact3": "Le nom «Moment LBS» n'a pas été suggéré par un comité de marketing — il était honnête."
     },
     "cardWhy": {
-      "title": "Pourquoi les gens aiment QuailBreeder",
+      "title": "Pourquoi les gens aiment Moment LBS",
       "reason1": {
         "title": "Gagnez du temps",
         "text": "Saisie rapide, publication en mode « keepalive » et moins de soirées passées à transcrire des notes papier."
@@ -52,13 +52,13 @@
     },
     "cardPromo": {
       "title": "Prêt à arrêter de jongler avec les œufs et le papier ?",
-      "text": "Essayez QuailBreeder et récupérez vos soirées.",
+      "text": "Essayez Moment LBS et récupérez vos soirées.",
       "button": "Commencer l'essai gratuit",
       "contact": "Contactez-nous \n(Un système de suivi des demandes de support sera bientôt disponible.)"
     }
   },
   "getStarted": {
-    "title": "Démarrer avec QuailBreeder",
+    "title": "Démarrer avec Moment LBS",
     "intro": "Pour commencer, vous devez remplir les trois principaux catalogues de l'équipement que vous utilisez.",
     "stepsTitle": "Étapes à suivre",
     "finalTitle": "Enfin",
@@ -161,12 +161,12 @@
   },
   "seo": {
     "home": {
-      "title": "QuailBreeder - Outil d'Analyse de Données et d'Aide à la Décision pour l'Élevage de Cailles",
+      "title": "Moment LBS - Outil d'Analyse de Données et d'Aide à la Décision pour l'Élevage de Cailles",
       "description": "Assistant numérique tout-en-un pour gérer et optimiser la production de cailles. Suivez chaque étape de l'œuf à la facture avec une comptabilité précise et une analyse de performance."
     },
     "about": {
       "title": "Autopromotion Socialement Acceptable",
-      "description": "Comment QuailBreeder est né. Le petit assistant agricole avec une grande personnalité"
+      "description": "Comment Moment LBS est né. Le petit assistant agricole avec une grande personnalité"
     },
     "getStarted": {
       "title": "Démarrer",
@@ -269,7 +269,7 @@
       "email": "E-mail :"
     },
     "lastUpdated": "Dernière mise à jour : 30 novembre 2024",
-    "footer": "© 2024 QuailBreeder. Tous droits réservés."
+    "footer": "© 2024 Moment LBS. Tous droits réservés."
   },
   "terms": {
     "title": "Conditions d'Utilisation",
@@ -286,7 +286,7 @@
     "subscription": {
       "title": "Abonnement et Paiement",
       "text": "Moment LBS nécessite un abonnement mensuel payant à renouvellement automatique appelé",
-      "name": "AbonnementQuailBreeder",
+      "name": "AbonnementMoment LBS",
       "important": "Important : Le paiement sera débité de votre compte iTunes lors de la confirmation de l'achat. Les abonnements se renouvellent automatiquement, sauf si le renouvellement automatique est désactivé au moins 24 heures avant la fin de la période en cours."
     },
     "license": {
@@ -348,10 +348,10 @@
       "email": "E-mail"
     },
     "lastUpdated": "Dernière mise à jour : 30 novembre 2024",
-    "footer": "© 2024 QuailBreeder. Tous droits réservés."
+    "footer": "© 2024 Moment LBS. Tous droits réservés."
   },
   "auth": {
-    "welcome": "Bienvenue sur QuailBreeder",
+    "welcome": "Bienvenue sur Moment LBS",
     "signInToAccess": "Connectez-vous pour accéder au support",
     "continueWithGoogle": "Continuer avec Google",
     "continueWithApple": "Continuer avec Apple",

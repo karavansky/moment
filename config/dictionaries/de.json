@@ -2,8 +2,8 @@
   "home": {
     "topmoto": "Datenanalyse und Steuerung für die Wachtelzucht",
     "botmoto": "Bewerten Sie Futterverwertung, Haltungsbedingungen und Besatzdichte, um überlegene Leistung zu identifizieren und den Ertrag pro Zyklus zu maximieren.",
-    "what": "Was ist QuailBreeder?",
-    "expl": "QuailBreeder ist Ihr digitales All-in-One-Werkzeug, das speziell zur Verwaltung und Optimierung Ihrer Wachtelzucht entwickelt wurde. Es erfasst präzise jeden Schritt Ihres Betriebs – vom Ei bis zur Rechnung.",
+    "what": "Was ist Moment LBS?",
+    "expl": "Moment LBS ist Ihr digitales All-in-One-Werkzeug, das speziell zur Verwaltung und Optimierung Ihrer Wachtelzucht entwickelt wurde. Es erfasst präzise jeden Schritt Ihres Betriebs – vom Ei bis zur Rechnung.",
     "flow": "Flussdiagramm",
     "content": "Der Prozess besteht aus den folgenden Schritten:",
     "get": "Loslegen — es ist schnell",
@@ -11,7 +11,7 @@
   },
   "about": {
     "cardIntro": {
-      "title": "QuailBreeder — der kleine Farm-Assistent mit großer Persönlichkeit",
+      "title": "Moment LBS — der kleine Farm-Assistent mit großer Persönlichkeit",
       "text": "Geboren im Hinterhof, aufgezogen mit Kaffee und TypeScript. Wenn Sie Wachteln züchten (oder einfach effiziente Nachverfolgung und eine Prise ländlichen Humor schätzen), sind Sie hier richtig.",
       "facts": "Kurze Fakten:",
       "fact1": "Erstellt von einem Programmierer, der vom Wachtel-Fieber gebissen wurde",
@@ -20,11 +20,11 @@
       "story": "Lesen Sie die Geschichte"
     },
     "cardStory": {
-      "title": "Wie QuailBreeder entstanden ist",
+      "title": "Wie Moment LBS entstanden ist",
       "text1": "Hinter dieser App steckt eine ziemlich persönliche Geschichte. Im Jahr 2012 verließ ich Kyiw und zog aufs Land. Städtische Gewohnheiten treffen auf ländliche Realität — und das Chaos gewinnt, zumindest für eine Weile.",
       "text2": "Ich begann in meinem Hinterhof mit einer kleinen Wachtelfarm zur Fleischproduktion. Zwei Jahre, Kaffee und viel Zählen später erreichte ich ~50 kg Wachtelfleisch pro Woche. Das bedeutete, 14–15 überlappende Chargen zu jonglieren und über 3.000 Vögel zu verfolgen. Papierzettel vermehrten sich wie Wachteln.",
       "text3": "Von Haus aus bin ich Programmierer — also schrieb ich eine PC-Anwendung, um alles zu verfolgen. Sie funktionierte, war aber nicht mobil. Ich trug immer noch Papier bei mir und übertrug die Daten am Ende des Tages. Dann zwang mich eine Rückenverletzung, die Farm zu schließen und mich auf die App zu konzentrieren — was sich als die bestmögliche Wende erwies: Die nächste Version wurde mobile-first und vollgepackt mit praktischen Feldern wie Lebensfähigkeit, Transportinformationen und Chargen-Timing.",
-      "text4": "Kurz gesagt: QuailBreeder existiert, weil jemand aufhören musste, Eier zu verlieren, und anfangen musste, Zeit zu sparen. Wenn Sie Wachteln zur Fleischproduktion halten, sammelt diese App die winzigen Details, die Sie benötigen — ohne dass Sie SQL lernen oder einen Laborkittel tragen müssen.",
+      "text4": "Kurz gesagt: Moment LBS existiert, weil jemand aufhören musste, Eier zu verlieren, und anfangen musste, Zeit zu sparen. Wenn Sie Wachteln zur Fleischproduktion halten, sammelt diese App die winzigen Details, die Sie benötigen — ohne dass Sie SQL lernen oder einen Laborkittel tragen müssen.",
       "button": "Funktionen ansehen"
     },
     "cardFounder": {
@@ -33,10 +33,10 @@
       "funFacts": "Wissenswertes:",
       "fact1": "Die ursprüngliche App begann als Windows-Utility (ja, Nostalgie).",
       "fact2": "Sie überlebte eine Rückenverletzung, mehrere Software-Updates und etwas zu viele Eierschalen.",
-      "fact3": "Der Name „QuailBreeder“ wurde nicht von einem Marketing-Komitee vorgeschlagen — er war ehrlich."
+      "fact3": "Der Name „Moment LBS“ wurde nicht von einem Marketing-Komitee vorgeschlagen — er war ehrlich."
     },
     "cardWhy": {
-      "title": "Warum Nutzer QuailBreeder lieben",
+      "title": "Warum Nutzer Moment LBS lieben",
       "reason1": {
         "title": "Zeit sparen",
         "text": "Schnelle Eingabe, Keepalive-Posting und weniger Abende, die mit dem Übertragen von Papiernotizen verbracht werden."
@@ -52,7 +52,7 @@
     },
     "cardPromo": {
       "title": "Bereit, nicht mehr Eier und Papier jonglieren zu müssen?",
-      "text": "Testen Sie QuailBreeder und gewinnen Sie Ihre Abende zurück.",
+      "text": "Testen Sie Moment LBS und gewinnen Sie Ihre Abende zurück.",
       "button": "Kostenlose Testversion starten",
       "contact": "Kontaktieren Sie uns"
     }
@@ -161,12 +161,12 @@
   },
   "seo": {
     "home": {
-      "title": "QuailBreeder - Datenanalyse und Entscheidungsunterstützung für Wachtelfarm",
+      "title": "Moment LBS - Datenanalyse und Entscheidungsunterstützung für Wachtelfarm",
       "description": "Alles-in-einem digitaler Assistent zur Verwaltung und Optimierung der Wachtelproduktion. Verfolgen Sie jeden Schritt vom Ei bis zur Rechnung mit präziser Buchhaltung und Leistungsanalyse."
     },
     "about": {
       "title": "Sozial akzeptable Selbstvermarktung",
-      "description": "Wie QuailBreeder entstanden ist. Der kleine Farm-Assistent mit großer Persönlichkeit"
+      "description": "Wie Moment LBS entstanden ist. Der kleine Farm-Assistent mit großer Persönlichkeit"
     },
     "getStarted": {
       "title": "Jetzt starten",
@@ -269,7 +269,7 @@
       "email": "E-Mail:"
     },
     "lastUpdated": "Zuletzt aktualisiert: 30. November 2024",
-    "footer": "© 2024 QuailBreeder. Alle Rechte vorbehalten."
+    "footer": "© 2024 Moment LBS. Alle Rechte vorbehalten."
   },
   "terms": {
     "title": "Nutzungsbedingungen",
@@ -286,7 +286,7 @@
     "subscription": {
       "title": "Abonnement und Zahlung",
       "text": "Moment LBS erfordert ein kostenpflichtiges monatliches Abonnement mit automatischer Verlängerung namens",
-      "name": "QuailBreederSubscription",
+      "name": "Moment LBSSubscription",
       "important": "Wichtig: Die Zahlung wird Ihrem iTunes-Konto bei Kaufbestätigung belastet. Abonnements verlängern sich automatisch, es sei denn, die automatische Verlängerung wird mindestens 24 Stunden vor Ende des aktuellen Zeitraums deaktiviert."
     },
     "license": {
@@ -348,10 +348,10 @@
       "email": "E-Mail"
     },
     "lastUpdated": "Zuletzt aktualisiert: 30. November 2024",
-    "footer": "© 2024 QuailBreeder. Alle Rechte vorbehalten."
+    "footer": "© 2024 Moment LBS. Alle Rechte vorbehalten."
   },
   "auth": {
-    "welcome": "Willkommen bei QuailBreeder",
+    "welcome": "Willkommen bei Moment LBS",
     "signInToAccess": "Melden Sie sich an, um den Support zu nutzen",
     "continueWithGoogle": "Mit Google fortfahren",
     "continueWithApple": "Mit Apple fortfahren",
