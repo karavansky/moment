@@ -12,7 +12,6 @@ import AppointmentModal from './AppointmentModal'
 import AppointmentReport from './AppointmentReport'
 import { useLanguage } from '@/hooks/useLanguage'
 import FooterDienst from './FooterDienst'
-import { Modal } from '@heroui/react'
 
 type ViewMode = 'month' | 'week'
 
@@ -30,7 +29,6 @@ function DienstplanView() {
   const [isPending, startTransition] = useTransition()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isReportModalOpen, setIsReportModalOpen] = useState(false)
-  const [isContextModalOpen, setIsContextModalOpen] = useState(false)
 
   // Генерация календарных недель из appointments
   const calendarWeeks = useMemo(() => {
@@ -68,26 +66,36 @@ function DienstplanView() {
   // Мемоизируем today для стабильности
   const today = useMemo(() => new Date(), [])
 
-  // Обработчик клика на appointment - прокидывается через props в DayView
+  // Обработчик клика на appointment - для не сегодняшних дней
   const handlePressOnAppointment = useCallback(
     (appointment: NonNullable<typeof selectedAppointment>) => {
       console.log('handlePressOnAppointment:', appointment)
-      setSelectedAppointment(appointment) // сохраняем в context (не удаляем)
+      setSelectedAppointment(appointment)
       setIsNewAppointment(false)
-      
-      // Check if appointment date is today
-      const appDate = new Date(appointment.date)
-      const isToday = appDate.getDate() === today.getDate() &&
-                      appDate.getMonth() === today.getMonth() &&
-                      appDate.getFullYear() === today.getFullYear()
-
-      if (isToday) {
-        setIsContextModalOpen(true)
-      } else {
-        setIsModalOpen(true)
-      }
+      setIsModalOpen(true)
     },
-    [setSelectedAppointment, today]
+    [setSelectedAppointment]
+  )
+
+  // Обработчик редактирования appointment (из Dropdown для сегодняшних)
+  const handleEditAppointment = useCallback(
+    (appointment: NonNullable<typeof selectedAppointment>) => {
+      console.log('handleEditAppointment:', appointment)
+      setSelectedAppointment(appointment)
+      setIsNewAppointment(false)
+      setIsModalOpen(true)
+    },
+    [setSelectedAppointment]
+  )
+
+  // Обработчик добавления отчета (из Dropdown для сегодняшних)
+  const handleAddReport = useCallback(
+    (appointment: NonNullable<typeof selectedAppointment>) => {
+      console.log('handleAddReport:', appointment)
+      setSelectedAppointment(appointment)
+      setIsReportModalOpen(true)
+    },
+    [setSelectedAppointment]
   )
 
   // Обработчик внешнего drop (из FooterDienst)
@@ -122,20 +130,6 @@ function DienstplanView() {
     setIsNewAppointment(false)
   }, [setSelectedAppointment, setIsNewAppointment, setIsModalOpen])
 
-  const handleCloseContextModal = useCallback(() => {
-    setIsContextModalOpen(false)
-    setSelectedAppointment(null)
-  }, [setSelectedAppointment])
-
-  const handleContextEdit = useCallback(() => {
-    setIsContextModalOpen(false)
-    setIsModalOpen(true)
-  }, [])
-
-  const handleContextReport = useCallback(() => {
-    setIsContextModalOpen(false)
-    setIsReportModalOpen(true)
-  }, [])
 
   // Логируем только mount/unmount, без зависимостей от данных
   useEffect(() => {
@@ -239,6 +233,8 @@ function DienstplanView() {
                   onAppointmentPress={handlePressOnAppointment}
                   onExternalDrop={handleExternalDrop}
                   onDayPress={handlePressOnDay}
+                  onEditAppointment={handleEditAppointment}
+                  onAddReport={handleAddReport}
                 />
               </motion.div>
             ) : (
@@ -276,35 +272,6 @@ function DienstplanView() {
             : false
         }
       />
-
-      {/* Context Menu Modal */}
-      <Modal>
-        <Modal.Backdrop
-          isOpen={isContextModalOpen}
-          onOpenChange={open => {
-            if (!open) handleCloseContextModal()
-          }}
-          variant="blur"
-        >
-          <Modal.Container>
-            <Modal.Dialog>
-              <Modal.Header>
-                <h3 className="text-lg font-bold">Aktionen</h3>
-              </Modal.Header>
-              <Modal.Body>
-                <div className="flex flex-col gap-2">
-                  <Button onPress={handleContextEdit}>
-                    Termin bearbeiten
-                  </Button>
-                  <Button onPress={handleContextReport}>
-                    Bericht hinzufügen
-                  </Button>
-                </div>
-              </Modal.Body>
-            </Modal.Dialog>
-          </Modal.Container>
-        </Modal.Backdrop>
-      </Modal>
 
       {/* Appointment Report Modal */}
       <AppointmentReport

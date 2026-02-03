@@ -16,6 +16,8 @@ interface CalendarViewProps {
   onAppointmentPress?: (appointment: Appointment) => void
   onExternalDrop?: (date: Date, type: 'client' | 'worker', id: string) => void
   onDayPress?: (date: Date) => void
+  onEditAppointment?: (appointment: Appointment) => void
+  onAddReport?: (appointment: Appointment) => void
 }
 
 // Функция для получения полных названий дней недели на основе локали
@@ -87,6 +89,8 @@ function CalendarView({
   onAppointmentPress,
   onExternalDrop,
   onDayPress,
+  onEditAppointment,
+  onAddReport,
 }: CalendarViewProps) {
   const lang = useLanguage()
   const { isMobile } = usePlatformContext()
@@ -335,6 +339,8 @@ function CalendarView({
                       onAppointmentPress={onAppointmentPress}
                       onExternalDrop={onExternalDrop}
                       onDayPress={onDayPress}
+                      onEditAppointment={onEditAppointment}
+                      onAddReport={onAddReport}
                     />
                   </div>
                 </div>

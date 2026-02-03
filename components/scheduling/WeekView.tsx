@@ -14,10 +14,12 @@ interface WeekViewProps {
   onAppointmentPress?: (appointment: Appointment) => void
   onExternalDrop?: (date: Date, type: 'client' | 'worker', id: string) => void
   onDayPress?: (date: Date) => void
+  onEditAppointment?: (appointment: Appointment) => void
+  onAddReport?: (appointment: Appointment) => void
 }
 
 const WeekView = forwardRef<HTMLDivElement, WeekViewProps>(
-  ({ week, today, selectedDate, onAppointmentPress, onExternalDrop, onDayPress }, ref) => {
+  ({ week, today, selectedDate, onAppointmentPress, onExternalDrop, onDayPress, onEditAppointment, onAddReport }, ref) => {
     return (
       <div ref={ref} className="mb-2 sm:mb-4 select-none h-full flex flex-col">
         {/* Название месяца (если это первая неделя месяца) */}
@@ -41,6 +43,8 @@ const WeekView = forwardRef<HTMLDivElement, WeekViewProps>(
               onAppointmentPress={onAppointmentPress}
               onExternalDrop={onExternalDrop}
               onDayPress={onDayPress}
+              onEditAppointment={onEditAppointment}
+              onAddReport={onAddReport}
             />
           ))}
         </div>

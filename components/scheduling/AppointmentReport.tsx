@@ -2,8 +2,9 @@ import React, { useState, useRef } from 'react'
 import { Modal, Button, Separator, TextArea, TextField, Label, Input } from '@heroui/react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { Appointment, Report, Photo } from '@/types/scheduling'
-import { Save, Plus, X, Upload, FileText, Image as ImageIcon } from 'lucide-react'
+import { Save, Plus, X, Upload, FileText, Image as ImageIcon, Loader2 } from 'lucide-react'
 import { formatTime } from '@/lib/calendar-utils'
+import imageCompression from 'browser-image-compression'
 
 interface AppointmentReportProps {
   isOpen: boolean
@@ -20,6 +21,7 @@ export default function AppointmentReport({
   const [reportNote, setReportNote] = useState('')
   const [photos, setPhotos] = useState<Photo[]>([])
   const [isUploading, setIsUploading] = useState(false)
+  const [uploadStage, setUploadStage] = useState<'idle' | 'compressing' | 'uploading'>('idle')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Reset state when opening for a new appointment
@@ -46,11 +48,31 @@ export default function AppointmentReport({
     if (!e.target.files || e.target.files.length === 0) return
 
     setIsUploading(true)
-    const file = e.target.files[0]
-    const formData = new FormData()
-    formData.append('file', file)
+    setUploadStage('compressing')
+    const originalFile = e.target.files[0]
 
     try {
+      // Compress image before upload
+      const compressionOptions = {
+        maxSizeMB: 1,              // Max file size in MB
+        maxWidthOrHeight: 1920,    // Max dimension (maintains aspect ratio)
+        useWebWorker: true,        // Use web worker for better performance
+        fileType: 'image/jpeg',    // Convert to JPEG for better compression
+      }
+
+      console.log(`Original file: ${originalFile.name}, size: ${(originalFile.size / 1024 / 1024).toFixed(2)} MB`)
+
+      const compressedFile = await imageCompression(originalFile, compressionOptions)
+
+      console.log(`Compressed file: ${compressedFile.name}, size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`)
+
+      setUploadStage('uploading')
+
+      const formData = new FormData()
+      // Keep original filename but ensure .jpeg extension for compressed file
+      const fileName = originalFile.name.replace(/\.[^.]+$/, '.jpeg')
+      formData.append('file', compressedFile, fileName)
+
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
@@ -72,6 +94,7 @@ export default function AppointmentReport({
       alert('Fehler beim Hochladen der Datei')
     } finally {
       setIsUploading(false)
+      setUploadStage('idle')
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
@@ -242,7 +265,15 @@ export default function AppointmentReport({
                     />
                   </div>
 
-                  {isUploading && <p className="text-xs text-default-500">Wird hochgeladen...</p>}
+                  {isUploading && (
+                    <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg">
+                      <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                      <span className="text-sm text-primary font-medium">
+                        {uploadStage === 'compressing' && 'Bild wird komprimiert...'}
+                        {uploadStage === 'uploading' && 'Wird hochgeladen...'}
+                      </span>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {photos.map((photo) => (

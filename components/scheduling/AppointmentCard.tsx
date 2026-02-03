@@ -12,19 +12,28 @@ import { usePlatformContext } from '@/contexts/PlatformContext'
 interface AppointmentCardProps {
   appointment: Appointment
   onAppointmentClick?: (appointmentId: string) => void
+  onShortPress?: (appointmentId: string) => void // For today's appointments - opens dropdown
   isDraggable?: boolean
   forceDesktopView?: boolean
 }
 
+// Threshold for distinguishing short press from long press/drag (ms)
+const SHORT_PRESS_THRESHOLD = 200
+
 function AppointmentCard({
   appointment,
   onAppointmentClick,
+  onShortPress,
   isDraggable = true,
   forceDesktopView = false,
 }: AppointmentCardProps) {
   const { isMobile, isReady } = usePlatformContext()
   const [isPressed, setIsPressed] = useState(false)
   const [isDraggingState, setIsDraggingState] = useState(false)
+
+  // Refs for short/long press detection
+  const pressStartTimeRef = useRef<number>(0)
+  const didDragRef = useRef<boolean>(false)
 
   const hasReport = appointment.reports && appointment.reports.length > 0
 
@@ -69,6 +78,7 @@ function AppointmentCard({
       console.log('[AppointmentCard] Drag start (Canvas)', { id: appointment.id })
       setIsDraggingState(true)
       setIsPressed(false)
+      didDragRef.current = true
 
       e.dataTransfer.effectAllowed = 'move'
       e.dataTransfer.setData(
@@ -192,6 +202,7 @@ function AppointmentCard({
       console.log('[AppointmentCard] Drag start (Clone)', { id: appointment.id })
       setIsDraggingState(true)
       setIsPressed(false)
+      didDragRef.current = true
 
       e.dataTransfer.effectAllowed = 'move'
       e.dataTransfer.setData(
@@ -253,6 +264,8 @@ function AppointmentCard({
   const handleMouseDown = useCallback(() => {
     if (isDraggable) {
       setIsPressed(true)
+      pressStartTimeRef.current = Date.now()
+      didDragRef.current = false
     }
   }, [isDraggable])
 
@@ -336,7 +349,18 @@ function AppointmentCard({
       onDragEnd={handleDragEnd}
       onClick={e => {
         e.stopPropagation() // Prevent DayView button from triggering
-        onAppointmentClick?.(appointment.id)
+
+        // Check if this was a short press (not a drag)
+        const pressDuration = Date.now() - pressStartTimeRef.current
+        const wasShortPress = pressDuration < SHORT_PRESS_THRESHOLD && !didDragRef.current
+
+        if (onShortPress && wasShortPress) {
+          // For today's appointments - trigger dropdown open
+          onShortPress(appointment.id)
+        } else if (!didDragRef.current) {
+          // Normal click - open modal (for non-today appointments)
+          onAppointmentClick?.(appointment.id)
+        }
       }}
       className={`
         ${isDraggable ? 'cursor-move' : 'cursor-pointer'}

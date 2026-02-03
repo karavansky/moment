@@ -1,11 +1,11 @@
 'use client'
 
 import React, { useState, useCallback, memo, useMemo, useRef } from 'react'
-import { Card } from '@heroui/react'
+import { Card, Dropdown, Label } from '@heroui/react'
 import { CalendarDay, getOnlyDate, isSameDate } from '@/lib/calendar-utils'
 import AppointmentCard from './AppointmentCard'
 import { useScheduling } from '@/contexts/SchedulingContext'
-import { Calendar } from 'lucide-react'
+import { Calendar, Edit, FileText } from 'lucide-react'
 import type { Appointment } from '@/types/scheduling'
 import { usePlatformContext } from '@/contexts/PlatformContext'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -18,6 +18,9 @@ interface DayViewProps {
   onAppointmentPress?: (appointment: Appointment) => void
   onExternalDrop?: (date: Date, type: 'client' | 'worker', id: string) => void
   onDayPress?: (date: Date) => void
+  // New props for today's appointments context menu
+  onEditAppointment?: (appointment: Appointment) => void
+  onAddReport?: (appointment: Appointment) => void
 }
 
 function DayView({
@@ -27,10 +30,14 @@ function DayView({
   onAppointmentPress,
   onExternalDrop,
   onDayPress,
+  onEditAppointment,
+  onAddReport,
 }: DayViewProps) {
   const { setSelectedDate, setSelectedAppointment, moveAppointmentToDate } = useScheduling()
   const [isDragOver, setIsDragOver] = useState(false)
   const [isPressed, setIsPressed] = useState(false)
+  // State for controlled Dropdown - stores appointment ID that has open dropdown
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
   const { isMobile } = usePlatformContext()
   const isCompact = useMediaQuery('(max-width: 1023px)')
   const isMobileLayout = isMobile || isCompact
@@ -77,6 +84,11 @@ function DayView({
     },
     [day.appointments, onAppointmentPress, setSelectedAppointment]
   )
+
+  // Handler for short press on today's appointments - opens dropdown
+  const handleShortPress = useCallback((appointmentId: string) => {
+    setOpenDropdownId(appointmentId)
+  }, [])
 
   const canDropHere = useCallback(
     (targetDate: Date | null): boolean => {
@@ -209,14 +221,15 @@ function DayView({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <button
-        type="button"
+      <div
+        role="button"
+        tabIndex={isPast ? -1 : 0}
         onClick={!isPast ? handleDayClick : undefined}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeaveBtn}
-        disabled={isPast}
-        className={`w-full h-full text-left rounded-xl`}
+        aria-disabled={isPast}
+        className={`w-full h-full text-left rounded-xl ${isPast ? 'cursor-not-allowed' : ''}`}
       >
         {/* Desktop версия (≥ 800px) - красивый Card */}
         <Card
@@ -284,12 +297,53 @@ function DayView({
             {/* Appointments */}
             <div className="space-y-1 " onMouseDown={e => e.stopPropagation()}>
               {day.appointments.map(appointment => (
-                <AppointmentCard
-                  key={appointment.id}
-                  appointment={appointment}
-                  onAppointmentClick={handleAppointmentClick}
-                  isDraggable={!isPast}
-                />
+                isToday && onEditAppointment && onAddReport && !isMobileLayout ? (
+                  <div key={appointment.id} className="relative">
+                    <AppointmentCard
+                      appointment={appointment}
+                      onAppointmentClick={() => {}}
+                      onShortPress={handleShortPress}
+                      isDraggable={!isPast}
+                    />
+                    <Dropdown
+                      isOpen={openDropdownId === appointment.id}
+                      onOpenChange={(open) => setOpenDropdownId(open ? appointment.id : null)}
+                    >
+                      <Dropdown.Trigger className="sr-only">
+                        <span>Menu</span>
+                      </Dropdown.Trigger>
+                      <Dropdown.Popover>
+                      <Dropdown.Menu
+                        onAction={(key) => {
+                          setOpenDropdownId(null)
+                          if (key === 'edit') onEditAppointment(appointment)
+                          if (key === 'report') onAddReport(appointment)
+                        }}
+                      >
+                        <Dropdown.Item id="edit" textValue="Termin bearbeiten">
+                          <div className="flex items-center gap-2">
+                            <Edit className="w-4 h-4" />
+                            <Label>Termin bearbeiten</Label>
+                          </div>
+                        </Dropdown.Item>
+                        <Dropdown.Item id="report" textValue="Bericht hinzufügen">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-4 h-4" />
+                            <Label>Bericht hinzufügen</Label>
+                          </div>
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown.Popover>
+                  </Dropdown>
+                  </div>
+                ) : (
+                  <AppointmentCard
+                    key={appointment.id}
+                    appointment={appointment}
+                    onAppointmentClick={!isMobileLayout ? handleAppointmentClick : undefined}
+                    isDraggable={!isPast}
+                  />
+                )
               ))}
             </div>
           </Card.Content>
@@ -350,13 +404,53 @@ function DayView({
           {/* Appointments */}
           <div className="space-y-2 flex-1" onMouseDown={e => e.stopPropagation()}>
             {day.appointments.slice(0, 3).map(appointment => (
-              
-              <AppointmentCard
-                key={appointment.id}
-                appointment={appointment}
-                onAppointmentClick={handleAppointmentClick}
-                isDraggable={!isPast}
-              />
+              isToday && onEditAppointment && onAddReport && isMobileLayout ? (
+                <div key={appointment.id} className="relative">
+                  <AppointmentCard
+                    appointment={appointment}
+                    onAppointmentClick={() => {}}
+                    onShortPress={handleShortPress}
+                    isDraggable={!isPast}
+                  />
+                  <Dropdown
+                    isOpen={openDropdownId === appointment.id}
+                    onOpenChange={(open) => setOpenDropdownId(open ? appointment.id : null)}
+                  >
+                    <Dropdown.Trigger className="sr-only">
+                      <span>Menu</span>
+                    </Dropdown.Trigger>
+                    <Dropdown.Popover>
+                      <Dropdown.Menu
+                        onAction={(key) => {
+                          setOpenDropdownId(null)
+                          if (key === 'edit') onEditAppointment(appointment)
+                          if (key === 'report') onAddReport(appointment)
+                        }}
+                      >
+                        <Dropdown.Item id="edit" textValue="Termin bearbeiten">
+                          <div className="flex items-center gap-2">
+                            <Edit className="w-4 h-4" />
+                            <Label>Termin bearbeiten</Label>
+                          </div>
+                        </Dropdown.Item>
+                        <Dropdown.Item id="report" textValue="Bericht hinzufügen">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-4 h-4" />
+                            <Label>Bericht hinzufügen</Label>
+                          </div>
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown.Popover>
+                  </Dropdown>
+                </div>
+              ) : (
+                <AppointmentCard
+                  key={appointment.id}
+                  appointment={appointment}
+                  onAppointmentClick={isMobileLayout ? handleAppointmentClick : undefined}
+                  isDraggable={!isPast}
+                />
+              )
             ))}
             {day.appointments.length > 3 && (
               <div className="flex justify-center h-2 items-start">
@@ -367,7 +461,7 @@ function DayView({
             )}
           </div>
         </div>
-      </button>
+      </div>
     </div>
   )
 }
