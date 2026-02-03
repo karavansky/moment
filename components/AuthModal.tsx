@@ -100,9 +100,7 @@ export function AuthModal({ isOpen, onOpenChange, onSignIn, t }: AuthModalProps)
               </div>
             </Modal.Body>
             <Modal.Footer>
-              <Modal.CloseTrigger>
                 <Button variant="danger-soft">{t('auth.close', 'Close')}</Button>
-              </Modal.CloseTrigger>
             </Modal.Footer>
           </Modal.Dialog>
         </Modal.Container>
