@@ -5,6 +5,7 @@ import { Appointment, Report, Photo } from '@/types/scheduling'
 import { Save, Plus, X, Upload, FileText, Image as ImageIcon, Loader2 } from 'lucide-react'
 import { formatTime } from '@/lib/calendar-utils'
 import imageCompression from 'browser-image-compression'
+import heic2any from 'heic2any'
 
 interface AppointmentReportProps {
   isOpen: boolean
@@ -21,7 +22,7 @@ export default function AppointmentReport({
   const [reportNote, setReportNote] = useState('')
   const [photos, setPhotos] = useState<Photo[]>([])
   const [isUploading, setIsUploading] = useState(false)
-  const [uploadStage, setUploadStage] = useState<'idle' | 'compressing' | 'uploading'>('idle')
+  const [uploadStage, setUploadStage] = useState<'idle' | 'converting' | 'compressing' | 'uploading'>('idle')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Reset state when opening for a new appointment
@@ -48,10 +49,34 @@ export default function AppointmentReport({
     if (!e.target.files || e.target.files.length === 0) return
 
     setIsUploading(true)
-    setUploadStage('compressing')
     const originalFile = e.target.files[0]
 
     try {
+      let fileToCompress: File = originalFile
+
+      // Check if file is HEIC/HEIF format (Apple) and convert to JPEG
+      const isHeic = originalFile.type === 'image/heic' ||
+                     originalFile.type === 'image/heif' ||
+                     originalFile.name.toLowerCase().endsWith('.heic') ||
+                     originalFile.name.toLowerCase().endsWith('.heif')
+
+      if (isHeic) {
+        setUploadStage('converting')
+        console.log('Converting HEIC to JPEG...')
+        const convertedBlob = await heic2any({
+          blob: originalFile,
+          toType: 'image/jpeg',
+          quality: 0.9,
+        })
+        // heic2any can return array for multi-image HEIC, take first one
+        const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob
+        fileToCompress = new File([blob], originalFile.name.replace(/\.(heic|heif)$/i, '.jpeg'), {
+          type: 'image/jpeg',
+        })
+        console.log(`Converted HEIC to JPEG: ${(fileToCompress.size / 1024 / 1024).toFixed(2)} MB`)
+      }
+
+      setUploadStage('compressing')
       // Compress image before upload
       const compressionOptions = {
         maxSizeMB: 1,              // Max file size in MB
@@ -62,7 +87,7 @@ export default function AppointmentReport({
 
       console.log(`Original file: ${originalFile.name}, size: ${(originalFile.size / 1024 / 1024).toFixed(2)} MB`)
 
-      const compressedFile = await imageCompression(originalFile, compressionOptions)
+      const compressedFile = await imageCompression(fileToCompress, compressionOptions)
 
       console.log(`Compressed file: ${compressedFile.name}, size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`)
 
@@ -284,6 +309,7 @@ export default function AppointmentReport({
                     <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg">
                       <Loader2 className="w-4 h-4 text-primary animate-spin" />
                       <span className="text-sm text-primary font-medium">
+                        {uploadStage === 'converting' && 'HEIC wird konvertiert...'}
                         {uploadStage === 'compressing' && 'Bild wird komprimiert...'}
                         {uploadStage === 'uploading' && 'Wird hochgeladen...'}
                       </span>
