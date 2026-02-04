@@ -12,6 +12,7 @@ import StaffSelect from './StaffSelect'
 import ClientSelect from './ClientSelect'
 import { usePlatformContext } from '@/contexts/PlatformContext'
 import ServiceSelect from './ServiceSelect'
+import { generateId } from '@/lib/generate-id'
 
 interface AppointmentModalProps {
   isOpen: boolean
@@ -66,6 +67,7 @@ export default function AppointmentModal({
             isFixedTime: false,
             services: appointment.services || [],
             reports: appointment.reports || [],
+            firmaID: appointment.firmaID || '',
           }
         : {
             clientID: '',
@@ -80,6 +82,8 @@ export default function AppointmentModal({
             isFixedTime: false,
             services: [],
             reports: [],
+            firmaID: '',
+
           }
       : appointment
         ? {
@@ -95,6 +99,7 @@ export default function AppointmentModal({
             isFixedTime: appointment.isFixedTime,
             services: appointment.services || [],
             reports: appointment.reports || [],
+            firmaID: appointment.firmaID || '',
           }
         : {
             clientID: '',
@@ -109,6 +114,7 @@ export default function AppointmentModal({
             isFixedTime: false,
             services: [],
             reports: [],
+            firmaID: '',
           }
   )
   if (process.env.NODE_ENV === 'development') {
@@ -136,6 +142,7 @@ export default function AppointmentModal({
         isFixedTime: appointment.isFixedTime,
         services: appointment.services || [],
         reports: appointment.reports || [],
+        firmaID: appointment.firmaID || '',
       })
     } else if (isNewAppointment && appointment) {
       // Handle template appointment (e.g. from drag & drop)
@@ -152,6 +159,7 @@ export default function AppointmentModal({
         isFixedTime: false,
         services: appointment.services || [],
         reports: appointment.reports || [],
+        firmaID: appointment.firmaID || '',
       })
     } else if (selectedDate) {
       setFormData(prev => ({
@@ -202,7 +210,7 @@ export default function AppointmentModal({
     startTime.setHours(formData.startHour, formData.startMinute, 0, 0)
 
     const appointmentData: Appointment = {
-      id: appointment?.id || `apt-${Date.now()}`,
+      id: appointment?.id || generateId(),
       userID: user.id,
       clientID: formData.clientID,
       date: formData.date,
@@ -217,6 +225,7 @@ export default function AppointmentModal({
       reports: appointment?.reports || [],
       isOpen: false,
       services: formData.services,
+      firmaID: appointment?.firmaID || '',
     }
 
     if (isEditMode) {
@@ -251,6 +260,7 @@ export default function AppointmentModal({
       isFixedTime: false,
       services: [],
       reports: [],
+      firmaID: '',
     })
     setErrors({})
     onClose()
