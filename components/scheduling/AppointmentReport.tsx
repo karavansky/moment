@@ -392,11 +392,11 @@ export default function AppointmentReport({
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex gap-4 overflow-x-auto pb-2">
                     {photos.map(photo => (
                       <div
                         key={photo.id}
-                        className="relative aspect-3/4 bg-default-100 rounded-lg overflow-hidden group"
+                        className="relative aspect-3/4 bg-default-100 rounded-lg overflow-hidden group shrink-0 w-48"
                       >
                         <img
                           src={getPhotoUrl(photo.url, {
