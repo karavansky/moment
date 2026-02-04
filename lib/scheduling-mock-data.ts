@@ -935,24 +935,24 @@ export const getAllSampleObjects = () => {
   // Photos for Reports
   const photo1: Photo = {
     id: 'AaBbCcDdEeFfGgHhIiJj1',
-    url: 'demo_pilz_001.jpeg',
+    url: 'a69VHKO6oh86AAAX2wFdQ.jpeg',
     note: 'Photo 1 description',
   }
 
   const photo2: Photo = {
     id: 'BbCcDdEeFfGgHhIiJjKk2',
-    url: 'demo_pilz_002.jpeg',
+    url: 'a69VHKO6oh86AAAX2wFdQ.jpeg',
     note: 'Photo 2 description',
   }
 
   const photo3: Photo = {
     id: 'CcDdEeFfGgHhIiJjKkLl3',
-    url: 'demo_pilz_003.jpeg',
+    url: 'a69VHKO6oh86AAAX2wFdQ.jpeg',
     note: 'Photo 3 description',
   }
   const photo4: Photo = {
     id: 'DdEeFfGgHhIiJjKkLlMm4',
-    url: 'demo_pilz_004.jpeg',
+    url: 'a69VHKO6oh86AAAX2wFdQ.jpeg',
     note: 'Photo 4 description',
   }
 
