@@ -300,168 +300,168 @@ export default function AppointmentReport({
 
   return (
     <>
-    <Modal>
-      <Modal.Backdrop
-        isOpen={isOpen}
-        onOpenChange={open => {
-          if (!open) onClose()
-        }}
-        variant="blur"
-      >
-        <Modal.Container className="max-w-2xl">
-          <Modal.Dialog className="max-h-[90vh] overflow-y-auto">
-            <Modal.CloseTrigger />
+      <Modal>
+        <Modal.Backdrop
+          isOpen={isOpen}
+          onOpenChange={open => {
+            if (!open) onClose()
+          }}
+          variant="blur"
+        >
+          <Modal.Container className="max-w-2xl">
+            <Modal.Dialog className="max-h-[90vh] overflow-y-auto">
+              <Modal.CloseTrigger />
 
-            <Modal.Header>
-              <h2 className="text-xl font-bold">Termin Bericht</h2>
-            </Modal.Header>
+              <Modal.Header>
+                <h2 className="text-xl font-bold">Termin Bericht</h2>
+              </Modal.Header>
 
-            <Modal.Body className="gap-6">
-              {/* Appointment Details (Read-only) */}
-              <div className="grid grid-cols-2 gap-4 p-4 bg-default-50 rounded-lg">
-                <div>
-                  <p className="text-xs text-default-500 uppercase font-semibold">Kunde</p>
-                  <p className="font-medium">
-                    {appointment.client?.name} {appointment.client?.surname}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-default-500 uppercase font-semibold">Mitarbeiter</p>
-                  <div className="flex flex-wrap gap-1">
-                    {appointment.worker.map(w => (
-                      <span
-                        key={w.id}
-                        className="bg-primary/10 text-primary px-2 py-0.5 rounded text-sm"
-                      >
-                        {w.name} {w.surname}
-                      </span>
-                    ))}
+              <Modal.Body className="gap-6">
+                {/* Appointment Details (Read-only) */}
+                <div className="grid grid-cols-2 gap-4 p-4 bg-default-50 rounded-lg">
+                  <div>
+                    <p className="text-xs text-default-500 uppercase font-semibold">Kunde</p>
+                    <p className="font-medium">
+                      {appointment.client?.name} {appointment.client?.surname}
+                    </p>
                   </div>
-                </div>
-                <div>
-                  <p className="text-xs text-default-500 uppercase font-semibold">Zeit</p>
-                  <p className="font-medium">
-                    {appointment.date.toLocaleDateString('de-DE')} | {formatTime(startTime)} -{' '}
-                    {formatTime(endTime)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-default-500 uppercase font-semibold">Dauer</p>
-                  <p className="font-medium">{appointment.duration} Min.</p>
-                </div>
-                <div className="col-span-2">
-                  <p className="text-xs text-default-500 uppercase font-semibold">Leistungen</p>
-                  <ul className="list-disc list-inside text-sm">
-                    {appointment.services.map(s => (
-                      <li key={s.id}>{s.name}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Report Section */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-primary" />
-                  <h3 className="text-lg font-semibold">Bericht</h3>
-                </div>
-
-                <TextField className="mb-0">
-                  <TextArea
-                    placeholder="Geben Sie hier Ihre Notizen zum Termin ein..."
-                    rows={3}
-                    value={reportNote}
-                    onChange={e => setReportNote(e.target.value)}
-                  />
-                </TextField>
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <ImageIcon className="w-5 h-5 text-primary" />
-                      <h3 className="text-lg font-semibold">Fotos</h3>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onPress={() => fileInputRef.current?.click()}
-                      isDisabled={isUploading}
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      Foto hinzufügen
-                    </Button>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                    />
-                  </div>
-
-                  {isUploading && (
-                    <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg">
-                      <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                      <span className="text-sm text-primary font-medium">
-                        {uploadStage === 'converting' && 'HEIC wird konvertiert...'}
-                        {uploadStage === 'compressing' && 'Bild wird komprimiert...'}
-                        {uploadStage === 'uploading' && 'Wird hochgeladen...'}
-                      </span>
-                    </div>
-                  )}
-
-                  <div ref={photosContainerRef} className="flex gap-4 overflow-x-auto pb-2">
-                    {photos.map(photo => (
-                      <div
-                        key={photo.id}
-                        className="relative aspect-3/4 bg-default-100 rounded-lg overflow-hidden group shrink-0 w-48"
-                      >
-                        <img
-                          src={getPhotoUrl(photo.url, {
-                            firmaID: user?.firmaID || '',
-                            appointmentId: appointment?.id || '',
-                            reportId: reportId,
-                          })}
-                          alt="Report photo"
-                          className="w-full h-full object-cover cursor-pointer"
-                          onClick={() => setSelectedPhotoId(photo.id)}
-                        />
-                        <button
-                          onClick={() => handleRemovePhoto(photo.id)}
-                          className="absolute top-1 right-1 z-20 bg-black/50 text-white p-1 rounded-full"
+                  <div>
+                    <p className="text-xs text-default-500 uppercase font-semibold">Mitarbeiter</p>
+                    <div className="flex flex-wrap gap-1">
+                      {appointment.worker.map(w => (
+                        <span
+                          key={w.id}
+                          className="bg-primary/10 text-primary px-2 py-0.5 rounded text-sm"
                         >
-                          <X className="w-3 h-3" />
-                        </button>
-                        <div className="absolute bottom-0 left-0 right-0 pb-2 bg-transparent backdrop-blur-sm">
-                          <Input
-                            placeholder="Beschreibung..."
-                            value={photo.note}
-                            onChange={e => handlePhotoNoteChange(photo.id, e.target.value)}
-                            className="bg-transparent text-black dark:text-white"
-                          />
-                        </div>
-                      </div>
-                    ))}
+                          {w.name} {w.surname}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-default-500 uppercase font-semibold">Zeit</p>
+                    <p className="font-medium">
+                      {appointment.date.toLocaleDateString('de-DE')} | {formatTime(startTime)} -{' '}
+                      {formatTime(endTime)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-default-500 uppercase font-semibold">Dauer</p>
+                    <p className="font-medium">{appointment.duration} Min.</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-xs text-default-500 uppercase font-semibold">Leistungen</p>
+                    <ul className="list-disc list-inside text-sm">
+                      {appointment.services.map(s => (
+                        <li key={s.id}>{s.name}</li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
-              </div>
-            </Modal.Body>
 
-            <Modal.Footer>
-              <Button variant="ghost" onPress={onClose}>
-                Abbrechen
-              </Button>
-              <Button variant="primary" onPress={handleSave} className="gap-2">
-                <Save className="w-4 h-4" />
-                Speichern
-              </Button>
-            </Modal.Footer>
-          </Modal.Dialog>
-        </Modal.Container>
-      </Modal.Backdrop>
-    </Modal>
+                <Separator />
+
+                {/* Report Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-primary" />
+                    <h3 className="text-lg font-semibold">Bericht</h3>
+                  </div>
+
+                  <TextField className="mb-0">
+                    <TextArea
+                      placeholder="Geben Sie hier Ihre Notizen zum Termin ein..."
+                      rows={3}
+                      value={reportNote}
+                      onChange={e => setReportNote(e.target.value)}
+                    />
+                  </TextField>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ImageIcon className="w-5 h-5 text-primary" />
+                        <h3 className="text-lg font-semibold">Fotos</h3>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onPress={() => fileInputRef.current?.click()}
+                        isDisabled={isUploading}
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Foto hinzufügen
+                      </Button>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleFileUpload}
+                      />
+                    </div>
+
+                    {isUploading && (
+                      <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg">
+                        <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                        <span className="text-sm text-primary font-medium">
+                          {uploadStage === 'converting' && 'HEIC wird konvertiert...'}
+                          {uploadStage === 'compressing' && 'Bild wird komprimiert...'}
+                          {uploadStage === 'uploading' && 'Wird hochgeladen...'}
+                        </span>
+                      </div>
+                    )}
+
+                    <div ref={photosContainerRef} className="flex gap-4 overflow-x-auto pb-2">
+                      {photos.map(photo => (
+                        <div
+                          key={photo.id}
+                          className="relative aspect-3/4 bg-default-100 rounded-lg overflow-hidden group shrink-0 w-48"
+                        >
+                          <img
+                            src={getPhotoUrl(photo.url, {
+                              firmaID: user?.firmaID || '',
+                              appointmentId: appointment?.id || '',
+                              reportId: reportId,
+                            })}
+                            alt="Report photo"
+                            className="w-full h-full object-cover cursor-pointer"
+                            onClick={() => setSelectedPhotoId(photo.id)}
+                          />
+                          <button
+                            onClick={() => handleRemovePhoto(photo.id)}
+                            className="absolute top-1 right-1 z-20 bg-black/50 text-white p-1 rounded-full"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                          <div className="absolute bottom-0 left-0 right-0 pb-2 bg-transparent backdrop-blur-sm">
+                            <Input
+                              placeholder="Beschreibung..."
+                              value={photo.note}
+                              onChange={e => handlePhotoNoteChange(photo.id, e.target.value)}
+                              className="bg-transparent text-white"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </Modal.Body>
+
+              <Modal.Footer>
+                <Button variant="ghost" onPress={onClose}>
+                  Abbrechen
+                </Button>
+                <Button variant="primary" onPress={handleSave} className="gap-2">
+                  <Save className="w-4 h-4" />
+                  Speichern
+                </Button>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
 
       {/* Fullscreen photo viewer */}
       <Modal>
@@ -472,7 +472,7 @@ export default function AppointmentReport({
           }}
           variant="blur"
         >
-          <Modal.Container size="cover"> 
+          <Modal.Container size="cover">
             <Modal.Dialog className="h-full flex flex-col bg-black/90 p-0">
               <Modal.CloseTrigger />
               {selectedPhoto && (
@@ -487,14 +487,14 @@ export default function AppointmentReport({
                       alt="Report photo"
                       className="max-w-full max-h-full object-contain"
                     />
-                  </div>
-                  <div className="p-4  bg-white/20 backdrop-blur-sm">
-                    <Input
-                      className=" text-white! "
-                      placeholder="Beschreibung..."
-                      value={selectedPhoto.note}
-                      onChange={e => handlePhotoNoteChange(selectedPhoto.id, e.target.value)}
-                    />
+                    <div className="absolute bottom-0 left-0 right-0 pb-2 bg-transparent backdrop-blur-sm">
+                      <Input
+                        className="bg-transparent text-white! "
+                        placeholder="Beschreibung..."
+                        value={selectedPhoto.note}
+                        onChange={e => handlePhotoNoteChange(selectedPhoto.id, e.target.value)}
+                      />
+                    </div>
                   </div>
                 </>
               )}
