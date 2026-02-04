@@ -11,38 +11,44 @@ export async function POST(request: Request) {
     }
 
     const { appointmentId, report } = await request.json();
-    
+
     // Process photos: move temp files to permanent storage
     const processedPhotos = await Promise.all(report.photos.map(async (photo: any) => {
       // Check if URL indicates a temporary file
-      // Assuming temp URLs look like: .../buckets/temp/filename.jpg
+      // URL format: /api/files/buckets/temp/{firmaID}/{appointmentId}/{reportId}/{photoId}.{ext}
       if (photo.url && photo.url.includes('/buckets/temp/')) {
-        const urlParts = photo.url.split('/');
-        const fileName = urlParts[urlParts.length - 1];
-        
-        console.log(`Moving file ${fileName} from temp to images...`);
+        // Extract the key (path after bucket name)
+        // e.g., "firmaID/appointmentId/reportId/photoId.jpeg"
+        const key = photo.url.split('/buckets/temp/')[1];
+
+        if (!key) {
+          console.error('Could not extract key from URL:', photo.url);
+          return photo;
+        }
+
+        console.log(`Moving file ${key} from temp to images...`);
 
         try {
-          // 1. Copy to permanent bucket
+          // 1. Copy to permanent bucket (preserving the full path structure)
           await s3Client.send(new CopyObjectCommand({
             Bucket: "images",
-            Key: fileName,
-            CopySource: `/temp/${fileName}`, // Source format: /bucket/key
+            Key: key,
+            CopySource: `/temp/${key}`,
           }));
 
           // 2. Delete from temp bucket
           await s3Client.send(new DeleteObjectCommand({
             Bucket: "temp",
-            Key: fileName,
+            Key: key,
           }));
 
-          // 3. Update URL
+          // 3. Update URL (replace temp with images in the path)
           return {
             ...photo,
             url: photo.url.replace('/buckets/temp/', '/buckets/images/')
           };
         } catch (err) {
-          console.error(`Failed to move file ${fileName}:`, err);
+          console.error(`Failed to move file ${key}:`, err);
           // If move fails, keep original URL (better than losing data, though it will be deleted by cleaner later)
           return photo;
         }

@@ -89,6 +89,7 @@ export interface Worker {
 // Назначение (встреча/визит)
 export interface Appointment {
   id: string
+  firmaID: string
   userID: string
   clientID: string
   services: Service[]

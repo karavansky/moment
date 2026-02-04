@@ -5,6 +5,7 @@ import { Appointment, Report, Photo } from '@/types/scheduling'
 import { Save, Plus, X, Upload, FileText, Image as ImageIcon, Loader2 } from 'lucide-react'
 import { formatTime } from '@/lib/calendar-utils'
 import imageCompression from 'browser-image-compression'
+import { generateId } from '@/lib/generate-id'
 
 interface AppointmentReportProps {
   isOpen: boolean
@@ -22,24 +23,28 @@ export default function AppointmentReport({
   const [photos, setPhotos] = useState<Photo[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const [uploadStage, setUploadStage] = useState<'idle' | 'converting' | 'compressing' | 'uploading'>('idle')
+  const [reportId, setReportId] = useState<string>('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Reset state when opening for a new appointment
   React.useEffect(() => {
     if (isOpen && appointment) {
-      // If there are existing reports, maybe load the last one to edit? 
+      // If there are existing reports, maybe load the last one to edit?
       // For now, let's assume we are adding a new report or just viewing.
       // If we want to edit the LAST report:
-      const lastReport = appointment.reports && appointment.reports.length > 0 
-        ? appointment.reports[appointment.reports.length - 1] 
+      const lastReport = appointment.reports && appointment.reports.length > 0
+        ? appointment.reports[appointment.reports.length - 1]
         : null;
-      
+
       if (lastReport) {
         setReportNote(lastReport.notes || '')
         setPhotos(lastReport.photos || [])
+        setReportId(lastReport.id)
       } else {
         setReportNote('')
         setPhotos([])
+        // Генерируем новый reportId для нового отчета
+        setReportId(generateId())
       }
     }
   }, [isOpen, appointment])
@@ -110,10 +115,17 @@ export default function AppointmentReport({
 
       setUploadStage('uploading')
 
+      if (!user?.firmaID || !appointment?.id || !reportId) {
+        throw new Error('Missing required data: firmaID, appointmentId, or reportId')
+      }
+
       const formData = new FormData()
       // Keep original filename but ensure .jpeg extension for compressed file
       const fileName = originalFile.name.replace(/\.[^.]+$/, '.jpeg')
       formData.append('file', compressedFile, fileName)
+      formData.append('firmaID', user.firmaID)
+      formData.append('appointmentId', appointment.id)
+      formData.append('reportId', reportId)
 
       const response = await fetch('/api/upload', {
         method: 'POST',
@@ -127,8 +139,9 @@ export default function AppointmentReport({
         throw new Error(data.details || data.error || 'Upload failed')
       }
       // data.url is the public URL from the upload route
+      // data.photoId is the generated photo ID
       const newPhoto: Photo = {
-        id: Date.now().toString(),
+        id: data.photoId,
         url: data.url,
         note: '', // Description for the photo
       }
@@ -172,10 +185,10 @@ export default function AppointmentReport({
 
     // Create a new report object
     const existingReports = appointment.reports || []
-    
+
     // Base report data (with potentially temp URLs)
     const tempReportData: Report = {
-      id: existingReports.length > 0 ? existingReports[existingReports.length - 1].id : `rep-${Date.now()}`,
+      id: reportId,
       firmaID: user.firmaID,
       workerId: appointment.workerId,
       appointmentId: appointment.id,

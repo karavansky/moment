@@ -12,15 +12,7 @@ import {
   ServiceTreeItem,
   Photo,
 } from '@/types/scheduling'
-
-// Генерация ID в стиле Firebase (28 символов alphanumeric) Криптографически безопасная альтернатива
-const generateId = () => {
-  const array = new Uint8Array(21)
-  crypto.getRandomValues(array) // использует системный CSPRNG
-  return Array.from(array, b => 
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[b % 62]
-  ).join('')
-}
+import { generateId } from './generate-id'
 
 // Функция для добавления дней к дате
 const addDays = (date: Date, days: number): Date => {
@@ -49,7 +41,7 @@ const getOnlyDate = (date: Date): Date => {
 // Данные генерируются динамически относительно текущей даты
 export const getAllSampleObjects = () => {
   const currentDate = new Date()
-  const firmaID = generateId()
+  const firmaID = '3Eoxlmzdr4uEJggFueFnB'
 
   // User
   const user: User = {
@@ -107,7 +99,7 @@ export const getAllSampleObjects = () => {
     isAdress: false,
     status: 0,
     email: 'leonardo.dicaprio@example.com',
-    }
+  }
 
   const worker_3: Worker = {
     id: generateId(),
@@ -131,7 +123,7 @@ export const getAllSampleObjects = () => {
     isAdress: false,
     status: 0,
     email: 'johnny.depp@example.com',
-    }
+  }
 
   const worker_5: Worker = {
     id: generateId(),
@@ -143,7 +135,6 @@ export const getAllSampleObjects = () => {
     isAdress: false,
     status: 0,
     email: 'robert.downey@example.com',
-
   }
 
   const worker_6: Worker = {
@@ -193,7 +184,6 @@ export const getAllSampleObjects = () => {
     isAdress: false,
     status: 0,
     email: 'ryan.gosling@example.com',
-
   }
 
   const worker_21: Worker = {
@@ -339,12 +329,12 @@ export const getAllSampleObjects = () => {
     surname: 'Clooney',
     email: 'george.clooney@example.com',
     street: 'Probsteigasse',
-    district: 'Altstadt-Nord', 
+    district: 'Altstadt-Nord',
     postalCode: '50670',
     city: 'Köln',
     houseNumber: '5',
     country: 'DE',
-    latitude:  50.9441319,
+    latitude: 50.9441319,
     longitude: 6.945430631046603,
     groupe: group2,
   }
@@ -373,7 +363,7 @@ export const getAllSampleObjects = () => {
   const appointmentDate_19 = addDays(currentDate, 55) // через 55 дней
   const appointmentDate_20 = addDays(currentDate, 60) // через 2 месяца
 
-    // Services (дерево услуг)
+  // Services (дерево услуг)
   const serviceGroup_1: ServiceGroup = {
     id: generateId(),
     firmaID,
@@ -576,10 +566,10 @@ export const getAllSampleObjects = () => {
     isGroup: false,
     order: 1,
   }
-  
+
   // Appointments
   const appointment_1: Appointment = {
-    id: generateId(),
+    id: '6CqOAui2IE2qdGAwqDAI4',
     userID: worker_1.id,
     clientID: client_1.id,
     client: client_1,
@@ -593,10 +583,11 @@ export const getAllSampleObjects = () => {
     worker: [worker_1],
     isOpen: false,
     services: [],
+    firmaID,
   }
 
   const appointment_2: Appointment = {
-    id: generateId(),
+    id: '7DpPBvj3JF3reHBxrEBJ5',
     userID: worker_2.id,
     clientID: client_1.id,
     client: client_1,
@@ -610,10 +601,11 @@ export const getAllSampleObjects = () => {
     worker: [worker_2],
     isOpen: false,
     services: [],
+    firmaID,
   }
 
   const appointment_3: Appointment = {
-    id: generateId(),
+    id: '8EqQCwk4KG4sfICysGCK6',
     userID: worker_3.id,
     clientID: client_1.id,
     client: client_1,
@@ -627,10 +619,11 @@ export const getAllSampleObjects = () => {
     worker: [worker_3],
     isOpen: false,
     services: [],
+    firmaID,
   }
 
   const appointment_4: Appointment = {
-    id: generateId(),
+    id: '9FrRDxl5LH5tgJDztHDL7',
     userID: worker_4.id,
     clientID: client_1.id,
     client: client_1,
@@ -644,10 +637,11 @@ export const getAllSampleObjects = () => {
     worker: [worker_4],
     isOpen: false,
     services: [],
+    firmaID,
   }
 
   const appointment_5: Appointment = {
-    id: generateId(),
+    id: '0GsSEym6MI6uhKEAuIEM8',
     userID: worker_5.id,
     clientID: client_2.id,
     client: client_2,
@@ -661,10 +655,11 @@ export const getAllSampleObjects = () => {
     worker: [worker_5],
     isOpen: false,
     services: [],
+    firmaID,
   }
 
   const appointment_6: Appointment = {
-    id: "001", //generateId(),
+    id: '1HtTFzn7NJ7viLFBvJFN9',
     userID: worker_6.id,
     clientID: client_2.id,
     client: client_2,
@@ -680,11 +675,12 @@ export const getAllSampleObjects = () => {
     latitude: 50.9346808,
     longitude: 6.9977416,
     services: [service_12],
-   // openedAt: addMinutes(appointmentDate_6, -3),
+    firmaID,
+    // openedAt: addMinutes(appointmentDate_6, -3),
   }
 
   const appointment_7: Appointment = {
-    id: generateId(),
+    id: '2IuUGAo8OK8wjMGCwKGO0',
     userID: worker_7.id,
     clientID: client_2.id,
     client: client_2,
@@ -698,10 +694,11 @@ export const getAllSampleObjects = () => {
     worker: [worker_7],
     isOpen: false,
     services: [],
+    firmaID,
   }
 
   const appointment_8: Appointment = {
-    id: generateId(),
+    id: '3JvVHBp9PL9xkNHDxLHP1',
     userID: worker_8.id,
     clientID: client_2.id,
     client: client_2,
@@ -715,11 +712,12 @@ export const getAllSampleObjects = () => {
     worker: [worker_8],
     isOpen: false,
     services: [],
+    firmaID,
   }
 
   // Дополнительные appointments на следующие месяцы
   const appointment_9: Appointment = {
-    id: generateId(),
+    id: '4KwWICqAQMAylOIEyMIQ2',
     userID: worker_11.id,
     clientID: client_1.id,
     client: client_1,
@@ -733,10 +731,11 @@ export const getAllSampleObjects = () => {
     worker: [worker_11],
     isOpen: false,
     services: [],
+    firmaID,
   }
 
   const appointment_10: Appointment = {
-    id: generateId(),
+    id: '5LxXJDrBRNBzmPJFzNJR3',
     userID: worker_21.id,
     clientID: client_2.id,
     client: client_2,
@@ -750,10 +749,11 @@ export const getAllSampleObjects = () => {
     worker: [worker_21],
     isOpen: false,
     services: [],
+    firmaID,
   }
 
   const appointment_11: Appointment = {
-    id: generateId(),
+    id: '6MyYKEsCSOCAnQKGAOKS4',
     userID: worker_31.id,
     clientID: client_1.id,
     client: client_1,
@@ -767,10 +767,11 @@ export const getAllSampleObjects = () => {
     worker: [worker_31],
     isOpen: false,
     services: [],
-  }
+    firmaID,
+}
 
   const appointment_12: Appointment = {
-    id: generateId(),
+    id: '7NzZLFtDTPDBoRLHBPLT5',
     userID: worker_41.id,
     clientID: client_2.id,
     client: client_2,
@@ -784,10 +785,11 @@ export const getAllSampleObjects = () => {
     worker: [worker_41],
     isOpen: false,
     services: [],
+    firmaID,
   }
 
   const appointment_13: Appointment = {
-    id: generateId(),
+    id: '8OAAMGuEUQECpSMICQLU6',
     userID: worker_51.id,
     clientID: client_1.id,
     client: client_1,
@@ -801,10 +803,11 @@ export const getAllSampleObjects = () => {
     worker: [worker_51],
     isOpen: false,
     services: [],
+    firmaID,
   }
 
   const appointment_14: Appointment = {
-    id: generateId(),
+    id: '9PBBNHvFVRFDqTNJDRMV7',
     userID: worker_61.id,
     clientID: client_2.id,
     client: client_2,
@@ -818,10 +821,11 @@ export const getAllSampleObjects = () => {
     worker: [worker_61],
     isOpen: false,
     services: [],
+    firmaID,
   }
 
   const appointment_15: Appointment = {
-    id: generateId(),
+    id: '0QCCOIwGWSGErUOKESNW8',
     userID: worker_71.id,
     clientID: client_1.id,
     client: client_1,
@@ -835,10 +839,11 @@ export const getAllSampleObjects = () => {
     worker: [worker_71],
     isOpen: false,
     services: [],
+    firmaID,
   }
 
   const appointment_16: Appointment = {
-    id: generateId(),
+    id: '1RDDPJxHXTHFsVPLFTOX9',
     userID: worker_81.id,
     clientID: client_2.id,
     client: client_2,
@@ -852,10 +857,11 @@ export const getAllSampleObjects = () => {
     worker: [worker_81],
     isOpen: false,
     services: [],
+    firmaID,
   }
 
   const appointment_17: Appointment = {
-    id: generateId(),
+    id: '2SEEQKyIYUIGtWQMGUPY0',
     userID: worker_1.id,
     clientID: client_1.id,
     client: client_1,
@@ -869,10 +875,11 @@ export const getAllSampleObjects = () => {
     worker: [worker_1],
     isOpen: false,
     services: [],
+    firmaID,
   }
 
   const appointment_18: Appointment = {
-    id: generateId(),
+    id: '3TFFRLzJZVJHuXRNHVQZ1',
     userID: worker_2.id,
     clientID: client_2.id,
     client: client_2,
@@ -886,10 +893,11 @@ export const getAllSampleObjects = () => {
     worker: [worker_2],
     isOpen: false,
     services: [],
+    firmaID,
   }
 
   const appointment_19: Appointment = {
-    id: generateId(),
+    id: '4UGGSMAKAWKIvYSOIWRA2',
     userID: worker_3.id,
     clientID: client_1.id,
     client: client_1,
@@ -903,10 +911,11 @@ export const getAllSampleObjects = () => {
     worker: [worker_3],
     isOpen: false,
     services: [],
+    firmaID,
   }
 
   const appointment_20: Appointment = {
-    id: generateId(),
+    id: '5VHHTNBLBXLJwZTPJXSB3',
     userID: worker_4.id,
     clientID: client_2.id,
     client: client_2,
@@ -920,28 +929,29 @@ export const getAllSampleObjects = () => {
     worker: [worker_4],
     isOpen: false,
     services: [],
+    firmaID,
   }
 
   // Photos for Reports
   const photo1: Photo = {
-    id: generateId(),
+    id: 'AaBbCcDdEeFfGgHhIiJj1',
     url: 'demo_pilz_001.jpeg',
     note: 'Photo 1 description',
   }
 
   const photo2: Photo = {
-    id: generateId(),
+    id: 'BbCcDdEeFfGgHhIiJjKk2',
     url: 'demo_pilz_002.jpeg',
     note: 'Photo 2 description',
   }
 
   const photo3: Photo = {
-    id: generateId(),
+    id: 'CcDdEeFfGgHhIiJjKkLl3',
     url: 'demo_pilz_003.jpeg',
     note: 'Photo 3 description',
-  } 
+  }
   const photo4: Photo = {
-    id: generateId(),
+    id: 'DdEeFfGgHhIiJjKkLlMm4',
     url: 'demo_pilz_004.jpeg',
     note: 'Photo 4 description',
   }
@@ -951,7 +961,7 @@ export const getAllSampleObjects = () => {
 
   // Reports
   const report1: Report = {
-    id: generateId(),
+    id: 'XyZaBcDeFgHiJkLmNoPq1',
     firmaID: firmaID,
     worker: worker_1,
     photos: photosSample1,
@@ -962,7 +972,7 @@ export const getAllSampleObjects = () => {
   }
 
   const report2: Report = {
-    id: generateId(),
+    id: 'YzAbCdEfGhIjKlMnOpQr2',
     firmaID: firmaID,
     worker: worker_1,
     photos: photosSample2,
@@ -975,8 +985,6 @@ export const getAllSampleObjects = () => {
   // Добавляем reports к appointments
   appointment_1.reports = [report1]
   appointment_5.reports = [report2]
-
-
 
   const services: ServiceTreeItem[] = [
     serviceGroup_1,
@@ -1095,7 +1103,8 @@ export const generateDateAppointmentViews = (
 // Экспорт функции для получения полного набора мок-данных
 export default getAllSampleObjects
 
-{/* 
+{
+  /* 
 
 Workers (Team 1 - Pflege):
 
@@ -1126,4 +1135,5 @@ client_2: Jennifer Lawrence
 client_3: Anne Hathaway
 client_4: George Clooney (уже был)
 
-  */}
+  */
+}
