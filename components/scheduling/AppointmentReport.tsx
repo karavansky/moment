@@ -490,6 +490,7 @@ export default function AppointmentReport({
                   </div>
                   <div className="p-4  bg-white/40 backdrop-blur-sm">
                     <Input
+                      className=" text-white"
                       placeholder="Beschreibung..."
                       value={selectedPhoto.note}
                       onChange={e => handlePhotoNoteChange(selectedPhoto.id, e.target.value)}
