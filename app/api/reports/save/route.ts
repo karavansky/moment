@@ -1,13 +1,7 @@
 import { NextResponse } from 'next/server';
-import { S3Client, CopyObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { CopyObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { s3Client } from '@/lib/s3';
 import { auth } from '@/lib/auth';
-
-const s3Client = new S3Client({
-  region: "us-east-1",
-  endpoint: process.env.S3_ENDPOINT || "http://127.0.0.1:8333",
-  credentials: { accessKeyId: "any", secretAccessKey: "any" },
-  forcePathStyle: true,
-});
 
 export async function POST(request: Request) {
   try {
