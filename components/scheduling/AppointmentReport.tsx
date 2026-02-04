@@ -434,12 +434,14 @@ export default function AppointmentReport({
                         >
                           <X className="w-3 h-3" />
                         </button>
+                        <div className="absolute bottom-0 left-0 right-0 pb-2 bg-transparent backdrop-blur-sm">
                           <Input
                             placeholder="Beschreibung..."
                             value={photo.note}
                             onChange={e => handlePhotoNoteChange(photo.id, e.target.value)}
-                            className="absolute bottom-0 left-0 right-0 p-2 bg-transparent backdrop-blur-sm"
+                            className="bg-transparent text-black dark:text-white"
                           />
+                        </div>
                       </div>
                     ))}
                   </div>
