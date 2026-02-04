@@ -919,24 +919,24 @@ export const getAllSampleObjects = () => {
   // Photos for Reports
   const photo1: Photo = {
     id: generateId(),
-    url: 'photo1.jpg',
+    url: 'demo_pilz_001.jpeg',
     note: 'Photo 1 description',
   }
 
   const photo2: Photo = {
     id: generateId(),
-    url: 'photo2.jpg',
+    url: 'demo_pilz_002.jpeg',
     note: 'Photo 2 description',
   }
 
   const photo3: Photo = {
     id: generateId(),
-    url: 'photo3.jpg',
+    url: 'demo_pilz_003.jpeg',
     note: 'Photo 3 description',
   } 
   const photo4: Photo = {
     id: generateId(),
-    url: 'photo4.jpg',
+    url: 'demo_pilz_004.jpeg',
     note: 'Photo 4 description',
   }
 
