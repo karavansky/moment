@@ -351,8 +351,7 @@ export default function AppointmentReport({
                   <h3 className="text-lg font-semibold">Bericht</h3>
                 </div>
 
-                <TextField>
-                  <Label>Notiz</Label>
+                <TextField className="mb-0">
                   <TextArea
                     placeholder="Geben Sie hier Ihre Notizen zum Termin ein..."
                     rows={3}
