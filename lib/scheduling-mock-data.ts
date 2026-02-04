@@ -935,13 +935,13 @@ export const getAllSampleObjects = () => {
   // Photos for Reports
   const photo1: Photo = {
     id: 'AaBbCcDdEeFfGgHhIiJj1',
-    url: 'a69VHKO6oh86AAAX2wFdQ.jpeg',
+    url: 'DMqPQsaSNvOMI01BVsf4p.jpeg',
     note: 'Photo 1 description',
   }
 
   const photo2: Photo = {
     id: 'BbCcDdEeFfGgHhIiJjKk2',
-    url: 'a69VHKO6oh86AAAX2wFdQ.jpeg',
+    url: 'MhkEu4c0zZ3sKb407EGXL.jpeg',
     note: 'Photo 2 description',
   }
 
