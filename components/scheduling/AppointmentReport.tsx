@@ -430,11 +430,11 @@ export default function AppointmentReport({
                           />
                           <button
                             onClick={() => handleRemovePhoto(photo.id)}
-                            className="absolute top-1 right-1 z-20 bg-black/50 text-white p-1 rounded-full"
+                            className="absolute top-1  right-1 z-20 bg-black/50 text-white p-1 rounded-full"
                           >
-                            <X className="w-3 h-3" />
+                            <X className="w-4 h-4" />
                           </button>
-                          <div className="absolute bottom-0 left-0 right-0 pb-2 bg-transparent backdrop-blur-sm">
+                          <div className="absolute rounded-xl  bottom-0 left-0 right-0 pb-2 bg-transparent backdrop-blur-sm">
                             <Input
                               placeholder="Beschreibung..."
                               value={photo.note}
