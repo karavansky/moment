@@ -475,8 +475,9 @@ export default function AppointmentReport({
           <Modal.Container size="cover">
             <Modal.Dialog className="h-full flex flex-col bg-black/90 p-0">
               <Modal.CloseTrigger />
+
               {selectedPhoto && (
-                <>
+                <Modal.Body>
                   <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
                     <img
                       src={getPhotoUrl(selectedPhoto.url, {
@@ -496,7 +497,7 @@ export default function AppointmentReport({
                       />
                     </div>
                   </div>
-                </>
+                </Modal.Body>
               )}
             </Modal.Dialog>
           </Modal.Container>
