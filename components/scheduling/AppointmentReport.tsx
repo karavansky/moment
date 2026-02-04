@@ -7,6 +7,28 @@ import { formatTime } from '@/lib/calendar-utils'
 import imageCompression from 'browser-image-compression'
 import { generateId } from '@/lib/generate-id'
 
+interface PhotoUrlContext {
+  firmaID: string
+  appointmentId: string
+  reportId: string
+}
+
+/**
+ * Строит полный URL фото используя контекст
+ * - Если URL уже содержит полный путь (/api/files/buckets/...) - возвращает как есть
+ * - Если URL - просто имя файла - строит путь: /api/files/buckets/images/{firmaID}/{appointmentId}/{reportId}/{filename}
+ */
+const getPhotoUrl = (url: string, context: PhotoUrlContext): string => {
+  if (!url) return ''
+  // Новый формат: уже содержит полный путь
+  if (url.startsWith('/api/files/buckets/')) {
+    return url
+  }
+  // Строим полный путь из контекста
+  const { firmaID, appointmentId, reportId } = context
+  return `/api/files/buckets/images/${firmaID}/${appointmentId}/${reportId}/${url}`
+}
+
 interface AppointmentReportProps {
   isOpen: boolean
   onClose: () => void
@@ -355,10 +377,14 @@ export default function AppointmentReport({
                           {/* Note: In a real app with private files, you might need a way to fetch the image with auth headers 
                               if it's protected. Since the upload route returns a URL, we use that. 
                               If it's a private URL (like /api/files/...), it should work if the session is active. */}
-                          <img 
-                            src={photo.url} 
-                            alt="Report photo" 
-                            className="w-full h-full object-cover" 
+                          <img
+                            src={getPhotoUrl(photo.url, {
+                              firmaID: user?.firmaID || '',
+                              appointmentId: appointment?.id || '',
+                              reportId: reportId,
+                            })}
+                            alt="Report photo"
+                            className="w-full h-full object-cover"
                           />
                           <button 
                             onClick={() => handleRemovePhoto(photo.id)}
