@@ -488,7 +488,7 @@ export default function AppointmentReport({
                       className="max-w-full max-h-full object-contain"
                     />
                   </div>
-                  <div className="p-4 bg-black/40 backdrop-blur-sm">
+                  <div className="p-4  bg-black/10 backdrop-blur-sm">
                     <Input
                       placeholder="Beschreibung..."
                       value={selectedPhoto.note}
