@@ -78,9 +78,12 @@ export default function AppointmentReport({
         body: formData,
       })
 
-      if (!response.ok) throw new Error('Upload failed')
-
       const data = await response.json()
+
+      if (!response.ok) {
+        console.error('Upload response error:', data)
+        throw new Error(data.details || data.error || 'Upload failed')
+      }
       // data.url is the public URL from the upload route
       const newPhoto: Photo = {
         id: Date.now().toString(),
@@ -90,7 +93,13 @@ export default function AppointmentReport({
 
       setPhotos(prev => [...prev, newPhoto])
     } catch (error) {
+      // Enhanced error logging for debugging
       console.error('Error uploading file:', error)
+      if (error instanceof Error) {
+        console.error('Error name:', error.name)
+        console.error('Error message:', error.message)
+        console.error('Error stack:', error.stack)
+      }
       alert('Fehler beim Hochladen der Datei')
     } finally {
       setIsUploading(false)

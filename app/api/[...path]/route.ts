@@ -61,21 +61,33 @@ async function proxyRequest(request: NextRequest, pathSegments: string[]) {
     })
 
     // Get request body if present
-    let body = undefined
+    let body: BodyInit | undefined = undefined
     if (request.method !== 'GET' && request.method !== 'HEAD') {
+      const contentType = request.headers.get('content-type') || ''
       try {
-        body = await request.text()
+        // For multipart/form-data (file uploads), pass the body as a stream
+        // to avoid corrupting binary data
+        if (contentType.includes('multipart/form-data')) {
+          body = request.body ?? undefined
+        } else {
+          body = await request.text()
+        }
       } catch (e) {
         // No body
       }
     }
 
     // Make request to backend
-    const response = await fetch(targetUrl, {
+    const fetchOptions: RequestInit & { duplex?: 'half' } = {
       method: request.method,
       headers,
       body,
-    })
+    }
+    // Required for streaming body in Node.js fetch
+    if (body instanceof ReadableStream) {
+      fetchOptions.duplex = 'half'
+    }
+    const response = await fetch(targetUrl, fetchOptions)
 
     // Forward response headers
     const responseHeaders = new Headers(response.headers)

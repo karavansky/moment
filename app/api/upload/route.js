@@ -31,6 +31,15 @@ export async function POST(request) {
 
   } catch (error) {
     console.error("Upload error:", error);
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+    // AWS SDK errors have specific properties
+    if (error.name) console.error("Error name:", error.name);
+    if (error.message) console.error("Error message:", error.message);
+    if (error.$metadata) console.error("Error metadata:", error.$metadata);
+    if (error.Code) console.error("S3 Error Code:", error.Code);
+
+    return NextResponse.json({
+      error: "Upload failed",
+      details: error.message || String(error)
+    }, { status: 500 });
   }
 }
