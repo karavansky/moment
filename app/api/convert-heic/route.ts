@@ -116,12 +116,12 @@ register_heif_opener()
 img = Image.open("${inputPath}")
 img.convert("RGB").save("${outputPath}", "JPEG", quality=90)
 `
-      // Try venv python first, then system python
+      // Try system python first (Docker), then venv (Ubuntu dev)
       const pythonPaths = [
-        '/opt/heic-converter/bin/python3',
-        '/opt/heic-converter/bin/python',
         'python3',
-        'python'
+        'python',
+        '/opt/heic-converter/bin/python3',
+        '/opt/heic-converter/bin/python'
       ]
 
       for (const pythonPath of pythonPaths) {

@@ -17,6 +17,10 @@ RUN npm run build
 FROM node:20-alpine AS runner
 WORKDIR /app
 
+# Установка Python и pillow-heif для конвертации HEIC
+RUN apk add --no-cache python3 py3-pip py3-pillow \
+    && pip3 install --no-cache-dir --break-system-packages pillow-heif
+
 # Настройка окружения
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
