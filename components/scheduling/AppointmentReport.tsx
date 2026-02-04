@@ -50,6 +50,8 @@ export default function AppointmentReport({
   const [reportId, setReportId] = useState<string>('')
   const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const photosContainerRef = useRef<HTMLDivElement>(null)
+  const scrollOnNextUpdate = useRef(false)
 
   const selectedPhoto = photos.find(p => p.id === selectedPhotoId)
 
@@ -85,6 +87,20 @@ export default function AppointmentReport({
       setReportId('')
     }
   }, [isOpen])
+
+  React.useEffect(() => {
+    if (scrollOnNextUpdate.current && photosContainerRef.current) {
+      setTimeout(() => {
+        if (photosContainerRef.current) {
+          photosContainerRef.current.scrollTo({
+            left: photosContainerRef.current.scrollWidth,
+            behavior: 'smooth',
+          })
+        }
+      }, 100)
+      scrollOnNextUpdate.current = false
+    }
+  }, [photos])
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return
@@ -189,6 +205,7 @@ export default function AppointmentReport({
       }
 
       setPhotos(prev => [...prev, newPhoto])
+      scrollOnNextUpdate.current = true
     } catch (error) {
       // Enhanced error logging for debugging
       console.error('Error uploading file:', error)
@@ -395,7 +412,7 @@ export default function AppointmentReport({
                     </div>
                   )}
 
-                  <div className="flex gap-4 overflow-x-auto pb-2">
+                  <div ref={photosContainerRef} className="flex gap-4 overflow-x-auto pb-2">
                     {photos.map(photo => (
                       <div
                         key={photo.id}
