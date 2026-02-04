@@ -44,7 +44,9 @@ export default function AppointmentReport({
   const [reportNote, setReportNote] = useState('')
   const [photos, setPhotos] = useState<Photo[]>([])
   const [isUploading, setIsUploading] = useState(false)
-  const [uploadStage, setUploadStage] = useState<'idle' | 'converting' | 'compressing' | 'uploading'>('idle')
+  const [uploadStage, setUploadStage] = useState<
+    'idle' | 'converting' | 'compressing' | 'uploading'
+  >('idle')
   const [reportId, setReportId] = useState<string>('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -54,9 +56,10 @@ export default function AppointmentReport({
       // If there are existing reports, maybe load the last one to edit?
       // For now, let's assume we are adding a new report or just viewing.
       // If we want to edit the LAST report:
-      const lastReport = appointment.reports && appointment.reports.length > 0
-        ? appointment.reports[appointment.reports.length - 1]
-        : null;
+      const lastReport =
+        appointment.reports && appointment.reports.length > 0
+          ? appointment.reports[appointment.reports.length - 1]
+          : null
 
       if (lastReport) {
         setReportNote(lastReport.notes || '')
@@ -90,10 +93,11 @@ export default function AppointmentReport({
       let fileToCompress: File = originalFile
 
       // Check if file is HEIC/HEIF format (Apple) and convert to JPEG
-      const isHeic = originalFile.type === 'image/heic' ||
-                     originalFile.type === 'image/heif' ||
-                     originalFile.name.toLowerCase().endsWith('.heic') ||
-                     originalFile.name.toLowerCase().endsWith('.heif')
+      const isHeic =
+        originalFile.type === 'image/heic' ||
+        originalFile.type === 'image/heif' ||
+        originalFile.name.toLowerCase().endsWith('.heic') ||
+        originalFile.name.toLowerCase().endsWith('.heif')
 
       if (isHeic) {
         setUploadStage('converting')
@@ -132,17 +136,21 @@ export default function AppointmentReport({
       setUploadStage('compressing')
       // Compress image before upload
       const compressionOptions = {
-        maxSizeMB: 1,              // Max file size in MB
-        maxWidthOrHeight: 1920,    // Max dimension (maintains aspect ratio)
-        useWebWorker: true,        // Use web worker for better performance
-        fileType: 'image/jpeg',    // Convert to JPEG for better compression
+        maxSizeMB: 1, // Max file size in MB
+        maxWidthOrHeight: 1920, // Max dimension (maintains aspect ratio)
+        useWebWorker: true, // Use web worker for better performance
+        fileType: 'image/jpeg', // Convert to JPEG for better compression
       }
 
-      console.log(`Original file: ${originalFile.name}, size: ${(originalFile.size / 1024 / 1024).toFixed(2)} MB`)
+      console.log(
+        `Original file: ${originalFile.name}, size: ${(originalFile.size / 1024 / 1024).toFixed(2)} MB`
+      )
 
       const compressedFile = await imageCompression(fileToCompress, compressionOptions)
 
-      console.log(`Compressed file: ${compressedFile.name}, size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`)
+      console.log(
+        `Compressed file: ${compressedFile.name}, size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`
+      )
 
       setUploadStage('uploading')
 
@@ -235,21 +243,21 @@ export default function AppointmentReport({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           appointmentId: appointment.id,
-          report: tempReportData
-        })
-      });
+          report: tempReportData,
+        }),
+      })
 
-      if (!response.ok) throw new Error('Failed to save report');
+      if (!response.ok) throw new Error('Failed to save report')
 
-      const { report: savedReport } = await response.json();
-      console.log('Saved report:', savedReport);
+      const { report: savedReport } = await response.json()
+      console.log('Saved report:', savedReport)
 
       // 2. Update local state with the saved report (containing permanent URLs)
-      let updatedReports = [...existingReports];
+      let updatedReports = [...existingReports]
       if (existingReports.length > 0) {
-        updatedReports[updatedReports.length - 1] = savedReport;
+        updatedReports[updatedReports.length - 1] = savedReport
       } else {
-        updatedReports.push(savedReport);
+        updatedReports.push(savedReport)
       }
 
       const updatedAppointment: Appointment = {
@@ -257,12 +265,11 @@ export default function AppointmentReport({
         reports: updatedReports,
       }
 
-      updateAppointment(updatedAppointment);
-      onClose();
-
+      updateAppointment(updatedAppointment)
+      onClose()
     } catch (error) {
-      console.error("Error saving report:", error);
-      alert("Fehler beim Speichern des Berichts");
+      console.error('Error saving report:', error)
+      alert('Fehler beim Speichern des Berichts')
     }
   }
 
@@ -283,7 +290,7 @@ export default function AppointmentReport({
         <Modal.Container className="max-w-2xl">
           <Modal.Dialog className="max-h-[90vh] overflow-y-auto">
             <Modal.CloseTrigger />
-            
+
             <Modal.Header>
               <h2 className="text-xl font-bold">Termin Bericht</h2>
             </Modal.Header>
@@ -293,13 +300,18 @@ export default function AppointmentReport({
               <div className="grid grid-cols-2 gap-4 p-4 bg-default-50 rounded-lg">
                 <div>
                   <p className="text-xs text-default-500 uppercase font-semibold">Kunde</p>
-                  <p className="font-medium">{appointment.client?.name} {appointment.client?.surname}</p>
+                  <p className="font-medium">
+                    {appointment.client?.name} {appointment.client?.surname}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-default-500 uppercase font-semibold">Mitarbeiter</p>
                   <div className="flex flex-wrap gap-1">
                     {appointment.worker.map(w => (
-                      <span key={w.id} className="bg-primary/10 text-primary px-2 py-0.5 rounded text-sm">
+                      <span
+                        key={w.id}
+                        className="bg-primary/10 text-primary px-2 py-0.5 rounded text-sm"
+                      >
                         {w.name} {w.surname}
                       </span>
                     ))}
@@ -308,20 +320,21 @@ export default function AppointmentReport({
                 <div>
                   <p className="text-xs text-default-500 uppercase font-semibold">Zeit</p>
                   <p className="font-medium">
-                    {appointment.date.toLocaleDateString('de-DE')} | {formatTime(startTime)} - {formatTime(endTime)}
+                    {appointment.date.toLocaleDateString('de-DE')} | {formatTime(startTime)} -{' '}
+                    {formatTime(endTime)}
                   </p>
                 </div>
                 <div>
-                   <p className="text-xs text-default-500 uppercase font-semibold">Dauer</p>
-                   <p className="font-medium">{appointment.duration} Min.</p>
+                  <p className="text-xs text-default-500 uppercase font-semibold">Dauer</p>
+                  <p className="font-medium">{appointment.duration} Min.</p>
                 </div>
                 <div className="col-span-2">
-                   <p className="text-xs text-default-500 uppercase font-semibold">Leistungen</p>
-                   <ul className="list-disc list-inside text-sm">
-                     {appointment.services.map(s => (
-                       <li key={s.id}>{s.name}</li>
-                     ))}
-                   </ul>
+                  <p className="text-xs text-default-500 uppercase font-semibold">Leistungen</p>
+                  <ul className="list-disc list-inside text-sm">
+                    {appointment.services.map(s => (
+                      <li key={s.id}>{s.name}</li>
+                    ))}
+                  </ul>
                 </div>
               </div>
 
@@ -340,7 +353,7 @@ export default function AppointmentReport({
                     placeholder="Geben Sie hier Ihre Notizen zum Termin ein..."
                     rows={3}
                     value={reportNote}
-                    onChange={(e) => setReportNote(e.target.value)}
+                    onChange={e => setReportNote(e.target.value)}
                   />
                 </TextField>
 
@@ -350,9 +363,9 @@ export default function AppointmentReport({
                       <ImageIcon className="w-5 h-5 text-primary" />
                       <h3 className="text-lg font-semibold">Fotos</h3>
                     </div>
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
+                    <Button
+                      size="sm"
+                      variant="ghost"
                       onPress={() => fileInputRef.current?.click()}
                       isDisabled={isUploading}
                     >
@@ -380,8 +393,11 @@ export default function AppointmentReport({
                   )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {photos.map((photo) => (
-                      <div key={photo.id} className="border border-divider rounded-lg p-2 space-y-2 relative group">
+                    {photos.map(photo => (
+                      <div
+                        key={photo.id}
+                        className="border border-divider rounded-lg p-2 space-y-2 relative group"
+                      >
                         <div className="relative aspect-video bg-default-100 rounded overflow-hidden">
                           {/* Note: In a real app with private files, you might need a way to fetch the image with auth headers 
                               if it's protected. Since the upload route returns a URL, we use that. 
@@ -395,7 +411,7 @@ export default function AppointmentReport({
                             alt="Report photo"
                             className="w-full h-full object-cover"
                           />
-                          <button 
+                          <button
                             onClick={() => handleRemovePhoto(photo.id)}
                             className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                           >
@@ -405,14 +421,13 @@ export default function AppointmentReport({
                         <Input
                           placeholder="Beschreibung..."
                           value={photo.note}
-                          onChange={(e) => handlePhotoNoteChange(photo.id, e.target.value)}
+                          onChange={e => handlePhotoNoteChange(photo.id, e.target.value)}
                         />
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
-
             </Modal.Body>
 
             <Modal.Footer>
@@ -430,3 +445,28 @@ export default function AppointmentReport({
     </Modal>
   )
 }
+
+/*
+
+<Card isFooterBlurred className="w-full h-[300px] col-span-12 sm:col-span-7">
+
+        <Image
+          removeWrapper
+          alt="Background"
+          className="z-0 w-full h-full object-cover"
+          src={getPhotoUrl(photo.url, {
+                              firmaID: user?.firmaID || '',
+                              appointmentId: appointment?.id || '',
+                              reportId: reportId,
+                            })}
+        />
+        <Card.Footer className="absolute bg-black/40 bottom-0 z-10 border-t-1 border-default-600 dark:border-default-100">
+                        <Input
+                          placeholder="Beschreibung..."
+                          value={photo.note}
+                          onChange={(e) => handlePhotoNoteChange(photo.id, e.target.value)}
+                        />
+        </Card.Footer>
+      </Card>
+
+      */
