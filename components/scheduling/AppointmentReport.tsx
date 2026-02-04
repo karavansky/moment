@@ -148,7 +148,8 @@ export default function AppointmentReport({
         console.error('Error keys:', Object.keys(error))
         console.error('Error own props:', Object.getOwnPropertyNames(error))
       }
-      alert('Fehler beim Hochladen der Datei')
+      const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler'
+      alert(`Fehler beim Hochladen: ${errorMessage}`)
     } finally {
       setIsUploading(false)
       setUploadStage('idle')

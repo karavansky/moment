@@ -35,15 +35,57 @@ export async function POST(request: Request) {
     // Write HEIC to temp file
     await writeFile(inputPath, buffer)
 
-    // Use sips (macOS) or convert (ImageMagick) for conversion
-    const isMac = process.platform === 'darwin'
+    // Try different tools for HEIC conversion
+    // Ubuntu: sudo apt-get install imagemagick libheif-examples
+    // macOS: sips is built-in
+    console.log(`Platform: ${process.platform}`)
 
-    if (isMac) {
-      // macOS: use sips (native HEIC support)
-      await execAsync(`sips -s format jpeg -s formatOptions 90 "${inputPath}" --out "${outputPath}"`)
-    } else {
-      // Linux: try ImageMagick (needs libheif)
-      await execAsync(`convert "${inputPath}" -quality 90 "${outputPath}"`)
+    let converted = false
+    const errors: string[] = []
+
+    // Try sips (macOS)
+    if (!converted) {
+      try {
+        await execAsync(`sips -s format jpeg -s formatOptions 90 "${inputPath}" --out "${outputPath}"`)
+        console.log('Converted using sips (macOS)')
+        converted = true
+      } catch (e) {
+        errors.push(`sips: ${e instanceof Error ? e.message : String(e)}`)
+      }
+    }
+
+    // Try ImageMagick convert
+    if (!converted) {
+      try {
+        await execAsync(`convert "${inputPath}" -quality 90 "${outputPath}"`)
+        console.log('Converted using ImageMagick')
+        converted = true
+      } catch (e) {
+        errors.push(`convert: ${e instanceof Error ? e.message : String(e)}`)
+      }
+    }
+
+    // Try heif-convert (libheif-examples)
+    if (!converted) {
+      try {
+        await execAsync(`heif-convert -q 90 "${inputPath}" "${outputPath}"`)
+        console.log('Converted using heif-convert')
+        converted = true
+      } catch (e) {
+        errors.push(`heif-convert: ${e instanceof Error ? e.message : String(e)}`)
+      }
+    }
+
+    if (!converted) {
+      console.error('All conversion methods failed:', errors)
+      return NextResponse.json(
+        {
+          error: 'HEIC conversion not available',
+          details: 'HEIC-Format wird auf diesem Server nicht unterstützt. Bitte konvertieren Sie das Bild zu JPEG vor dem Hochladen.',
+          technicalDetails: errors.join('; ')
+        },
+        { status: 500 }
+      )
     }
 
     // Read converted file
