@@ -456,7 +456,7 @@ export default function AppointmentReport({
           }}
           variant="blur"
         >
-          <Modal.Container className="max-w-4xl w-full h-[90vh]" >
+          <Modal.Container size="cover"> 
             <Modal.Dialog className="h-full flex flex-col bg-black/90 p-0">
               <Modal.CloseTrigger />
               {selectedPhoto && (
