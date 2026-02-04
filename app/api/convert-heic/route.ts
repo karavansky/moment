@@ -65,14 +65,25 @@ export async function POST(request: Request) {
       }
     }
 
-    // Try heif-convert (libheif-examples)
+    // Try heif-convert (libheif-examples) - without quality flag first
     if (!converted) {
       try {
-        await execAsync(`heif-convert -q 90 "${inputPath}" "${outputPath}"`)
+        await execAsync(`heif-convert "${inputPath}" "${outputPath}"`)
         console.log('Converted using heif-convert')
         converted = true
       } catch (e) {
         errors.push(`heif-convert: ${e instanceof Error ? e.message : String(e)}`)
+      }
+    }
+
+    // Try ffmpeg (often handles problematic files better)
+    if (!converted) {
+      try {
+        await execAsync(`ffmpeg -i "${inputPath}" -q:v 2 "${outputPath}" -y`)
+        console.log('Converted using ffmpeg')
+        converted = true
+      } catch (e) {
+        errors.push(`ffmpeg: ${e instanceof Error ? e.message : String(e)}`)
       }
     }
 
