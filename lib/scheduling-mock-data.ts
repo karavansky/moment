@@ -13,8 +13,14 @@ import {
   Photo,
 } from '@/types/scheduling'
 
-// Генерация UUID (простая версия для мок-данных)
-const generateId = () => crypto.randomUUID()
+// Генерация ID в стиле Firebase (28 символов alphanumeric) Криптографически безопасная альтернатива
+const generateId = () => {
+  const array = new Uint8Array(21)
+  crypto.getRandomValues(array) // использует системный CSPRNG
+  return Array.from(array, b => 
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[b % 62]
+  ).join('')
+}
 
 // Функция для добавления дней к дате
 const addDays = (date: Date, days: number): Date => {
