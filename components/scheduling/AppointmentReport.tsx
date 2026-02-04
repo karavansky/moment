@@ -396,30 +396,30 @@ export default function AppointmentReport({
                     {photos.map(photo => (
                       <div
                         key={photo.id}
-                        className="border border-divider rounded-lg p-2 space-y-2 relative group"
+                        className="relative aspect-video bg-default-100 rounded-lg overflow-hidden group"
                       >
-                        <div className="relative aspect-video bg-default-100 rounded overflow-hidden">
-                          <img
-                            src={getPhotoUrl(photo.url, {
-                              firmaID: user?.firmaID || '',
-                              appointmentId: appointment?.id || '',
-                              reportId: reportId,
-                            })}
-                            alt="Report photo"
-                            className="w-full h-full object-cover"
-                          />
-                          <button
-                            onClick={() => handleRemovePhoto(photo.id)}
-                            className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                        <Input
-                          placeholder="Beschreibung..."
-                          value={photo.note}
-                          onChange={e => handlePhotoNoteChange(photo.id, e.target.value)}
+                        <img
+                          src={getPhotoUrl(photo.url, {
+                            firmaID: user?.firmaID || '',
+                            appointmentId: appointment?.id || '',
+                            reportId: reportId,
+                          })}
+                          alt="Report photo"
+                          className="w-full h-full object-cover"
                         />
+                        <button
+                          onClick={() => handleRemovePhoto(photo.id)}
+                          className="absolute top-1 right-1 z-20 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                        <div className="absolute bottom-0 left-0 right-0 p-2 bg-black/40 backdrop-blur-sm">
+                          <Input
+                            placeholder="Beschreibung..."
+                            value={photo.note}
+                            onChange={e => handlePhotoNoteChange(photo.id, e.target.value)}
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>
