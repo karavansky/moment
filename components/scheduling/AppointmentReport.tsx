@@ -5,7 +5,6 @@ import { Appointment, Report, Photo } from '@/types/scheduling'
 import { Save, Plus, X, Upload, FileText, Image as ImageIcon, Loader2 } from 'lucide-react'
 import { formatTime } from '@/lib/calendar-utils'
 import imageCompression from 'browser-image-compression'
-import heic2any from 'heic2any'
 
 interface AppointmentReportProps {
   isOpen: boolean
@@ -63,6 +62,8 @@ export default function AppointmentReport({
       if (isHeic) {
         setUploadStage('converting')
         console.log('Converting HEIC to JPEG...')
+        // Dynamic import to avoid SSR issues (heic2any uses window)
+        const heic2any = (await import('heic2any')).default
         const convertedBlob = await heic2any({
           blob: originalFile,
           toType: 'image/jpeg',
