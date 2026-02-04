@@ -952,7 +952,7 @@ export const getAllSampleObjects = () => {
   }
   const photo4: Photo = {
     id: 'DdEeFfGgHhIiJjKkLlMm4',
-    url: 'i9G1s4CRxdZmkU0jhNuPI.jpeg',
+    url: 'Pz1INExcyw89o5gPGmENE.jpeg',
     note: 'Photo 4 description',
   }
 
