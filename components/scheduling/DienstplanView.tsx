@@ -56,12 +56,15 @@ function DienstplanView() {
     setIsModalOpen(true)
   }, [setSelectedAppointment, setIsNewAppointment, setIsModalOpen])
 
-  const handlePressOnDay = useCallback((day: Date) => {
-    startTransition(() => {
-      setViewMode('week')
-    })
-    setSelectedDate(day)
-  }, [setSelectedDate])
+  const handlePressOnDay = useCallback(
+    (day: Date) => {
+      startTransition(() => {
+        setViewMode('week')
+      })
+      setSelectedDate(day)
+    },
+    [setSelectedDate]
+  )
 
   // Мемоизируем today для стабильности
   const today = useMemo(() => new Date(), [])
@@ -72,9 +75,17 @@ function DienstplanView() {
       console.log('handlePressOnAppointment:', appointment)
       setSelectedAppointment(appointment)
       setIsNewAppointment(false)
-      setIsModalOpen(true)
+      // Check if appointment date is today
+      const appDate = new Date(appointment.date)
+      const isPast = new Date(appDate.toDateString()) < new Date(today.toDateString())
+
+      if (isPast) {
+        setIsReportModalOpen(true)
+      } else {
+        setIsModalOpen(true)
+      }
     },
-    [setSelectedAppointment]
+    [setSelectedAppointment, today]
   )
 
   // Обработчик редактирования appointment (из Dropdown для сегодняшних)
@@ -129,7 +140,6 @@ function DienstplanView() {
     setSelectedAppointment(null)
     setIsNewAppointment(false)
   }, [setSelectedAppointment, setIsNewAppointment, setIsModalOpen])
-
 
   // Логируем только mount/unmount, без зависимостей от данных
   useEffect(() => {
