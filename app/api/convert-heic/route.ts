@@ -106,6 +106,36 @@ export async function POST(request: Request) {
       }
     }
 
+    // Try Python pillow-heif (often has newer libheif)
+    // Install: python3 -m venv /opt/heic-converter && /opt/heic-converter/bin/pip install pillow pillow-heif
+    if (!converted) {
+      const pythonScript = `
+from PIL import Image
+from pillow_heif import register_heif_opener
+register_heif_opener()
+img = Image.open("${inputPath}")
+img.convert("RGB").save("${outputPath}", "JPEG", quality=90)
+`
+      // Try venv python first, then system python
+      const pythonPaths = [
+        '/opt/heic-converter/bin/python3',
+        '/opt/heic-converter/bin/python',
+        'python3',
+        'python'
+      ]
+
+      for (const pythonPath of pythonPaths) {
+        if (converted) break
+        try {
+          await execAsync(`${pythonPath} -c '${pythonScript}'`)
+          console.log(`Converted using Python pillow-heif (${pythonPath})`)
+          converted = true
+        } catch (e) {
+          errors.push(`${pythonPath} pillow-heif: ${e instanceof Error ? e.message : String(e)}`)
+        }
+      }
+    }
+
     if (!converted) {
       console.error('All conversion methods failed:', errors)
       return NextResponse.json(
