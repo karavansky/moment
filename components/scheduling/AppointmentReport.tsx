@@ -418,6 +418,7 @@ export default function AppointmentReport({
                             placeholder="Beschreibung..."
                             value={photo.note}
                             onChange={e => handlePhotoNoteChange(photo.id, e.target.value)}
+                            className="bg-transparent"
                           />
                         </div>
                       </div>
