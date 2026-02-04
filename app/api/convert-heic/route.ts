@@ -35,6 +35,14 @@ export async function POST(request: Request) {
     // Write HEIC to temp file
     await writeFile(inputPath, buffer)
 
+    // Check file type with 'file' command for diagnostics
+    try {
+      const { stdout } = await execAsync(`file "${inputPath}"`)
+      console.log(`File type detection: ${stdout.trim()}`)
+    } catch {
+      console.log('Could not detect file type')
+    }
+
     // Try different tools for HEIC conversion
     // Ubuntu: sudo apt-get install imagemagick libheif-examples
     // macOS: sips is built-in
@@ -54,11 +62,22 @@ export async function POST(request: Request) {
       }
     }
 
-    // Try ImageMagick convert
+    // Try ImageMagick magick (v7+)
+    if (!converted) {
+      try {
+        await execAsync(`magick "${inputPath}" -quality 90 "${outputPath}"`)
+        console.log('Converted using ImageMagick (magick)')
+        converted = true
+      } catch (e) {
+        errors.push(`magick: ${e instanceof Error ? e.message : String(e)}`)
+      }
+    }
+
+    // Try ImageMagick convert (v6)
     if (!converted) {
       try {
         await execAsync(`convert "${inputPath}" -quality 90 "${outputPath}"`)
-        console.log('Converted using ImageMagick')
+        console.log('Converted using ImageMagick (convert)')
         converted = true
       } catch (e) {
         errors.push(`convert: ${e instanceof Error ? e.message : String(e)}`)
