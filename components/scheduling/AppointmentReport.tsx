@@ -434,7 +434,7 @@ export default function AppointmentReport({
                           >
                             <X className="w-4 h-4" />
                           </button>
-                          <div className="absolute rounded-lg  bottom-0 left-0 right-0 p-2 bg-transparent backdrop-blur-sm">
+                          <div className="absolute rounded-b-lg bottom-0 left-0 right-0 p-2 bg-transparent backdrop-blur-sm">
                             <Input
                               placeholder="Beschreibung..."
                               value={photo.note}
