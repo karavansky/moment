@@ -95,10 +95,16 @@ export default function AppointmentReport({
     } catch (error) {
       // Enhanced error logging for debugging
       console.error('Error uploading file:', error)
+      console.error('Error type:', typeof error)
+      console.error('Error constructor:', error?.constructor?.name)
+      console.error('Error JSON:', JSON.stringify(error, Object.getOwnPropertyNames(error || {})))
       if (error instanceof Error) {
         console.error('Error name:', error.name)
         console.error('Error message:', error.message)
         console.error('Error stack:', error.stack)
+      } else if (error && typeof error === 'object') {
+        console.error('Error keys:', Object.keys(error))
+        console.error('Error own props:', Object.getOwnPropertyNames(error))
       }
       alert('Fehler beim Hochladen der Datei')
     } finally {
