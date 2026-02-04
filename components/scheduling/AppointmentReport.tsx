@@ -486,9 +486,9 @@ export default function AppointmentReport({
                         reportId: reportId,
                       })}
                       alt="Report photo"
-                      className="max-w-full max-h-full object-contain"
+                      className="max-w-full max-h-full object-contain rounded-lg"
                     />
-                    <div className="absolute bottom-0 left-0 right-0 p-2 bg-transparent backdrop-blur-sm">
+                    <div className="absolute bottom-0 left-0 right-0 rounded-b-lg  p-2 bg-transparent backdrop-blur-sm">
                       <Input
                         className="bg-transparent text-white! "
                         placeholder="Beschreibung..."
