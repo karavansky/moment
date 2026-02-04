@@ -1,7 +1,18 @@
 import { NextResponse } from 'next/server'
-import sharp from 'sharp'
+import { exec } from 'child_process'
+import { promisify } from 'util'
+import { writeFile, readFile, unlink, mkdir } from 'fs/promises'
+import { join } from 'path'
+import { tmpdir } from 'os'
+import { randomUUID } from 'crypto'
+
+const execAsync = promisify(exec)
 
 export async function POST(request: Request) {
+  const tempDir = join(tmpdir(), 'heic-convert')
+  let inputPath = ''
+  let outputPath = ''
+
   try {
     const formData = await request.formData()
     const file = formData.get('file') as File | null
@@ -14,14 +25,32 @@ export async function POST(request: Request) {
 
     const buffer = Buffer.from(await file.arrayBuffer())
 
-    // Convert HEIC to JPEG using Sharp
-    const jpegBuffer = await sharp(buffer)
-      .jpeg({ quality: 90 })
-      .toBuffer()
+    // Create temp directory if not exists
+    await mkdir(tempDir, { recursive: true })
+
+    const fileId = randomUUID()
+    inputPath = join(tempDir, `${fileId}.heic`)
+    outputPath = join(tempDir, `${fileId}.jpeg`)
+
+    // Write HEIC to temp file
+    await writeFile(inputPath, buffer)
+
+    // Use sips (macOS) or convert (ImageMagick) for conversion
+    const isMac = process.platform === 'darwin'
+
+    if (isMac) {
+      // macOS: use sips (native HEIC support)
+      await execAsync(`sips -s format jpeg -s formatOptions 90 "${inputPath}" --out "${outputPath}"`)
+    } else {
+      // Linux: try ImageMagick (needs libheif)
+      await execAsync(`convert "${inputPath}" -quality 90 "${outputPath}"`)
+    }
+
+    // Read converted file
+    const jpegBuffer = await readFile(outputPath)
 
     console.log(`Converted to JPEG: ${(jpegBuffer.length / 1024 / 1024).toFixed(2)} MB`)
 
-    // Return as base64 for simplicity (or could return as blob)
     return NextResponse.json({
       success: true,
       data: jpegBuffer.toString('base64'),
@@ -37,5 +66,13 @@ export async function POST(request: Request) {
       },
       { status: 500 }
     )
+  } finally {
+    // Cleanup temp files
+    try {
+      if (inputPath) await unlink(inputPath).catch(() => {})
+      if (outputPath) await unlink(outputPath).catch(() => {})
+    } catch {
+      // Ignore cleanup errors
+    }
   }
 }
