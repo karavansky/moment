@@ -198,6 +198,7 @@ export default function AppointmentReport({
       if (!response.ok) throw new Error('Failed to save report');
 
       const { report: savedReport } = await response.json();
+      console.log('Saved report:', savedReport);
 
       // 2. Update local state with the saved report (containing permanent URLs)
       let updatedReports = [...existingReports];
