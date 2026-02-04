@@ -396,7 +396,7 @@ export default function AppointmentReport({
                     {photos.map(photo => (
                       <div
                         key={photo.id}
-                        className="relative aspect-video bg-default-100 rounded-lg overflow-hidden group"
+                        className="relative aspect-3/4 bg-default-100 rounded-lg overflow-hidden group"
                       >
                         <img
                           src={getPhotoUrl(photo.url, {
