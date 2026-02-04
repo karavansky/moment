@@ -69,7 +69,16 @@ export default function AppointmentReport({
         setReportId(generateId())
       }
     }
-  }, [isOpen, appointment])
+  }, [isOpen, appointment?.id]) // Используем appointment.id для точного отслеживания смены appointment
+
+  // Сбрасываем state при закрытии модала
+  React.useEffect(() => {
+    if (!isOpen) {
+      setReportNote('')
+      setPhotos([])
+      setReportId('')
+    }
+  }, [isOpen])
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return
