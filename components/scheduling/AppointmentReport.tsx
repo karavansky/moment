@@ -61,17 +61,33 @@ export default function AppointmentReport({
 
       if (isHeic) {
         setUploadStage('converting')
-        console.log('Converting HEIC to JPEG...')
-        // Dynamic import to avoid SSR issues (heic2any uses window)
-        const heic2any = (await import('heic2any')).default
-        const convertedBlob = await heic2any({
-          blob: originalFile,
-          toType: 'image/jpeg',
-          quality: 0.9,
+        console.log('Converting HEIC to JPEG via server...')
+
+        // Server-side conversion (more reliable than browser-based heic2any)
+        const heicFormData = new FormData()
+        heicFormData.append('file', originalFile)
+
+        const convertResponse = await fetch('/api/convert-heic', {
+          method: 'POST',
+          body: heicFormData,
         })
-        // heic2any can return array for multi-image HEIC, take first one
-        const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob
-        fileToCompress = new File([blob], originalFile.name.replace(/\.(heic|heif)$/i, '.jpeg'), {
+
+        const convertData = await convertResponse.json()
+
+        if (!convertResponse.ok) {
+          throw new Error(convertData.details || convertData.error || 'HEIC conversion failed')
+        }
+
+        // Convert base64 back to File
+        const byteCharacters = atob(convertData.data)
+        const byteNumbers = new Array(byteCharacters.length)
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i)
+        }
+        const byteArray = new Uint8Array(byteNumbers)
+        const blob = new Blob([byteArray], { type: 'image/jpeg' })
+
+        fileToCompress = new File([blob], convertData.originalName, {
           type: 'image/jpeg',
         })
         console.log(`Converted HEIC to JPEG: ${(fileToCompress.size / 1024 / 1024).toFixed(2)} MB`)
