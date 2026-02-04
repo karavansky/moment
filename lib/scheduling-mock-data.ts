@@ -974,12 +974,12 @@ export const getAllSampleObjects = () => {
   const report2: Report = {
     id: 'YzAbCdEfGhIjKlMnOpQr2',
     firmaID: firmaID,
-    worker: worker_1,
+    worker: worker_5,
     photos: photosSample2,
-    appointmentId: appointment_1.id,
-    appointment: appointment_1,
-    workerId: worker_1.id,
-    date: appointment_1.date,
+    appointmentId: appointment_5.id,
+    appointment: appointment_5,
+    workerId: worker_5.id,
+    date: appointment_5.date,
   }
 
   // Добавляем reports к appointments
