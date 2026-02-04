@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react'
-import { Modal, Button, Separator, TextArea, TextField, Label, Input } from '@heroui/react'
+import { Modal, Button, Separator, TextArea, TextField, Label, Input, Card } from '@heroui/react'
+import Image from 'next/image'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { Appointment, Report, Photo } from '@/types/scheduling'
 import { Save, Plus, X, Upload, FileText, Image as ImageIcon, Loader2 } from 'lucide-react'
@@ -394,36 +395,31 @@ export default function AppointmentReport({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {photos.map(photo => (
-                      <div
-                        key={photo.id}
-                        className="border border-divider rounded-lg p-2 space-y-2 relative group"
-                      >
-                        <div className="relative aspect-video bg-default-100 rounded overflow-hidden">
-                          {/* Note: In a real app with private files, you might need a way to fetch the image with auth headers 
-                              if it's protected. Since the upload route returns a URL, we use that. 
-                              If it's a private URL (like /api/files/...), it should work if the session is active. */}
-                          <img
-                            src={getPhotoUrl(photo.url, {
-                              firmaID: user?.firmaID || '',
-                              appointmentId: appointment?.id || '',
-                              reportId: reportId,
-                            })}
-                            alt="Report photo"
-                            className="w-full h-full object-cover"
-                          />
-                          <button
-                            onClick={() => handleRemovePhoto(photo.id)}
-                            className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                        <Input
-                          placeholder="Beschreibung..."
-                          value={photo.note}
-                          onChange={e => handlePhotoNoteChange(photo.id, e.target.value)}
+                      <Card key={photo.id} className="w-full aspect-video relative group overflow-hidden">
+                        <Image
+                          alt="Report photo"
+                          fill
+                          className="object-cover"
+                          src={getPhotoUrl(photo.url, {
+                            firmaID: user?.firmaID || '',
+                            appointmentId: appointment?.id || '',
+                            reportId: reportId,
+                          })}
                         />
-                      </div>
+                        <button
+                          onClick={() => handleRemovePhoto(photo.id)}
+                          className="absolute top-1 right-1 z-20 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                        <Card.Footer className="absolute bg-black/40 bottom-0 z-10 border-t border-default-600 dark:border-default-100 backdrop-blur-sm">
+                          <Input
+                            placeholder="Beschreibung..."
+                            value={photo.note}
+                            onChange={e => handlePhotoNoteChange(photo.id, e.target.value)}
+                          />
+                        </Card.Footer>
+                      </Card>
                     ))}
                   </div>
                 </div>
@@ -448,7 +444,7 @@ export default function AppointmentReport({
 
 /*
 
-<Card isFooterBlurred className="w-full h-[300px] col-span-12 sm:col-span-7">
+<Card isFooterBlurred className="w-full h-[200px] col-span-12 sm:col-span-7">
 
         <Image
           removeWrapper
