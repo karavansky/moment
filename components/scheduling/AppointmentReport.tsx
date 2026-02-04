@@ -448,42 +448,43 @@ export default function AppointmentReport({
     </Modal>
 
       {/* Fullscreen photo viewer */}
-      {selectedPhoto && (
-        <div
-          className="fixed inset-0 z-50 bg-black/90 flex flex-col"
-          onClick={() => setSelectedPhotoId(null)}
+      <Modal>
+        <Modal.Backdrop
+          isOpen={!!selectedPhotoId}
+          onOpenChange={open => {
+            if (!open) setSelectedPhotoId(null)
+          }}
+          variant="blur"
         >
-          <button
-            onClick={() => setSelectedPhotoId(null)}
-            className="absolute top-4 right-4 z-10 bg-black/50 text-white p-2 rounded-full"
-          >
-            <X className="w-5 h-5" />
-          </button>
-          <div className="flex-1 flex items-center justify-center p-4">
-            <img
-              src={getPhotoUrl(selectedPhoto.url, {
-                firmaID: user?.firmaID || '',
-                appointmentId: appointment?.id || '',
-                reportId: reportId,
-              })}
-              alt="Report photo"
-              className="max-w-full max-h-full object-contain"
-              onClick={e => e.stopPropagation()}
-            />
-          </div>
-          <div
-            className="p-4 bg-black/40 backdrop-blur-sm"
-            onClick={e => e.stopPropagation()}
-          >
-            <Input
-              placeholder="Beschreibung..."
-              value={selectedPhoto.note}
-              onChange={e => handlePhotoNoteChange(selectedPhoto.id, e.target.value)}
-              className="bg-transparent"
-            />
-          </div>
-        </div>
-      )}
+          <Modal.Container className="max-w-4xl w-full h-[90vh]" >
+            <Modal.Dialog className="h-full flex flex-col bg-black/90 p-0">
+              <Modal.CloseTrigger />
+              {selectedPhoto && (
+                <>
+                  <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
+                    <img
+                      src={getPhotoUrl(selectedPhoto.url, {
+                        firmaID: user?.firmaID || '',
+                        appointmentId: appointment?.id || '',
+                        reportId: reportId,
+                      })}
+                      alt="Report photo"
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
+                  <div className="p-4 bg-black/40 backdrop-blur-sm">
+                    <Input
+                      placeholder="Beschreibung..."
+                      value={selectedPhoto.note}
+                      onChange={e => handlePhotoNoteChange(selectedPhoto.id, e.target.value)}
+                    />
+                  </div>
+                </>
+              )}
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
     </>
   )
 }
