@@ -390,7 +390,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
             date: new Date(),
             isRead: false,
           }
-          addNotification(notification);
+          addNotification(notification)
 
           return {
             ...prev,
