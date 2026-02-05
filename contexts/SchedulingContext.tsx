@@ -381,7 +381,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
             userID: 'system-demo',
             type: 'info',
             title: 'Starting Appointment!',
-            message: `Worker ${worker.name} ${worker.surname} has started ${startDate.getTime().toString()} an appointment with client ${appointment.client.name} ${appointment.client.surname} ${appointment.client.street} ${appointment.client.houseNumber}, ${appointment.client.city}.`,
+            message: `Worker ${worker.name} ${worker.surname} has started ${startDate.getTime().toString()} an appointment with ${appointment.client.name} ${appointment.client.surname} ${appointment.client.street} ${appointment.client.houseNumber}, ${appointment.client.city}.`,
             actionProps: {
               children: 'Learn More',
               href: `/map/${appointmentId}`,
