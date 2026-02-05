@@ -10,8 +10,17 @@ import { SidebarProvider } from '@/contexts/SidebarContext'
 import { SchedulingProvider } from '@/contexts/SchedulingContext'
 import { NotificationProvider } from '@/contexts/NotificationContext'
 import { PlatformProvider } from '@/contexts/PlatformContext'
-import { Toast, toastQueue } from "@heroui/react"
-import { NotificationObserver } from './NotificationObserver';
+import {
+  Toast,
+  toastQueue,
+  ToastContent,
+  ToastDescription,
+  ToastIndicator,
+  ToastQueue,
+  ToastTitle,
+} from '@heroui/react'
+import type {ToastContentValue} from "@heroui/react";
+import { NotificationObserver } from './NotificationObserver'
 import { DemoNotificationWorker } from './DemoNotificationWorker'
 
 export interface ProvidersProps {
@@ -40,30 +49,31 @@ export const useTranslation = () => {
   const dict = useDictionary()
 
   const t = React.useMemo(
-    () => (path: string, fallback = 'Localization failed') => {
-      const parts = path.split('.')
-      let cur: any = dict
+    () =>
+      (path: string, fallback = 'Localization failed') => {
+        const parts = path.split('.')
+        let cur: any = dict
 
-      if (!dict) {
-        console.warn(`[useTranslation] Dictionary is undefined for path: ${path}`)
-        return fallback
-      }
-
-      for (const p of parts) {
-        if (!cur) {
-          console.warn(`[useTranslation] Path not found: ${path} (failed at: ${p})`)
+        if (!dict) {
+          console.warn(`[useTranslation] Dictionary is undefined for path: ${path}`)
           return fallback
         }
-        cur = cur[p]
-      }
 
-      if (cur === undefined || cur === null) {
-        console.warn(`[useTranslation] Value not found for path: ${path}`)
-        return fallback
-      }
+        for (const p of parts) {
+          if (!cur) {
+            console.warn(`[useTranslation] Path not found: ${path} (failed at: ${p})`)
+            return fallback
+          }
+          cur = cur[p]
+        }
 
-      return cur
-    },
+        if (cur === undefined || cur === null) {
+          console.warn(`[useTranslation] Value not found for path: ${path}`)
+          return fallback
+        }
+
+        return cur
+      },
     [dict]
   )
 
@@ -75,7 +85,13 @@ function HeroUIThemeWrapper({ children }: { children: React.ReactNode }) {
   return <HeroUIProvider navigate={router.push}>{children}</HeroUIProvider>
 }
 
-export function Providers({ children, themeProps, dictionary, lang, initialSidebarExpanded }: ProvidersProps) {
+export function Providers({
+  children,
+  themeProps,
+  dictionary,
+  lang,
+  initialSidebarExpanded,
+}: ProvidersProps) {
   const mountIdRef = useRef(Math.random().toString(36).slice(2, 8))
 
   // Логируем монтирование/размонтирование
@@ -103,7 +119,36 @@ export function Providers({ children, themeProps, dictionary, lang, initialSideb
           <PlatformProvider>
             <SidebarProvider initialExpanded={initialSidebarExpanded}>
               <HeroUIThemeWrapper>
-                <Toast.Container queue={toastQueue} placement="top" />
+                <Toast.Container queue={toastQueue} placement="top">
+                  {({ toast: toastItem }) => {
+                    const content = toastItem.content as ToastContentValue
+                    return (
+                      <Toast
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 rounded-2xl sm:rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
+                        toast={toastItem}
+                        variant={content.variant}
+                      >
+                        <Toast.Content>
+                          <div className="flex items-center gap-2">
+                            <Toast.Indicator className="shrink-0 mt-0.5 sm:mt-0 text-accent w-6 h-6" variant={content.variant} />
+                            <div className="flex flex-col pr-6">
+                              {content.title ? (
+                                <Toast.Title className="text-accent">{content.title}</Toast.Title>
+                              ) : null}
+                              {content.description ? (
+                                <Toast.Description>{content.description}</Toast.Description>
+                              ) : null}
+                               {content.actionProps ? (
+                                <Toast.ActionButton {...content.actionProps}/>
+                              ) : null}
+                            </div>
+                          </div>
+                        </Toast.Content>
+                        <Toast.CloseButton className="absolute top-1/2 right-2 -translate-y-1/2 border-none bg-transparent opacity-100 [&>svg]:size-6" />
+                      </Toast>
+                    )
+                  }}
+                </Toast.Container>
                 <ServerLanguageContext.Provider value={lang}>
                   <DictionaryContext.Provider value={memoizedDictionary}>
                     <NotificationProvider>
