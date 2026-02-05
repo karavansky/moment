@@ -366,6 +366,10 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
             console.warn('Appointment not found:', appointmentId)
             return prev
           }
+          if (!appointment.client) {
+            console.warn('Client in appointment not found:', appointmentId)
+            return prev
+          }
           const worker = appointment.worker.find(w => w.id === workerId)
           if (!worker) {
             console.warn('Worker not found:', workerId)
@@ -376,7 +380,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
             userID: 'system-demo',
             type: 'info',
             title: 'Starting Appointment!',
-            message: `Worker ${worker.name} has started an appointment.`,
+            message: `Worker ${worker.name} ${worker.surname} has started an appointment with client ${appointment.client.name} ${appointment.client.surname} ${appointment.client.street} ${appointment.client.houseNumber}, ${appointment.client.city}.`,
             actionProps: {
               children: 'Learn More',
               href: `/map/${appointmentId}`,
