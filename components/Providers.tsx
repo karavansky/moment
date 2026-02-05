@@ -106,13 +106,13 @@ export function Providers({ children, themeProps, dictionary, lang, initialSideb
                 <Toast.Container queue={toastQueue} placement="top" />
                 <ServerLanguageContext.Provider value={lang}>
                   <DictionaryContext.Provider value={memoizedDictionary}>
-                    <SchedulingProvider>
-                      <NotificationProvider>
+                    <NotificationProvider>
+                      <SchedulingProvider>
                         <NotificationObserver />
                         <DemoNotificationWorker />
                         <div className="min-h-screen flex flex-col">{children}</div>
-                      </NotificationProvider>
-                    </SchedulingProvider>
+                      </SchedulingProvider>
+                    </NotificationProvider>
                   </DictionaryContext.Provider>
                 </ServerLanguageContext.Provider>
               </HeroUIThemeWrapper>

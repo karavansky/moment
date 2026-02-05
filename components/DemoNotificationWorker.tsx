@@ -97,12 +97,7 @@ export const DemoNotificationWorker = () => {
     const { openAppointment } = useScheduling()
   
   const { addNotification } = useNotifications();
-  const addNotificationRef = useRef(addNotification);
   const currentIndexRef = useRef(0);
-
-  useEffect(() => {
-    addNotificationRef.current = addNotification;
-  }, [addNotification]);
 
   useEffect(() => {
     console.log('🔔 [Demo Worker] Mounting...');
@@ -125,7 +120,7 @@ export const DemoNotificationWorker = () => {
       };
 
       console.log(`🔔 [Demo Worker] Showing notification ${index + 1}/${DEMO_NOTIFICATIONS.length}:`, notification.title);
-      addNotificationRef.current(notification);
+      addNotification(notification);
 
       currentIndexRef.current = index + 1;
     };
@@ -134,8 +129,8 @@ export const DemoNotificationWorker = () => {
     let intervalId: NodeJS.Timeout | null = null;
 
     const initialTimeoutId = setTimeout(() => {
-      openAppointment('001'); // Open appointment with ID '001'
-      showNextNotification();
+      openAppointment('1HtTFzn7NJ7viLFBvJFN9','3Eoxlmzdr4uEJggFueFnB'); // Open appointment with ID '001'
+      //showNextNotification();
 
       // Start interval for subsequent notifications
       intervalId = setInterval(showNextNotification, 60000);
@@ -151,7 +146,7 @@ export const DemoNotificationWorker = () => {
         clearInterval(intervalId);
       }
     };
-  }, []);
+  }, [addNotification, openAppointment]);
 
   return null;
 };

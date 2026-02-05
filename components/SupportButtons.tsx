@@ -169,7 +169,7 @@ function SupportButtonsComponent({ lang, onAction, t }: SupportButtonsProps) {
   }
   //            className={`min-w-unit-16 h-8 rounded-xl text-sand-200 hover:text-sand-100 dark:text-gray-300 dark:hover:text-white data-[hover=true]:bg-earth-800/50 dark:data-[hover=true]:bg-gray-700/50 gap-1.5 flex flex-row items-center ${isPending ? 'opacity-70' : ''}`}
 
-  if (displayStatus === 'authenticated' && displaySession?.user) {
+  if (false && displayStatus === 'authenticated' && displaySession?.user) {
     return (
       <Dropdown
         key="user-dropdown-authenticated"

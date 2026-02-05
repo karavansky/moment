@@ -138,7 +138,7 @@ export const getAllSampleObjects = () => {
   }
 
   const worker_6: Worker = {
-    id: generateId(),
+    id: '3Eoxlmzdr4uEJggFueFnB',
     firmaID: firmaID,
     name: 'Denzel',
     surname: 'Washington',

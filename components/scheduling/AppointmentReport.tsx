@@ -450,7 +450,7 @@ export default function AppointmentReport({
               </Modal.Body>
 
               <Modal.Footer>
-                <Button variant="ghost" onPress={onClose}>
+                <Button variant="ghost" onPress={onClose} >
                   Abbrechen
                 </Button>
                 <Button variant="primary" onPress={handleSave} className="gap-2">
@@ -474,31 +474,39 @@ export default function AppointmentReport({
         >
           <Modal.Container size="cover">
             <Modal.Dialog className="h-full flex flex-col bg-black/90 p-0">
-              <Modal.CloseTrigger />
+              <Modal.CloseTrigger className="z-50" />
 
               {selectedPhoto && (
-                <Modal.Body>
-                  <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
-                    <img
-                      src={getPhotoUrl(selectedPhoto.url, {
-                        firmaID: user?.firmaID || '',
-                        appointmentId: appointment?.id || '',
-                        reportId: reportId,
-                      })}
-                      alt="Report photo"
-                      className="max-w-full max-h-full object-contain rounded-lg"
+                <Modal.Body className='relative flex-1 flex items-center justify-center bg-default-100 rounded-lg overflow-hidden group min-h-0'>
+                  <img
+                    src={getPhotoUrl(selectedPhoto.url, {
+                      firmaID: user?.firmaID || '',
+                      appointmentId: appointment?.id || '',
+                      reportId: reportId,
+                    })}
+                    alt="Report photo"
+                    className="max-w-full max-h-full object-contain rounded-lg"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 rounded-b-lg p-2 bg-transparent backdrop-blur-sm">
+                    <Input
+                      className="bg-transparent text-white!"
+                      placeholder="Beschreibung..."
+                      value={selectedPhoto.note}
+                      onChange={e => handlePhotoNoteChange(selectedPhoto.id, e.target.value)}
                     />
-                    <div className="absolute bottom-0 left-0 right-0 rounded-b-lg  p-2 bg-transparent backdrop-blur-sm">
-                      <Input
-                        className="bg-transparent text-white! "
-                        placeholder="Beschreibung..."
-                        value={selectedPhoto.note}
-                        onChange={e => handlePhotoNoteChange(selectedPhoto.id, e.target.value)}
-                      />
-                    </div>
                   </div>
                 </Modal.Body>
               )}
+
+              <Modal.Footer>
+                <Button variant="danger" onPress={onClose} size="sm">
+                  Abbrechen
+                </Button>
+                <Button variant="primary" onPress={handleSave} className="gap-2">
+                  <Save className="w-4 h-4" />
+                  Speichern
+                </Button>
+              </Modal.Footer>
             </Modal.Dialog>
           </Modal.Container>
         </Modal.Backdrop>
