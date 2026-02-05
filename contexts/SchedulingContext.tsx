@@ -376,18 +376,19 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
             return prev
           }
           console.log('Appointment opened, DOM updated')
+          const startDate = new Date()
           const notification: Notif = {
             userID: 'system-demo',
             type: 'info',
             title: 'Starting Appointment!',
-            message: `Worker ${worker.name} ${worker.surname} has started an appointment with client ${appointment.client.name} ${appointment.client.surname} ${appointment.client.street} ${appointment.client.houseNumber}, ${appointment.client.city}.`,
+            message: `Worker ${worker.name} ${worker.surname} has started ${startDate.getTime().toString()} an appointment with client ${appointment.client.name} ${appointment.client.surname} ${appointment.client.street} ${appointment.client.houseNumber}, ${appointment.client.city}.`,
             actionProps: {
               children: 'Learn More',
               href: `/map/${appointmentId}`,
               variant: 'primary',
             },
             id: generateId(),
-            date: new Date(),
+            date: startDate,
             isRead: false,
           }
           addNotification(notification)
@@ -395,7 +396,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
           return {
             ...prev,
             appointments: prev.appointments.map(apt =>
-              apt.id === appointmentId ? { ...apt, isOpen: true, openedAt: new Date() } : apt
+              apt.id === appointmentId ? { ...apt, isOpen: true, openedAt: startDate   } : apt
             ),
           }
         })
