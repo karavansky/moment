@@ -92,7 +92,7 @@ export const NotificationObserver = () => {
 
             const options = {
               description,
-              timeout: 5000,
+              timeout: 10000,
               actionProps,
             }
 
