@@ -15,12 +15,20 @@ import {
   toastQueue,
   ToastContent,
   ToastDescription,
-  ToastIndicator,
   ToastQueue,
   ToastTitle,
 } from '@heroui/react'
-import type {ToastContentValue} from "@heroui/react";
+import type { ToastContentValue } from '@heroui/react'
 import { NotificationObserver } from './NotificationObserver'
+import { Info, CheckCircle, AlertTriangle, XCircle } from 'lucide-react'
+
+const variantIcons: Record<string, React.ReactNode> = {
+  default: <Info className="w-6 h-6" strokeWidth={2} color="#338ef7" />,
+  accent: <Info className="w-6 h-6" strokeWidth={2} color="#338ef7" />,
+  success: <CheckCircle className="w-6 h-6" strokeWidth={1.5} color="#28a745" />,
+  warning: <AlertTriangle className="w-6 h-6" strokeWidth={1.5} color="#ffc107" />,
+  danger: <XCircle className="w-6 h-6" strokeWidth={1.5} color="#dc3545" />,
+}
 import { DemoNotificationWorker } from './DemoNotificationWorker'
 
 export interface ProvidersProps {
@@ -124,27 +132,35 @@ export function Providers({
                     const content = toastItem.content as ToastContentValue
                     return (
                       <Toast
-                  className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 rounded-2xl sm:rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
+                        className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 rounded-xl sm:rounded-2xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
                         toast={toastItem}
                         variant={content.variant}
                       >
                         <Toast.Content>
-                          <div className="flex items-center gap-2">
-                            <Toast.Indicator className="shrink-0 mt-0.5 sm:mt-0 text-accent w-6 h-6" variant={content.variant} />
-                            <div className="flex flex-col pr-6">
-                              {content.title ? (
-                                <Toast.Title className="text-accent">{content.title}</Toast.Title>
-                              ) : null}
-                              {content.description ? (
-                                <Toast.Description>{content.description}</Toast.Description>
-                              ) : null}
-                               {content.actionProps ? (
-                                <Toast.ActionButton {...content.actionProps}/>
-                              ) : null}
+                          <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+                            <div className="shrink-0 mt-0.5 sm:mt-0">
+                              {variantIcons[content.variant || 'accent']}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                {content.title ? (
+                                  <Toast.Title className="font-medium text-gray-900 dark:text-white text-sm">
+                                    {content.title}
+                                  </Toast.Title>
+                                ) : null}
+                              </div>
                             </div>
                           </div>
+                          {content.description ? (
+                            <Toast.Description className="text-gray-500 pt-2 dark:text-gray-400 text-sm">
+                              {content.description}
+                            </Toast.Description>
+                          ) : null}{' '}
                         </Toast.Content>
-                        <Toast.CloseButton className="absolute top-1/2 right-2 -translate-y-1/2 border-none bg-transparent opacity-100 [&>svg]:size-6" />
+                        {content.actionProps ? (
+                          <Toast.ActionButton {...{...content.actionProps, size:"sm"}} className="self-center"/>
+                        ) : null}
+                        <Toast.CloseButton  className="absolute top-1 right-1 border-none p-1 bg-transparent opacity-100 [&>svg]:size-4" />
                       </Toast>
                     )
                   }}
