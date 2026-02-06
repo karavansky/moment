@@ -403,6 +403,107 @@
       "errorMessage": "Por favor, inténtalo de nuevo o contáctanos directamente."
     }
   },
+    "sidebar": {
+    "menu": {
+      "home": "Inicio",
+      "schedule": "Agenda",
+      "map": "Mapa"
+    },
+    "crm": {
+      "title": "CRM",
+      "clients": "Clientes",
+      "staff": "Personal",
+      "transport": "Vehículo",
+      "services": "Servicios"
+    },
+    "reports": {
+      "title": "Informes",
+      "clients": "Clientes",
+      "staff": "Personal",
+      "logbook": "Diario de trabajo"
+    },
+    "settings": {
+      "title": "Configuración",
+      "personal": "Personal",
+      "organisation": "Organización",
+      "users": "Usuarios",
+      "notifications": "Notificaciones"
+    }
+  },
+  "dienstplan": {
+    "title": "Agenda",
+    "loading": "Cargando datos...",
+    "month": "Mes",
+    "week": "Semana",
+    "totalAppointments": "Citas totales:",
+    "new": "Nueva",
+    "refresh": "Actualizar",
+    "noAppointments": "No hay citas",
+    "noAppointmentsHint": "Comience creando una nueva cita",
+    "calendar": {
+      "noAppointmentsToDisplay": "No hay citas para mostrar",
+      "weekdaysFull": ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"],
+      "weekdaysShort": ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"],
+      "months": ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+    }
+  },
+  "map": {
+    "loading": "Cargando...",
+    "title": "Citas",
+    "noAppointments": "No hay citas programadas para hoy",
+    "time": "Hora:",
+    "duration": "Duración:",
+    "min": "min.",
+    "current": "Actual:"
+  },
+  "appointment": {
+    "edit": {
+      "viewTitle": "Ver cita",
+      "editTitle": "Editar cita",
+      "newTitle": "Nueva cita",
+      "createdOn": "Creado el",
+      "date": "Fecha",
+      "dateInPast": "La fecha no puede ser en el pasado",
+      "fixedTime": "Hora fija",
+      "duration": "Duración (minutos)",
+      "durationHint": "Tiempo asignado para la cita.",
+      "driveTime": "Tiempo de conducción (minutos)",
+      "driveTimeHint": "Tiempo estimado de conducción a la siguiente cita",
+      "endTime": "Hora de finalización:",
+      "min": "min",
+      "delete": "Eliminar",
+      "save": "Guardar",
+      "create": "Crear",
+      "confirmDelete": "¿Realmente desea eliminar esta cita?",
+      "validation": {
+        "clientRequired": "Por favor, seleccione un cliente",
+        "workerRequired": "Por favor, seleccione al menos un miembro del personal",
+        "durationRequired": "La duración debe ser mayor que 0"
+      }
+    },
+    "report": {
+      "title": "Informe de Cita",
+      "client": "Cliente",
+      "staff": "Personal",
+      "time": "Hora",
+      "duration": "Duración",
+      "min": "min.",
+      "services": "Servicios",
+      "report": "Informe",
+      "notesPlaceholder": "Ingrese aquí sus notas para la cita...",
+      "photos": "Fotos",
+      "addPhoto": "Añadir foto",
+      "convertingHeic": "Convirtiendo HEIC...",
+      "compressingImage": "Comprimiendo imagen...",
+      "uploading": "Subiendo...",
+      "descriptionPlaceholder": "Descripción...",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "unknownError": "Error desconocido",
+      "uploadError": "Error al subir:",
+      "saveError": "Error al guardar el informe"
+    }
+  },
   "sla": {
     "hero": {
       "title": "Soporte que comprende tus desafíos",

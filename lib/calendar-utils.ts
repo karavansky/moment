@@ -76,7 +76,7 @@ export const isSameDate = (date1: Date, date2: Date): boolean => {
 
 // Основная функция для генерации календаря из appointments
 // Аналог функции makeData из DienstplanView.swift
-export const generateCalendarWeeks = (appointments: Appointment[]): CalendarWeek[] => {
+export const generateCalendarWeeks = (appointments: Appointment[], monthNames?: string[]): CalendarWeek[] => {
   const result: CalendarWeek[] = [];
 
   if (appointments.length === 0) {
@@ -123,7 +123,9 @@ export const generateCalendarWeeks = (appointments: Appointment[]): CalendarWeek
     isNewWeek = true;
 
     const currentMonthDate = addMonths(startDate, monthOffset);
-    const monthName = getMonthName(currentMonthDate);
+    const monthName = monthNames
+      ? monthNames[currentMonthDate.getMonth()]
+      : getMonthName(currentMonthDate);
     const daysInMonth = getDaysInMonth(currentMonthDate);
 
    // console.log('Processing month:', monthName, 'days:', daysInMonth);

@@ -7,6 +7,8 @@ import L from 'leaflet'
 import ReactDOMServer from 'react-dom/server'
 import { LogoMoment } from '@/components/icons'
 import { useScheduling, AppointmentWithClient } from '@/contexts/SchedulingContext'
+import { useLanguage } from '@/hooks/useLanguage'
+import { useTranslation } from '@/components/Providers'
 
 // Компонент таймера для отображения времени с openedAt
 const ElapsedTimer = ({ openedAt }: { openedAt: Date }) => {
@@ -32,15 +34,14 @@ const ElapsedTimer = ({ openedAt }: { openedAt: Date }) => {
   )
 }
 
-// Форматтеры дат
-const dateFormatter = new Intl.DateTimeFormat('de-DE', {
+// Фабрики форматтеров с поддержкой локали приложения
+const createDateFormatter = (locale: string) => new Intl.DateTimeFormat(locale, {
   weekday: 'long',
   day: 'numeric',
   month: 'long',
-  year: 'numeric',
 })
 
-const timeFormatter = new Intl.DateTimeFormat('de-DE', {
+const createTimeFormatter = (locale: string) => new Intl.DateTimeFormat(locale, {
   hour: '2-digit',
   minute: '2-digit',
 })
@@ -63,6 +64,9 @@ const createCustomIcon = () => {
 const AppointmentMarker = ({ apt, icon, isSelected }: { apt: AppointmentWithClient; icon: L.DivIcon; isSelected?: boolean }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(isSelected ?? false)
   const markerRef = useRef<L.Marker>(null)
+  const lang = useLanguage()
+  const { t } = useTranslation()
+  const timeFormatter = useMemo(() => createTimeFormatter(lang), [lang])
 
   useEffect(() => {
     if (isSelected && markerRef.current) {
@@ -98,18 +102,18 @@ const AppointmentMarker = ({ apt, icon, isSelected }: { apt: AppointmentWithClie
           </div>
           <div className="border-t border-gray-200 pt-2 mt-2">
             <div className="flex justify-between">
-              <span className="text-gray-500">Zeit:</span>
+              <span className="text-gray-500">{t('map.time')}</span>
               <span className="font-medium">
                 {timeFormatter.format(new Date(apt.startTime))} - {timeFormatter.format(new Date(apt.endTime))}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Dauer:</span>
-              <span>{apt.duration} Min.</span>
+              <span className="text-gray-500">{t('map.duration')}</span>
+              <span>{apt.duration} {t('map.min')}</span>
             </div>
             {apt.isOpen && apt.openedAt && (
               <div className="flex justify-between">
-                <span className="text-gray-500">Current:</span>
+                <span className="text-gray-500">{t('map.current')}</span>
                 <ElapsedTimer openedAt={apt.openedAt} />
               </div>
             )}
@@ -150,8 +154,11 @@ interface AppointmentsMapProps {
 
 function AppointmentsMap({ slug }: AppointmentsMapProps) {
   const { todayAppointments, isLoading } = useScheduling()
+  const lang = useLanguage()
+  const { t } = useTranslation()
   const customIcon = useRef(createCustomIcon())
-  
+  const dateFormatter = useMemo(() => createDateFormatter(lang), [lang])
+
   // Центр Германии как дефолтный центр
   const defaultCenter: [number, number] = [51.1657, 10.4515]
 
@@ -169,7 +176,7 @@ function AppointmentsMap({ slug }: AppointmentsMapProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-default-500">Laden...</div>
+        <div className="text-default-500">{t('map.loading')}</div>
       </div>
     )
   }
@@ -178,7 +185,7 @@ function AppointmentsMap({ slug }: AppointmentsMapProps) {
     <div className="flex flex-col h-full p-4 gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">
-          Termine heute ({todayAppointments.length})
+          {t('map.title')} ({todayAppointments.length})
         </h1>
         <span className="text-default-500">
           {dateFormatter.format(new Date())}
@@ -203,7 +210,7 @@ function AppointmentsMap({ slug }: AppointmentsMapProps) {
 
       {todayAppointments.length === 0 && (
         <div className="text-center text-default-500 py-8">
-          Keine Termine für heute geplant
+          {t('map.noAppointments')}
         </div>
       )}
     </div>

@@ -403,6 +403,128 @@
       "errorMessage": "Bitte versuchen Sie es erneut oder kontaktieren Sie uns direkt."
     }
   },
+  "sidebar": {
+    "menu": {
+      "home": "Startseite",
+      "schedule": "Terminplan",
+      "map": "Karte"
+    },
+    "crm": {
+      "title": "CRM",
+      "clients": "Klienten",
+      "staff": "Mitarbeiter",
+      "transport": "Fahrzeug",
+      "services": "Leistungen"
+    },
+    "reports": {
+      "title": "Berichte",
+      "clients": "Klienten",
+      "staff": "Mitarbeiter",
+      "logbook": "Einsatztagebuch"
+    },
+    "settings": {
+      "title": "Einstellungen",
+      "personal": "Persönlich",
+      "organisation": "Organisation",
+      "users": "Benutzer",
+      "notifications": "Benachrichtigungen"
+    }
+  },
+  "dienstplan": {
+    "title": "Terminplan",
+    "loading": "Daten werden geladen...",
+    "month": "Monat",
+    "week": "Woche",
+    "totalAppointments": "Termine gesamt:",
+    "new": "Neu",
+    "refresh": "Aktualisieren",
+    "noAppointments": "Keine Termine",
+    "noAppointmentsHint": "Erstellen Sie einen neuen Termin",
+    "calendar": {
+      "noAppointmentsToDisplay": "Keine Termine zur Anzeige",
+      "weekdaysFull": [
+        "Montag",
+        "Dienstag",
+        "Mittwoch",
+        "Donnerstag",
+        "Freitag",
+        "Samstag",
+        "Sonntag"
+      ],
+      "weekdaysShort": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
+      "months": [
+        "Januar",
+        "Februar",
+        "März",
+        "April",
+        "Mai",
+        "Juni",
+        "Juli",
+        "August",
+        "September",
+        "Oktober",
+        "November",
+        "Dezember"
+      ]
+    }
+  },
+  "appointment": {
+    "edit": {
+      "viewTitle": "Termin ansehen",
+      "editTitle": "Termin bearbeiten",
+      "newTitle": "Neuer Termin",
+      "createdOn": "Erstellt am",
+      "date": "Datum",
+      "dateInPast": "Das Datum darf nicht in der Vergangenheit liegen",
+      "fixedTime": "Feste Uhrzeit",
+      "duration": "Dauer (Minuten)",
+      "durationHint": "Für den Termin eingeplante Zeit.",
+      "driveTime": "Fahrzeit (Minuten)",
+      "driveTimeHint": "Geschätzte Fahrzeit zum nächsten Termin",
+      "endTime": "Endzeit:",
+      "min": "min",
+      "delete": "Löschen",
+      "save": "Speichern",
+      "create": "Erstellen",
+      "confirmDelete": "Möchten Sie diesen Termin wirklich löschen?",
+      "validation": {
+        "clientRequired": "Bitte wählen Sie einen Klienten aus",
+        "workerRequired": "Bitte wählen Sie mindestens einen Mitarbeiter aus",
+        "durationRequired": "Die Dauer muss größer als 0 sein"
+      }
+    },
+    "report": {
+      "title": "Terminbericht",
+      "client": "Klient",
+      "staff": "Mitarbeiter",
+      "time": "Uhrzeit",
+      "duration": "Dauer",
+      "min": "Min.",
+      "services": "Leistungen",
+      "report": "Bericht",
+      "notesPlaceholder": "Geben Sie hier Ihre Notizen zum Termin ein...",
+      "photos": "Fotos",
+      "addPhoto": "Foto hinzufügen",
+      "convertingHeic": "HEIC wird konvertiert...",
+      "compressingImage": "Bild wird komprimiert...",
+      "uploading": "Wird hochgeladen...",
+      "descriptionPlaceholder": "Beschreibung...",
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "unknownError": "Unbekannter Fehler",
+      "uploadError": "Fehler beim Hochladen:",
+      "saveError": "Fehler beim Speichern des Berichts"
+    }
+  },
+  "map": {
+    "loading": "Wird geladen...",
+    "title": "Termine",
+    "noAppointments": "Keine Termine für heute geplant",
+    "time": "Uhrzeit:",
+    "duration": "Dauer:",
+    "min": "min.",
+    "current": "Aktuell:"
+  },
   "sla": {
     "hero": {
       "title": "Support, der Ihre Herausforderungen versteht",

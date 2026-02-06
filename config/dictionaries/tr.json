@@ -403,6 +403,107 @@
       "errorMessage": "Lütfen tekrar deneyin veya bizimle doğrudan iletişime geçin."
     }
   },
+    "sidebar": {
+    "menu": {
+      "home": "Ana Sayfa",
+      "schedule": "Program",
+      "map": "Harita"
+    },
+    "crm": {
+      "title": "CRM",
+      "clients": "Müşteriler",
+      "staff": "Personel",
+      "transport": "Araç",
+      "services": "Hizmetler"
+    },
+    "reports": {
+      "title": "Raporlar",
+      "clients": "Müşteriler",
+      "staff": "Personel",
+      "logbook": "İş Günlüğü"
+    },
+    "settings": {
+      "title": "Ayarlar",
+      "personal": "Kişisel",
+      "organisation": "Organizasyon",
+      "users": "Kullanıcılar",
+      "notifications": "Bildirimler"
+    }
+  },
+  "dienstplan": {
+    "title": "Program",
+    "loading": "Veri yükleniyor...",
+    "month": "Ay",
+    "week": "Hafta",
+    "totalAppointments": "Toplam randevu:",
+    "new": "Yeni",
+    "refresh": "Yenile",
+    "noAppointments": "Randevu yok",
+    "noAppointmentsHint": "Yeni bir randevu oluşturarak başlayın",
+    "calendar": {
+      "noAppointmentsToDisplay": "Gösterilecek randevu yok",
+      "weekdaysFull": ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"],
+      "weekdaysShort": ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"],
+      "months": ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"]
+    }
+  },
+  "map": {
+    "loading": "Yükleniyor...",
+    "title": "Randevular",
+    "noAppointments": "Bugün için planlanmış randevu yok",
+    "time": "Saat:",
+    "duration": "Süre:",
+    "min": "dk.",
+    "current": "Mevcut:"
+  },
+  "appointment": {
+    "edit": {
+      "viewTitle": "Randevuyu görüntüle",
+      "editTitle": "Randevuyu düzenle",
+      "newTitle": "Yeni randevu",
+      "createdOn": "Oluşturulma tarihi",
+      "date": "Tarih",
+      "dateInPast": "Tarih geçmişte olamaz",
+      "fixedTime": "Sabit saat",
+      "duration": "Süre (dakika)",
+      "durationHint": "Randevu için ayrılan süre.",
+      "driveTime": "Seyahat süresi (dakika)",
+      "driveTimeHint": "Bir sonraki randevuya tahmini seyahat süresi",
+      "endTime": "Bitiş saati:",
+      "min": "dk",
+      "delete": "Sil",
+      "save": "Kaydet",
+      "create": "Oluştur",
+      "confirmDelete": "Bu randevuyu gerçekten silmek istiyor musunuz?",
+      "validation": {
+        "clientRequired": "Lütfen bir müşteri seçin",
+        "workerRequired": "Lütfen en az bir personel seçin",
+        "durationRequired": "Süre 0'dan büyük olmalıdır"
+      }
+    },
+    "report": {
+      "title": "Randevu Raporu",
+      "client": "Müşteri",
+      "staff": "Personel",
+      "time": "Saat",
+      "duration": "Süre",
+      "min": "dk.",
+      "services": "Hizmetler",
+      "report": "Rapor",
+      "notesPlaceholder": "Randevu için notlarınızı buraya girin...",
+      "photos": "Fotoğraflar",
+      "addPhoto": "Fotoğraf ekle",
+      "convertingHeic": "HEIC dönüştürülüyor...",
+      "compressingImage": "Görsel sıkıştırılıyor...",
+      "uploading": "Yükleniyor...",
+      "descriptionPlaceholder": "Açıklama...",
+      "cancel": "İptal",
+      "save": "Kaydet",
+      "unknownError": "Bilinmeyen hata",
+      "uploadError": "Yükleme hatası:",
+      "saveError": "Rapor kaydetme hatası"
+    }
+  },
   "sla": {
     "hero": {
       "title": "Zorluklarınızı Anlayan Destek",

@@ -403,6 +403,107 @@
       "errorMessage": "もう一度お試しいただくか、直接お問い合わせください。"
     }
   },
+    "sidebar": {
+    "menu": {
+      "home": "ホーム",
+      "schedule": "スケジュール",
+      "map": "地図"
+    },
+    "crm": {
+      "title": "CRM",
+      "clients": "クライアント",
+      "staff": "スタッフ",
+      "transport": "車両",
+      "services": "サービス"
+    },
+    "reports": {
+      "title": "レポート",
+      "clients": "クライアント",
+      "staff": "スタッフ",
+      "logbook": "業務日誌"
+    },
+    "settings": {
+      "title": "設定",
+      "personal": "個人",
+      "organisation": "組織",
+      "users": "ユーザー",
+      "notifications": "通知"
+    }
+  },
+  "dienstplan": {
+    "title": "スケジュール",
+    "loading": "データを読み込み中...",
+    "month": "月",
+    "week": "週",
+    "totalAppointments": "総予約数：",
+    "new": "新規",
+    "refresh": "更新",
+    "noAppointments": "予約なし",
+    "noAppointmentsHint": "新しい予約を作成してください",
+    "calendar": {
+      "noAppointmentsToDisplay": "表示する予約がありません",
+      "weekdaysFull": ["月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日"],
+      "weekdaysShort": ["月", "火", "水", "木", "金", "土", "日"],
+      "months": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"]
+    }
+  },
+  "map": {
+    "loading": "読み込み中...",
+    "title": "予約",
+    "noAppointments": "本日の予定はありません",
+    "time": "時間：",
+    "duration": "所要時間：",
+    "min": "分",
+    "current": "現在："
+  },
+  "appointment": {
+    "edit": {
+      "viewTitle": "予約を表示",
+      "editTitle": "予約を編集",
+      "newTitle": "新規予約",
+      "createdOn": "作成日",
+      "date": "日付",
+      "dateInPast": "過去の日付は選択できません",
+      "fixedTime": "固定時間",
+      "duration": "所要時間（分）",
+      "durationHint": "予約に割り当てる時間",
+      "driveTime": "移動時間（分）",
+      "driveTimeHint": "次の予約までの推定移動時間",
+      "endTime": "終了時間：",
+      "min": "分",
+      "delete": "削除",
+      "save": "保存",
+      "create": "作成",
+      "confirmDelete": "この予約を削除してもよろしいですか？",
+      "validation": {
+        "clientRequired": "クライアントを選択してください",
+        "workerRequired": "少なくとも1名のスタッフを選択してください",
+        "durationRequired": "所要時間は0より大きくしてください"
+      }
+    },
+    "report": {
+      "title": "予約レポート",
+      "client": "クライアント",
+      "staff": "スタッフ",
+      "time": "時間",
+      "duration": "所要時間",
+      "min": "分",
+      "services": "サービス",
+      "report": "レポート",
+      "notesPlaceholder": "予約に関するメモを入力してください...",
+      "photos": "写真",
+      "addPhoto": "写真を追加",
+      "convertingHeic": "HEICを変換中...",
+      "compressingImage": "画像を圧縮中...",
+      "uploading": "アップロード中...",
+      "descriptionPlaceholder": "説明...",
+      "cancel": "キャンセル",
+      "save": "保存",
+      "unknownError": "不明なエラー",
+      "uploadError": "アップロードエラー：",
+      "saveError": "レポートの保存エラー"
+    }
+  },
   "sla": {
     "hero": {
       "title": "あなたの課題を理解するサポート",

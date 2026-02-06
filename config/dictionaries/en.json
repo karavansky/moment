@@ -146,19 +146,6 @@
     "privacy": "Privacy Policy",
     "support": "Support"
   },
-  "praesentation": {
-    "intro": "The project is a dashboard for management and monitoring of study data.",
-    "technologiesTitle": "Technologies",
-    "featuresTitle": "Key Features",
-    "authTitle": "Authorization & Security",
-    "mssqlTitle": "MSSQL Module",
-    "deploymentTitle": "Deployment & Operations",
-    "conclusionTitle": "Conclusion",
-    "table": {
-      "columnArea": "Area",
-      "columnTech": "Technology"
-    }
-  },
   "seo": {
     "home": {
       "title": "Moment LBS - Data Analysis and Decision Support Tool for Quail Farming",
@@ -403,6 +390,107 @@
       "errorTitle": "Failed to submit ticket",
       "errorMessage": "Please try again or contact us directly."
     }
+  },
+  "sidebar": {
+    "menu": {
+      "home": "Home",
+      "schedule": "Schedule",
+      "map": "Map"
+    },
+    "crm": {
+      "title": "CRM",
+      "clients": "Clients",
+      "staff": "Staff",
+      "transport": "Vehicle",
+      "services": "Services"
+    },
+    "reports": {
+      "title": "Reports",
+      "clients": "Clients",
+      "staff": "Staff",
+      "logbook": "Logbook"
+    },
+    "settings": {
+      "title": "Settings",
+      "personal": "Personal",
+      "organisation": "Organisation",
+      "users": "Users",
+      "notifications": "Notifications"
+    }
+  },
+  "dienstplan": {
+    "title": "Schedule",
+    "loading": "Loading data...",
+    "month": "Month",
+    "week": "Week",
+    "totalAppointments": "Total appointments:",
+    "new": "New",
+    "refresh": "Refresh",
+    "noAppointments": "No appointments",
+    "noAppointmentsHint": "Start by creating a new appointment",
+    "calendar": {
+      "noAppointmentsToDisplay": "No appointments to display",
+      "weekdaysFull": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      "weekdaysShort": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    }
+  },
+  "appointment": {
+    "edit": {
+      "viewTitle": "View appointment",
+      "editTitle": "Edit appointment",
+      "newTitle": "New appointment",
+      "createdOn": "Created on",
+      "date": "Date",
+      "dateInPast": "The date cannot be in the past",
+      "fixedTime": "Fixed time",
+      "duration": "Duration (minutes)",
+      "durationHint": "Time allocated for the appointment.",
+      "driveTime": "Drive time (minutes)",
+      "driveTimeHint": "Estimated drive time to next appointment",
+      "endTime": "End time:",
+      "min": "min",
+      "delete": "Delete",
+      "save": "Save",
+      "create": "Create",
+      "confirmDelete": "Do you really want to delete this appointment?",
+      "validation": {
+        "clientRequired": "Please select a client",
+        "workerRequired": "Please select at least one staff member",
+        "durationRequired": "Duration must be greater than 0"
+      }
+    },
+    "report": {
+      "title": "Appointment Report",
+      "client": "Client",
+      "staff": "Staff",
+      "time": "Time",
+      "duration": "Duration",
+      "min": "min.",
+      "services": "Services",
+      "report": "Report",
+      "notesPlaceholder": "Enter your notes for the appointment here...",
+      "photos": "Photos",
+      "addPhoto": "Add photo",
+      "convertingHeic": "Converting HEIC...",
+      "compressingImage": "Compressing image...",
+      "uploading": "Uploading...",
+      "descriptionPlaceholder": "Description...",
+      "cancel": "Cancel",
+      "save": "Save",
+      "unknownError": "Unknown error",
+      "uploadError": "Error uploading:",
+      "saveError": "Error saving report"
+    }
+  },
+  "map": {
+    "loading": "Loading...",
+    "title": "Appointments",
+    "noAppointments": "No appointments planned for today",
+    "time": "Time:",
+    "duration": "Duration:",
+    "min": "min.",
+    "current": "Current:"
   },
   "sla": {
     "hero": {

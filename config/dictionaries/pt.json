@@ -403,6 +403,107 @@
       "errorMessage": "Tente novamente ou entre em contato conosco diretamente."
     }
   },
+    "sidebar": {
+    "menu": {
+      "home": "Início",
+      "schedule": "Agenda",
+      "map": "Mapa"
+    },
+    "crm": {
+      "title": "CRM",
+      "clients": "Clientes",
+      "staff": "Equipe",
+      "transport": "Veículo",
+      "services": "Serviços"
+    },
+    "reports": {
+      "title": "Relatórios",
+      "clients": "Clientes",
+      "staff": "Equipe",
+      "logbook": "Diário de bordo"
+    },
+    "settings": {
+      "title": "Configurações",
+      "personal": "Pessoal",
+      "organisation": "Organização",
+      "users": "Utilizadores",
+      "notifications": "Notificações"
+    }
+  },
+  "dienstplan": {
+    "title": "Agenda",
+    "loading": "A carregar dados...",
+    "month": "Mês",
+    "week": "Semana",
+    "totalAppointments": "Total de compromissos:",
+    "new": "Novo",
+    "refresh": "Atualizar",
+    "noAppointments": "Sem compromissos",
+    "noAppointmentsHint": "Comece por criar um novo compromisso",
+    "calendar": {
+      "noAppointmentsToDisplay": "Nenhum compromisso para exibir",
+      "weekdaysFull": ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"],
+      "weekdaysShort": ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
+      "months": ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+    }
+  },
+  "map": {
+    "loading": "A carregar...",
+    "title": "Compromissos",
+    "noAppointments": "Nenhum compromisso planeado para hoje",
+    "time": "Hora:",
+    "duration": "Duração:",
+    "min": "min.",
+    "current": "Atual:"
+  },
+  "appointment": {
+    "edit": {
+      "viewTitle": "Ver compromisso",
+      "editTitle": "Editar compromisso",
+      "newTitle": "Novo compromisso",
+      "createdOn": "Criado em",
+      "date": "Data",
+      "dateInPast": "A data não pode ser no passado",
+      "fixedTime": "Hora fixa",
+      "duration": "Duração (minutos)",
+      "durationHint": "Tempo alocado para o compromisso.",
+      "driveTime": "Tempo de deslocação (minutos)",
+      "driveTimeHint": "Tempo estimado de deslocação para o próximo compromisso",
+      "endTime": "Hora de término:",
+      "min": "min",
+      "delete": "Eliminar",
+      "save": "Guardar",
+      "create": "Criar",
+      "confirmDelete": "Tem a certeza que quer eliminar este compromisso?",
+      "validation": {
+        "clientRequired": "Por favor, selecione um cliente",
+        "workerRequired": "Por favor, selecione pelo menos um membro da equipa",
+        "durationRequired": "A duração deve ser maior que 0"
+      }
+    },
+    "report": {
+      "title": "Relatório de Compromisso",
+      "client": "Cliente",
+      "staff": "Equipe",
+      "time": "Hora",
+      "duration": "Duração",
+      "min": "min.",
+      "services": "Serviços",
+      "report": "Relatório",
+      "notesPlaceholder": "Introduza as suas notas para o compromisso aqui...",
+      "photos": "Fotos",
+      "addPhoto": "Adicionar foto",
+      "convertingHeic": "A converter HEIC...",
+      "compressingImage": "A comprimir imagem...",
+      "uploading": "A carregar...",
+      "descriptionPlaceholder": "Descrição...",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "unknownError": "Erro desconhecido",
+      "uploadError": "Erro ao carregar:",
+      "saveError": "Erro ao guardar o relatório"
+    }
+  },
   "sla": {
     "hero": {
       "title": "Suporte que entende seus desafios",

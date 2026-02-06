@@ -403,6 +403,107 @@
       "errorMessage": "Spróbuj ponownie lub skontaktuj się z nami bezpośrednio."
     }
   },
+    "sidebar": {
+    "menu": {
+      "home": "Strona główna",
+      "schedule": "Harmonogram",
+      "map": "Mapa"
+    },
+    "crm": {
+      "title": "CRM",
+      "clients": "Klienci",
+      "staff": "Personel",
+      "transport": "Pojazd",
+      "services": "Usługi"
+    },
+    "reports": {
+      "title": "Raporty",
+      "clients": "Klienci",
+      "staff": "Personel",
+      "logbook": "Dziennik pracy"
+    },
+    "settings": {
+      "title": "Ustawienia",
+      "personal": "Osobiste",
+      "organisation": "Organizacja",
+      "users": "Użytkownicy",
+      "notifications": "Powiadomienia"
+    }
+  },
+  "dienstplan": {
+    "title": "Harmonogram",
+    "loading": "Ładowanie danych...",
+    "month": "Miesiąc",
+    "week": "Tydzień",
+    "totalAppointments": "Łączna liczba wizyt:",
+    "new": "Nowa",
+    "refresh": "Odśwież",
+    "noAppointments": "Brak wizyt",
+    "noAppointmentsHint": "Rozpocznij od utworzenia nowej wizyty",
+    "calendar": {
+      "noAppointmentsToDisplay": "Brak wizyt do wyświetlenia",
+      "weekdaysFull": ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"],
+      "weekdaysShort": ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"],
+      "months": ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"]
+    }
+  },
+  "map": {
+    "loading": "Ładowanie...",
+    "title": "Wizyty",
+    "noAppointments": "Brak zaplanowanych wizyt na dzisiaj",
+    "time": "Godzina:",
+    "duration": "Czas trwania:",
+    "min": "min.",
+    "current": "Aktualna:"
+  },
+  "appointment": {
+    "edit": {
+      "viewTitle": "Zobacz wizytę",
+      "editTitle": "Edytuj wizytę",
+      "newTitle": "Nowa wizyta",
+      "createdOn": "Utworzono",
+      "date": "Data",
+      "dateInPast": "Data nie może być z przeszłości",
+      "fixedTime": "Stała godzina",
+      "duration": "Czas trwania (minuty)",
+      "durationHint": "Czas przeznaczony na wizytę.",
+      "driveTime": "Czas dojazdu (minuty)",
+      "driveTimeHint": "Szacowany czas dojazdu do następnej wizyty",
+      "endTime": "Godzina zakończenia:",
+      "min": "min",
+      "delete": "Usuń",
+      "save": "Zapisz",
+      "create": "Utwórz",
+      "confirmDelete": "Czy na pewno chcesz usunąć tę wizytę?",
+      "validation": {
+        "clientRequired": "Wybierz klienta",
+        "workerRequired": "Wybierz przynajmniej jednego członka personelu",
+        "durationRequired": "Czas trwania musi być większy niż 0"
+      }
+    },
+    "report": {
+      "title": "Raport wizyty",
+      "client": "Klient",
+      "staff": "Personel",
+      "time": "Godzina",
+      "duration": "Czas trwania",
+      "min": "min.",
+      "services": "Usługi",
+      "report": "Raport",
+      "notesPlaceholder": "Wpisz tutaj swoje notatki dotyczące wizyty...",
+      "photos": "Zdjęcia",
+      "addPhoto": "Dodaj zdjęcie",
+      "convertingHeic": "Konwersja HEIC...",
+      "compressingImage": "Kompresja obrazu...",
+      "uploading": "Przesyłanie...",
+      "descriptionPlaceholder": "Opis...",
+      "cancel": "Anuluj",
+      "save": "Zapisz",
+      "unknownError": "Nieznany błąd",
+      "uploadError": "Błąd przesyłania:",
+      "saveError": "Błąd zapisywania raportu"
+    }
+  },
   "sla": {
     "hero": {
       "title": "Wsparcie, które rozumie Twoje wyzwania",

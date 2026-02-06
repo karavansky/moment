@@ -11,12 +11,14 @@ import WeeklyView from './WeeklyView'
 import AppointmentModal from './AppointmentModal'
 import AppointmentReport from './AppointmentReport'
 import { useLanguage } from '@/hooks/useLanguage'
+import { useTranslation } from '@/components/Providers'
 import FooterDienst from './FooterDienst'
 
 type ViewMode = 'month' | 'week'
 
 function DienstplanView() {
   const lang = useLanguage()
+  const { t } = useTranslation()
   const {
     appointments,
     isLoading,
@@ -30,11 +32,14 @@ function DienstplanView() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isReportModalOpen, setIsReportModalOpen] = useState(false)
 
+  // Названия месяцев из словаря локализации
+  const monthNames = t('dienstplan.calendar.months') as unknown as string[]
+
   // Генерация календарных недель из appointments
   const calendarWeeks = useMemo(() => {
     if (appointments.length === 0) return []
-    return generateCalendarWeeks(appointments)
-  }, [appointments])
+    return generateCalendarWeeks(appointments, monthNames)
+  }, [appointments, monthNames])
 
   // Мемоизируем обработчики для предотвращения ре-рендеров
   const handleSetMonthMode = useCallback(() => {
@@ -152,7 +157,7 @@ function DienstplanView() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <Spinner size="lg" className="mb-4" />
-          <p className="text-default-600">Загрузка данных...</p>
+          <p className="text-default-600">{t('dienstplan.loading')}</p>
         </div>
       </div>
     )
@@ -165,7 +170,7 @@ function DienstplanView() {
         <div className="flex items-center justify-between gap-2 sm:gap-4">
           <div className="flex items-center gap-2">
             <CalendarIcon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-            <h1 className="text-lg sm:text-2xl font-bold text-foreground">Dienstplan</h1>
+            <h1 className="text-lg sm:text-2xl font-bold text-foreground">{t('dienstplan.title')}</h1>
           </div>
           {/* View mode switcher */}
           <div className="flex gap-2">
@@ -177,7 +182,7 @@ function DienstplanView() {
                 className="cursor-pointer"
               >
                 <CalendarIcon className="w-3 h-3 mr-1" />
-                Месяц
+                {t('dienstplan.month')}
               </Chip>
             </button>
             <button onClick={handleSetWeekMode}>
@@ -188,26 +193,26 @@ function DienstplanView() {
                 className="cursor-pointer"
               >
                 <CalendarDays className="w-3 h-3 mr-1" />
-                Неделя
+                {t('dienstplan.week')}
               </Chip>
             </button>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
             {/* Статистика - скрываем на мобильных */}
             <div className="hidden sm:block text-sm text-default-600">
-              Всего назначений: <span className="font-semibold">{appointments.length}</span>
+              {t('dienstplan.totalAppointments')} <span className="font-semibold">{appointments.length}</span>
             </div>
 
             {/* Кнопка добавления */}
             <Button variant="primary" size="sm" onPress={handleAddNew} className="gap-1">
               <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Neu</span>
+              <span className="hidden sm:inline">{t('dienstplan.new')}</span>
             </Button>
 
             {/* Кнопка обновления */}
             <Button variant="tertiary" size="sm" onPress={handleRefresh} className="gap-1">
               <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Обновить</span>
+              <span className="hidden sm:inline">{t('dienstplan.refresh')}</span>
             </Button>
           </div>
         </div>
@@ -220,8 +225,8 @@ function DienstplanView() {
             <Card className="max-w-sm">
               <Card.Content className="p-8 text-center">
                 <CalendarIcon className="mx-auto h-12 w-12 text-default-400 mb-4" />
-                <h3 className="text-base font-medium text-foreground mb-2">Нет назначений</h3>
-                <p className="text-sm text-default-500">Начните с создания нового назначения</p>
+                <h3 className="text-base font-medium text-foreground mb-2">{t('dienstplan.noAppointments')}</h3>
+                <p className="text-sm text-default-500">{t('dienstplan.noAppointmentsHint')}</p>
               </Card.Content>
             </Card>
           </div>

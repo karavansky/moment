@@ -13,6 +13,7 @@ import ClientSelect from './ClientSelect'
 import { usePlatformContext } from '@/contexts/PlatformContext'
 import ServiceSelect from './ServiceSelect'
 import { generateId } from '@/lib/generate-id'
+import { useTranslation } from '@/components/Providers'
 
 interface AppointmentModalProps {
   isOpen: boolean
@@ -32,6 +33,7 @@ export default function AppointmentModal({
   isNewAppointment = false,
 }: AppointmentModalProps) {
   const { isMobile, isReady } = usePlatformContext()
+  const { t } = useTranslation()
 
   const {
     clients,
@@ -189,13 +191,13 @@ export default function AppointmentModal({
     const newErrors: Record<string, string> = {}
 
     if (!formData.clientID) {
-      newErrors.clientID = 'Bitte wählen Sie einen Kunden'
+      newErrors.clientID = t('appointment.edit.validation.clientRequired')
     }
     if (formData.workers.length === 0) {
-      newErrors.workers = 'Bitte wählen Sie mindestens eine Fachkraft'
+      newErrors.workers = t('appointment.edit.validation.workerRequired')
     }
     if (formData.isDuration && formData.duration <= 0) {
-      newErrors.duration = 'Dauer muss größer als 0 sein'
+      newErrors.duration = t('appointment.edit.validation.durationRequired')
     }
 
     setErrors(newErrors)
@@ -239,7 +241,7 @@ export default function AppointmentModal({
 
   // Handle delete
   const handleDelete = () => {
-    if (appointment && confirm('Möchten Sie diesen Termin wirklich löschen?')) {
+    if (appointment && confirm(t('appointment.edit.confirmDelete'))) {
       deleteAppointment(appointment.id)
       handleClose()
     }
@@ -293,11 +295,11 @@ export default function AppointmentModal({
             <Modal.Header>
               <div className="flex flex-col gap-1">
                 <h2 className="text-xl font-bold">
-                  {readOnly ? 'Termin ansehen' : isEditMode ? 'Termin bearbeiten' : 'Neuer Termin'}
+                  {readOnly ? t('appointment.edit.viewTitle') : isEditMode ? t('appointment.edit.editTitle') : t('appointment.edit.newTitle')}
                 </h2>
                 {appointment && (
                   <p className="text-sm text-default-500">
-                    Erstellt am {appointment.date.toLocaleDateString('de-DE')}
+                    {t('appointment.edit.createdOn')} {appointment.date.toLocaleDateString('de-DE')}
                   </p>
                 )}
               </div>
@@ -360,7 +362,7 @@ export default function AppointmentModal({
               {/* Date */}
               <div className="flex items-center justify-between flex-row gap-2 w-full">
                 <TextField isRequired name="date" type="date" isInvalid={isDateInvalid}>
-                  <Label className="text-base font-medium flex items-center gap-2">Datum</Label>
+                  <Label className="text-base font-medium flex items-center gap-2">{t('appointment.edit.date')}</Label>
                   <DatePicker
                     value={parseDate(
                       `${formData.date.getFullYear()}-${String(formData.date.getMonth() + 1).padStart(2, '0')}-${String(formData.date.getDate()).padStart(2, '0')}`
@@ -418,7 +420,7 @@ export default function AppointmentModal({
                     }}
                   />
                   <FieldError>
-                    {isDateInvalid ? 'Das Datum darf nicht in der Vergangenheit liegen' : null}
+                    {isDateInvalid ? t('appointment.edit.dateInPast') : null}
                   </FieldError>
                 </TextField>
                 {/* Time picker with Switch overlay trick for iOS */}
@@ -454,7 +456,7 @@ export default function AppointmentModal({
                     }}
                     className={formData.isFixedTime ? '' : 'pointer-events-none'}
                   >
-                    <Label className="text-sm">Fest Zeit</Label>
+                    <Label className="text-sm">{t('appointment.edit.fixedTime')}</Label>
                     <Switch.Control>
                       <Switch.Thumb />
                     </Switch.Control>
@@ -499,9 +501,9 @@ export default function AppointmentModal({
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-default-500" />
                     <div>
-                      <p className="text-sm font-medium">Zeitdauer (Minuten)</p>
+                      <p className="text-sm font-medium">{t('appointment.edit.duration')}</p>
                       <p className="text-xs text-default-500">
-                        So viel Zeit ist für das Treffen vorgesehen.
+                        {t('appointment.edit.durationHint')}
                       </p>
                     </div>
                   </div>
@@ -546,9 +548,9 @@ export default function AppointmentModal({
                   <div className="flex items-center gap-2">
                     <Car className="w-5 h-5" />
                     <div>
-                      <p className="text-sm font-medium">Fahrzeit (Minuten)</p>
+                      <p className="text-sm font-medium">{t('appointment.edit.driveTime')}</p>
                       <p className="text-xs text-default-500">
-                        Geschätzte Fahrzeit zum nächsten Termin
+                        {t('appointment.edit.driveTimeHint')}
                       </p>
                     </div>
                   </div>
@@ -579,9 +581,9 @@ export default function AppointmentModal({
                 <div className="flex items-center gap-2 p-3 bg-accent-50 rounded-lg">
                   <Clock className="w-4 h-4 text-accent" />
                   <div className="text-sm">
-                    <span className="font-medium">Endzeit: </span>
+                    <span className="font-medium">{t('appointment.edit.endTime')} </span>
                     <span className="text-accent font-semibold">{formatTime(endTime)}</span>
-                    <span className="text-xs text-default-500 ml-2">({formData.duration} Min)</span>
+                    <span className="text-xs text-default-500 ml-2">({formData.duration} {t('appointment.edit.min')})</span>
                   </div>
                 </div>
               )}
@@ -593,13 +595,13 @@ export default function AppointmentModal({
                   {isEditMode && !readOnly && (
                     <Button variant="danger" onPress={handleDelete} size='sm' className="gap-2 ">
                       <Trash2 className="w-4 h-4" />
-                      Löschen
+                      {t('appointment.edit.delete')}
                     </Button>
                   )}
                   {!readOnly && (
                     <Button variant="primary" onPress={handleSave} size='sm' className="gap-2 ml-auto">
                       <Save className="w-4 h-4" />
-                      {isEditMode ? 'Speichern' : 'Erstellen'}
+                      {isEditMode ? t('appointment.edit.save') : t('appointment.edit.create')}
                     </Button>
                   )}
               </div>

@@ -122,7 +122,7 @@ export function NotificationDropdown({
               sortedNotifications.map(notification => (
                 <div
                   key={notification.id}
-                  className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 rounded-2xl sm:rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3 rounded-2xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
                 >
                   {/* Top row: Icon + Content */}
                   <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">

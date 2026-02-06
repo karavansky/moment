@@ -27,6 +27,7 @@ import { LogoMoment } from './icons'
 import { useSidebar } from '@/contexts/SidebarContext'
 import { SimpleTooltip } from './SimpleTooltip'
 import { useLanguage } from '@/hooks/useLanguage'
+import { useTranslation } from '@/components/Providers'
 
 interface MenuItem {
   icon: React.ElementType
@@ -43,36 +44,37 @@ interface MenuSection {
 }
 
 // Вынесли данные за пределы компонента для предотвращения пересоздания
+// label и title хранят ключи локализации, которые разрешаются через t() в компонентах
 const menuItems: MenuItem[] = [
-  { icon: Home, label: 'Home', href: '/' },
-  { icon: Calendar1, label: 'Dienstplan', href: '/dienstplan' },
-  { icon: Map, label: 'Karte', href: '/map' },
+  { icon: Home, label: 'sidebar.menu.home', href: '/' },
+  { icon: Calendar1, label: 'sidebar.menu.schedule', href: '/dienstplan' },
+  { icon: Map, label: 'sidebar.menu.map', href: '/map' },
 ]
 
 const crmSubItems: MenuItem[] = [
-  { icon: UserStar, label: 'Kunden', href: '/clients' },
-  { icon: Users, label: 'Fachkräfte', href: '/staff' },
-  { icon: Van, label: 'Fahrzeug', href: '/transport' },
-  { icon: HandHeart, label: 'Dienstleistungen', href: '/services' },
+  { icon: UserStar, label: 'sidebar.crm.clients', href: '/clients' },
+  { icon: Users, label: 'sidebar.crm.staff', href: '/staff' },
+  { icon: Van, label: 'sidebar.crm.transport', href: '/transport' },
+  { icon: HandHeart, label: 'sidebar.crm.services', href: '/services' },
 ]
 
 const reportsItems: MenuItem[] = [
-  { icon: ClipboardPlus, label: 'Kunden', href: '/reports/clients' },
-  { icon: ClipboardMinus, label: 'Fachkräfte', href: '/reports/staff' },
-  { icon: BookOpen, label: 'Fahrtenbuch', href: '/reports/transport' },
+  { icon: ClipboardPlus, label: 'sidebar.reports.clients', href: '/reports/clients' },
+  { icon: ClipboardMinus, label: 'sidebar.reports.staff', href: '/reports/staff' },
+  { icon: BookOpen, label: 'sidebar.reports.logbook', href: '/reports/transport' },
 ]
 
 const settingsItems: MenuItem[] = [
-  { icon: UserCog, label: 'Personal', href: '/settings/personal' },
-  { icon: Building2, label: 'Organisation', href: '/settings/organisation' },
-  { icon: ShieldCheck, label: 'Users', href: '/settings/users' },
-  { icon: Bell, label: 'Notifications', href: '/notifications' },
+  { icon: UserCog, label: 'sidebar.settings.personal', href: '/settings/personal' },
+  { icon: Building2, label: 'sidebar.settings.organisation', href: '/settings/organisation' },
+  { icon: ShieldCheck, label: 'sidebar.settings.users', href: '/settings/users' },
+  { icon: Bell, label: 'sidebar.settings.notifications', href: '/notifications' },
 ]
 
 const menuSections: MenuSection[] = [
-  { title: 'CRM', items: crmSubItems, activeColor: 'bg-success/10 text-success' },
-  { title: 'Bericht', items: reportsItems, activeColor: 'bg-primary/10 text-primary' },
-  { title: 'Settings', items: settingsItems, activeColor: 'bg-primary/10 text-primary' },
+  { title: 'sidebar.crm.title', items: crmSubItems, activeColor: 'bg-success/10 text-success' },
+  { title: 'sidebar.reports.title', items: reportsItems, activeColor: 'bg-primary/10 text-primary' },
+  { title: 'sidebar.settings.title', items: settingsItems, activeColor: 'bg-primary/10 text-primary' },
 ]
 
 // Мемоизированный компонент для элементов меню
@@ -92,12 +94,14 @@ const MenuItemComponent = memo(({
   lang: string
 }) => {
   const Icon = item.icon
+  const { t } = useTranslation()
+  const label = t(item.label)
   // Добавляем языковой префикс к href
   const localizedHref = item.href === '/' ? `/${lang}` : `/${lang}${item.href}`
 
   return (
     <SimpleTooltip
-      content={item.label}
+      content={label}
       placement="right"
       isDisabled={isExpanded}
       delay={100}
@@ -111,7 +115,7 @@ const MenuItemComponent = memo(({
         }`}
       >
         <Icon className="sidebar-menu-icon w-5 h-5 mr-3" />
-        {isExpanded && <span className="sidebar-label">{item.label}</span>}
+        {isExpanded && <span className="sidebar-label">{label}</span>}
       </Link>
     </SimpleTooltip>
   )
@@ -133,10 +137,11 @@ const MenuSectionComponent = memo(({
   isExpanded?: boolean
   lang: string
 }) => {
+  const { t } = useTranslation()
   return (
     <div className="mt-6">
       <div className="section-header px-3 py-2 text-xs font-semibold text-default-500 uppercase tracking-wider">
-        {section.title}
+        {t(section.title)}
       </div>
       <Separator className="section-separator mb-6" />
       {section.items.map(item => (

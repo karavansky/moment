@@ -3,9 +3,9 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { CalendarWeek, isSameDate } from '@/lib/calendar-utils'
 import WeekView from './WeekView'
-import { useLanguage } from '@/hooks/useLanguage'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { usePlatformContext } from '@/contexts/PlatformContext'
+import { useTranslation } from '@/components/Providers'
 import { CalendarDragProvider } from '@/contexts/CalendarDragContext'
 import type { Appointment } from '@/types/scheduling'
 
@@ -18,36 +18,6 @@ interface CalendarViewProps {
   onDayPress?: (date: Date) => void
   onEditAppointment?: (appointment: Appointment) => void
   onAddReport?: (appointment: Appointment) => void
-}
-
-// Функция для получения полных названий дней недели на основе локали
-const getWeekdayFullNames = (locale: string): string[] => {
-  const baseDate = new Date(2024, 0, 1) // Понедельник, 1 января 2024
-  const names: string[] = []
-
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(baseDate)
-    date.setDate(baseDate.getDate() + i)
-    const fullName = date.toLocaleDateString(locale, { weekday: 'long' })
-    names.push(fullName.charAt(0).toUpperCase() + fullName.slice(1))
-  }
-
-  return names
-}
-
-// Функция для получения коротких названий дней недели на основе локали
-const getWeekdayShortNames = (locale: string): string[] => {
-  const baseDate = new Date(2024, 0, 1) // Понедельник, 1 января 2024
-  const names: string[] = []
-
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(baseDate)
-    date.setDate(baseDate.getDate() + i)
-    const shortName = date.toLocaleDateString(locale, { weekday: 'short' })
-    names.push(shortName.charAt(0).toUpperCase() + shortName.slice(1))
-  }
-
-  return names
 }
 
 interface VirtualItem {
@@ -92,7 +62,7 @@ function CalendarView({
   onEditAppointment,
   onAddReport,
 }: CalendarViewProps) {
-  const lang = useLanguage()
+  const { t } = useTranslation()
   const { isMobile } = usePlatformContext()
   const isCompact = useMediaQuery('(max-width: 640px)')
   const isMobileLayout = isMobile || isCompact
@@ -100,9 +70,9 @@ function CalendarView({
   const MIN_WEEK_HEIGHT = isMobileLayout ? 60 : 104
   const HEADER_HEIGHT = isMobileLayout ? 38 : 46
   const DAY_HEADER_HEIGHT_DESKTOP = 30
-  // Генерируем названия дней недели на основе текущей локали
-  const WEEKDAY_HEADERS_FULL = useMemo(() => getWeekdayFullNames(lang), [lang])
-  const WEEKDAY_HEADERS_SHORT = useMemo(() => getWeekdayShortNames(lang), [lang])
+  // Названия дней недели из словаря локализации (не зависят от локали браузера)
+  const WEEKDAY_HEADERS_FULL = t('dienstplan.calendar.weekdaysFull') as unknown as string[]
+  const WEEKDAY_HEADERS_SHORT = t('dienstplan.calendar.weekdaysShort') as unknown as string[]
   
   // Pre-calculate positions for all weeks
   const { items, totalHeight } = useMemo(() => {
@@ -310,7 +280,7 @@ function CalendarView({
       {/* Недели (Custom Virtualized List) */}
       <div className="flex-1 min-h-0 relative" ref={containerRef}>
         {weeks.length === 0 ? (
-          <div className="p-8 text-center text-default-500">Нет назначений для отображения</div>
+          <div className="p-8 text-center text-default-500">{t('dienstplan.calendar.noAppointmentsToDisplay')}</div>
         ) : (
           <div
             ref={scrollContainerRef}

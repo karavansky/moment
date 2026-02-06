@@ -403,6 +403,107 @@
       "errorMessage": "Silakan coba lagi atau hubungi kami secara langsung."
     }
   },
+  "sidebar": {
+    "menu": {
+      "home": "Beranda",
+      "schedule": "Jadwal",
+      "map": "Peta"
+    },
+    "crm": {
+      "title": "CRM",
+      "clients": "Klien",
+      "staff": "Staf",
+      "transport": "Kendaraan",
+      "services": "Layanan"
+    },
+    "reports": {
+      "title": "Laporan",
+      "clients": "Klien",
+      "staff": "Staf",
+      "logbook": "Buku Catatan"
+    },
+    "settings": {
+      "title": "Pengaturan",
+      "personal": "Pribadi",
+      "organisation": "Organisasi",
+      "users": "Pengguna",
+      "notifications": "Notifikasi"
+    }
+  },
+  "dienstplan": {
+    "title": "Jadwal",
+    "loading": "Memuat data...",
+    "month": "Bulan",
+    "week": "Minggu",
+    "totalAppointments": "Total janji temu:",
+    "new": "Baru",
+    "refresh": "Muat Ulang",
+    "noAppointments": "Tidak ada janji temu",
+    "noAppointmentsHint": "Mulai dengan membuat janji temu baru",
+    "calendar": {
+      "noAppointmentsToDisplay": "Tidak ada janji temu untuk ditampilkan",
+      "weekdaysFull": ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"],
+      "weekdaysShort": ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"],
+      "months": ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
+    }
+  },
+  "map": {
+    "loading": "Memuat...",
+    "title": "Janji Temu",
+    "noAppointments": "Tidak ada janji temu yang direncanakan untuk hari ini",
+    "time": "Waktu:",
+    "duration": "Durasi:",
+    "min": "mnt.",
+    "current": "Saat ini:"
+  },
+  "appointment": {
+    "edit": {
+      "viewTitle": "Lihat janji temu",
+      "editTitle": "Edit janji temu",
+      "newTitle": "Janji temu baru",
+      "createdOn": "Dibuat pada",
+      "date": "Tanggal",
+      "dateInPast": "Tanggal tidak boleh di masa lalu",
+      "fixedTime": "Waktu tetap",
+      "duration": "Durasi (menit)",
+      "durationHint": "Waktu yang dialokasikan untuk janji temu.",
+      "driveTime": "Waktu perjalanan (menit)",
+      "driveTimeHint": "Perkiraan waktu perjalanan ke janji temu berikutnya",
+      "endTime": "Waktu selesai:",
+      "min": "mnt",
+      "delete": "Hapus",
+      "save": "Simpan",
+      "create": "Buat",
+      "confirmDelete": "Apakah Anda benar-benar ingin menghapus janji temu ini?",
+      "validation": {
+        "clientRequired": "Harap pilih klien",
+        "workerRequired": "Harap pilih setidaknya satu anggota staf",
+        "durationRequired": "Durasi harus lebih besar dari 0"
+      }
+    },
+    "report": {
+      "title": "Laporan Janji Temu",
+      "client": "Klien",
+      "staff": "Staf",
+      "time": "Waktu",
+      "duration": "Durasi",
+      "min": "mnt.",
+      "services": "Layanan",
+      "report": "Laporan",
+      "notesPlaceholder": "Masukkan catatan Anda untuk janji temu di sini...",
+      "photos": "Foto",
+      "addPhoto": "Tambahkan foto",
+      "convertingHeic": "Mengonversi HEIC...",
+      "compressingImage": "Mengompresi gambar...",
+      "uploading": "Mengunggah...",
+      "descriptionPlaceholder": "Deskripsi...",
+      "cancel": "Batal",
+      "save": "Simpan",
+      "unknownError": "Kesalahan tidak diketahui",
+      "uploadError": "Kesalahan saat mengunggah:",
+      "saveError": "Kesalahan saat menyimpan laporan"
+    }
+  },
   "sla": {
     "hero": {
       "title": "Dukungan yang Memahami Tantangan Anda",

@@ -6,6 +6,7 @@ import { Save, Plus, X, Upload, FileText, Image as ImageIcon, Loader2 } from 'lu
 import { formatTime } from '@/lib/calendar-utils'
 import imageCompression from 'browser-image-compression'
 import { generateId } from '@/lib/generate-id'
+import { useTranslation } from '@/components/Providers'
 
 interface PhotoUrlContext {
   firmaID: string
@@ -41,6 +42,7 @@ export default function AppointmentReport({
   appointment,
 }: AppointmentReportProps) {
   const { updateAppointment, user } = useScheduling()
+  const { t } = useTranslation()
   const [reportNote, setReportNote] = useState('')
   const [photos, setPhotos] = useState<Photo[]>([])
   const [isUploading, setIsUploading] = useState(false)
@@ -220,8 +222,8 @@ export default function AppointmentReport({
         console.error('Error keys:', Object.keys(error))
         console.error('Error own props:', Object.getOwnPropertyNames(error))
       }
-      const errorMessage = error instanceof Error ? error.message : 'Unbekannter Fehler'
-      alert(`Fehler beim Hochladen: ${errorMessage}`)
+      const errorMessage = error instanceof Error ? error.message : t('appointment.report.unknownError')
+      alert(`${t('appointment.report.uploadError')} ${errorMessage}`)
     } finally {
       setIsUploading(false)
       setUploadStage('idle')
@@ -289,7 +291,7 @@ export default function AppointmentReport({
       onClose()
     } catch (error) {
       console.error('Error saving report:', error)
-      alert('Fehler beim Speichern des Berichts')
+      alert(t('appointment.report.saveError'))
     }
   }
 
@@ -313,20 +315,20 @@ export default function AppointmentReport({
               <Modal.CloseTrigger />
 
               <Modal.Header>
-                <h2 className="text-xl font-bold">Termin Bericht</h2>
+                <h2 className="text-xl font-bold">{t('appointment.report.title')}</h2>
               </Modal.Header>
 
               <Modal.Body className="gap-6">
                 {/* Appointment Details (Read-only) */}
                 <div className="grid grid-cols-2 gap-4 p-4 bg-default-50 rounded-lg">
                   <div>
-                    <p className="text-xs text-default-500 uppercase font-semibold">Kunde</p>
+                    <p className="text-xs text-default-500 uppercase font-semibold">{t('appointment.report.client')}</p>
                     <p className="font-medium">
                       {appointment.client?.name} {appointment.client?.surname}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-default-500 uppercase font-semibold">Mitarbeiter</p>
+                    <p className="text-xs text-default-500 uppercase font-semibold">{t('appointment.report.staff')}</p>
                     <div className="flex flex-wrap gap-1">
                       {appointment.worker.map(w => (
                         <span
@@ -339,18 +341,18 @@ export default function AppointmentReport({
                     </div>
                   </div>
                   <div>
-                    <p className="text-xs text-default-500 uppercase font-semibold">Zeit</p>
+                    <p className="text-xs text-default-500 uppercase font-semibold">{t('appointment.report.time')}</p>
                     <p className="font-medium">
                       {appointment.date.toLocaleDateString('de-DE')} | {formatTime(startTime)} -{' '}
                       {formatTime(endTime)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-default-500 uppercase font-semibold">Dauer</p>
-                    <p className="font-medium">{appointment.duration} Min.</p>
+                    <p className="text-xs text-default-500 uppercase font-semibold">{t('appointment.report.duration')}</p>
+                    <p className="font-medium">{appointment.duration} {t('appointment.report.min')}</p>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-xs text-default-500 uppercase font-semibold">Leistungen</p>
+                    <p className="text-xs text-default-500 uppercase font-semibold">{t('appointment.report.services')}</p>
                     <ul className="list-disc list-inside text-sm">
                       {appointment.services.map(s => (
                         <li key={s.id}>{s.name}</li>
@@ -365,12 +367,12 @@ export default function AppointmentReport({
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <FileText className="w-5 h-5 text-primary" />
-                    <h3 className="text-lg font-semibold">Bericht</h3>
+                    <h3 className="text-lg font-semibold">{t('appointment.report.report')}</h3>
                   </div>
 
                   <TextField className="mb-0">
                     <TextArea
-                      placeholder="Geben Sie hier Ihre Notizen zum Termin ein..."
+                      placeholder={t('appointment.report.notesPlaceholder')}
                       rows={3}
                       value={reportNote}
                       onChange={e => setReportNote(e.target.value)}
@@ -381,7 +383,7 @@ export default function AppointmentReport({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <ImageIcon className="w-5 h-5 text-primary" />
-                        <h3 className="text-lg font-semibold">Fotos</h3>
+                        <h3 className="text-lg font-semibold">{t('appointment.report.photos')}</h3>
                       </div>
                       <Button
                         size="sm"
@@ -390,7 +392,7 @@ export default function AppointmentReport({
                         isDisabled={isUploading}
                       >
                         <Plus className="w-4 h-4 mr-1" />
-                        Foto hinzufügen
+                        {t('appointment.report.addPhoto')}
                       </Button>
                       <input
                         type="file"
@@ -405,9 +407,9 @@ export default function AppointmentReport({
                       <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg">
                         <Loader2 className="w-4 h-4 text-primary animate-spin" />
                         <span className="text-sm text-primary font-medium">
-                          {uploadStage === 'converting' && 'HEIC wird konvertiert...'}
-                          {uploadStage === 'compressing' && 'Bild wird komprimiert...'}
-                          {uploadStage === 'uploading' && 'Wird hochgeladen...'}
+                          {uploadStage === 'converting' && t('appointment.report.convertingHeic')}
+                          {uploadStage === 'compressing' && t('appointment.report.compressingImage')}
+                          {uploadStage === 'uploading' && t('appointment.report.uploading')}
                         </span>
                       </div>
                     )}
@@ -436,7 +438,7 @@ export default function AppointmentReport({
                           </button>
                           <div className="absolute rounded-b-lg bottom-0 left-0 right-0 p-2 bg-transparent backdrop-blur-sm">
                             <Input
-                              placeholder="Beschreibung..."
+                              placeholder={t('appointment.report.descriptionPlaceholder')}
                               value={photo.note}
                               onChange={e => handlePhotoNoteChange(photo.id, e.target.value)}
                               className="bg-transparent text-white"
@@ -451,11 +453,11 @@ export default function AppointmentReport({
 
               <Modal.Footer>
                 <Button variant="ghost" onPress={onClose} >
-                  Abbrechen
+                  {t('appointment.report.cancel')}
                 </Button>
                 <Button variant="primary" onPress={handleSave} className="gap-2">
                   <Save className="w-4 h-4" />
-                  Speichern
+                  {t('appointment.report.save')}
                 </Button>
               </Modal.Footer>
             </Modal.Dialog>
@@ -490,7 +492,7 @@ export default function AppointmentReport({
                   <div className="absolute bottom-0 left-0 right-0 rounded-b-lg p-2 bg-transparent backdrop-blur-sm">
                     <Input
                       className="bg-transparent text-white!"
-                      placeholder="Beschreibung..."
+                      placeholder={t('appointment.report.descriptionPlaceholder')}
                       value={selectedPhoto.note}
                       onChange={e => handlePhotoNoteChange(selectedPhoto.id, e.target.value)}
                     />
@@ -500,11 +502,11 @@ export default function AppointmentReport({
 
               <Modal.Footer>
                 <Button variant="danger" onPress={onClose} size="sm">
-                  Abbrechen
+                  {t('appointment.report.cancel')}
                 </Button>
                 <Button variant="primary" onPress={handleSave} className="gap-2">
                   <Save className="w-4 h-4" />
-                  Speichern
+                  {t('appointment.report.save')}
                 </Button>
               </Modal.Footer>
             </Modal.Dialog>
@@ -531,7 +533,7 @@ export default function AppointmentReport({
         />
         <Card.Footer className="absolute bg-black/40 bottom-0 z-10 border-t-1 border-default-600 dark:border-default-100">
                         <Input
-                          placeholder="Beschreibung..."
+                          placeholder={t('appointment.report.descriptionPlaceholder')}
                           value={photo.note}
                           onChange={(e) => handlePhotoNoteChange(photo.id, e.target.value)}
                         />

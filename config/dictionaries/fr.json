@@ -403,6 +403,107 @@
       "errorMessage": "Veuillez réessayer ou nous contacter directement."
     }
   },
+   "sidebar": {
+    "menu": {
+      "home": "Accueil",
+      "schedule": "Planning",
+      "map": "Carte"
+    },
+    "crm": {
+      "title": "CRM",
+      "clients": "Clients",
+      "staff": "Personnel",
+      "transport": "Véhicule",
+      "services": "Services"
+    },
+    "reports": {
+      "title": "Rapports",
+      "clients": "Clients",
+      "staff": "Personnel",
+      "logbook": "Journal de bord"
+    },
+    "settings": {
+      "title": "Paramètres",
+      "personal": "Personnel",
+      "organisation": "Organisation",
+      "users": "Utilisateurs",
+      "notifications": "Notifications"
+    }
+  },
+  "dienstplan": {
+    "title": "Planning",
+    "loading": "Chargement des données...",
+    "month": "Mois",
+    "week": "Semaine",
+    "totalAppointments": "Rendez-vous total :",
+    "new": "Nouveau",
+    "refresh": "Actualiser",
+    "noAppointments": "Aucun rendez-vous",
+    "noAppointmentsHint": "Commencez par créer un nouveau rendez-vous",
+    "calendar": {
+      "noAppointmentsToDisplay": "Aucun rendez-vous à afficher",
+      "weekdaysFull": ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"],
+      "weekdaysShort": ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
+      "months": ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"]
+    }
+  },
+  "map": {
+    "loading": "Chargement...",
+    "title": "Rendez-vous",
+    "noAppointments": "Aucun rendez-vous prévu aujourd'hui",
+    "time": "Heure :",
+    "duration": "Durée :",
+    "min": "min.",
+    "current": "Actuel :"
+  },
+  "appointment": {
+    "edit": {
+      "viewTitle": "Voir le rendez-vous",
+      "editTitle": "Modifier le rendez-vous",
+      "newTitle": "Nouveau rendez-vous",
+      "createdOn": "Créé le",
+      "date": "Date",
+      "dateInPast": "La date ne peut pas être dans le passé",
+      "fixedTime": "Heure fixe",
+      "duration": "Durée (minutes)",
+      "durationHint": "Temps alloué pour le rendez-vous.",
+      "driveTime": "Temps de trajet (minutes)",
+      "driveTimeHint": "Temps de trajet estimé jusqu'au prochain rendez-vous",
+      "endTime": "Heure de fin :",
+      "min": "min",
+      "delete": "Supprimer",
+      "save": "Enregistrer",
+      "create": "Créer",
+      "confirmDelete": "Voulez-vous vraiment supprimer ce rendez-vous ?",
+      "validation": {
+        "clientRequired": "Veuillez sélectionner un client",
+        "workerRequired": "Veuillez sélectionner au moins un membre du personnel",
+        "durationRequired": "La durée doit être supérieure à 0"
+      }
+    },
+    "report": {
+      "title": "Rapport de Rendez-vous",
+      "client": "Client",
+      "staff": "Personnel",
+      "time": "Heure",
+      "duration": "Durée",
+      "min": "min.",
+      "services": "Services",
+      "report": "Rapport",
+      "notesPlaceholder": "Saisissez vos notes pour le rendez-vous ici...",
+      "photos": "Photos",
+      "addPhoto": "Ajouter une photo",
+      "convertingHeic": "Conversion HEIC...",
+      "compressingImage": "Compression de l'image...",
+      "uploading": "Téléchargement...",
+      "descriptionPlaceholder": "Description...",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "unknownError": "Erreur inconnue",
+      "uploadError": "Erreur de téléchargement :",
+      "saveError": "Erreur lors de l'enregistrement du rapport"
+    }
+  },
   "sla": {
     "hero": {
       "title": "Support qui comprend vos défis",

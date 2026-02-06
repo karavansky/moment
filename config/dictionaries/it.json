@@ -403,6 +403,107 @@
       "errorMessage": "Per favore riprova o contattaci direttamente."
     }
   },
+   "sidebar": {
+    "menu": {
+      "home": "Home",
+      "schedule": "Programma",
+      "map": "Mappa"
+    },
+    "crm": {
+      "title": "CRM",
+      "clients": "Clienti",
+      "staff": "Personale",
+      "transport": "Veicolo",
+      "services": "Servizi"
+    },
+    "reports": {
+      "title": "Report",
+      "clients": "Clienti",
+      "staff": "Personale",
+      "logbook": "Registro"
+    },
+    "settings": {
+      "title": "Impostazioni",
+      "personal": "Personali",
+      "organisation": "Organizzazione",
+      "users": "Utenti",
+      "notifications": "Notifiche"
+    }
+  },
+  "dienstplan": {
+    "title": "Programma",
+    "loading": "Caricamento dati...",
+    "month": "Mese",
+    "week": "Settimana",
+    "totalAppointments": "Appuntamenti totali:",
+    "new": "Nuovo",
+    "refresh": "Aggiorna",
+    "noAppointments": "Nessun appuntamento",
+    "noAppointmentsHint": "Inizia creando un nuovo appuntamento",
+    "calendar": {
+      "noAppointmentsToDisplay": "Nessun appuntamento da visualizzare",
+      "weekdaysFull": ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"],
+      "weekdaysShort": ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"],
+      "months": ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"]
+    }
+  },
+  "map": {
+    "loading": "Caricamento...",
+    "title": "Appuntamenti",
+    "noAppointments": "Nessun appuntamento pianificato per oggi",
+    "time": "Orario:",
+    "duration": "Durata:",
+    "min": "min.",
+    "current": "Attuale:"
+  },
+  "appointment": {
+    "edit": {
+      "viewTitle": "Visualizza appuntamento",
+      "editTitle": "Modifica appuntamento",
+      "newTitle": "Nuovo appuntamento",
+      "createdOn": "Creato il",
+      "date": "Data",
+      "dateInPast": "La data non può essere nel passato",
+      "fixedTime": "Orario fisso",
+      "duration": "Durata (minuti)",
+      "durationHint": "Tempo allocato per l'appuntamento.",
+      "driveTime": "Tempo di guida (minuti)",
+      "driveTimeHint": "Tempo di guida stimato per il prossimo appuntamento",
+      "endTime": "Orario di fine:",
+      "min": "min",
+      "delete": "Elimina",
+      "save": "Salva",
+      "create": "Crea",
+      "confirmDelete": "Vuoi davvero eliminare questo appuntamento?",
+      "validation": {
+        "clientRequired": "Seleziona un cliente",
+        "workerRequired": "Seleziona almeno un membro del personale",
+        "durationRequired": "La durata deve essere maggiore di 0"
+      }
+    },
+    "report": {
+      "title": "Report Appuntamento",
+      "client": "Cliente",
+      "staff": "Personale",
+      "time": "Orario",
+      "duration": "Durata",
+      "min": "min.",
+      "services": "Servizi",
+      "report": "Report",
+      "notesPlaceholder": "Inserisci qui le tue note per l'appuntamento...",
+      "photos": "Foto",
+      "addPhoto": "Aggiungi foto",
+      "convertingHeic": "Conversione HEIC...",
+      "compressingImage": "Compressione immagine...",
+      "uploading": "Caricamento...",
+      "descriptionPlaceholder": "Descrizione...",
+      "cancel": "Annulla",
+      "save": "Salva",
+      "unknownError": "Errore sconosciuto",
+      "uploadError": "Errore durante il caricamento:",
+      "saveError": "Errore durante il salvataggio del report"
+    }
+  },
   "sla": {
     "hero": {
       "title": "Supporto che comprende le tue sfide",
