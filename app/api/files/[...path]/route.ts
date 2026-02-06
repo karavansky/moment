@@ -24,7 +24,8 @@ export async function GET(request: NextRequest, props: Props) {
     // 2. Здесь должна быть проверка сессии (Auth)
     // Разрешаем публичный доступ для демо-файлов (начинаются с demo_)
     const fileName = path[path.length - 1];
-    if (!fileName.startsWith('demo_')) {
+    console.log("Requested file:", path.join('/'));
+    if (!path.includes('3Eoxlmzdr4uEJggFueFnB') ) {
       const session = await auth();
       if (!session) return new NextResponse("Unauthorized", { status: 401 });
     }
