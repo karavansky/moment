@@ -458,6 +458,26 @@
         "clientRequired": "Please select a client",
         "workerRequired": "Please select at least one staff member",
         "durationRequired": "Duration must be greater than 0"
+      },
+      "client": {
+        "label": "Client",
+        "selectClient": "Select client",
+        "searchPlaceholder": "Search client..."
+      },
+      "service": {
+        "label": "Services",
+        "addService": "Add service",
+        "selectPlaceholder": "Select service...",
+        "searchPlaceholder": "Search service...",
+        "noResults": "No results"
+      },
+      "staff": {
+        "label": "Staff member",
+        "labelPlural": "Staff members",
+        "addStaff": "Add staff member",
+        "selectPlaceholder": "Select staff member...",
+        "searchPlaceholder": "Search staff member...",
+        "noResults": "No results"
       }
     },
     "report": {

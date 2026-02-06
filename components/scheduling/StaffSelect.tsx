@@ -5,6 +5,7 @@ import { Autocomplete, Button, EmptyState, Header, Label, ListBox, SearchField, 
 import { Plus, X, Users } from 'lucide-react'
 import { Team, Worker } from '@/types/scheduling'
 import { usePlatformContext } from '@/contexts/PlatformContext'
+import { useTranslation } from '@/components/Providers'
 
 interface WorkerOption {
   id: string
@@ -33,6 +34,7 @@ function StaffSelect({
   className,
 }: StaffSelectProps) {
   const { isMobile, isReady, isIOS } = usePlatformContext()
+  const { t } = useTranslation()
   const { contains } = useFilter({ sensitivity: 'base' })
 
   // Собираем всех workers в один массив с информацией о команде
@@ -96,7 +98,7 @@ function StaffSelect({
       <div className="w-full min-w-0">
         <Label className="text-base font-normal flex items-center gap-2">
           <Users className="w-6 h-6" />
-          Fachkräfte</Label>
+          {t('appointment.edit.staff.labelPlural')}</Label>
 
         {/* Чипы с выбранными workers */}
         {selectedWorkerObjects.length > 0 && (
@@ -142,7 +144,7 @@ function StaffSelect({
             {/* Видимая кнопка */}
             <Button variant="secondary" size="sm" className="w-full pointer-events-none">
               <Plus size={16} />
-              Fachkraft hinzufügen
+              {t('appointment.edit.staff.addStaff')}
             </Button>
           </div>
         </div>
@@ -160,13 +162,13 @@ function StaffSelect({
         name="worker"
         value={selectedWorkerIds || null}
         onChange={handleDesktopChange}
-        placeholder="Fachkraft auswählen..."
+        placeholder={t('appointment.edit.staff.selectPlaceholder')}
         selectionMode="multiple"
 
       >
         <Label className="text-sm font-medium flex items-center gap-2">
           <Users className="w-6 h-6" />
-          Fachkraft
+          {t('appointment.edit.staff.label')}
         </Label>
         <Autocomplete.Trigger>
           <Autocomplete.Value>
@@ -205,11 +207,11 @@ function StaffSelect({
             <SearchField autoFocus name="search">
               <SearchField.Group>
                 <SearchField.SearchIcon />
-                <SearchField.Input placeholder="Suche Fachkraft..." />
+                <SearchField.Input placeholder={t('appointment.edit.staff.searchPlaceholder')} />
                 <SearchField.ClearButton />
               </SearchField.Group>
             </SearchField>
-            <ListBox renderEmptyState={() => <EmptyState>Keine Ergebnisse</EmptyState>}>
+            <ListBox renderEmptyState={() => <EmptyState>{t('appointment.edit.staff.noResults')}</EmptyState>}>
               {teamsWithWorkers.map(({ team, workers: teamWorkers }, index) => (
                 <React.Fragment key={team.id}>
                   <ListBox.Section>

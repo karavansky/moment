@@ -148,7 +148,7 @@ export default function LanguageSwitcher({ currentLang }: LanguageSwitcherProps)
             return (
               <Dropdown.Item key={locale} id={locale}>
                 <Dropdown.ItemIndicator />
-                <NextLink href={href} className={slots.base()}>
+                <NextLink href={href} className={`${slots.base()} no-underline`}>
                   <Link.Icon>
                     <FlagIcon className="w-10 h-4 rounded-xl pr-2" />
                   </Link.Icon>

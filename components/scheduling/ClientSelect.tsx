@@ -6,6 +6,7 @@ import { UserStar, MapPin } from 'lucide-react'
 import { Client, Groupe } from '@/types/scheduling'
 import { usePlatformContext } from '@/contexts/PlatformContext'
 import { LogoMoment } from '@/components/icons'
+import { useTranslation } from '@/components/Providers'
  
 interface GroupedClients {
   group: Groupe
@@ -32,6 +33,7 @@ function ClientSelect({
   isNew = false,
 }: ClientSelectProps) {
   const { isMobile, isReady } = usePlatformContext()
+  const { t } = useTranslation()
   const [isNewSelected, setIsNewSelected] = React.useState(false)
 
   // Мемоизация выбранного клиента
@@ -70,7 +72,7 @@ function ClientSelect({
       <div className="space-y-2 ">
         <Label className="text-base font-normal flex items-center gap-2">
           <UserStar className="w-6 h-6" />
-          Kunde
+          {t('appointment.edit.client.label')}
         </Label>
         <div
           className="relative surface surface--tertiary h-11 md:h-10 flex items-center rounded-xl w-full"
@@ -78,7 +80,7 @@ function ClientSelect({
         >
           <select
             name="client"
-            value={isNew && !isNewSelected ? 'Kunde auswählen' : selectedClientId}
+            value={isNew && !isNewSelected ? t('appointment.edit.client.selectClient') : selectedClientId}
             onChange={handleMobileChange}
             className="h-full w-full bg-transparent border-none outline-none text-foreground text-lg md:text-base ring-0 appearance-none px-3 pr-10 z-10 relative focus:outline-none focus:ring-0 focus:border-none"
             style={{
@@ -95,8 +97,8 @@ function ClientSelect({
             required
           >
             {isNew && !isNewSelected && (
-              <option value="Kunde auswählen" disabled>
-                Kunde auswählen
+              <option value={t('appointment.edit.client.selectClient')} disabled>
+                {t('appointment.edit.client.selectClient')}
               </option>
             )}
             {groupedClients.map(({ group, clients: groupClients }) => (
@@ -144,10 +146,10 @@ function ClientSelect({
       >
         <Label className="text-sm font-medium flex items-center gap-2">
           <UserStar className="w-6 h-6" />
-          Kunde
+          {t('appointment.edit.client.label')}
         </Label>
         <ComboBox.InputGroup>
-          <Input placeholder="Suche Kunde..." />
+          <Input placeholder={t('appointment.edit.client.searchPlaceholder')} />
           <ComboBox.Trigger />
         </ComboBox.InputGroup>
         <ComboBox.Popover>

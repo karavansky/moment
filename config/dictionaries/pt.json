@@ -403,7 +403,7 @@
       "errorMessage": "Tente novamente ou entre em contato conosco diretamente."
     }
   },
-    "sidebar": {
+  "sidebar": {
     "menu": {
       "home": "Início",
       "schedule": "Agenda",
@@ -442,9 +442,30 @@
     "noAppointmentsHint": "Comece por criar um novo compromisso",
     "calendar": {
       "noAppointmentsToDisplay": "Nenhum compromisso para exibir",
-      "weekdaysFull": ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"],
+      "weekdaysFull": [
+        "Segunda-feira",
+        "Terça-feira",
+        "Quarta-feira",
+        "Quinta-feira",
+        "Sexta-feira",
+        "Sábado",
+        "Domingo"
+      ],
       "weekdaysShort": ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
-      "months": ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+      "months": [
+        "Janeiro",
+        "Fevereiro",
+        "Março",
+        "Abril",
+        "Maio",
+        "Junho",
+        "Julho",
+        "Agosto",
+        "Setembro",
+        "Outubro",
+        "Novembro",
+        "Dezembro"
+      ]
     }
   },
   "map": {
@@ -479,6 +500,26 @@
         "clientRequired": "Por favor, selecione um cliente",
         "workerRequired": "Por favor, selecione pelo menos um membro da equipa",
         "durationRequired": "A duração deve ser maior que 0"
+      },
+      "client": {
+        "label": "Cliente",
+        "selectClient": "Selecionar cliente",
+        "searchPlaceholder": "Pesquisar cliente..."
+      },
+      "service": {
+        "label": "Serviços",
+        "addService": "Adicionar serviço",
+        "selectPlaceholder": "Selecionar serviço...",
+        "searchPlaceholder": "Pesquisar serviço...",
+        "noResults": "Sem resultados"
+      },
+      "staff": {
+        "label": "Membro da equipa",
+        "labelPlural": "Membros da equipa",
+        "addStaff": "Adicionar membro da equipa",
+        "selectPlaceholder": "Selecionar membro da equipa...",
+        "searchPlaceholder": "Pesquisar membro da equipa...",
+        "noResults": "Sem resultados"
       }
     },
     "report": {

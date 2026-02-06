@@ -491,6 +491,26 @@
         "clientRequired": "Bitte wählen Sie einen Klienten aus",
         "workerRequired": "Bitte wählen Sie mindestens einen Mitarbeiter aus",
         "durationRequired": "Die Dauer muss größer als 0 sein"
+      },
+      "client": {
+        "label": "Kunde",
+        "selectClient": "Kunden auswählen",
+        "searchPlaceholder": "Kunde suchen..."
+      },
+      "service": {
+        "label": "Leistungen",
+        "addService": "Leistung hinzufügen",
+        "selectPlaceholder": "Leistung auswählen...",
+        "searchPlaceholder": "Leistung suchen...",
+        "noResults": "Keine Ergebnisse"
+      },
+      "staff": {
+        "label": "Mitarbeiter",
+        "labelPlural": "Mitarbeiter",
+        "addStaff": "Mitarbeiter hinzufügen",
+        "selectPlaceholder": "Mitarbeiter auswählen...",
+        "searchPlaceholder": "Mitarbeiter suchen...",
+        "noResults": "Keine Ergebnisse"
       }
     },
     "report": {

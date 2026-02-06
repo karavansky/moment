@@ -403,7 +403,7 @@
       "errorMessage": "Spróbuj ponownie lub skontaktuj się z nami bezpośrednio."
     }
   },
-    "sidebar": {
+  "sidebar": {
     "menu": {
       "home": "Strona główna",
       "schedule": "Harmonogram",
@@ -442,9 +442,30 @@
     "noAppointmentsHint": "Rozpocznij od utworzenia nowej wizyty",
     "calendar": {
       "noAppointmentsToDisplay": "Brak wizyt do wyświetlenia",
-      "weekdaysFull": ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"],
+      "weekdaysFull": [
+        "Poniedziałek",
+        "Wtorek",
+        "Środa",
+        "Czwartek",
+        "Piątek",
+        "Sobota",
+        "Niedziela"
+      ],
       "weekdaysShort": ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"],
-      "months": ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"]
+      "months": [
+        "Styczeń",
+        "Luty",
+        "Marzec",
+        "Kwiecień",
+        "Maj",
+        "Czerwiec",
+        "Lipiec",
+        "Sierpień",
+        "Wrzesień",
+        "Październik",
+        "Listopad",
+        "Grudzień"
+      ]
     }
   },
   "map": {
@@ -479,6 +500,26 @@
         "clientRequired": "Wybierz klienta",
         "workerRequired": "Wybierz przynajmniej jednego członka personelu",
         "durationRequired": "Czas trwania musi być większy niż 0"
+      },
+      "client": {
+        "label": "Klient",
+        "selectClient": "Wybierz klienta",
+        "searchPlaceholder": "Wyszukaj klienta..."
+      },
+      "service": {
+        "label": "Usługi",
+        "addService": "Dodaj usługę",
+        "selectPlaceholder": "Wybierz usługę...",
+        "searchPlaceholder": "Wyszukaj usługę...",
+        "noResults": "Brak wyników"
+      },
+      "staff": {
+        "label": "Członek personelu",
+        "labelPlural": "Członkowie personelu",
+        "addStaff": "Dodaj członka personelu",
+        "selectPlaceholder": "Wybierz członka personelu...",
+        "searchPlaceholder": "Wyszukaj członka personelu...",
+        "noResults": "Brak wyników"
       }
     },
     "report": {

@@ -403,7 +403,7 @@
       "errorMessage": "Per favore riprova o contattaci direttamente."
     }
   },
-   "sidebar": {
+  "sidebar": {
     "menu": {
       "home": "Home",
       "schedule": "Programma",
@@ -442,9 +442,30 @@
     "noAppointmentsHint": "Inizia creando un nuovo appuntamento",
     "calendar": {
       "noAppointmentsToDisplay": "Nessun appuntamento da visualizzare",
-      "weekdaysFull": ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"],
+      "weekdaysFull": [
+        "Lunedì",
+        "Martedì",
+        "Mercoledì",
+        "Giovedì",
+        "Venerdì",
+        "Sabato",
+        "Domenica"
+      ],
       "weekdaysShort": ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"],
-      "months": ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"]
+      "months": [
+        "Gennaio",
+        "Febbraio",
+        "Marzo",
+        "Aprile",
+        "Maggio",
+        "Giugno",
+        "Luglio",
+        "Agosto",
+        "Settembre",
+        "Ottobre",
+        "Novembre",
+        "Dicembre"
+      ]
     }
   },
   "map": {
@@ -479,6 +500,26 @@
         "clientRequired": "Seleziona un cliente",
         "workerRequired": "Seleziona almeno un membro del personale",
         "durationRequired": "La durata deve essere maggiore di 0"
+      },
+      "client": {
+        "label": "Cliente",
+        "selectClient": "Seleziona cliente",
+        "searchPlaceholder": "Cerca cliente..."
+      },
+      "service": {
+        "label": "Servizi",
+        "addService": "Aggiungi servizio",
+        "selectPlaceholder": "Seleziona servizio...",
+        "searchPlaceholder": "Cerca servizio...",
+        "noResults": "Nessun risultato"
+      },
+      "staff": {
+        "label": "Membro del personale",
+        "labelPlural": "Membri del personale",
+        "addStaff": "Aggiungi membro del personale",
+        "selectPlaceholder": "Seleziona membro del personale...",
+        "searchPlaceholder": "Cerca membro del personale...",
+        "noResults": "Nessun risultato"
       }
     },
     "report": {

@@ -403,7 +403,7 @@
       "errorMessage": "Veuillez réessayer ou nous contacter directement."
     }
   },
-   "sidebar": {
+  "sidebar": {
     "menu": {
       "home": "Accueil",
       "schedule": "Planning",
@@ -444,7 +444,20 @@
       "noAppointmentsToDisplay": "Aucun rendez-vous à afficher",
       "weekdaysFull": ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"],
       "weekdaysShort": ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
-      "months": ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"]
+      "months": [
+        "Janvier",
+        "Février",
+        "Mars",
+        "Avril",
+        "Mai",
+        "Juin",
+        "Juillet",
+        "Août",
+        "Septembre",
+        "Octobre",
+        "Novembre",
+        "Décembre"
+      ]
     }
   },
   "map": {
@@ -479,6 +492,26 @@
         "clientRequired": "Veuillez sélectionner un client",
         "workerRequired": "Veuillez sélectionner au moins un membre du personnel",
         "durationRequired": "La durée doit être supérieure à 0"
+      },
+      "client": {
+        "label": "Client",
+        "selectClient": "Sélectionner un client",
+        "searchPlaceholder": "Rechercher un client..."
+      },
+      "service": {
+        "label": "Services",
+        "addService": "Ajouter un service",
+        "selectPlaceholder": "Sélectionner un service...",
+        "searchPlaceholder": "Rechercher un service...",
+        "noResults": "Aucun résultat"
+      },
+      "staff": {
+        "label": "Membre du personnel",
+        "labelPlural": "Membres du personnel",
+        "addStaff": "Ajouter un membre du personnel",
+        "selectPlaceholder": "Sélectionner un membre du personnel...",
+        "searchPlaceholder": "Rechercher un membre du personnel...",
+        "noResults": "Aucun résultat"
       }
     },
     "report": {

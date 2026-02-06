@@ -15,6 +15,7 @@ import {
 } from '@heroui/react'
 import { Plus, X, HandHeart } from 'lucide-react'
 import { usePlatformContext } from '@/contexts/PlatformContext'
+import { useTranslation } from '@/components/Providers'
 
 interface ServiceOption {
   id: string
@@ -49,6 +50,7 @@ function ServiceSelect({
   className,
 }: ServiceSelectProps) {
   const { isMobile, isReady , isIOS} = usePlatformContext()
+  const { t } = useTranslation()
   const selectRef = useRef<HTMLSelectElement>(null)
   const { contains } = useFilter({ sensitivity: 'base' })
 
@@ -121,7 +123,7 @@ function ServiceSelect({
       <div className="w-full min-w-0">
         <Label className="text-base font-normal flex items-center gap-2">
           <HandHeart className="w-6 h-6" />
-          Dienstleistungen
+          {t('appointment.edit.service.label')}
         </Label>
 
         {/* Чипы с выбранными услугами */}
@@ -178,7 +180,7 @@ function ServiceSelect({
             {/* Видимая кнопка */}
             <Button variant="secondary" size="sm" className="w-full pointer-events-none">
               <Plus size={16} />
-              Услугу добавить
+              {t('appointment.edit.service.addService')}
             </Button>
           </div>
         </div>
@@ -199,12 +201,12 @@ function ServiceSelect({
         name="service"
         value={selectedServices || null}
         onChange={handleDesktopChange}
-        placeholder="Dienstleistung auswählen..."
+        placeholder={t('appointment.edit.service.selectPlaceholder')}
         selectionMode="multiple"
       >
         <Label className="text-sm font-medium flex items-center gap-2">
           <HandHeart className="w-6 h-6" />
-          Dienstleistungen
+          {t('appointment.edit.service.label')}
         </Label>
         <Autocomplete.Trigger>
           <Autocomplete.Value>
@@ -243,11 +245,11 @@ function ServiceSelect({
             <SearchField autoFocus name="search">
               <SearchField.Group>
                 <SearchField.SearchIcon />
-                <SearchField.Input placeholder="Suche Dienstleistung..." />
+                <SearchField.Input placeholder={t('appointment.edit.service.searchPlaceholder')} />
                 <SearchField.ClearButton />
               </SearchField.Group>
             </SearchField>
-            <ListBox renderEmptyState={() => <EmptyState>Keine Ergebnisse</EmptyState>}>
+            <ListBox renderEmptyState={() => <EmptyState>{t('appointment.edit.service.noResults')}</EmptyState>}>
               {/* Корневые услуги */}
               {servicesForSelect.rootServices.length > 0 && (
                 <ListBox.Section>

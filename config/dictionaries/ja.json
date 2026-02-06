@@ -403,7 +403,7 @@
       "errorMessage": "もう一度お試しいただくか、直接お問い合わせください。"
     }
   },
-    "sidebar": {
+  "sidebar": {
     "menu": {
       "home": "ホーム",
       "schedule": "スケジュール",
@@ -444,7 +444,20 @@
       "noAppointmentsToDisplay": "表示する予約がありません",
       "weekdaysFull": ["月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日", "日曜日"],
       "weekdaysShort": ["月", "火", "水", "木", "金", "土", "日"],
-      "months": ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"]
+      "months": [
+        "1月",
+        "2月",
+        "3月",
+        "4月",
+        "5月",
+        "6月",
+        "7月",
+        "8月",
+        "9月",
+        "10月",
+        "11月",
+        "12月"
+      ]
     }
   },
   "map": {
@@ -479,6 +492,26 @@
         "clientRequired": "クライアントを選択してください",
         "workerRequired": "少なくとも1名のスタッフを選択してください",
         "durationRequired": "所要時間は0より大きくしてください"
+      },
+      "client": {
+        "label": "クライアント",
+        "selectClient": "クライアントを選択",
+        "searchPlaceholder": "クライアントを検索..."
+      },
+      "service": {
+        "label": "サービス",
+        "addService": "サービスを追加",
+        "selectPlaceholder": "サービスを選択...",
+        "searchPlaceholder": "サービスを検索...",
+        "noResults": "結果なし"
+      },
+      "staff": {
+        "label": "スタッフ",
+        "labelPlural": "スタッフ",
+        "addStaff": "スタッフを追加",
+        "selectPlaceholder": "スタッフを選択...",
+        "searchPlaceholder": "スタッフを検索...",
+        "noResults": "結果なし"
       }
     },
     "report": {

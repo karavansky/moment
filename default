@@ -523,7 +523,7 @@ server {
     }
 
     location / {
-        limit_req zone=general burst=100 nodelay;
+        limit_req zone=general burst=500 nodelay;
         proxy_pass http://localhost:3002/;
         proxy_http_version 1.1;
         proxy_set_header Host $http_host;

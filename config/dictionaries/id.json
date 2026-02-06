@@ -444,7 +444,20 @@
       "noAppointmentsToDisplay": "Tidak ada janji temu untuk ditampilkan",
       "weekdaysFull": ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"],
       "weekdaysShort": ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"],
-      "months": ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
+      "months": [
+        "Januari",
+        "Februari",
+        "Maret",
+        "April",
+        "Mei",
+        "Juni",
+        "Juli",
+        "Agustus",
+        "September",
+        "Oktober",
+        "November",
+        "Desember"
+      ]
     }
   },
   "map": {
@@ -479,6 +492,26 @@
         "clientRequired": "Harap pilih klien",
         "workerRequired": "Harap pilih setidaknya satu anggota staf",
         "durationRequired": "Durasi harus lebih besar dari 0"
+      },
+      "client": {
+        "label": "Klien",
+        "selectClient": "Pilih klien",
+        "searchPlaceholder": "Cari klien..."
+      },
+      "service": {
+        "label": "Layanan",
+        "addService": "Tambah layanan",
+        "selectPlaceholder": "Pilih layanan...",
+        "searchPlaceholder": "Cari layanan...",
+        "noResults": "Tidak ada hasil"
+      },
+      "staff": {
+        "label": "Anggota staf",
+        "labelPlural": "Anggota staf",
+        "addStaff": "Tambah anggota staf",
+        "selectPlaceholder": "Pilih anggota staf...",
+        "searchPlaceholder": "Cari anggota staf...",
+        "noResults": "Tidak ada hasil"
       }
     },
     "report": {

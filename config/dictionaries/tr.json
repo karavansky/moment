@@ -403,7 +403,7 @@
       "errorMessage": "Lütfen tekrar deneyin veya bizimle doğrudan iletişime geçin."
     }
   },
-    "sidebar": {
+  "sidebar": {
     "menu": {
       "home": "Ana Sayfa",
       "schedule": "Program",
@@ -444,7 +444,20 @@
       "noAppointmentsToDisplay": "Gösterilecek randevu yok",
       "weekdaysFull": ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"],
       "weekdaysShort": ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"],
-      "months": ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"]
+      "months": [
+        "Ocak",
+        "Şubat",
+        "Mart",
+        "Nisan",
+        "Mayıs",
+        "Haziran",
+        "Temmuz",
+        "Ağustos",
+        "Eylül",
+        "Ekim",
+        "Kasım",
+        "Aralık"
+      ]
     }
   },
   "map": {
@@ -479,6 +492,26 @@
         "clientRequired": "Lütfen bir müşteri seçin",
         "workerRequired": "Lütfen en az bir personel seçin",
         "durationRequired": "Süre 0'dan büyük olmalıdır"
+      },
+      "client": {
+        "label": "Müşteri",
+        "selectClient": "Müşteri seç",
+        "searchPlaceholder": "Müşteri ara..."
+      },
+      "service": {
+        "label": "Hizmetler",
+        "addService": "Hizmet ekle",
+        "selectPlaceholder": "Hizmet seç...",
+        "searchPlaceholder": "Hizmet ara...",
+        "noResults": "Sonuç yok"
+      },
+      "staff": {
+        "label": "Personel üyesi",
+        "labelPlural": "Personel üyeleri",
+        "addStaff": "Personel üyesi ekle",
+        "selectPlaceholder": "Personel üyesi seç...",
+        "searchPlaceholder": "Personel üyesi ara...",
+        "noResults": "Sonuç yok"
       }
     },
     "report": {
