@@ -469,6 +469,91 @@
     "min": "分",
     "current": "現在："
   },
+  "clients": {
+    "title": "クライアント",
+    "table": {
+      "columns": {
+        "client": "クライアント",
+        "status": "ステータス",
+        "group": "グループ",
+        "email": "メール",
+        "street": "番地",
+        "houseNumber": "番号",
+        "postalCode": "郵便番号",
+        "city": "市区町村"
+      },
+      "status": {
+        "active": "有効",
+        "paused": "一時停止",
+        "archive": "アーカイブ"
+      },
+      "search": "検索...",
+      "columnsButton": "列",
+      "statusFilter": "ステータス",
+      "groupFilter": "グループ",
+      "addNew": "新規追加",
+      "loading": "読み込み中...",
+      "noRecords": "レコードが見つかりません",
+      "view": "表示",
+      "delete": "削除",
+      "noGroup": "該当なし"
+    },
+    "detail": {
+      "newClient": "新規クライアント",
+      "overview": "概要",
+      "history": "履歴"
+    },
+    "contacts": {
+      "title": "連絡先情報",
+      "titleNew": "新規クライアント連絡先",
+      "firstName": "名",
+      "lastName": "姓",
+      "email": "メール",
+      "emailPlaceholder": "メールアドレスを入力",
+      "phone": "電話",
+      "phonePlaceholder": "電話番号を入力",
+      "date": "日付",
+      "selected": "選択済み:",
+      "reset": "リセット",
+      "create": "作成",
+      "save": "保存",
+      "createSuccess": "クライアントが正常に作成されました！",
+      "saveSuccess": "連絡先情報が正常に保存されました！"
+    },
+    "address": {
+      "title": "住所",
+      "titleNew": "新規クライアント住所",
+      "description": "サービス提供場所",
+      "city": "市区町村",
+      "cityPlaceholder": "市区町村名を入力...",
+      "citySelectCountryFirst": "まず国を選択してください",
+      "cityMinChars": "少なくとも2文字入力してください",
+      "cityInvalid": "リストから有効な市区町村を選択してください",
+      "street": "番地",
+      "streetPlaceholder": "番地名を入力...",
+      "streetSelectCityFirst": "まず市区町村を選択してください",
+      "streetMinChars": "少なくとも3文字入力してください",
+      "streetInvalid": "リストから有効な番地を選択してください",
+      "houseNumber": "番号",
+      "houseNumberPlaceholder": "例: 12A",
+      "apartment": "部屋番号",
+      "apartmentPlaceholder": "例: 102",
+      "postalCode": "郵便番号",
+      "postalCodePlaceholder": "12345",
+      "district": "地区",
+      "districtPlaceholder": "例: Bad Godesberg",
+      "country": "国",
+      "mapLabel": "住所の位置",
+      "reset": "リセット",
+      "create": "作成",
+      "save": "保存",
+      "createSuccess": "クライアントが正常に作成されました！",
+      "saveSuccess": "住所が正常に保存されました！"
+    },
+    "history": {
+      "title": "履歴"
+    }
+  },
   "appointment": {
     "edit": {
       "viewTitle": "予約を表示",

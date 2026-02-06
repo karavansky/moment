@@ -469,6 +469,91 @@
     "min": "mnt.",
     "current": "Saat ini:"
   },
+  "clients": {
+  "title": "Klien",
+  "table": {
+    "columns": {
+      "client": "Klien",
+      "status": "Status",
+      "group": "Grup",
+      "email": "E-Mail",
+      "street": "Jalan",
+      "houseNumber": "No. Rumah",
+      "postalCode": "Kode pos",
+      "city": "Kota"
+    },
+    "status": {
+      "active": "Aktif",
+      "paused": "Ditangguhkan",
+      "archive": "Arsip"
+    },
+    "search": "Cari...",
+    "columnsButton": "Kolom",
+    "statusFilter": "Status",
+    "groupFilter": "Grup",
+    "addNew": "Tambah Baru",
+    "loading": "Memuat...",
+    "noRecords": "Tidak ada data ditemukan",
+    "view": "Lihat",
+    "delete": "Hapus",
+    "noGroup": "T/A"
+  },
+  "detail": {
+    "newClient": "Klien Baru",
+    "overview": "Ikhtisar",
+    "history": "Riwayat"
+  },
+  "contacts": {
+    "title": "Informasi Kontak",
+    "titleNew": "Kontak Klien Baru",
+    "firstName": "Nama depan",
+    "lastName": "Nama belakang",
+    "email": "Email",
+    "emailPlaceholder": "Masukkan email",
+    "phone": "Telepon",
+    "phonePlaceholder": "Masukkan nomor telepon",
+    "date": "Tanggal",
+    "selected": "Dipilih:",
+    "reset": "Reset",
+    "create": "Buat",
+    "save": "Simpan",
+    "createSuccess": "Klien berhasil dibuat!",
+    "saveSuccess": "Informasi kontak berhasil disimpan!"
+  },
+  "address": {
+    "title": "Alamat",
+    "titleNew": "Alamat Klien Baru",
+    "description": "Tempat layanan diberikan",
+    "city": "Kota",
+    "cityPlaceholder": "Ketik nama kota...",
+    "citySelectCountryFirst": "Pilih negara terlebih dahulu",
+    "cityMinChars": "Harap masukkan minimal 2 karakter",
+    "cityInvalid": "Harap pilih kota yang valid dari daftar",
+    "street": "Jalan",
+    "streetPlaceholder": "Ketik nama jalan...",
+    "streetSelectCityFirst": "Pilih kota terlebih dahulu",
+    "streetMinChars": "Harap masukkan minimal 3 karakter",
+    "streetInvalid": "Harap pilih jalan yang valid dari daftar",
+    "houseNumber": "Nomor rumah",
+    "houseNumberPlaceholder": "mis. 12A",
+    "apartment": "Apt",
+    "apartmentPlaceholder": "mis. 102",
+    "postalCode": "Kode pos",
+    "postalCodePlaceholder": "12345",
+    "district": "Kecamatan",
+    "districtPlaceholder": "mis. Bad Godesberg",
+    "country": "Negara",
+    "mapLabel": "Lokasi Alamat",
+    "reset": "Reset",
+    "create": "Buat",
+    "save": "Simpan",
+    "createSuccess": "Klien berhasil dibuat!",
+    "saveSuccess": "Alamat berhasil disimpan!"
+  },
+  "history": {
+    "title": "Riwayat"
+  }
+},
   "appointment": {
     "edit": {
       "viewTitle": "Lihat janji temu",

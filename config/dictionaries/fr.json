@@ -469,6 +469,91 @@
     "min": "min.",
     "current": "Actuel :"
   },
+  "clients": {
+    "title": "Clients",
+    "table": {
+      "columns": {
+        "client": "Client",
+        "status": "Statut",
+        "group": "Groupe",
+        "email": "E-Mail",
+        "street": "Rue",
+        "houseNumber": "N°",
+        "postalCode": "Code postal",
+        "city": "Ville"
+      },
+      "status": {
+        "active": "Actif",
+        "paused": "En pause",
+        "archive": "Archives"
+      },
+      "search": "Rechercher...",
+      "columnsButton": "Colonnes",
+      "statusFilter": "Statut",
+      "groupFilter": "Groupe",
+      "addNew": "Ajouter",
+      "loading": "Chargement...",
+      "noRecords": "Aucun enregistrement trouvé",
+      "view": "Voir",
+      "delete": "Supprimer",
+      "noGroup": "N/A"
+    },
+    "detail": {
+      "newClient": "Nouveau Client",
+      "overview": "Aperçu",
+      "history": "Historique"
+    },
+    "contacts": {
+      "title": "Informations de contact",
+      "titleNew": "Contacts du nouveau client",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "email": "Email",
+      "emailPlaceholder": "Saisir l'email",
+      "phone": "Téléphone",
+      "phonePlaceholder": "Saisir le numéro de téléphone",
+      "date": "Date",
+      "selected": "Sélectionné :",
+      "reset": "Réinitialiser",
+      "create": "Créer",
+      "save": "Enregistrer",
+      "createSuccess": "Client créé avec succès !",
+      "saveSuccess": "Informations de contact enregistrées avec succès !"
+    },
+    "address": {
+      "title": "Adresse",
+      "titleNew": "Adresse du nouveau client",
+      "description": "Lieu de prestation des services",
+      "city": "Ville",
+      "cityPlaceholder": "Saisir le nom de la ville...",
+      "citySelectCountryFirst": "Sélectionnez d'abord le pays",
+      "cityMinChars": "Veuillez saisir au moins 2 caractères",
+      "cityInvalid": "Veuillez sélectionner une ville valide dans la liste",
+      "street": "Rue",
+      "streetPlaceholder": "Saisir le nom de la rue...",
+      "streetSelectCityFirst": "Sélectionnez d'abord la ville",
+      "streetMinChars": "Veuillez saisir au moins 3 caractères",
+      "streetInvalid": "Veuillez sélectionner une rue valide dans la liste",
+      "houseNumber": "Numéro",
+      "houseNumberPlaceholder": "ex. 12A",
+      "apartment": "Appartement",
+      "apartmentPlaceholder": "ex. 102",
+      "postalCode": "Code postal",
+      "postalCodePlaceholder": "12345",
+      "district": "Quartier",
+      "districtPlaceholder": "ex. Bad Godesberg",
+      "country": "Pays",
+      "mapLabel": "Localisation de l'adresse",
+      "reset": "Réinitialiser",
+      "create": "Créer",
+      "save": "Enregistrer",
+      "createSuccess": "Client créé avec succès !",
+      "saveSuccess": "Adresse enregistrée avec succès !"
+    },
+    "history": {
+      "title": "Historique"
+    }
+  },
   "appointment": {
     "edit": {
       "viewTitle": "Voir le rendez-vous",

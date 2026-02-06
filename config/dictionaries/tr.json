@@ -469,6 +469,91 @@
     "min": "dk.",
     "current": "Mevcut:"
   },
+  "clients": {
+    "title": "Müşteriler",
+    "table": {
+      "columns": {
+        "client": "Müşteri",
+        "status": "Durum",
+        "group": "Grup",
+        "email": "E-Posta",
+        "street": "Sokak",
+        "houseNumber": "Kapı No.",
+        "postalCode": "Posta kodu",
+        "city": "Şehir"
+      },
+      "status": {
+        "active": "Aktif",
+        "paused": "Duraklatıldı",
+        "archive": "Arşiv"
+      },
+      "search": "Ara...",
+      "columnsButton": "Sütunlar",
+      "statusFilter": "Durum",
+      "groupFilter": "Grup",
+      "addNew": "Yeni Ekle",
+      "loading": "Yükleniyor...",
+      "noRecords": "Kayıt bulunamadı",
+      "view": "Görüntüle",
+      "delete": "Sil",
+      "noGroup": "Yok"
+    },
+    "detail": {
+      "newClient": "Yeni Müşteri",
+      "overview": "Genel Bakış",
+      "history": "Geçmiş"
+    },
+    "contacts": {
+      "title": "İletişim Bilgileri",
+      "titleNew": "Yeni Müşteri İletişimleri",
+      "firstName": "Ad",
+      "lastName": "Soyad",
+      "email": "E-posta",
+      "emailPlaceholder": "E-posta girin",
+      "phone": "Telefon",
+      "phonePlaceholder": "Telefon numarası girin",
+      "date": "Tarih",
+      "selected": "Seçili:",
+      "reset": "Sıfırla",
+      "create": "Oluştur",
+      "save": "Kaydet",
+      "createSuccess": "Müşteri başarıyla oluşturuldu!",
+      "saveSuccess": "İletişim bilgileri başarıyla kaydedildi!"
+    },
+    "address": {
+      "title": "Adres",
+      "titleNew": "Yeni Müşteri Adresi",
+      "description": "Hizmetlerin sağlandığı yer",
+      "city": "Şehir",
+      "cityPlaceholder": "Şehir adı yazın...",
+      "citySelectCountryFirst": "Önce ülke seçin",
+      "cityMinChars": "Lütfen en az 2 karakter girin",
+      "cityInvalid": "Lütfen listeden geçerli bir şehir seçin",
+      "street": "Sokak",
+      "streetPlaceholder": "Sokak adı yazın...",
+      "streetSelectCityFirst": "Önce şehir seçin",
+      "streetMinChars": "Lütfen en az 3 karakter girin",
+      "streetInvalid": "Lütfen listeden geçerli bir sokak seçin",
+      "houseNumber": "Kapı numarası",
+      "houseNumberPlaceholder": "örn. 12A",
+      "apartment": "Daire",
+      "apartmentPlaceholder": "örn. 102",
+      "postalCode": "Posta kodu",
+      "postalCodePlaceholder": "12345",
+      "district": "İlçe",
+      "districtPlaceholder": "örn. Bad Godesberg",
+      "country": "Ülke",
+      "mapLabel": "Adres Konumu",
+      "reset": "Sıfırla",
+      "create": "Oluştur",
+      "save": "Kaydet",
+      "createSuccess": "Müşteri başarıyla oluşturuldu!",
+      "saveSuccess": "Adres başarıyla kaydedildi!"
+    },
+    "history": {
+      "title": "Geçmiş"
+    }
+  },
   "appointment": {
     "edit": {
       "viewTitle": "Randevuyu görüntüle",

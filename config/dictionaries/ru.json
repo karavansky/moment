@@ -477,6 +477,91 @@
     "min": "мин.",
     "current": "Текущая:"
   },
+  "clients": {
+  "title": "Клиенты",
+  "table": {
+    "columns": {
+      "client": "Клиент",
+      "status": "Статус",
+      "group": "Группа",
+      "email": "E-Mail",
+      "street": "Улица",
+      "houseNumber": "Дом",
+      "postalCode": "Индекс",
+      "city": "Город"
+    },
+    "status": {
+      "active": "Активный",
+      "paused": "Приостановлен",
+      "archive": "Архив"
+    },
+    "search": "Поиск...",
+    "columnsButton": "Колонки",
+    "statusFilter": "Статус",
+    "groupFilter": "Группа",
+    "addNew": "Добавить",
+    "loading": "Загрузка...",
+    "noRecords": "Записи не найдены",
+    "view": "Просмотр",
+    "delete": "Удалить",
+    "noGroup": "Н/Д"
+  },
+  "detail": {
+    "newClient": "Новый клиент",
+    "overview": "Обзор",
+    "history": "История"
+  },
+  "contacts": {
+    "title": "Контактная информация",
+    "titleNew": "Контакты нового клиента",
+    "firstName": "Имя",
+    "lastName": "Фамилия",
+    "email": "Email",
+    "emailPlaceholder": "Введите email",
+    "phone": "Телефон",
+    "phonePlaceholder": "Введите номер телефона",
+    "date": "Дата",
+    "selected": "Выбрано:",
+    "reset": "Сбросить",
+    "create": "Создать",
+    "save": "Сохранить",
+    "createSuccess": "Клиент успешно создан!",
+    "saveSuccess": "Контактная информация успешно сохранена!"
+  },
+  "address": {
+    "title": "Адрес",
+    "titleNew": "Адрес нового клиента",
+    "description": "Место оказания услуг",
+    "city": "Город",
+    "cityPlaceholder": "Введите название города...",
+    "citySelectCountryFirst": "Сначала выберите страну",
+    "cityMinChars": "Пожалуйста, введите не менее 2 символов",
+    "cityInvalid": "Пожалуйста, выберите город из списка",
+    "street": "Улица",
+    "streetPlaceholder": "Введите название улицы...",
+    "streetSelectCityFirst": "Сначала выберите город",
+    "streetMinChars": "Пожалуйста, введите не менее 3 символов",
+    "streetInvalid": "Пожалуйста, выберите улицу из списка",
+    "houseNumber": "Номер дома",
+    "houseNumberPlaceholder": "напр. 12А",
+    "apartment": "Квартира",
+    "apartmentPlaceholder": "напр. 102",
+    "postalCode": "Почтовый индекс",
+    "postalCodePlaceholder": "12345",
+    "district": "Район",
+    "districtPlaceholder": "напр. Bad Godesberg",
+    "country": "Страна",
+    "mapLabel": "Местоположение адреса",
+    "reset": "Сбросить",
+    "create": "Создать",
+    "save": "Сохранить",
+    "createSuccess": "Клиент успешно создан!",
+    "saveSuccess": "Адрес успешно сохранен!"
+  },
+  "history": {
+    "title": "История"
+  }
+},
   "appointment": {
     "edit": {
       "viewTitle": "Просмотр встречи",

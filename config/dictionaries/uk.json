@@ -469,6 +469,91 @@
     "min": "хв.",
     "current": "Поточна:"
   },
+  "clients": {
+    "title": "Клієнти",
+    "table": {
+      "columns": {
+        "client": "Клієнт",
+        "status": "Статус",
+        "group": "Група",
+        "email": "E-Mail",
+        "street": "Вулиця",
+        "houseNumber": "Будинок",
+        "postalCode": "Поштовий індекс",
+        "city": "Місто"
+      },
+      "status": {
+        "active": "Активний",
+        "paused": "Призупинений",
+        "archive": "Архів"
+      },
+      "search": "Пошук...",
+      "columnsButton": "Колонки",
+      "statusFilter": "Статус",
+      "groupFilter": "Група",
+      "addNew": "Додати",
+      "loading": "Завантаження...",
+      "noRecords": "Записів не знайдено",
+      "view": "Перегляд",
+      "delete": "Видалити",
+      "noGroup": "Н/Д"
+    },
+    "detail": {
+      "newClient": "Новий клієнт",
+      "overview": "Огляд",
+      "history": "Історія"
+    },
+    "contacts": {
+      "title": "Контактна інформація",
+      "titleNew": "Контакти нового клієнта",
+      "firstName": "Ім'я",
+      "lastName": "Прізвище",
+      "email": "Email",
+      "emailPlaceholder": "Введіть email",
+      "phone": "Телефон",
+      "phonePlaceholder": "Введіть номер телефону",
+      "date": "Дата",
+      "selected": "Обрано:",
+      "reset": "Скинути",
+      "create": "Створити",
+      "save": "Зберегти",
+      "createSuccess": "Клієнта успішно створено!",
+      "saveSuccess": "Контактну інформацію успішно збережено!"
+    },
+    "address": {
+      "title": "Адреса",
+      "titleNew": "Адреса нового клієнта",
+      "description": "Місце надання послуг",
+      "city": "Місто",
+      "cityPlaceholder": "Введіть назву міста...",
+      "citySelectCountryFirst": "Спочатку виберіть країну",
+      "cityMinChars": "Будь ласка, введіть щонайменше 2 символи",
+      "cityInvalid": "Будь ласка, виберіть місто зі списку",
+      "street": "Вулиця",
+      "streetPlaceholder": "Введіть назву вулиці...",
+      "streetSelectCityFirst": "Спочатку виберіть місто",
+      "streetMinChars": "Будь ласка, введіть щонайменше 3 символи",
+      "streetInvalid": "Будь ласка, виберіть вулицю зі списку",
+      "houseNumber": "Номер будинку",
+      "houseNumberPlaceholder": "напр. 12А",
+      "apartment": "Квартира",
+      "apartmentPlaceholder": "напр. 102",
+      "postalCode": "Поштовий індекс",
+      "postalCodePlaceholder": "12345",
+      "district": "Район",
+      "districtPlaceholder": "напр. Bad Godesberg",
+      "country": "Країна",
+      "mapLabel": "Місце розташування адреси",
+      "reset": "Скинути",
+      "create": "Створити",
+      "save": "Зберегти",
+      "createSuccess": "Клієнта успішно створено!",
+      "saveSuccess": "Адресу успішно збережено!"
+    },
+    "history": {
+      "title": "Історія"
+    }
+  },
   "appointment": {
     "edit": {
       "viewTitle": "Перегляд зустрічі",

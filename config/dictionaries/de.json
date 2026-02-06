@@ -545,6 +545,91 @@
     "min": "min.",
     "current": "Aktuell:"
   },
+  "clients": {
+    "title": "Kunden",
+    "table": {
+      "columns": {
+        "client": "Kunde",
+        "status": "Status",
+        "group": "Gruppe",
+        "email": "E-Mail",
+        "street": "Straße",
+        "houseNumber": "Hausnummer",
+        "postalCode": "Postleitzahl",
+        "city": "Stadt"
+      },
+      "status": {
+        "active": "Aktiv",
+        "paused": "Pausiert",
+        "archive": "Archiv"
+      },
+      "search": "Suchen...",
+      "columnsButton": "Spalten",
+      "statusFilter": "Status",
+      "groupFilter": "Gruppe",
+      "addNew": "Neu hinzufügen",
+      "loading": "Lädt...",
+      "noRecords": "Keine Datensätze gefunden",
+      "view": "Ansehen",
+      "delete": "Löschen",
+      "noGroup": "k.A."
+    },
+    "detail": {
+      "newClient": "Neuer Kunde",
+      "overview": "Übersicht",
+      "history": "Verlauf"
+    },
+    "contacts": {
+      "title": "Kontaktinformationen",
+      "titleNew": "Neue Kundenkontakte",
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "email": "E-Mail",
+      "emailPlaceholder": "E-Mail eingeben",
+      "phone": "Telefon",
+      "phonePlaceholder": "Telefonnummer eingeben",
+      "date": "Datum",
+      "selected": "Ausgewählt:",
+      "reset": "Zurücksetzen",
+      "create": "Erstellen",
+      "save": "Speichern",
+      "createSuccess": "Kunde erfolgreich erstellt!",
+      "saveSuccess": "Kontaktinformationen erfolgreich gespeichert!"
+    },
+    "address": {
+      "title": "Adresse",
+      "titleNew": "Neue Kundenadresse",
+      "description": "Wo Dienstleistungen erbracht werden",
+      "city": "Stadt",
+      "cityPlaceholder": "Stadtname eingeben...",
+      "citySelectCountryFirst": "Zuerst Land auswählen",
+      "cityMinChars": "Bitte mindestens 2 Zeichen eingeben",
+      "cityInvalid": "Bitte eine gültige Stadt aus der Liste auswählen",
+      "street": "Straße",
+      "streetPlaceholder": "Straßenname eingeben...",
+      "streetSelectCityFirst": "Zuerst Stadt auswählen",
+      "streetMinChars": "Bitte mindestens 3 Zeichen eingeben",
+      "streetInvalid": "Bitte eine gültige Straße aus der Liste auswählen",
+      "houseNumber": "Hausnummer",
+      "houseNumberPlaceholder": "z.B. 12A",
+      "apartment": "Wohnung",
+      "apartmentPlaceholder": "z.B. 102",
+      "postalCode": "Postleitzahl",
+      "postalCodePlaceholder": "12345",
+      "district": "Stadtteil",
+      "districtPlaceholder": "z.B. Bad Godesberg",
+      "country": "Land",
+      "mapLabel": "Adressstandort",
+      "reset": "Zurücksetzen",
+      "create": "Erstellen",
+      "save": "Speichern",
+      "createSuccess": "Kunde erfolgreich erstellt!",
+      "saveSuccess": "Adresse erfolgreich gespeichert!"
+    },
+    "history": {
+      "title": "Verlauf"
+    }
+  },
   "sla": {
     "hero": {
       "title": "Support, der Ihre Herausforderungen versteht",
