@@ -204,7 +204,7 @@ function DienstplanView() {
             </div>
 
             {/* Кнопка добавления */}
-            <Button variant="primary" size="sm" onPress={handleAddNew} className="gap-1">
+            <Button variant="primary" size="sm" onPress={handleAddNew} className="gap-1 rounded-full">
               <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">{t('dienstplan.new')}</span>
             </Button>

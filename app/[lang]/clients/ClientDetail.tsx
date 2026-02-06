@@ -9,6 +9,7 @@ import { FilePenLine, Undo2, UserStar, History } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ClientOverview from './ClientOverview'
 import ClientHistory from './ClientHistory'
+import { useTranslation } from '@/components/Providers'
 
 interface ClientDetailProps {
   client: Client
@@ -22,6 +23,7 @@ function ClientDetail({ client, onClose, isCreateNew = false, className }: Clien
   const { clients, groups, isLoading, selectedDate, selectedAppointment, setSelectedAppointment } =
     useScheduling()
   const lang = useLanguage()
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<'overview' | 'history'>('overview')
   const [isPending, startTransition] = useTransition()
 
@@ -68,7 +70,7 @@ function ClientDetail({ client, onClose, isCreateNew = false, className }: Clien
           <Undo2 className="w-5 h-5 text-primary" />
         </Button>
         <h2 className="text-2xl font-semibold">
-          {isCreateNew ? 'New Client' : `${client.surname} ${client.name}`}
+          {isCreateNew ? t('clients.detail.newClient') : `${client.surname} ${client.name}`}
         </h2>
       </div>
       <div className="flex flex-col relative mb-4 shrink-0">
@@ -78,14 +80,14 @@ function ClientDetail({ client, onClose, isCreateNew = false, className }: Clien
             variant={activeTab === 'overview' ? 'tertiary' : 'ghost'}
             onPress={onPressOverview}
           >
-            <FilePenLine className="w-5 h-5 mr-2" /> Overview
+            <FilePenLine className="w-5 h-5 mr-2" /> {t('clients.detail.overview')}
           </Button>
           <Button
             ref={historyRef}
             variant={activeTab === 'history' ? 'tertiary' : 'ghost'}
             onPress={onPressHistory}
           >
-            <History className="w-5 h-5 mr-2" /> History
+            <History className="w-5 h-5 mr-2" /> {t('clients.detail.history')}
           </Button>
         </div>
         <div className="relative w-full">

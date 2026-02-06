@@ -5,12 +5,14 @@ import { useScheduling } from '@/contexts/SchedulingContext'
 import { useLanguage } from '@/hooks/useLanguage'
 import { Client } from '@/types/scheduling'
 import { useState, useTransition } from 'react'
+import { useTranslation } from '@/components/Providers'
 import { motion, AnimatePresence } from 'framer-motion'
 import ClientDetail from './ClientDetail'
 
 export default function ClientsView() {
   const { clients, groups, isLoading, firmaID } = useScheduling()
   const lang = useLanguage()
+  const { t } = useTranslation()
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
   const [isCreateNew, setIsCreateNew] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -93,7 +95,7 @@ export default function ClientsView() {
               <ClientsTable
                 list={clients}
                 isLoading={isLoading}
-                titel="Clients"
+                titel={t('clients.title')}
                 onRowClick={id => {
                   console.log('Clicked row:', id)
                   const client = clients.find(c => String(c.id) === String(id))

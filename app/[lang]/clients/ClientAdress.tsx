@@ -285,7 +285,7 @@ export const ClientAdress = memo(function ClientAdress({
   useEffect(() => {
     if (streetInputRef.current) {
       if (isStreetInvalid) {
-        streetInputRef.current.setCustomValidity('Please select a valid street from the list')
+        streetInputRef.current.setCustomValidity(t('clients.address.streetInvalid'))
       } else {
         streetInputRef.current.setCustomValidity('')
       }
@@ -312,10 +312,10 @@ export const ClientAdress = memo(function ClientAdress({
 
       if (isCreateNew) {
         addClient(clientData)
-        alert(`Client ${client.name} ${client.surname} created successfully!`)
+        alert(t('clients.address.createSuccess'))
       } else {
         updateClient(clientData)
-        alert(`Address saved successfully for ${client.name} ${client.surname}!`)
+        alert(t('clients.address.saveSuccess'))
       }
     },
     [addressData, country, client, updateClient, addClient, addressCoordinates, isCreateNew]
@@ -717,11 +717,11 @@ export const ClientAdress = memo(function ClientAdress({
       <Card.Header>
         <Card.Title className="flex items-center justify-center gap-2">
           <span className="text-xl md:text-xl  capitalize font-semibold">
-            {isCreateNew ? 'New Client Address' : 'Address'}
+            {isCreateNew ? t('clients.address.titleNew') : t('clients.address.title')}
           </span>
         </Card.Title>
         <Card.Description className="flex items-center justify-center gap-2">
-          wo Dienstleistungen erbracht werden
+          {t('clients.address.description')}
         </Card.Description>
       </Card.Header>
       <Form onSubmit={onSubmit} autoComplete="off">
@@ -731,7 +731,7 @@ export const ClientAdress = memo(function ClientAdress({
               {/* Город */}
               <div className="w-2/5 min-w-0 flex flex-col gap-2">
                 <TextField isRequired name="city" type="text" isInvalid={isCityInvalid}>
-                  <Label className="text-base font-normal ">Stadt</Label>
+                  <Label className="text-base font-normal ">{t('clients.address.city')}</Label>
                   <div className="relative w-full">
                     <Input
                       value={cityQuery}
@@ -754,7 +754,7 @@ export const ClientAdress = memo(function ClientAdress({
                           listCities.setFilterText(val)
                         }
                       }}
-                      placeholder={country ? 'Type city name...' : 'Select country first'}
+                      placeholder={country ? t('clients.address.cityPlaceholder') : t('clients.address.citySelectCountryFirst')}
                       autoComplete="off"
                       list="city-options"
                       className="text-lg md:text-base font-normal w-full pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0"
@@ -772,9 +772,9 @@ export const ClientAdress = memo(function ClientAdress({
                   </div>
                   <FieldError>
                     {isCityLeast2Chars
-                      ? 'Please enter at least 2 characters'
+                      ? t('clients.address.cityMinChars')
                       : isCityInvalid
-                        ? 'Please select a valid city from the list'
+                        ? t('clients.address.cityInvalid')
                         : null}
                   </FieldError>
                 </TextField>
@@ -783,7 +783,7 @@ export const ClientAdress = memo(function ClientAdress({
               {/* Улица */}
               <div className="w-3/5 min-w-0 flex flex-col gap-2">
                 <TextField isRequired name="street" type="text" isInvalid={isStreetInvalid}>
-                  <Label className="text-base font-normal ">Straße</Label>
+                  <Label className="text-base font-normal ">{t('clients.address.street')}</Label>
                   <div className="relative w-full">
                     <Input
                       ref={streetInputRef}
@@ -825,7 +825,7 @@ export const ClientAdress = memo(function ClientAdress({
                           handleStreetInputChange(val)
                         }
                       }}
-                      placeholder={cityQuery ? 'Type street name...' : 'Select city first'}
+                      placeholder={cityQuery ? t('clients.address.streetPlaceholder') : t('clients.address.streetSelectCityFirst')}
                       autoComplete="off"
                       list="street-options"
                       className="text-lg font-normal md:text-base w-full pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0"
@@ -864,9 +864,9 @@ export const ClientAdress = memo(function ClientAdress({
                   </div>
                   <FieldError>
                     {isStreetLeast3Chars
-                      ? 'Please enter at least 3 characters'
+                      ? t('clients.address.streetMinChars')
                       : isStreetInvalid
-                        ? 'Please select a valid street from the list'
+                        ? t('clients.address.streetInvalid')
                         : null}
                   </FieldError>
                 </TextField>
@@ -881,10 +881,10 @@ export const ClientAdress = memo(function ClientAdress({
                 className="w-1/3 min-w-0 "
                 type="text"
               >
-                <Label className="text-base font-normal ">Hausnummer</Label>
+                <Label className="text-base font-normal ">{t('clients.address.houseNumber')}</Label>
                 <div className="relative w-full">
                   <Input
-                    placeholder="e.g. 12A"
+                    placeholder={t('clients.address.houseNumberPlaceholder')}
                     value={addressData.houseNumber}
                     onChange={handleHouseSelection}
                     className="text-lg md:text-base h-10 pr-8 w-full"
@@ -897,9 +897,9 @@ export const ClientAdress = memo(function ClientAdress({
                 </div>
               </TextField>
               <TextField name="apartment" className="w-1/3 min-w-0" type="text">
-                <Label className="text-base font-normal ">Apt</Label>
+                <Label className="text-base font-normal ">{t('clients.address.apartment')}</Label>
                 <Input
-                  placeholder="e.g. 102"
+                  placeholder={t('clients.address.apartmentPlaceholder')}
                   value={addressData.apartment}
                   onChange={e => setAddressData(prev => ({ ...prev, apartment: e.target.value }))}
                   className="text-lg md:text-base h-10"
@@ -907,9 +907,9 @@ export const ClientAdress = memo(function ClientAdress({
               </TextField>
               {/* Почтовый индекс */}
               <TextField name="zipCode" className="w-1/3 min-w-0" type="text">
-                <Label className="text-base font-normal ">PLZ</Label>
+                <Label className="text-base font-normal ">{t('clients.address.postalCode')}</Label>
                 <Input
-                  placeholder="12345"
+                  placeholder={t('clients.address.postalCodePlaceholder')}
                   value={addressData.zipCode}
                   onChange={e => setAddressData(prev => ({ ...prev, zipCode: e.target.value }))}
                   className="text-lg font-normal md:text-base h-10"
@@ -919,9 +919,9 @@ export const ClientAdress = memo(function ClientAdress({
             <div className="flex items-center flex-row gap-2 w-full">
               {/* Район/округ */}
               <TextField name="district" type="text" className="w-1/2 min-w-0">
-                <Label className="text-base font-normal ">Bezirk</Label>
+                <Label className="text-base font-normal ">{t('clients.address.district')}</Label>
                 <Input
-                  placeholder="e.g. Bad Godesberg"
+                  placeholder={t('clients.address.districtPlaceholder')}
                   value={addressData.district}
                   onChange={e => setAddressData(prev => ({ ...prev, district: e.target.value }))}
                   autoComplete="off"
@@ -931,7 +931,7 @@ export const ClientAdress = memo(function ClientAdress({
 
               {/* Страна - Native Select */}
               <TextField className="w-1/2 min-w-0 " isRequired>
-                <Label className="text-base font-normal ">Land</Label>
+                <Label className="text-base font-normal ">{t('clients.address.country')}</Label>
                 <div className="surface surface--tertiary h-11 md:h-10 flex items-center rounded-xl px-2 w-full">
                   <select
                     name="country"
@@ -961,7 +961,7 @@ export const ClientAdress = memo(function ClientAdress({
             <div
               className={`w-full ${addressCoordinates && addressData.zipCode ? 'block' : 'hidden'}`}
             >
-              <Label className="mb-2 block">Address Location / Standort</Label>
+              <Label className="mb-2 block">{t('clients.address.mapLabel')}</Label>
               <AddressMap
                 coordinates={addressCoordinates}
                 address={`${addressData.street} ${addressData.houseNumber}, ${addressData.zipCode} ${addressData.city}, ${country}`}
@@ -981,11 +981,11 @@ export const ClientAdress = memo(function ClientAdress({
                     type="reset"
                     onPress={handleReset}
                   >
-                    Reset
+                    {t('clients.address.reset')}
                   </Button>
                 )}
                 <Button className="w-full max-w-50" type="submit">
-                  {isCreateNew ? 'Create' : 'Save'}
+                  {isCreateNew ? t('clients.address.create') : t('clients.address.save')}
                 </Button>
               </div>
             </>

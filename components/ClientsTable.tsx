@@ -31,6 +31,7 @@ import {
 import scrollIntoView from 'scroll-into-view-if-needed'
 import { Client, Groupe } from '@/types/scheduling'
 import { UserStar } from 'lucide-react'
+import { useTranslation } from '@/components/Providers'
 
 interface GenericTabelleProps {
   //  list: Record<string, any>[]
@@ -46,22 +47,33 @@ interface GenericTabelleProps {
   className?: string
 }
 
-export const columns = [
-  { name: 'Kunde', uid: 'client', sortable: true },
-  { name: 'Status', uid: 'status', sortable: true },
-  { name: 'Groupe', uid: 'groupe', sortable: true },
-  { name: 'E-Mail', uid: 'email', sortable: true },
-  { name: 'Straße', uid: 'strasse', sortable: true },
-  { name: 'Hausnummer', uid: 'houseNumber', sortable: true },
-  { name: 'PLZ', uid: 'plz', sortable: true },
-  { name: 'Ort', uid: 'ort', sortable: true },
+const columnDefs = [
+  { uid: 'client', sortable: true },
+  { uid: 'status', sortable: true },
+  { uid: 'groupe', sortable: true },
+  { uid: 'email', sortable: true },
+  { uid: 'strasse', sortable: true },
+  { uid: 'houseNumber', sortable: true },
+  { uid: 'plz', sortable: true },
+  { uid: 'ort', sortable: true },
 ]
 
-export const statusOptions = [
-  { name: 'Active', uid: '0', value: 0 },
-  { name: 'Paused', uid: '1', value: 1 },
-  { name: 'Archive', uid: '2', value: 2 },
+const statusDefs = [
+  { uid: '0', value: 0, key: 'active' },
+  { uid: '1', value: 1, key: 'paused' },
+  { uid: '2', value: 2, key: 'archive' },
 ]
+
+const columnNameKeys: Record<string, string> = {
+  client: 'clients.table.columns.client',
+  status: 'clients.table.columns.status',
+  groupe: 'clients.table.columns.group',
+  email: 'clients.table.columns.email',
+  strasse: 'clients.table.columns.street',
+  houseNumber: 'clients.table.columns.houseNumber',
+  plz: 'clients.table.columns.postalCode',
+  ort: 'clients.table.columns.city',
+}
 const statusColorMap: Record<string, ChipProps['color']> = {
   active: 'success',
   paused: 'warning',
@@ -71,8 +83,19 @@ const INITIAL_VISIBLE_COLUMNS = ['client', 'status', 'groupe']
 
 const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
   const { isShowColumns = false } = props
+  const { t } = useTranslation()
   const [filterValue, setFilterValue] = React.useState('')
   const [isPending, startTransition] = useTransition()
+
+  const columns = React.useMemo(
+    () => columnDefs.map(col => ({ ...col, name: t(columnNameKeys[col.uid]) })),
+    [t]
+  )
+
+  const statusOptions = React.useMemo(
+    () => statusDefs.map(s => ({ ...s, name: t(`clients.table.status.${s.key}`) })),
+    [t]
+  )
 
   const list = React.useMemo(() => {
     return props.list
@@ -278,8 +301,8 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
               </DropdownTrigger>
               <Dropdown.Popover>
                 <Dropdown.Menu aria-label="Actions menu" onAction={key => alert(key)}>
-                  <Dropdown.Item key="view">View </Dropdown.Item>
-                  <Dropdown.Item key="delete">Delete</Dropdown.Item>
+                  <Dropdown.Item key="view">{t('clients.table.view')} </Dropdown.Item>
+                  <Dropdown.Item key="delete">{t('clients.table.delete')}</Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown.Popover>
             </Dropdown>
@@ -305,7 +328,7 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
           <Chip size="md" color="accent" className="capitalize">
             {typeof cellValue === 'object' && cellValue !== null && 'groupeName' in cellValue
               ? cellValue.groupeName
-              : 'N/A'}
+              : t('clients.table.noGroup')}
           </Chip>
         )
       default:
@@ -354,7 +377,7 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
           </div>
         )
     }
-  }, [])
+  }, [t])
 
   const topColumns = React.useMemo(() => {
     return (
@@ -363,7 +386,7 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
           <Dropdown>
             <Button variant="tertiary">
               <ChevronDownIcon className="text-small" />
-              Spalten
+              {t('clients.table.columnsButton')}
             </Button>
             <Dropdown.Popover>
               <Dropdown.Menu
@@ -386,7 +409,7 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
         </div>
       </div>
     )
-  }, [visibleColumns, columns, setVisibleColumns])
+  }, [visibleColumns, columns, setVisibleColumns, t])
 
   const topContent = React.useMemo(() => {
     return (
@@ -403,7 +426,7 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
               </InputGroup.Prefix>
               <InputGroup.Input
                 className="w-full max-w-80"
-                placeholder="Search..."
+                placeholder={t('clients.table.search')}
                 value={filterValue}
               />
             </InputGroup>
@@ -411,7 +434,7 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
           <div className="flex gap-3 w-full sm:w-auto">
             <Dropdown>
               <Button variant="tertiary">
-                Status
+                {t('clients.table.statusFilter')}
                 <ChevronDownIcon className="text-small" />
               </Button>
               <Dropdown.Popover>
@@ -434,7 +457,7 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
             </Dropdown>
             <Dropdown>
               <Button variant="tertiary">
-                Groupe
+                {t('clients.table.groupFilter')}
                 <ChevronDownIcon className="text-small" />
               </Button>
               <Dropdown.Popover>
@@ -456,14 +479,14 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
               </Dropdown.Popover>
             </Dropdown>
             <Button variant="primary" className="ml-auto sm:ml-0" onPress={props.onAddNew}>
-              Add New
+              {t('clients.table.addNew')}
               <PlusIcon />
             </Button>
           </div>
         </div>
       </div>
     )
-  }, [filterValue, onSearchChange, statusFilter, groupFilter, groupItems])
+  }, [filterValue, onSearchChange, statusFilter, groupFilter, groupItems, t, statusOptions])
 
   if (!isMounted) {
     return null
@@ -473,7 +496,7 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
     <div className={`flex flex-col gap-4 h-full ${props.className || ''} select-none`}>
       <div className="flex items-center pl-4 gap-2 shrink-0">
         <UserStar className="w-6 h-6 sm:w-6 sm:h-6  text-primary" />
-        <h1 className="text-lg sm:text-2xl font-bold text-foreground">Kunden</h1>
+        <h1 className="text-lg sm:text-2xl font-bold text-foreground">{t('clients.title')}</h1>
         <TextField
           className="block sm:hidden w-full pl-4 max-w-70"
           name="filter"
@@ -485,7 +508,7 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
             </InputGroup.Prefix>
             <InputGroup.Input
               className="w-full max-w-70"
-              placeholder="Search..."
+              placeholder={t('clients.table.search')}
               value={filterValue}
             />
           </InputGroup>
@@ -529,7 +552,7 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
                   <td colSpan={headerColumns.length + 1} className="h-64 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <Spinner size="md" />
-                      <span className="text-xs text-muted">herunterladen ...</span>
+                      <span className="text-xs text-muted">{t('clients.table.loading')}</span>
                     </div>
                   </td>
                 </tr>
@@ -539,7 +562,7 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
                     colSpan={headerColumns.length + 1}
                     className="h-24 text-center text-default-400"
                   >
-                    Keine Datensätze gefunden
+                    {t('clients.table.noRecords')}
                   </td>
                 </tr>
               ) : (
