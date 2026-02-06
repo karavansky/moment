@@ -149,6 +149,7 @@ export function NotificationDropdown({
                   <button
                     onClick={e => {
                       e.stopPropagation()
+                      setOpen(false)
                       notification.actionProps?.onPress?.()
                       if (notification.actionProps?.href) {
                         router.push(notification.actionProps.href)
