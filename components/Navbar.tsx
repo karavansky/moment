@@ -42,10 +42,12 @@ export default function Navbar({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-end h-16">
           {/* Mobile Center Section: App Store Badge + Language Switcher + Sidebar Menu Button */}
-          <div className="lg:hidden flex items-center gap-3">
+          <div className="md:hidden flex items-center gap-3">
             <LoginLogout />
             <SupportButtons lang={lang} onAction={handleSupportAction} t={t} />
-            <NotificationDropdown tooltipContent={t('navbar.notification_tooltip', 'Notifications')} />
+            <NotificationDropdown
+              tooltipContent={t('navbar.notification_tooltip', 'Notifications')}
+            />
             <div className="flex items-center">
               <LanguageSwitcher currentLang={lang} />
             </div>
@@ -63,10 +65,12 @@ export default function Navbar({
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-6">
-                        <LoginLogout />
+          <div className="hidden md:flex items-center gap-6">
+            <LoginLogout />
 
-            <NotificationDropdown tooltipContent={t('navbar.notification_tooltip', 'Notifications')} />
+            <NotificationDropdown
+              tooltipContent={t('navbar.notification_tooltip', 'Notifications')}
+            />
             {/*  <Link
               href={localizedLink('terms-of-use', lang)}
               className="text-sand-200 hover:text-sand-100 dark:text-gray-300 dark:hover:text-white transition-colors text-sm font-medium text-right"
@@ -89,7 +93,7 @@ export default function Navbar({
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden pb-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300 pointer-events-auto">
+          <div className="md:hidden pb-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300 pointer-events-auto">
             <Link
               href={localizedLink('about', lang)}
               className="block text-sand-200 hover:text-sand-100 dark:text-gray-300 dark:hover:text-white transition-colors text-sm font-medium py-2"
