@@ -17,7 +17,7 @@
     "test:db": "node scripts/test-db-connection.js"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.980.0",
+    "@aws-sdk/client-s3": "^3.987.0",
     "@heroui/badge": "^2.2.18",
     "@heroui/date-picker": "^2.3.31",
     "@heroui/pagination": "^2.2.26",
@@ -38,9 +38,9 @@
     "@types/pg": "^8.16.0",
     "@types/react-window": "^2.0.0",
     "browser-image-compression": "^2.0.2",
-    "country-flag-icons": "^1.6.12",
-    "dotenv": "^17.2.3",
-    "framer-motion": "^12.29.2",
+    "country-flag-icons": "^1.6.13",
+    "dotenv": "^17.2.4",
+    "framer-motion": "^12.34.0",
     "graphql": "^16.12.0",
     "graphql-yoga": "^5.18.0",
     "imap": "^0.8.17",
@@ -51,13 +51,13 @@
     "next": "^16.1.6",
     "next-auth": "^5.0.0-beta.30",
     "next-themes": "^0.4.6",
-    "nodemailer": "^7.0.13",
+    "nodemailer": "^8.0.1",
     "pg": "^8.17.2",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-hook-form": "^7.71.1",
     "react-leaflet": "^5.0.0",
-    "react-window": "^2.2.5"
+    "react-window": "^2.2.6"
   },
   "overrides": {
     "@auth/core": {
@@ -73,14 +73,14 @@
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
     "@types/negotiator": "^0.6.4",
-    "@types/node": "^25.1.0",
+    "@types/node": "^25.2.3",
     "@types/nodemailer": "^7.0.9",
-    "@types/react": "^19.2.10",
+    "@types/react": "^19.2.13",
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.23",
     "baseline-browser-mapping": "^2.9.19",
     "critters": "^0.0.25",
-    "eslint": "^9.39.2",
+    "eslint": "^10.0.0",
     "eslint-config-next": "^16.1.6",
     "postcss": "^8.5.6",
     "prettier": "^3.8.1",
