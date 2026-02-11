@@ -63,17 +63,31 @@ function CalendarView({
   onAddReport,
 }: CalendarViewProps) {
   const { t } = useTranslation()
-  const { isMobile } = usePlatformContext()
+  const { isMobile, isIpad, windowWidth } = usePlatformContext()
   const isCompact = useMediaQuery('(max-width: 640px)')
-  const isMobileLayout = isMobile || isCompact
-  console.log('Rendering CalendarView with isMobileLayout:', isMobileLayout)
+
+  // iPad определяется как isMobile, но если ширина >= 768px, используем десктопный layout
+  const isMobileLayout = (isMobile && windowWidth < 768) || isCompact
+
+  console.log(
+    'Rendering CalendarView with isMobileLayout:',
+    isMobileLayout,
+    'isMobile:',
+    isMobile,
+    'isCompact:',
+    isCompact,
+    'isIpad:',
+    isIpad,
+    'width:',
+    windowWidth
+  )
   const MIN_WEEK_HEIGHT = isMobileLayout ? 60 : 104
   const HEADER_HEIGHT = isMobileLayout ? 38 : 46
   const DAY_HEADER_HEIGHT_DESKTOP = 30
   // Названия дней недели из словаря локализации (не зависят от локали браузера)
   const WEEKDAY_HEADERS_FULL = t('dienstplan.calendar.weekdaysFull') as unknown as string[]
   const WEEKDAY_HEADERS_SHORT = t('dienstplan.calendar.weekdaysShort') as unknown as string[]
-  
+
   // Pre-calculate positions for all weeks
   const { items, totalHeight } = useMemo(() => {
     let currentTop = 0
@@ -226,11 +240,11 @@ function CalendarView({
 
       // Apply scroll
       if (scrollContainerRef.current.scrollTop !== targetTop) {
-         scrollContainerRef.current.scrollTop = targetTop
+        scrollContainerRef.current.scrollTop = targetTop
       }
       // Sync state
       setScrollTop(targetTop)
-      
+
       // Mark as done immediately
       setIsInitialScrollDone(true)
     }
@@ -260,66 +274,68 @@ function CalendarView({
 
   return (
     <CalendarDragProvider>
-    <div className="w-full h-full flex flex-col overflow-hidden select-none">
-      {/* Заголовки дней недели */}
-      <div className="z-10 bg-background/95 backdrop-blur-sm rounded-2xl shadow-sm shrink-0">
-        <div className="grid grid-cols-7 gap-0">
-          {WEEKDAY_HEADERS_SHORT.map((dayShort, index) => (
-            <div
-              key={index}
-              className="lg:min-w-30 p-2 sm:p-3 text-center font-semibold text-default-700 bg-default-50 select-none"
-            >
-              {/* Показываем короткие названия на мобильных, полные на десктопе */}
-              <span className="sm:hidden">{dayShort}</span>
-              <span className="hidden sm:inline">{WEEKDAY_HEADERS_FULL[index]}</span>
+      <div className="w-full h-full flex flex-col overflow-hidden select-none">
+        {/* Заголовки дней недели */}
+        <div className="z-10 bg-background/95 backdrop-blur-sm rounded-2xl shadow-sm shrink-0">
+          <div className="grid grid-cols-7 gap-0">
+            {WEEKDAY_HEADERS_SHORT.map((dayShort, index) => (
+              <div
+                key={index}
+                className="lg:min-w-30 p-2 sm:p-3 text-center font-semibold text-default-700 bg-default-50 select-none"
+              >
+                {/* Показываем короткие названия на мобильных, полные на десктопе */}
+                <span className="sm:hidden">{dayShort}</span>
+                <span className="hidden sm:inline">{WEEKDAY_HEADERS_FULL[index]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Недели (Custom Virtualized List) */}
+        <div className="flex-1 min-h-0 relative" ref={containerRef}>
+          {weeks.length === 0 ? (
+            <div className="p-8 text-center text-default-500">
+              {t('dienstplan.calendar.noAppointmentsToDisplay')}
             </div>
-          ))}
+          ) : (
+            <div
+              ref={scrollContainerRef}
+              className={`w-full h-full overflow-y-auto no-scrollbar ${
+                !isInitialScrollDone ? 'opacity-0' : 'opacity-100'
+              } transition-opacity duration-150`}
+              onScroll={handleScroll}
+            >
+              <div style={{ height: totalHeight, position: 'relative' }} className="w-full">
+                {visibleItems.map(item => (
+                  <div
+                    key={item.week.id}
+                    style={{
+                      position: 'absolute',
+                      top: item.top,
+                      left: 0,
+                      width: '100%',
+                      height: item.height,
+                    }}
+                  >
+                    <div className="h-full w-full overflow-hidden">
+                      <WeekView
+                        week={item.week}
+                        today={today}
+                        selectedDate={selectedDate}
+                        onAppointmentPress={onAppointmentPress}
+                        onExternalDrop={onExternalDrop}
+                        onDayPress={onDayPress}
+                        onEditAppointment={onEditAppointment}
+                        onAddReport={onAddReport}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Недели (Custom Virtualized List) */}
-      <div className="flex-1 min-h-0 relative" ref={containerRef}>
-        {weeks.length === 0 ? (
-          <div className="p-8 text-center text-default-500">{t('dienstplan.calendar.noAppointmentsToDisplay')}</div>
-        ) : (
-          <div
-            ref={scrollContainerRef}
-            className={`w-full h-full overflow-y-auto no-scrollbar ${
-              !isInitialScrollDone ? 'opacity-0' : 'opacity-100'
-            } transition-opacity duration-150`}
-            onScroll={handleScroll}
-          >
-            <div style={{ height: totalHeight, position: 'relative' }} className="w-full">
-              {visibleItems.map(item => (
-                <div
-                  key={item.week.id}
-                  style={{
-                    position: 'absolute',
-                    top: item.top,
-                    left: 0,
-                    width: '100%',
-                    height: item.height,
-                  }}
-                >
-                  <div className="h-full w-full overflow-hidden">
-                    <WeekView
-                      week={item.week}
-                      today={today}
-                      selectedDate={selectedDate}
-                      onAppointmentPress={onAppointmentPress}
-                      onExternalDrop={onExternalDrop}
-                      onDayPress={onDayPress}
-                      onEditAppointment={onEditAppointment}
-                      onAddReport={onAddReport}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
     </CalendarDragProvider>
   )
 }
