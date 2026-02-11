@@ -150,6 +150,14 @@ export const SimpleTooltip: React.FC<SimpleTooltipProps> = ({
     }
   }
 
+  const handleClick = () => {
+    if (showTimeoutRef.current) {
+      clearTimeout(showTimeoutRef.current)
+      showTimeoutRef.current = undefined
+    }
+    setIsVisible(false)
+  }
+
   // Монтируем компонент на клиенте
   useEffect(() => {
     setIsMounted(true)
@@ -282,6 +290,7 @@ export const SimpleTooltip: React.FC<SimpleTooltipProps> = ({
         onMouseLeave={handleMouseLeave}
         onFocus={handleMouseEnter}
         onBlur={handleMouseLeave}
+        onClick={handleClick}
         className={wrapperClassName}
         aria-describedby={isVisible ? tooltipId : undefined}
       >
