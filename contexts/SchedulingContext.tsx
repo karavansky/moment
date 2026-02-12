@@ -159,7 +159,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
       // Восстанавливаем open state из sessionStorage (мост между Providers при навигации / → /[lang]/)
       let appointments = mockData.appointments
       try {
-        const persisted = sessionStorage.getItem('moment_openAppointments')
+        const persisted = sessionStorage.getItem('moment_appointmentOverrides')
         if (persisted) {
           const openMap: Record<string, string> = JSON.parse(persisted) // { appointmentId: openedAtISO }
           console.log(`📌 [SchedulingProvider] Restoring open appointments from sessionStorage:`, openMap)
@@ -406,10 +406,10 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
 
           // Сохраняем в sessionStorage для восстановления при re-mount Providers
           try {
-            const persisted = sessionStorage.getItem('moment_openAppointments')
+            const persisted = sessionStorage.getItem('moment_appointmentOverrides')
             const openMap: Record<string, string> = persisted ? JSON.parse(persisted) : {}
             openMap[appointmentId] = startDate.toISOString()
-            sessionStorage.setItem('moment_openAppointments', JSON.stringify(openMap))
+            sessionStorage.setItem('moment_appointmentOverrides', JSON.stringify(openMap))
           } catch { /* sessionStorage unavailable */ }
 
           // Захватываем client до queueMicrotask для TypeScript narrowing

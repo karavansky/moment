@@ -104,7 +104,7 @@ export const DemoNotificationWorker = () => {
 
     // На корневой странице / — начало нового демо-цикла, чистим предыдущий state
     if (window.location.pathname === '/') {
-      sessionStorage.removeItem('moment_openAppointments')
+      sessionStorage.removeItem('moment_appointmentOverrides')
       console.log('🔔 [Demo Worker] Cleared sessionStorage (root page)')
     }
 
