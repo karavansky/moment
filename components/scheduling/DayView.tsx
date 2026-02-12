@@ -38,9 +38,10 @@ function DayView({
   const [isPressed, setIsPressed] = useState(false)
   // State for controlled Dropdown - stores appointment ID that has open dropdown
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
-  const { isMobile } = usePlatformContext()
+  const { isMobile, windowWidth } = usePlatformContext()
   const isCompact = useMediaQuery('(max-width: 1023px)')
-  const isMobileLayout = isMobile || isCompact
+  // Use windowWidth to allow desktop layout on large tablets
+  const isMobileLayout = (isMobile && windowWidth < 1024) || isCompact
 
   // Ref для таймера задержки снятия выделения
   const dragLeaveTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -340,7 +341,7 @@ function DayView({
                   <AppointmentCard
                     key={appointment.id}
                     appointment={appointment}
-                    onAppointmentClick={!isMobileLayout ? handleAppointmentClick : undefined}
+                    onAppointmentClick={handleAppointmentClick}
                     isDraggable={!isPast}
                   />
                 )
@@ -447,7 +448,7 @@ function DayView({
                 <AppointmentCard
                   key={appointment.id}
                   appointment={appointment}
-                  onAppointmentClick={isMobileLayout ? handleAppointmentClick : undefined}
+                  onAppointmentClick={handleAppointmentClick}
                   isDraggable={!isPast}
                 />
               )

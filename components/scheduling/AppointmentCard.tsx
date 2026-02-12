@@ -18,7 +18,7 @@ interface AppointmentCardProps {
 }
 
 // Threshold for distinguishing short press from long press/drag (ms)
-const SHORT_PRESS_THRESHOLD = 200
+const SHORT_PRESS_THRESHOLD = 500
 
 function AppointmentCard({
   appointment,
@@ -114,8 +114,8 @@ function AppointmentCard({
         // --- Workaround for WebKit alpha channel bug ---
         // Fill the entire canvas with a solid color matching the page background.
         // This avoids transparency, which iOS renders as black corners.
-       // ctx.fillStyle = isDark ? '#111827' : '#ffffff' // bg-gray-900 or white
-       // ctx.fillRect(0, 0, width, height)
+        // ctx.fillStyle = isDark ? '#111827' : '#ffffff' // bg-gray-900 or white
+        // ctx.fillRect(0, 0, width, height)
 
         // Draw rounded rectangle
         const x = 2,
@@ -123,7 +123,7 @@ function AppointmentCard({
           w = width - 4,
           h = height - 4,
           r = 12
-          /*
+        /*
         ctx.beginPath()
         ctx.moveTo(x + r, y)
         ctx.lineTo(x + w - r, y)
@@ -140,9 +140,9 @@ function AppointmentCard({
         ctx.fillStyle = isDark ? '#1f2937' : '#ffffff'
         ctx.fillRect(0, 0, width, height)
         //ctx.fill()
-   //     ctx.lineWidth = 2
-   //     ctx.strokeStyle = '#006FEE'
-   //     ctx.stroke()
+        //     ctx.lineWidth = 2
+        //     ctx.strokeStyle = '#006FEE'
+        //     ctx.stroke()
 
         // Text
         const clientName = appointment.client
@@ -348,21 +348,36 @@ function AppointmentCard({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onClick={e => {
+        console.log('[AppointmentCard] Click', { id: appointment.id })
         e.stopPropagation() // Prevent DayView button from triggering
 
         // Check if this was a short press (not a drag)
         const pressDuration = Date.now() - pressStartTimeRef.current
-        const wasShortPress = pressDuration < SHORT_PRESS_THRESHOLD && !didDragRef.current
+        const wasShortPress = pressDuration < SHORT_PRESS_THRESHOLD
+        // On mobile, rely more on !didDragRef because pressDuration can be unreliable if mousedown is delayed
+        const isValidClick = !didDragRef.current && (wasShortPress || isMobile)
 
-        if (onShortPress && wasShortPress) {
+        if (onShortPress && isValidClick) {
           // For today's appointments - trigger dropdown open
+          console.log('[AppointmentCard] For todays appointments - trigger dropdown open', { id: appointment.id })
           onShortPress(appointment.id)
         } else if (!didDragRef.current) {
+          console.log('[AppointmentCard] Normal click - open modal', { id: appointment.id })
           // Normal click - open modal (for non-today appointments)
           onAppointmentClick?.(appointment.id)
+        } else {
+          console.log('[AppointmentCard] Click ignored due to drag', { id: appointment.id })
         }
+
       }}
       className={`
+        ${
+          forceDesktopView && isReady && isMobile
+            ? 'cursor-pointer' // Force cursor pointer on mobile for desktop version
+            : isDraggable
+              ? 'cursor-move'
+              : 'cursor-pointer'
+        }
         ${isDraggable ? 'cursor-move' : 'cursor-pointer'}
         relative
         select-none
@@ -372,6 +387,12 @@ function AppointmentCard({
         opacity: isDraggingState ? 0.5 : 1,
         transform: isPressed && isDraggable ? 'scale(1.25)' : 'scale(1)',
         boxShadow: isPressed && isDraggable ? '0 8px 24px rgba(0, 0, 0, 0.2)' : undefined,
+      }}
+      onTouchStart={() => {
+        if (isDraggable) {
+          pressStartTimeRef.current = Date.now()
+          didDragRef.current = false
+        }
       }}
     >
       {/* Desktop версия (≥ 800px) - полная информация в Card */}
@@ -402,12 +423,9 @@ function AppointmentCard({
 
           {/* Time */}
 
-
           {/* Address */}
 
-
           {/* Tags */}
-
         </div>
       </div>
 
