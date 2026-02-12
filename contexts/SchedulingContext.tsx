@@ -360,43 +360,61 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
       },
 
       openAppointment: (appointmentId: string, workerId: string) => {
+        console.log(`📌 [openAppointment] Called with appointmentId=${appointmentId}, workerId=${workerId}, timestamp=${Date.now()}`)
+
+        // Сначала обновляем state (чистая функция в setState)
         setState(prev => {
           const appointment = prev.appointments.find(apt => apt.id === appointmentId)
           if (!appointment) {
-            console.warn('Appointment not found:', appointmentId)
+            console.warn('📌 [openAppointment] Appointment not found:', appointmentId)
             return prev
           }
           if (!appointment.client) {
-            console.warn('Client in appointment not found:', appointmentId)
+            console.warn('📌 [openAppointment] Client in appointment not found:', appointmentId)
             return prev
           }
           const worker = appointment.worker.find(w => w.id === workerId)
           if (!worker) {
-            console.warn('Worker not found:', workerId)
+            console.warn('📌 [openAppointment] Worker not found:', workerId)
             return prev
           }
-          console.log('Appointment opened, DOM updated')
-          const startDate = new Date()
-          const notification: Notif = {
-            userID: 'system-demo',
-            type: 'info',
-            title: 'Starting Appointment!',
-            message: `Worker ${worker.name} ${worker.surname} has started ${startDate.getTime().toString()} an appointment with ${appointment.client.name} ${appointment.client.surname} ${appointment.client.street} ${appointment.client.houseNumber}, ${appointment.client.city}.`,
-            actionProps: {
-              children: 'See on map',
-              href: `/map/${appointmentId}`,
-              variant: 'primary',
-            },
-            id: generateId(),
-            date: startDate,
-            isRead: false,
+
+          if (prev.appointments.find(apt => apt.id === appointmentId)?.isOpen) {
+            console.log('📌 [openAppointment] Appointment already open, skipping')
+            return prev
           }
-          addNotification(notification)
+
+          const startDate = new Date()
+          console.log(`📌 [openAppointment] Setting isOpen=true, openedAt=${startDate.toISOString()} for appointment ${appointmentId}`)
+
+          // Захватываем client до queueMicrotask для TypeScript narrowing
+          const client = appointment.client
+
+          // Вызов addNotification ВЫНЕСЕН из setState (был анти-паттерн)
+          // Используем queueMicrotask чтобы вызвать после завершения setState
+          queueMicrotask(() => {
+            console.log(`📌 [openAppointment] Sending notification (via queueMicrotask)`)
+            const notification: Notif = {
+              userID: 'system-demo',
+              type: 'info',
+              title: 'Starting Appointment!',
+              message: `Worker ${worker.name} ${worker.surname} has started ${startDate.getTime().toString()} an appointment with ${client.name} ${client.surname} ${client.street} ${client.houseNumber}, ${client.city}.`,
+              actionProps: {
+                children: 'See on map',
+                href: `/map/${appointmentId}`,
+                variant: 'primary',
+              },
+              id: generateId(),
+              date: startDate,
+              isRead: false,
+            }
+            addNotification(notification)
+          })
 
           return {
             ...prev,
             appointments: prev.appointments.map(apt =>
-              apt.id === appointmentId ? { ...apt, isOpen: true, openedAt: startDate   } : apt
+              apt.id === appointmentId ? { ...apt, isOpen: true, openedAt: startDate } : apt
             ),
           }
         })

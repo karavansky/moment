@@ -158,6 +158,19 @@ function AppointmentsMap({ slug }: AppointmentsMapProps) {
   const { t } = useTranslation()
   const customIcon = useRef(createCustomIcon())
   const dateFormatter = useMemo(() => createDateFormatter(lang), [lang])
+  const mountIdRef = useRef(Math.random().toString(36).slice(2, 8))
+
+  useEffect(() => {
+    console.log(`🗺️ [AppointmentsMap] MOUNTED [${mountIdRef.current}], slug=${slug}, lang=${lang}, pathname=${window.location.pathname}`)
+    return () => {
+      console.log(`🗺️ [AppointmentsMap] UNMOUNTED [${mountIdRef.current}]`)
+    }
+  }, [])
+
+  useEffect(() => {
+    const selected = slug ? todayAppointments.find(a => a.id === slug) : null
+    console.log(`🗺️ [AppointmentsMap] Render [${mountIdRef.current}]: slug=${slug}, total=${todayAppointments.length}, selectedIsOpen=${selected?.isOpen}, selectedOpenedAt=${selected?.openedAt}`)
+  }, [todayAppointments, slug])
 
   // Центр Германии как дефолтный центр
   const defaultCenter: [number, number] = [51.1657, 10.4515]

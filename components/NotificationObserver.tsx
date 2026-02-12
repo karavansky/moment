@@ -4,10 +4,20 @@ import { useEffect, useRef } from 'react'
 import { useNotifications } from '@/contexts/NotificationContext'
 import { toast } from '@heroui/react'
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/hooks/useLanguage';
 
 export const NotificationObserver = () => {
   const { notifications, markNotificationAsRead, requestCloseDropdown } = useNotifications()
   const router = useRouter();
+  const lang = useLanguage();
+  const mountIdRef = useRef(Math.random().toString(36).slice(2, 8))
+
+  useEffect(() => {
+    console.log(`🔵 [NotificationObserver] MOUNTED [${mountIdRef.current}]`)
+    return () => {
+      console.log(`🔵 [NotificationObserver] UNMOUNTED [${mountIdRef.current}]`)
+    }
+  }, [])
 
   // Ref to track processed notification IDs to prevent duplicate toasts
   const processedIds = useRef<Set<string>>(new Set())
@@ -75,9 +85,18 @@ export const NotificationObserver = () => {
             const actionProps = notif.actionProps
               ? {
                   ...notif.actionProps,
+                  // Убираем href чтобы HeroUI не делал параллельную навигацию без lang prefix
+                  href: undefined,
                   onPress: () => {
                     if (toastKey) toast.close(toastKey)
-                    if (notif.actionProps?.href) router.push(notif.actionProps.href)
+                    if (notif.actionProps?.href) {
+                      // Добавляем lang prefix если href начинается с / и не содержит lang
+                      const href = notif.actionProps.href.startsWith(`/${lang}/`)
+                        ? notif.actionProps.href
+                        : `/${lang}${notif.actionProps.href}`
+                      console.log(`🔵 [NotificationObserver] Navigating to: ${href} (original: ${notif.actionProps.href}), lang=${lang}, current pathname: ${window.location.pathname}`)
+                      router.push(href)
+                    }
                     markNotificationAsRead(notif.id)
                   },
                 }

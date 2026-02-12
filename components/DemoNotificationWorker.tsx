@@ -100,7 +100,7 @@ export const DemoNotificationWorker = () => {
   const currentIndexRef = useRef(0);
 
   useEffect(() => {
-    console.log('🔔 [Demo Worker] Mounting...');
+    console.log(`🔔 [Demo Worker] Mounting... timestamp=${Date.now()}, pathname=${window.location.pathname}`);
 
     const showNextNotification = () => {
       const index = currentIndexRef.current;
@@ -129,6 +129,7 @@ export const DemoNotificationWorker = () => {
     let intervalId: NodeJS.Timeout | null = null;
 
     const initialTimeoutId = setTimeout(() => {
+      console.log(`🔔 [Demo Worker] Timeout fired! timestamp=${Date.now()}, pathname=${window.location.pathname}`);
       openAppointment('1HtTFzn7NJ7viLFBvJFN9','3Eoxlmzdr4uEJggFueFnB'); // Open appointment with ID '001'
       //showNextNotification();
 
@@ -140,7 +141,7 @@ export const DemoNotificationWorker = () => {
     console.log('🔔 [Demo Worker] Initial timeout started (30s):', initialTimeoutId);
 
     return () => {
-      console.log('🔔 [Demo Worker] Cleaning up timers');
+      console.log(`🔔 [Demo Worker] Cleaning up timers, timestamp=${Date.now()}`);
       clearTimeout(initialTimeoutId);
       if (intervalId) {
         clearInterval(intervalId);
