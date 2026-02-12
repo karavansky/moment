@@ -156,13 +156,30 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     try {
       const mockData = getAllSampleObjects()
 
+      // Восстанавливаем open state из sessionStorage (мост между Providers при навигации / → /[lang]/)
+      let appointments = mockData.appointments
+      try {
+        const persisted = sessionStorage.getItem('moment_openAppointments')
+        if (persisted) {
+          const openMap: Record<string, string> = JSON.parse(persisted) // { appointmentId: openedAtISO }
+          console.log(`📌 [SchedulingProvider] Restoring open appointments from sessionStorage:`, openMap)
+          appointments = appointments.map(apt => {
+            const openedAtISO = openMap[apt.id]
+            if (openedAtISO) {
+              return { ...apt, isOpen: true, openedAt: new Date(openedAtISO) }
+            }
+            return apt
+          })
+        }
+      } catch { /* sessionStorage unavailable */ }
+
       setState({
         user: mockData.user,
         teams: mockData.teams,
         groups: mockData.groups,
         workers: mockData.workers,
         clients: mockData.clients,
-        appointments: mockData.appointments,
+        appointments,
         reports: mockData.reports,
         services: mockData.services,
         firmaID: mockData.firmaID,
@@ -386,6 +403,14 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
 
           const startDate = new Date()
           console.log(`📌 [openAppointment] Setting isOpen=true, openedAt=${startDate.toISOString()} for appointment ${appointmentId}`)
+
+          // Сохраняем в sessionStorage для восстановления при re-mount Providers
+          try {
+            const persisted = sessionStorage.getItem('moment_openAppointments')
+            const openMap: Record<string, string> = persisted ? JSON.parse(persisted) : {}
+            openMap[appointmentId] = startDate.toISOString()
+            sessionStorage.setItem('moment_openAppointments', JSON.stringify(openMap))
+          } catch { /* sessionStorage unavailable */ }
 
           // Захватываем client до queueMicrotask для TypeScript narrowing
           const client = appointment.client

@@ -102,6 +102,12 @@ export const DemoNotificationWorker = () => {
   useEffect(() => {
     console.log(`🔔 [Demo Worker] Mounting... timestamp=${Date.now()}, pathname=${window.location.pathname}`);
 
+    // На корневой странице / — начало нового демо-цикла, чистим предыдущий state
+    if (window.location.pathname === '/') {
+      sessionStorage.removeItem('moment_openAppointments')
+      console.log('🔔 [Demo Worker] Cleared sessionStorage (root page)')
+    }
+
     const showNextNotification = () => {
       const index = currentIndexRef.current;
 
@@ -130,8 +136,9 @@ export const DemoNotificationWorker = () => {
 
     const initialTimeoutId = setTimeout(() => {
       console.log(`🔔 [Demo Worker] Timeout fired! timestamp=${Date.now()}, pathname=${window.location.pathname}`);
-      openAppointment('1HtTFzn7NJ7viLFBvJFN9','3Eoxlmzdr4uEJggFueFnB'); // Open appointment with ID '001'
-      //showNextNotification();
+      // openAppointment сам проверяет isOpen — если appointment уже восстановлен
+      // из sessionStorage, повторный вызов будет no-op (без notification)
+      openAppointment('1HtTFzn7NJ7viLFBvJFN9','3Eoxlmzdr4uEJggFueFnB');
 
       // Start interval for subsequent notifications
       intervalId = setInterval(showNextNotification, 60000);
