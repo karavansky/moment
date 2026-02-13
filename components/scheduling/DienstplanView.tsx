@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useMemo, useState, useCallback, memo, useTransition } from 'react'
-import { Button, Spinner, Card, ScrollShadow, Chip } from '@heroui/react'
+import { useEffect, useMemo, useState, useCallback, memo, useTransition, useRef } from 'react'
+import { Button, Spinner, Card, ScrollShadow, Chip, Separator } from '@heroui/react'
 import { RefreshCw, Calendar as CalendarIcon, CalendarDays, Plus } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useScheduling } from '@/contexts/SchedulingContext'
@@ -31,9 +31,32 @@ function DienstplanView() {
   const [isPending, startTransition] = useTransition()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isReportModalOpen, setIsReportModalOpen] = useState(false)
+  const monthRef = useRef<HTMLButtonElement>(null)
+  const weekRef = useRef<HTMLButtonElement>(null)
+  const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 })
 
   // Названия месяцев из словаря локализации
   const monthNames = t('dienstplan.calendar.months') as unknown as string[]
+  
+  useEffect(() => {
+    const updateIndicator = () => {
+      if (viewMode === 'month' && monthRef.current) {
+        setIndicatorStyle({
+          width: monthRef.current.offsetWidth,
+          left: monthRef.current.offsetLeft,
+        })
+      } else if (viewMode === 'week' && weekRef.current) {
+        setIndicatorStyle({
+          width: weekRef.current.offsetWidth,
+          left: weekRef.current.offsetLeft,
+        })
+      }
+    }
+
+    updateIndicator()
+    window.addEventListener('resize', updateIndicator)
+    return () => window.removeEventListener('resize', updateIndicator)
+  }, [viewMode, isLoading])
 
   // Генерация календарных недель из appointments
   const calendarWeeks = useMemo(() => {
@@ -170,41 +193,46 @@ function DienstplanView() {
         <div className="flex items-center justify-between gap-2 sm:gap-4">
           <div className="flex items-center gap-2">
             <CalendarIcon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-            <h1 className="text-lg sm:text-2xl font-bold text-foreground">{t('dienstplan.title')}</h1>
+            <h1 className="text-lg sm:text-2xl font-bold text-foreground">
+              {t('dienstplan.title')}
+            </h1>
           </div>
           {/* View mode switcher */}
-          <div className="flex gap-2">
-            <button onClick={handleSetMonthMode}>
-              <Chip
-                color={viewMode === 'month' ? 'accent' : 'default'}
-                variant={viewMode === 'month' ? 'primary' : 'soft'}
-                size="md"
-                className="cursor-pointer"
-              >
+          <div className="flex flex-col relative">
+            <div className="flex gap-2">
+              <Button ref={monthRef} variant={viewMode === 'month' ? 'tertiary' : 'outline'} size="sm" onPress={handleSetMonthMode}>
                 <CalendarIcon className="w-3 h-3 mr-1" />
                 {t('dienstplan.month')}
-              </Chip>
-            </button>
-            <button onClick={handleSetWeekMode}>
-              <Chip
-                color={viewMode === 'week' ? 'accent' : 'default'}
-                variant={viewMode === 'week' ? 'primary' : 'soft'}
-                size="md"
-                className="cursor-pointer"
-              >
+              </Button>
+              <Button ref={weekRef} variant={viewMode === 'week' ? 'tertiary' : 'outline'} size="sm" onPress={handleSetWeekMode}>
                 <CalendarDays className="w-3 h-3 mr-1" />
                 {t('dienstplan.week')}
-              </Chip>
-            </button>
+              </Button>
+            </div>
+            <div className="relative w-full pt-1">
+              <div
+                className="absolute bottom-0 h-0.5 bg-blue-500 transition-all duration-200 ease-out"
+                style={{
+                  width: `${indicatorStyle.width}px`,
+                  left: `${indicatorStyle.left}px`,
+                }}
+              />
+            </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
             {/* Статистика - скрываем на мобильных */}
             <div className="hidden sm:block text-sm text-default-600">
-              {t('dienstplan.totalAppointments')} <span className="font-semibold">{appointments.length}</span>
+              {t('dienstplan.totalAppointments')}{' '}
+              <span className="font-semibold">{appointments.length}</span>
             </div>
 
             {/* Кнопка добавления */}
-            <Button variant="primary" size="sm" onPress={handleAddNew} className="gap-1 rounded-full">
+            <Button
+              variant="primary"
+              size="sm"
+              onPress={handleAddNew}
+              className="gap-1 rounded-full"
+            >
               <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">{t('dienstplan.new')}</span>
             </Button>
@@ -225,7 +253,9 @@ function DienstplanView() {
             <Card className="max-w-sm">
               <Card.Content className="p-8 text-center">
                 <CalendarIcon className="mx-auto h-12 w-12 text-default-400 mb-4" />
-                <h3 className="text-base font-medium text-foreground mb-2">{t('dienstplan.noAppointments')}</h3>
+                <h3 className="text-base font-medium text-foreground mb-2">
+                  {t('dienstplan.noAppointments')}
+                </h3>
                 <p className="text-sm text-default-500">{t('dienstplan.noAppointmentsHint')}</p>
               </Card.Content>
             </Card>

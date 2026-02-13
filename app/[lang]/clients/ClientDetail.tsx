@@ -77,14 +77,14 @@ function ClientDetail({ client, onClose, isCreateNew = false, className }: Clien
         <div className="flex flex-row gap-2 mb-2">
           <Button
             ref={overviewRef}
-            variant={activeTab === 'overview' ? 'tertiary' : 'ghost'}
+            variant={activeTab === 'overview' ? 'tertiary' : 'outline'}
             onPress={onPressOverview}
           >
             <FilePenLine className="w-5 h-5 mr-2" /> {t('clients.detail.overview')}
           </Button>
           <Button
             ref={historyRef}
-            variant={activeTab === 'history' ? 'tertiary' : 'ghost'}
+            variant={activeTab === 'history' ? 'tertiary' : 'outline'}
             onPress={onPressHistory}
           >
             <History className="w-5 h-5 mr-2" /> {t('clients.detail.history')}
