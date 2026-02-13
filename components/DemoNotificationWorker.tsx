@@ -102,12 +102,6 @@ export const DemoNotificationWorker = () => {
   useEffect(() => {
     console.log(`🔔 [Demo Worker] Mounting... timestamp=${Date.now()}, pathname=${window.location.pathname}`);
 
-    // На корневой странице / — начало нового демо-цикла, чистим предыдущий state
-    if (window.location.pathname === '/') {
-      sessionStorage.removeItem('moment_appointmentOverrides')
-      console.log('🔔 [Demo Worker] Cleared sessionStorage (root page)')
-    }
-
     const showNextNotification = () => {
       const index = currentIndexRef.current;
 

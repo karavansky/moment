@@ -26,6 +26,11 @@ import { useNotifications } from '@/contexts/NotificationContext'
 import { flushSync } from 'react-dom'
 import { generateId } from '@/lib/generateId'
 
+// Мост между двумя Providers-экземплярами (/ и /[lang]/)
+// Живёт на уровне JS-модуля: переживает SPA-навигацию, сбрасывается при F5
+// Формат: { appointmentId: Partial<Appointment> } — хранит только изменённые поля
+const appointmentOverrides: Record<string, Partial<Appointment>> = {}
+
 // Типы для группированных данных
 interface GroupedClients {
   group: Groupe
@@ -156,22 +161,19 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     try {
       const mockData = getAllSampleObjects()
 
-      // Восстанавливаем open state из sessionStorage (мост между Providers при навигации / → /[lang]/)
+      // Восстанавливаем open state из module-level переменной (мост между Providers при навигации / → /[lang]/)
       let appointments = mockData.appointments
-      try {
-        const persisted = sessionStorage.getItem('moment_appointmentOverrides')
-        if (persisted) {
-          const openMap: Record<string, string> = JSON.parse(persisted) // { appointmentId: openedAtISO }
-          console.log(`📌 [SchedulingProvider] Restoring open appointments from sessionStorage:`, openMap)
-          appointments = appointments.map(apt => {
-            const openedAtISO = openMap[apt.id]
-            if (openedAtISO) {
-              return { ...apt, isOpen: true, openedAt: new Date(openedAtISO) }
-            }
-            return apt
-          })
-        }
-      } catch { /* sessionStorage unavailable */ }
+      const overrideKeys = Object.keys(appointmentOverrides)
+      if (overrideKeys.length > 0) {
+        console.log(`📌 [SchedulingProvider] Restoring open appointments from appointmentOverrides:`, { ...appointmentOverrides })
+        appointments = appointments.map(apt => {
+          const overrides = appointmentOverrides[apt.id]
+          if (overrides) {
+            return { ...apt, ...overrides }
+          }
+          return apt
+        })
+      }
 
       setState({
         user: mockData.user,
@@ -404,13 +406,12 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
           const startDate = new Date()
           console.log(`📌 [openAppointment] Setting isOpen=true, openedAt=${startDate.toISOString()} for appointment ${appointmentId}`)
 
-          // Сохраняем в sessionStorage для восстановления при re-mount Providers
-          try {
-            const persisted = sessionStorage.getItem('moment_appointmentOverrides')
-            const openMap: Record<string, string> = persisted ? JSON.parse(persisted) : {}
-            openMap[appointmentId] = startDate.toISOString()
-            sessionStorage.setItem('moment_appointmentOverrides', JSON.stringify(openMap))
-          } catch { /* sessionStorage unavailable */ }
+          // Сохраняем в module-level переменную для восстановления при re-mount Providers
+          appointmentOverrides[appointmentId] = {
+            ...appointmentOverrides[appointmentId],
+            isOpen: true,
+            openedAt: startDate,
+          }
 
           // Захватываем client до queueMicrotask для TypeScript narrowing
           const client = appointment.client
