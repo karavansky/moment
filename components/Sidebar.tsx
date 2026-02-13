@@ -114,7 +114,7 @@ const MenuItemComponent = memo(({
           isActive ? activeClassName : 'text-default-700 hover:bg-default-100'
         }`}
       >
-        <Icon className="sidebar-menu-icon w-5 h-5 mr-3" />
+        <Icon className="sidebar-menu-icon w-6 h-6 mr-3" />
         {isExpanded && <span className="sidebar-label">{label}</span>}
       </Link>
     </SimpleTooltip>

@@ -8,6 +8,7 @@ import { useState, useTransition } from 'react'
 import { useTranslation } from '@/components/Providers'
 import { motion, AnimatePresence } from 'framer-motion'
 import ClientDetail from './ClientDetail'
+import { generateId } from '@/lib/generate-id'
 
 export default function ClientsView() {
   const { clients, groups, isLoading, firmaID } = useScheduling()
@@ -28,7 +29,7 @@ export default function ClientsView() {
     startTransition(() => {
       // Создаем пустой объект клиента с дефолтными значениями
       const newClient: Client = {
-        id: crypto.randomUUID(),
+        id: generateId(),
         firmaID: firmaID,
         status: 0,
         name: '',

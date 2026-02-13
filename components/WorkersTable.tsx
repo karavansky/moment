@@ -23,7 +23,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDownIcon, PlusIcon, SearchIcon, VerticalDotsIcon } from '@/components/icons'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import { Client, Worker, Team } from '@/types/scheduling'
-import { UserStar } from 'lucide-react'
+import { Users } from 'lucide-react'
 
 interface WorkersTableProps {
   //  list: Record<string, any>[]
@@ -463,7 +463,7 @@ const WorkersTable = function WorkersTable(props: WorkersTableProps) {
   return (
     <div className={`flex flex-col gap-4 h-full ${props.className || ''} select-none`}>
       <div className="flex items-center pl-4 gap-2 shrink-0">
-        <UserStar className="w-6 h-6 sm:w-6 sm:h-6  text-primary" />
+        <Users className="w-6 h-6 sm:w-6 sm:h-6  text-primary" />
         <h1 className="text-lg sm:text-2xl font-bold text-foreground">Fachkräfte</h1>
         <TextField
           className="block sm:hidden w-full pl-4 max-w-70"

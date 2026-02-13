@@ -8,6 +8,7 @@ import { useState, useTransition } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import WorkerDetail from './WorkerDetail'
 import WorkersTable from '@/components/WorkersTable'
+import { generateId } from '@/lib/generate-id'
 
 export default function WorkersView() {
   const { workers, teams, isLoading, firmaID } = useScheduling()
@@ -27,7 +28,7 @@ export default function WorkersView() {
     startTransition(() => {
       // Создаем пустой объект клиента с дефолтными значениями
       const newWorker: Worker = {
-        id: crypto.randomUUID(),
+        id: generateId(),
         firmaID: firmaID,
         status: 0,
         name: '',
