@@ -11,6 +11,7 @@ export interface User {
   date: Date
   provider: string
   isAdmin: boolean
+  firmaID: string | null
 }
 
 /**
@@ -51,20 +52,21 @@ export async function createUser(
 export async function createUserWithPassword(
   name: string,
   email: string,
-  passwordHash: string
+  passwordHash: string,
+  firmaID: string
 ): Promise<User> {
   const userID = generateId(20)
   const date = new Date()
 
   const query = `
-    INSERT INTO users ("userID", "name", "email", "passwordHash", "date", "provider", "emailVerified")
-    VALUES ($1, $2, $3, $4, $5, 'credentials', FALSE)
+    INSERT INTO users ("userID", "name", "email", "passwordHash", "date", "provider", "emailVerified", "firmaID")
+    VALUES ($1, $2, $3, $4, $5, 'credentials', FALSE, $6)
     RETURNING *
   `
 
-  const values = [userID, name, email, passwordHash, date]
+  const values = [userID, name, email, passwordHash, date, firmaID]
 
-  console.log('[createUserWithPassword] Creating credentials user:', { userID, name, email })
+  console.log('[createUserWithPassword] Creating credentials user:', { userID, name, email, firmaID })
 
   try {
     const result = await pool.query(query, values)
@@ -161,9 +163,10 @@ export async function updatePassword(userID: string, passwordHash: string): Prom
  */
 export async function getAllUsers(): Promise<Omit<User, 'passwordHash' | 'token'>[]> {
   const query = `
-    SELECT "userID", "name", "email", "emailVerified", "date", "provider", "isAdmin"
-    FROM users
-    ORDER BY "date" DESC
+    SELECT u."userID", u."name", u."email", u."emailVerified", u."date", u."provider", u."isAdmin", u."firmaID", o."name" AS "organisationName"
+    FROM users u
+    LEFT JOIN organisations o ON u."firmaID" = o."firmaID"
+    ORDER BY u."date" DESC
   `
 
   try {

@@ -3,13 +3,14 @@ import { getUserByEmail, createUserWithPassword, updatePassword } from '@/lib/us
 import { hashPassword } from '@/lib/password'
 import { createVerificationToken } from '@/lib/verification-tokens'
 import { sendEmailVerification, sendNewUserNotification } from '@/lib/email'
+import { createOrganisation } from '@/lib/organisations'
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password, turnstileToken } = await request.json()
+    const { name, email, password, organisation, turnstileToken } = await request.json()
 
-    if (!name || !email || !password) {
-      return NextResponse.json({ error: 'Name, email and password are required' }, { status: 400 })
+    if (!name || !email || !password || !organisation) {
+      return NextResponse.json({ error: 'Name, email, password and organisation are required' }, { status: 400 })
     }
 
     if (password.length < 8) {
@@ -56,7 +57,8 @@ export async function POST(request: Request) {
       user = existingUser
       isResend = true
     } else {
-      user = await createUserWithPassword(name, email, passwordHash)
+      const org = await createOrganisation(organisation)
+      user = await createUserWithPassword(name, email, passwordHash, org.firmaID)
     }
 
     const token = await createVerificationToken(user.userID, 'email_verify')

@@ -14,11 +14,11 @@ export default function SignInClient({ lang }: SignInClientProps) {
   const { t } = useTranslation()
 
   const handleSignIn = async (provider: 'google' | 'apple') => {
-    await signIn(provider, `/${lang}/support`)
+    await signIn(provider, `/${lang}`)
   }
 
   const handleCredentialsSignIn = async (email: string, password: string) => {
-    return signInWithCredentials(email, password, `/${lang}/support`)
+    return signInWithCredentials(email, password, `/${lang}`)
   }
 
   return (

@@ -27,6 +27,7 @@ export default function RegisterClient({ lang }: RegisterClientProps) {
     const formData = new FormData(e.currentTarget)
     const name = formData.get('name')?.toString() || ''
     const email = formData.get('email')?.toString() || ''
+    const organisation = formData.get('organisation')?.toString() || ''
     const password = formData.get('password')?.toString() || ''
     const confirmPassword = formData.get('confirmPassword')?.toString() || ''
 
@@ -35,7 +36,7 @@ export default function RegisterClient({ lang }: RegisterClientProps) {
       return
     }
 
-    if (!turnstileToken) {
+    if (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !turnstileToken) {
       setError(t('auth.captchaRequired', 'Please complete the CAPTCHA verification'))
       return
     }
@@ -46,7 +47,7 @@ export default function RegisterClient({ lang }: RegisterClientProps) {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, turnstileToken }),
+        body: JSON.stringify({ name, email, password, organisation, turnstileToken }),
       })
 
       const data = await res.json()
@@ -148,6 +149,18 @@ export default function RegisterClient({ lang }: RegisterClientProps) {
 
         <TextField
           isRequired
+          name="organisation"
+          type="text"
+          maxLength={80}
+          autoComplete="organization"
+        >
+          <Label>{t('auth.organisation', 'Organisation')}</Label>
+          <Input placeholder={t('auth.organisationPlaceholder', 'Your company or organisation')} />
+          <FieldError />
+        </TextField>
+
+        <TextField
+          isRequired
           name="password"
           type="password"
           minLength={8}
@@ -184,6 +197,10 @@ export default function RegisterClient({ lang }: RegisterClientProps) {
               siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
               onSuccess={setTurnstileToken}
               onExpire={() => setTurnstileToken(null)}
+              onError={(code) => {
+                console.error('[Turnstile] Error code:', code)
+                setError(`CAPTCHA failed to load (${code}). Check domain settings in Cloudflare Turnstile.`)
+              }}
               options={{ theme: 'auto', size: 'normal' }}
             />
           </div>

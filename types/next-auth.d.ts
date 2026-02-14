@@ -7,6 +7,8 @@ declare module 'next-auth' {
       provider?: string
       isAdmin?: boolean
       sessionId?: string
+      firmaID?: string
+      organisationName?: string
     } & DefaultSession['user']
   }
 
@@ -14,6 +16,7 @@ declare module 'next-auth' {
     id: string
     provider?: string
     isAdmin?: boolean
+    firmaID?: string
   }
 }
 
@@ -24,5 +27,7 @@ declare module 'next-auth/jwt' {
     userId?: string
     isAdmin?: boolean
     sessionId?: string
+    firmaID?: string
+    organisationName?: string
   }
 }

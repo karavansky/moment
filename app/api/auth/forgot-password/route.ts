@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getUserByEmail } from '@/lib/users'
 import { createVerificationToken } from '@/lib/verification-tokens'
 import { sendPasswordReset } from '@/lib/email'
+import { getLocale } from '@/lib/get-locale'
 
 export async function POST(request: Request) {
   try {
@@ -19,9 +20,10 @@ export async function POST(request: Request) {
     }
 
     const token = await createVerificationToken(user.userID, 'password_reset')
+    const lang = await getLocale()
 
     const baseUrl = process.env.NEXTAUTH_URL || 'https://moment-lbs.app'
-    const resetUrl = `${baseUrl}/en/auth/reset-password?token=${token}`
+    const resetUrl = `${baseUrl}/${lang}/auth/reset-password?token=${token}`
 
     await sendPasswordReset({ email: user.email, name: user.name, resetUrl })
 

@@ -50,7 +50,7 @@ export default function UsersView() {
 
   return (
     <div
-      className={`w-full flex flex-col gap-1 ${
+      className={`w-full flex flex-col gap-1  ${
         selectedUser ? 'h-full overflow-hidden' : 'h-full sm:overflow-hidden overflow-auto'
       }`}
     >

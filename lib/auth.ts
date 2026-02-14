@@ -7,6 +7,7 @@ import { createUser, getUserByEmail, updateUserToken } from './users'
 import { sendNewUserNotification } from './email'
 import { verifyPassword } from './password'
 import { createSession, getSession, deleteSession } from './sessions'
+import { getOrganisationById } from './organisations'
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   debug: process.env.NODE_ENV === 'development',
@@ -58,6 +59,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email,
           provider: 'credentials',
           isAdmin: user.isAdmin,
+          firmaID: user.firmaID ?? undefined,
         }
       },
     }),
@@ -86,6 +88,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // Credentials: user.id уже содержит userID из authorize()
           token.userId = user.id
           token.isAdmin = user.isAdmin
+          token.firmaID = user.firmaID
+          if (user.firmaID) {
+            try {
+              const org = await getOrganisationById(user.firmaID)
+              token.organisationName = org?.name
+            } catch {
+              // ignore
+            }
+          }
         } else {
           // OAuth: создаем/обновляем пользователя в БД
           try {
@@ -100,6 +111,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 }
                 token.userId = existingUser.userID
                 token.isAdmin = existingUser.isAdmin
+                token.firmaID = existingUser.firmaID ?? undefined
+                if (existingUser.firmaID) {
+                  const org = await getOrganisationById(existingUser.firmaID)
+                  token.organisationName = org?.name
+                }
               } else {
                 console.log('[JWT Callback] User does not exist, creating new user...')
                 const newUser = await createUser(
@@ -182,6 +198,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
         if (token.sessionId) {
           session.user.sessionId = token.sessionId as string
+        }
+        if (token.firmaID) {
+          session.user.firmaID = token.firmaID as string
+        }
+        if (token.organisationName) {
+          session.user.organisationName = token.organisationName as string
         }
       }
       return session

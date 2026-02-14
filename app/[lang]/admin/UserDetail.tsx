@@ -37,6 +37,28 @@ export default memo(UserDetail)
 function UserDetail({ user, onClose, onUserUpdated, className }: UserDetailProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'sessions'>('overview')
   const [isPending, startTransition] = useTransition()
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleDeleteUser = async () => {
+    if (!confirmDelete) {
+      setConfirmDelete(true)
+      return
+    }
+    setIsDeleting(true)
+    try {
+      const res = await fetch(`/api/admin/users?userID=${user.userID}`, { method: 'DELETE' })
+      if (res.ok) {
+        onUserUpdated?.()
+        onClose()
+      }
+    } catch {
+      // ignore
+    } finally {
+      setIsDeleting(false)
+      setConfirmDelete(false)
+    }
+  }
 
   const overviewRef = useRef<HTMLButtonElement>(null)
   const sessionsRef = useRef<HTMLButtonElement>(null)
@@ -88,6 +110,17 @@ function UserDetail({ user, onClose, onUserUpdated, className }: UserDetailProps
           >
             Sessions
           </Button>
+          <div className="ml-auto">
+            <Button
+              variant="danger"
+              size="sm"
+              isDisabled={isDeleting}
+              onPress={handleDeleteUser}
+            >
+              {isDeleting ? <Spinner size="sm" /> : <Trash2 className="w-4 h-4" />}
+              {confirmDelete ? 'Confirm?' : 'Delete User'}
+            </Button>
+          </div>
         </div>
         <div className="relative w-full">
           <Separator />
@@ -137,6 +170,7 @@ function UserOverview({ user, onUserUpdated }: { user: UserRow; onUserUpdated?: 
   const [formData, setFormData] = useState({
     name: user.name || '',
     email: user.email || '',
+    organisationName: user.organisationName || '',
     isAdmin: user.isAdmin,
     emailVerified: user.emailVerified,
   })
@@ -147,6 +181,7 @@ function UserOverview({ user, onUserUpdated }: { user: UserRow; onUserUpdated?: 
     setFormData({
       name: user.name || '',
       email: user.email || '',
+      organisationName: user.organisationName || '',
       isAdmin: user.isAdmin,
       emailVerified: user.emailVerified,
     })
@@ -155,6 +190,7 @@ function UserOverview({ user, onUserUpdated }: { user: UserRow; onUserUpdated?: 
   const isChanged =
     formData.name !== (user.name || '') ||
     formData.email !== (user.email || '') ||
+    formData.organisationName !== (user.organisationName || '') ||
     formData.isAdmin !== user.isAdmin ||
     formData.emailVerified !== user.emailVerified
 
@@ -162,6 +198,7 @@ function UserOverview({ user, onUserUpdated }: { user: UserRow; onUserUpdated?: 
     setFormData({
       name: user.name || '',
       email: user.email || '',
+      organisationName: user.organisationName || '',
       isAdmin: user.isAdmin,
       emailVerified: user.emailVerified,
     })
@@ -177,7 +214,7 @@ function UserOverview({ user, onUserUpdated }: { user: UserRow; onUserUpdated?: 
       const res = await fetch('/api/admin/users', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userID: user.userID, ...formData }),
+        body: JSON.stringify({ userID: user.userID, firmaID: user.firmaID, ...formData }),
       })
 
       if (!res.ok) {
@@ -221,6 +258,16 @@ function UserOverview({ user, onUserUpdated }: { user: UserRow; onUserUpdated?: 
               onChange={(value) => setFormData(prev => ({ ...prev, email: value }))}
             >
               <Label>Email</Label>
+              <Input />
+            </TextField>
+
+            <TextField
+              name="organisationName"
+              value={formData.organisationName}
+              onChange={(value) => setFormData(prev => ({ ...prev, organisationName: value }))}
+              maxLength={80}
+            >
+              <Label>Organisation</Label>
               <Input />
             </TextField>
 

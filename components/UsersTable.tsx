@@ -25,11 +25,14 @@ export interface UserRow {
   date: string
   provider: string
   isAdmin: boolean
+  firmaID: string | null
+  organisationName: string | null
 }
 
 const columns = [
   { name: 'User', uid: 'name', sortable: true },
   { name: 'Email', uid: 'email', sortable: true },
+  { name: 'Organisation', uid: 'organisationName', sortable: true },
   { name: 'Provider', uid: 'provider', sortable: true },
   { name: 'Verified', uid: 'emailVerified', sortable: true },
   { name: 'Admin', uid: 'isAdmin', sortable: true },
@@ -53,7 +56,7 @@ const providerColorMap: Record<string, ChipProps['color']> = {
   credentials: 'warning',
 }
 
-const INITIAL_VISIBLE_COLUMNS = ['name', 'email', 'provider', 'emailVerified', 'isAdmin', 'date']
+const INITIAL_VISIBLE_COLUMNS = ['name', 'email', 'organisationName', 'provider', 'emailVerified', 'isAdmin', 'date']
 
 interface UsersTableProps {
   list: UserRow[]
@@ -188,6 +191,12 @@ export default function UsersTable({ list, isLoading, onRowClick, className }: U
         return (
           <div className="flex flex-col">
             <p className="text-small">{user.email}</p>
+          </div>
+        )
+      case 'organisationName':
+        return (
+          <div className="flex flex-col">
+            <p className="text-small">{user.organisationName || '—'}</p>
           </div>
         )
       case 'provider':

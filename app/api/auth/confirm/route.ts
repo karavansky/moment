@@ -3,6 +3,8 @@ import { headers } from 'next/headers'
 import { getVerificationToken, markTokenUsed } from '@/lib/verification-tokens'
 import { verifyUserEmail, getUserById } from '@/lib/users'
 import { createSession } from '@/lib/sessions'
+import { getOrganisationById } from '@/lib/organisations'
+import { getLocale } from '@/lib/get-locale'
 import { encode } from 'next-auth/jwt'
 
 function getBaseUrl(): string {
@@ -16,9 +18,10 @@ function redirectTo(path: string): NextResponse {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const token = searchParams.get('token')
+  const lang = await getLocale()
 
   if (!token) {
-    return redirectTo('/en/auth/signin?error=missing_token')
+    return redirectTo(`/${lang}/auth/confirm?status=invalid`)
   }
 
   try {
@@ -26,12 +29,12 @@ export async function GET(request: Request) {
 
     if (!verificationToken) {
       console.error('[Confirm API] Token not found or expired/used. Token (first 8 chars):', token.substring(0, 8))
-      return redirectTo('/en/auth/signin?error=invalid_token')
+      return redirectTo(`/${lang}/auth/confirm?status=expired`)
     }
 
     if (verificationToken.type !== 'email_verify') {
       console.error('[Confirm API] Wrong token type:', verificationToken.type)
-      return redirectTo('/en/auth/signin?error=invalid_token')
+      return redirectTo(`/${lang}/auth/confirm?status=invalid`)
     }
 
     await verifyUserEmail(verificationToken.userID)
@@ -39,7 +42,7 @@ export async function GET(request: Request) {
 
     const user = await getUserById(verificationToken.userID)
     if (!user) {
-      return redirectTo('/en/auth/signin?error=user_not_found')
+      return redirectTo(`/${lang}/auth/confirm?status=invalid`)
     }
 
     // Создаём DB-сессию с IP и User-Agent
@@ -56,6 +59,13 @@ export async function GET(request: Request) {
       ? '__Secure-authjs.session-token'
       : 'authjs.session-token'
 
+    // Загружаем организацию
+    let organisationName: string | undefined
+    if (user.firmaID) {
+      const org = await getOrganisationById(user.firmaID)
+      organisationName = org?.name
+    }
+
     // Создаём JWT-токен для автологина
     const jwtToken = await encode({
       token: {
@@ -66,13 +76,15 @@ export async function GET(request: Request) {
         provider: 'credentials',
         isAdmin: user.isAdmin,
         sessionId: dbSession.sessionID,
+        firmaID: user.firmaID ?? undefined,
+        organisationName,
       },
       secret: process.env.AUTH_SECRET!,
       salt: cookieName,
     })
 
-    // Редиректим в приложение с установленной cookie
-    const response = redirectTo('/en/support')
+    // Редиректим на страницу подтверждения с установленной cookie
+    const response = redirectTo(`/${lang}/auth/confirm?status=success`)
 
     response.cookies.set(cookieName, jwtToken, {
       httpOnly: true,
@@ -85,6 +97,7 @@ export async function GET(request: Request) {
     return response
   } catch (error) {
     console.error('[Confirm API] Error:', error)
-    return redirectTo('/en/auth/signin?error=verification_failed')
+    const fallbackLang = await getLocale().catch(() => 'en')
+    return redirectTo(`/${fallbackLang}/auth/confirm?status=error`)
   }
 }

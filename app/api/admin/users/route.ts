@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth'
 import { NextResponse } from 'next/server'
 import { getUserByEmail, getAllUsers, updateUser, deleteUser } from '@/lib/users'
 import { getUserSessions, deleteSession, deleteAllUserSessions } from '@/lib/sessions'
+import { updateOrganisation } from '@/lib/organisations'
 
 async function checkAdmin() {
   const session = await auth()
@@ -38,11 +39,19 @@ export async function PATCH(request: Request) {
 
   try {
     const body = await request.json()
-    const { userID, ...fields } = body
+    const { userID, organisationName, ...fields } = body
 
     if (!userID) {
       return NextResponse.json({ error: 'userID is required' }, { status: 400 })
     }
+
+    // Обновить название организации если передано
+    if (organisationName !== undefined && fields.firmaID) {
+      await updateOrganisation(fields.firmaID, organisationName)
+    }
+
+    // Убираем firmaID из полей обновления user (он не меняется)
+    delete fields.firmaID
 
     const updatedUser = await updateUser(userID, fields)
     if (!updatedUser) {
