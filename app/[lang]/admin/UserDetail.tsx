@@ -228,7 +228,7 @@ function UserOverview({ user, onUserUpdated }: { user: UserRow; onUserUpdated?: 
               <Label>Email Verified</Label>
               <Switch
                 isSelected={formData.emailVerified}
-                onChange={(e) => setFormData(prev => ({ ...prev, emailVerified: e.target.checked }))}
+                onChange={(value: boolean) => setFormData(prev => ({ ...prev, emailVerified: value }))}
               />
             </div>
 
@@ -236,7 +236,7 @@ function UserOverview({ user, onUserUpdated }: { user: UserRow; onUserUpdated?: 
               <Label>Admin</Label>
               <Switch
                 isSelected={formData.isAdmin}
-                onChange={(e) => setFormData(prev => ({ ...prev, isAdmin: e.target.checked }))}
+                onChange={(value: boolean) => setFormData(prev => ({ ...prev, isAdmin: value }))}
               />
             </div>
 
