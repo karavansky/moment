@@ -2,6 +2,7 @@ import NextAuth from 'next-auth'
 import Google from 'next-auth/providers/google'
 import Apple from 'next-auth/providers/apple'
 import Credentials from 'next-auth/providers/credentials'
+import { headers } from 'next/headers'
 import { createUser, getUserByEmail, updateUserToken } from './users'
 import { sendNewUserNotification } from './email'
 import { verifyPassword } from './password'
@@ -131,10 +132,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           }
         }
 
-        // Создаём сессию в БД для всех провайдеров
+        // Создаём сессию в БД для всех провайдеров (с IP и User-Agent)
         try {
           if (token.userId) {
-            const session = await createSession(token.userId as string)
+            let ip: string | undefined
+            let userAgent: string | undefined
+            try {
+              const headersList = await headers()
+              ip = headersList.get('x-forwarded-for')?.split(',')[0]?.trim()
+                || headersList.get('x-real-ip')
+                || undefined
+              userAgent = headersList.get('user-agent') || undefined
+            } catch {
+              // headers() may not be available in some contexts
+            }
+            const session = await createSession(token.userId as string, userAgent, ip)
             token.sessionId = session.sessionID
           }
         } catch (error) {

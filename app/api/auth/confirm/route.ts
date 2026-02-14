@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { headers } from 'next/headers'
 import { getVerificationToken, markTokenUsed } from '@/lib/verification-tokens'
 import { verifyUserEmail, getUserById } from '@/lib/users'
 import { createSession } from '@/lib/sessions'
@@ -41,8 +42,13 @@ export async function GET(request: Request) {
       return redirectTo('/en/auth/signin?error=user_not_found')
     }
 
-    // Создаём DB-сессию
-    const dbSession = await createSession(user.userID)
+    // Создаём DB-сессию с IP и User-Agent
+    const headersList = await headers()
+    const ip = headersList.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || headersList.get('x-real-ip')
+      || null
+    const userAgent = headersList.get('user-agent') || null
+    const dbSession = await createSession(user.userID, userAgent ?? undefined, ip ?? undefined)
 
     // Имя cookie зависит от secure-режима (production использует __Secure- префикс)
     const isProduction = process.env.NODE_ENV === 'production'

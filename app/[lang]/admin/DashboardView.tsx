@@ -9,16 +9,18 @@ import Seaweed from './Seaweed'
 import { Button, Separator } from '@heroui/react'
 import Dictionary from './Dictionary'
 import AdminTicketsList from './AdminTicketsList'
+import UsersView from './UsersView'
 
 export default function DashboardView() {
   const { clients, groups, isLoading, firmaID } = useScheduling()
   const lang = useLanguage()
-  const [activeTab, setActiveTab] = useState<'tickets' | 'seaweed' | 'dict'>('tickets')
+  const [activeTab, setActiveTab] = useState<'tickets' | 'seaweed' | 'dict' | 'users'>('tickets')
   const [isPending, startTransition] = useTransition()
 
   const ticketsRef = useRef<HTMLButtonElement>(null)
   const seaweedRef = useRef<HTMLButtonElement>(null)
   const dictRef = useRef<HTMLButtonElement>(null)
+  const usersRef = useRef<HTMLButtonElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 })
 
   useEffect(() => {
@@ -48,6 +50,14 @@ export default function DashboardView() {
             })
           }
           break
+        case 'users':
+          if (usersRef.current) {
+            setIndicatorStyle({
+              width: usersRef.current.offsetWidth,
+              left: usersRef.current.offsetLeft,
+            })
+          }
+          break
       }
     }
     updateIndicator()
@@ -70,6 +80,12 @@ export default function DashboardView() {
   const onPressDict = useCallback(() => {
     startTransition(() => {
       setActiveTab('dict')
+    })
+  }, [startTransition])
+
+  const onPressUsers = useCallback(() => {
+    startTransition(() => {
+      setActiveTab('users')
     })
   }, [startTransition])
 
@@ -100,6 +116,13 @@ export default function DashboardView() {
             onPress={onPressDict}
           >
             Dictionary
+          </Button>
+          <Button
+            ref={usersRef}
+            variant={activeTab === 'users' ? 'tertiary' : 'ghost'}
+            onPress={onPressUsers}
+          >
+            Users
           </Button>
         </div>
         <div className="relative w-full">
@@ -156,6 +179,19 @@ export default function DashboardView() {
                     className="h-full"
                   >
                     <Dictionary />
+                  </motion.div>
+                )
+              case 'users':
+                return (
+                  <motion.div
+                    key="users"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="h-full"
+                  >
+                    <UsersView />
                   </motion.div>
                 )
             }

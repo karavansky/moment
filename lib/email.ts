@@ -200,7 +200,7 @@ export async function sendTicketConfirmation(data: TicketEmailData): Promise<voi
         <p>If you have any additional information to add, please reply to this email with your ticket ID <strong>#${ticketID}</strong>.</p>
       </div>
       <div class="footer">
-        <p>QuailBreeder Support Team</p>
+        <p>Moment LBS Support Team</p>
         <p>This is an automated email. Please do not reply directly to this message.</p>
       </div>
     </body>
@@ -231,27 +231,27 @@ What happens next?
 
 If you have any additional information to add, please reply to this email with your ticket ID #${ticketID}.
 
-QuailBreeder Support Team
+Moment LBS Support Team
 This is an automated email. Please do not reply directly to this message.
   `
 
   // Send confirmation to user
   const userMailOptions = {
-    from: process.env.SMTP_FROM || 'info@quailbreeder.net',
+    from: process.env.SMTP_FROM || 'info@moment-lbs.app',
     to: userEmail,
     subject: `[Ticket #${ticketID}] ${subject}`,
     text: textContent,
     html: htmlContent,
     headers: {
       // Header required for bulk mail senders to prevent spam classification
-      'List-Unsubscribe': `<mailto:${process.env.SMTP_FROM || 'info@quailbreeder.net'}?subject=unsubscribe>`,
+      'List-Unsubscribe': `<mailto:${process.env.SMTP_FROM || 'info@moment-lbs.app'}?subject=unsubscribe>`,
     },
   }
 
   // Send notification to admin
   const adminMailOptions = {
-    from: process.env.SMTP_FROM || 'info@quailbreeder.net',
-    to: 'quailbreeding@gmail.com',
+    from: process.env.SMTP_FROM || 'info@moment-lbs.app',
+    to: 'info@moment-lbs.app',
     subject: `[New Ticket #${ticketID}] ${priorityLabel} - ${subject}`,
     text: `New support ticket received:\n\n${textContent}`,
     html: htmlContent,
@@ -352,6 +352,10 @@ export async function sendNewUserNotification(data: NewUserEmailData): Promise<v
           background-color: #dbeafe;
           color: #1e3a8a;
         }
+        .provider-credentials {
+          background-color: #dcfce7;
+          color: #166534;
+        }
         .footer {
           text-align: center;
           padding: 20px;
@@ -365,7 +369,7 @@ export async function sendNewUserNotification(data: NewUserEmailData): Promise<v
         <h1>🎉 New User Registration</h1>
       </div>
       <div class="content">
-        <p>A new user has successfully registered on QuailBreeder platform.</p>
+        <p>A new user has successfully registered on Moment LBS platform.</p>
 
         <div class="user-info">
           <h2 style="margin-top: 0; color: #10b981;">User Details</h2>
@@ -392,11 +396,11 @@ export async function sendNewUserNotification(data: NewUserEmailData): Promise<v
         </div>
 
         <p style="color: #6b7280; font-size: 14px;">
-          This is an automated notification from the QuailBreeder user registration system.
+          This is an automated notification from the Moment LBS user registration system.
         </p>
       </div>
       <div class="footer">
-        <p>QuailBreeder Admin Notifications</p>
+        <p>Moment LBS Admin Notifications</p>
         <p>This is an automated email.</p>
       </div>
     </body>
@@ -406,7 +410,7 @@ export async function sendNewUserNotification(data: NewUserEmailData): Promise<v
   const textContent = `
 New User Registration
 
-A new user has successfully registered on QuailBreeder platform.
+A new user has successfully registered on Moment LBS platform.
 
 User Details:
 -------------
@@ -415,14 +419,14 @@ Email: ${userEmail}
 Provider: ${provider}
 Registration Date: ${formattedDate} UTC
 
-This is an automated notification from the QuailBreeder user registration system.
+This is an automated notification from the Moment LBS user registration system.
 
-QuailBreeder Admin Notifications
+Moment LBS Admin Notifications
   `
 
   const adminMailOptions = {
-    from: process.env.SMTP_FROM || 'info@quailbreeder.net',
-    to: 'quailbreeding@gmail.com',
+    from: process.env.SMTP_FROM || 'info@moment-lbs.app',
+    to: 'info@moment-lbs.app',
     subject: `[New User] ${userName} (${provider})`,
     text: textContent,
     html: htmlContent,
@@ -490,7 +494,7 @@ Moment LBS
   `
 
   const mailOptions = {
-    from: process.env.SMTP_FROM || 'info@quailbreeder.net',
+    from: process.env.SMTP_FROM || 'info@moment-lbs.app',
     to: email,
     subject: 'Confirm your email — Moment LBS',
     text: textContent,
@@ -559,7 +563,7 @@ Moment LBS
   `
 
   const mailOptions = {
-    from: process.env.SMTP_FROM || 'info@quailbreeder.net',
+    from: process.env.SMTP_FROM || 'info@moment-lbs.app',
     to: email,
     subject: 'Password Reset — Moment LBS',
     text: textContent,

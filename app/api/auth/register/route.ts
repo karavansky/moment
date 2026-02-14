@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
-import { getUserByEmail, createUserWithPassword } from '@/lib/users'
+import { getUserByEmail, createUserWithPassword, updatePassword } from '@/lib/users'
 import { hashPassword } from '@/lib/password'
 import { createVerificationToken } from '@/lib/verification-tokens'
-import { sendEmailVerification } from '@/lib/email'
+import { sendEmailVerification, sendNewUserNotification } from '@/lib/email'
 
 export async function POST(request: Request) {
   try {
@@ -16,13 +16,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
     }
 
-    const existingUser = await getUserByEmail(email)
-    if (existingUser) {
-      return NextResponse.json({ error: 'Email already registered' }, { status: 409 })
-    }
-
     const passwordHash = await hashPassword(password)
-    const user = await createUserWithPassword(name, email, passwordHash)
+    const existingUser = await getUserByEmail(email)
+
+    let user
+    let isResend = false
+
+    if (existingUser) {
+      if (existingUser.emailVerified) {
+        // Уже подтверждённый аккаунт — нельзя перерегистрировать
+        return NextResponse.json({ error: 'Email already registered' }, { status: 409 })
+      }
+
+      // Не подтверждён — обновляем пароль и отправляем новый токен
+      await updatePassword(existingUser.userID, passwordHash)
+      user = existingUser
+      isResend = true
+    } else {
+      user = await createUserWithPassword(name, email, passwordHash)
+    }
 
     const token = await createVerificationToken(user.userID, 'email_verify')
 
@@ -30,6 +42,20 @@ export async function POST(request: Request) {
     const confirmUrl = `${baseUrl}/api/auth/confirm?token=${token}`
 
     await sendEmailVerification({ email, name, confirmUrl })
+
+    // Уведомление администратору только при первой регистрации
+    if (!isResend) {
+      try {
+        await sendNewUserNotification({
+          userEmail: email,
+          userName: name,
+          provider: 'credentials',
+          date: user.date,
+        })
+      } catch (emailError) {
+        console.error('[Register API] Failed to send admin notification:', emailError)
+      }
+    }
 
     return NextResponse.json({ message: 'Registration successful. Please check your email to verify your account.' })
   } catch (error) {

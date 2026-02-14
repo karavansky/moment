@@ -155,3 +155,79 @@ export async function updatePassword(userID: string, passwordHash: string): Prom
     throw error
   }
 }
+
+/**
+ * Получает всех пользователей (без passwordHash и token)
+ */
+export async function getAllUsers(): Promise<Omit<User, 'passwordHash' | 'token'>[]> {
+  const query = `
+    SELECT "userID", "name", "email", "emailVerified", "date", "provider", "isAdmin"
+    FROM users
+    ORDER BY "date" DESC
+  `
+
+  try {
+    const result = await pool.query(query)
+    return result.rows
+  } catch (error) {
+    console.error('[getAllUsers] Error:', error)
+    throw error
+  }
+}
+
+/**
+ * Обновляет данные пользователя (admin)
+ */
+export async function updateUser(
+  userID: string,
+  fields: { name?: string; email?: string; isAdmin?: boolean; emailVerified?: boolean }
+): Promise<User | null> {
+  const setClauses: string[] = []
+  const values: any[] = []
+  let paramIndex = 1
+
+  if (fields.name !== undefined) {
+    setClauses.push(`"name" = $${paramIndex++}`)
+    values.push(fields.name)
+  }
+  if (fields.email !== undefined) {
+    setClauses.push(`"email" = $${paramIndex++}`)
+    values.push(fields.email)
+  }
+  if (fields.isAdmin !== undefined) {
+    setClauses.push(`"isAdmin" = $${paramIndex++}`)
+    values.push(fields.isAdmin)
+  }
+  if (fields.emailVerified !== undefined) {
+    setClauses.push(`"emailVerified" = $${paramIndex++}`)
+    values.push(fields.emailVerified)
+  }
+
+  if (setClauses.length === 0) return null
+
+  values.push(userID)
+  const query = `UPDATE users SET ${setClauses.join(', ')} WHERE "userID" = $${paramIndex} RETURNING *`
+
+  try {
+    const result = await pool.query(query, values)
+    return result.rows.length > 0 ? result.rows[0] : null
+  } catch (error) {
+    console.error('[updateUser] Error:', error)
+    throw error
+  }
+}
+
+/**
+ * Удаляет пользователя
+ */
+export async function deleteUser(userID: string): Promise<boolean> {
+  const query = 'DELETE FROM users WHERE "userID" = $1'
+
+  try {
+    const result = await pool.query(query, [userID])
+    return (result.rowCount ?? 0) > 0
+  } catch (error) {
+    console.error('[deleteUser] Error:', error)
+    throw error
+  }
+}
