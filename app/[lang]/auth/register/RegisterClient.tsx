@@ -1,10 +1,12 @@
 'use client'
 
 import { Button, Form, TextField, Label, Input, FieldError, Description, Spinner } from '@heroui/react'
+import { Turnstile } from '@marsidev/react-turnstile'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useTranslation } from '@/components/Providers'
 import type { SupportedLocale } from '@/config/locales'
+import type { TurnstileInstance } from '@marsidev/react-turnstile'
 
 interface RegisterClientProps {
   lang: SupportedLocale
@@ -15,6 +17,8 @@ export default function RegisterClient({ lang }: RegisterClientProps) {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const turnstileRef = useRef<TurnstileInstance>(null)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -31,13 +35,18 @@ export default function RegisterClient({ lang }: RegisterClientProps) {
       return
     }
 
+    if (!turnstileToken) {
+      setError(t('auth.captchaRequired', 'Please complete the CAPTCHA verification'))
+      return
+    }
+
     setIsLoading(true)
 
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, turnstileToken }),
       })
 
       const data = await res.json()
@@ -52,6 +61,8 @@ export default function RegisterClient({ lang }: RegisterClientProps) {
       setError(t('auth.registrationFailed', 'Registration failed'))
     } finally {
       setIsLoading(false)
+      turnstileRef.current?.reset()
+      setTurnstileToken(null)
     }
   }
 
@@ -165,6 +176,18 @@ export default function RegisterClient({ lang }: RegisterClientProps) {
           <Input placeholder={t('auth.repeatPassword', 'Repeat your password')} />
           <FieldError />
         </TextField>
+
+        {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && (
+          <div className="flex justify-center">
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+              onSuccess={setTurnstileToken}
+              onExpire={() => setTurnstileToken(null)}
+              options={{ theme: 'auto', size: 'normal' }}
+            />
+          </div>
+        )}
 
         <Button
           type="submit"

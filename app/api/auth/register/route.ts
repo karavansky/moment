@@ -6,7 +6,7 @@ import { sendEmailVerification, sendNewUserNotification } from '@/lib/email'
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password } = await request.json()
+    const { name, email, password, turnstileToken } = await request.json()
 
     if (!name || !email || !password) {
       return NextResponse.json({ error: 'Name, email and password are required' }, { status: 400 })
@@ -14,6 +14,29 @@ export async function POST(request: Request) {
 
     if (password.length < 8) {
       return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
+    }
+
+    // Verify Cloudflare Turnstile CAPTCHA
+    const turnstileSecret = process.env.TURNSTILE_SECRET_KEY
+    if (turnstileSecret) {
+      if (!turnstileToken) {
+        return NextResponse.json({ error: 'CAPTCHA verification required' }, { status: 400 })
+      }
+
+      const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          secret: turnstileSecret,
+          response: turnstileToken,
+        }),
+      })
+
+      const verifyData = await verifyRes.json()
+      if (!verifyData.success) {
+        console.error('[Register API] Turnstile verification failed:', verifyData)
+        return NextResponse.json({ error: 'CAPTCHA verification failed' }, { status: 400 })
+      }
     }
 
     const passwordHash = await hashPassword(password)

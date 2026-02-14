@@ -29,6 +29,7 @@
     "@heroui/theme": "^2.4.26",
     "@heroui/toast": "^2.0.20",
     "@heroui/tooltip": "^2.2.27",
+    "@marsidev/react-turnstile": "^1.4.2",
     "@next/third-parties": "^16.1.6",
     "@tailwindcss/postcss": "^4.1.18",
     "@tanstack/react-virtual": "^3.13.18",

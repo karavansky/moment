@@ -48,9 +48,9 @@ const verifiedOptions = [
 ]
 
 const providerColorMap: Record<string, ChipProps['color']> = {
-  google: 'primary',
+  google: 'accent',
   apple: 'default',
-  credentials: 'secondary',
+  credentials: 'warning',
 }
 
 const INITIAL_VISIBLE_COLUMNS = ['name', 'email', 'provider', 'emailVerified', 'isAdmin', 'date']
