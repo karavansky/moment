@@ -5,10 +5,16 @@ import { useSession, signIn as nextAuthSignIn } from 'next-auth/react'
 import { usePathname, useRouter } from 'next/navigation'
 import type { Session } from 'next-auth'
 
+interface SignInWithCredentialsResult {
+  error?: string
+  ok?: boolean
+}
+
 interface AuthContextType {
   session: Session | null
   status: 'loading' | 'authenticated' | 'unauthenticated'
   signIn: (provider: 'google' | 'apple', callbackUrl?: string) => Promise<void>
+  signInWithCredentials: (email: string, password: string, callbackUrl?: string) => Promise<SignInWithCredentialsResult>
   signOut: () => Promise<void>
 }
 
@@ -42,6 +48,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  const signInWithCredentials = useCallback(async (email: string, password: string, callbackUrl?: string): Promise<SignInWithCredentialsResult> => {
+    try {
+      const segments = pathnameRef.current?.split('/').filter(Boolean) || []
+      const locale = segments[0] || 'en'
+      const redirectUrl = callbackUrl || `/${locale}/support`
+
+      const result = await nextAuthSignIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        return { error: result.error }
+      }
+
+      if (result?.ok) {
+        routerRef.current.push(redirectUrl)
+        routerRef.current.refresh()
+        return { ok: true }
+      }
+
+      return { error: 'Unknown error' }
+    } catch (error) {
+      console.error('Credentials sign in error:', error)
+      return { error: 'Sign in failed' }
+    }
+  }, [])
+
   const signOut = useCallback(async () => {
     try {
       const segments = pathnameRef.current?.split('/').filter(Boolean) || []
@@ -58,8 +93,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     session,
     status,
     signIn,
+    signInWithCredentials,
     signOut,
-  }), [session, status, signIn, signOut])
+  }), [session, status, signIn, signInWithCredentials, signOut])
 
   // Всегда рендерим Provider, но передаем isClient флаг в контекст если нужно
   return (
@@ -77,6 +113,7 @@ export function useAuth() {
       session: null,
       status: 'unauthenticated' as const,
       signIn: async (_provider: 'google' | 'apple', _callbackUrl?: string) => {},
+      signInWithCredentials: async (_email: string, _password: string, _callbackUrl?: string) => ({ error: 'Not available' }),
       signOut: async () => {},
     }
   }

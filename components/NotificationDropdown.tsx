@@ -96,7 +96,7 @@ export function NotificationDropdown({
         className="max-h-125 border-none shadow-2xl p-0 rounded-3xl bg-inherit backdrop-blur-[3px] outline-none ring-0"
         style={{ width: '75vw', maxWidth: '400px' }}
       >
-        <div className="flex flex-col gap-3 px-2 rounded-2xl ">
+        <div className="flex flex-col gap-3 px-2 py-4 rounded-2xl ">
           {/* Header */}
           <div className="flex items-center justify-between px-2  ">
             <Surface className="flex items-center gap-2 rounded-2xl bg-gray-200/50 dark:bg-gray-700/50 backdrop-blur-[3px]">

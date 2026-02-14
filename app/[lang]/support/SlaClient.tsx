@@ -118,7 +118,7 @@ function BenefitCard({ title, description }: { title: string; description: strin
 }
 
 export default function SlaClient() {
-  const { session, status, signIn, signOut } = useAuth()
+  const { session, status, signIn, signInWithCredentials, signOut } = useAuth()
   const { t } = useTranslation()
   const lang = useLanguage()
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
@@ -126,8 +126,11 @@ export default function SlaClient() {
 
 
   const handleSignIn = async (provider: 'google' | 'apple') => {
-    // signIn already handles redirect to /${locale}/support in AuthProvider
     await signIn(provider, `/${lang}/tickets`)
+  }
+
+  const handleCredentialsSignIn = async (email: string, password: string) => {
+    return signInWithCredentials(email, password, `/${lang}/tickets`)
   }
   /*
   useEffect(() => {
@@ -270,6 +273,7 @@ export default function SlaClient() {
         isOpen={isOpen}
         onOpenChange={() => onOpenChange()}
         onSignIn={handleSignIn}
+        onSignInWithCredentials={handleCredentialsSignIn}
         t={t}
         lang={lang}
       />

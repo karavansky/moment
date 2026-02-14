@@ -6,6 +6,7 @@ declare module 'next-auth' {
       id: string
       provider?: string
       isAdmin?: boolean
+      sessionId?: string
     } & DefaultSession['user']
   }
 
@@ -22,5 +23,6 @@ declare module 'next-auth/jwt' {
     provider?: string
     userId?: string
     isAdmin?: boolean
+    sessionId?: string
   }
 }

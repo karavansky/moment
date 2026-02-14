@@ -37,6 +37,7 @@
     "@types/mailparser": "^3.4.6",
     "@types/pg": "^8.16.0",
     "@types/react-window": "^2.0.0",
+    "bcryptjs": "^3.0.3",
     "browser-image-compression": "^2.0.2",
     "country-flag-icons": "^1.6.13",
     "dotenv": "^17.2.4",
@@ -72,6 +73,7 @@
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
+    "@types/bcryptjs": "^2.4.6",
     "@types/negotiator": "^0.6.4",
     "@types/node": "^25.2.3",
     "@types/nodemailer": "^7.0.9",

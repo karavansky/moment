@@ -437,6 +437,144 @@ QuailBreeder Admin Notifications
   }
 }
 
+export interface EmailVerificationData {
+  email: string
+  name: string
+  confirmUrl: string
+}
+
+export async function sendEmailVerification(data: EmailVerificationData): Promise<void> {
+  const { email, name, confirmUrl } = data
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Email Verification</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background-color: #4F46E5; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0;">
+        <h1 style="margin: 0;">Confirm Your Email</h1>
+      </div>
+      <div style="background-color: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; border-top: none;">
+        <p>Hello ${name},</p>
+        <p>Thank you for registering! Please confirm your email address by clicking the button below:</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${confirmUrl}" style="display: inline-block; background-color: #4F46E5; color: white; font-weight: bold; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-size: 16px;">
+            Confirm Email
+          </a>
+        </div>
+        <p style="color: #6b7280; font-size: 14px;">If the button doesn't work, copy and paste this link into your browser:</p>
+        <p style="color: #4F46E5; font-size: 14px; word-break: break-all;">${confirmUrl}</p>
+        <p style="color: #6b7280; font-size: 14px;">This link expires in 24 hours.</p>
+      </div>
+      <div style="text-align: center; padding: 20px; color: #6b7280; font-size: 14px;">
+        <p>Moment LBS</p>
+      </div>
+    </body>
+    </html>
+  `
+
+  const textContent = `
+Hello ${name},
+
+Thank you for registering! Please confirm your email address by visiting the link below:
+
+${confirmUrl}
+
+This link expires in 24 hours.
+
+Moment LBS
+  `
+
+  const mailOptions = {
+    from: process.env.SMTP_FROM || 'info@quailbreeder.net',
+    to: email,
+    subject: 'Confirm your email — Moment LBS',
+    text: textContent,
+    html: htmlContent,
+  }
+
+  try {
+    await sendMailAndSaveToSent(mailOptions)
+    console.log('[sendEmailVerification] Verification email sent to:', email)
+  } catch (error) {
+    console.error('[sendEmailVerification] Error:', error)
+    throw error
+  }
+}
+
+export interface PasswordResetData {
+  email: string
+  name: string
+  resetUrl: string
+}
+
+export async function sendPasswordReset(data: PasswordResetData): Promise<void> {
+  const { email, name, resetUrl } = data
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Password Reset</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background-color: #dc2626; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0;">
+        <h1 style="margin: 0;">Password Reset</h1>
+      </div>
+      <div style="background-color: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; border-top: none;">
+        <p>Hello ${name},</p>
+        <p>We received a request to reset your password. Click the button below to set a new password:</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${resetUrl}" style="display: inline-block; background-color: #dc2626; color: white; font-weight: bold; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-size: 16px;">
+            Reset Password
+          </a>
+        </div>
+        <p style="color: #6b7280; font-size: 14px;">If the button doesn't work, copy and paste this link into your browser:</p>
+        <p style="color: #dc2626; font-size: 14px; word-break: break-all;">${resetUrl}</p>
+        <p style="color: #6b7280; font-size: 14px;">This link expires in 1 hour. If you didn't request a password reset, you can safely ignore this email.</p>
+      </div>
+      <div style="text-align: center; padding: 20px; color: #6b7280; font-size: 14px;">
+        <p>Moment LBS</p>
+      </div>
+    </body>
+    </html>
+  `
+
+  const textContent = `
+Hello ${name},
+
+We received a request to reset your password. Visit the link below to set a new password:
+
+${resetUrl}
+
+This link expires in 1 hour. If you didn't request a password reset, you can safely ignore this email.
+
+Moment LBS
+  `
+
+  const mailOptions = {
+    from: process.env.SMTP_FROM || 'info@quailbreeder.net',
+    to: email,
+    subject: 'Password Reset — Moment LBS',
+    text: textContent,
+    html: htmlContent,
+  }
+
+  try {
+    await sendMailAndSaveToSent(mailOptions)
+    console.log('[sendPasswordReset] Reset email sent to:', email)
+  } catch (error) {
+    console.error('[sendPasswordReset] Error:', error)
+    throw error
+  }
+}
+
 export async function verifyEmailConnection(): Promise<boolean> {
   try {
     await transporter.verify()

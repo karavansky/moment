@@ -27,7 +27,7 @@ export default async function SignIn({ params }: SignInPageProps) {
             />
           </div>
           <h1 className="font-display text-3xl md:text-4xl font-bold text-earth-900 mb-2">
-            {dict.auth.welcome}
+            {dict.auth.welcome} 333
           </h1>
           <p className="text-earth-700">{dict.auth.signInToAccess}</p>
         </div>

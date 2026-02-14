@@ -5,14 +5,16 @@ export interface User {
   userID: string
   name: string
   email: string
-  token: string
+  token: string | null
+  passwordHash: string | null
+  emailVerified: boolean
   date: Date
   provider: string
   isAdmin: boolean
 }
 
 /**
- * Создает нового пользователя в базе данных
+ * Создает нового пользователя через OAuth
  */
 export async function createUser(
   name: string,
@@ -24,8 +26,8 @@ export async function createUser(
   const date = new Date()
 
   const query = `
-    INSERT INTO users ("userID", "name", "email", "token", "date", "provider")
-    VALUES ($1, $2, $3, $4, $5, $6)
+    INSERT INTO users ("userID", "name", "email", "token", "date", "provider", "emailVerified")
+    VALUES ($1, $2, $3, $4, $5, $6, TRUE)
     RETURNING *
   `
 
@@ -39,6 +41,37 @@ export async function createUser(
     return result.rows[0]
   } catch (error) {
     console.error('[createUser] Error creating user:', error)
+    throw error
+  }
+}
+
+/**
+ * Создает нового пользователя с email+password
+ */
+export async function createUserWithPassword(
+  name: string,
+  email: string,
+  passwordHash: string
+): Promise<User> {
+  const userID = generateId(20)
+  const date = new Date()
+
+  const query = `
+    INSERT INTO users ("userID", "name", "email", "passwordHash", "date", "provider", "emailVerified")
+    VALUES ($1, $2, $3, $4, $5, 'credentials', FALSE)
+    RETURNING *
+  `
+
+  const values = [userID, name, email, passwordHash, date]
+
+  console.log('[createUserWithPassword] Creating credentials user:', { userID, name, email })
+
+  try {
+    const result = await pool.query(query, values)
+    console.log('[createUserWithPassword] User created successfully')
+    return result.rows[0]
+  } catch (error) {
+    console.error('[createUserWithPassword] Error:', error)
     throw error
   }
 }
@@ -77,7 +110,7 @@ export async function getUserById(userID: string): Promise<User | null> {
 }
 
 /**
- * Обновляет token пользователя
+ * Обновляет token пользователя (OAuth)
  */
 export async function updateUserToken(userID: string, token: string): Promise<void> {
   const query = 'UPDATE users SET "token" = $1 WHERE "userID" = $2'
@@ -89,6 +122,36 @@ export async function updateUserToken(userID: string, token: string): Promise<vo
     console.log('[updateUserToken] Token updated successfully')
   } catch (error) {
     console.error('[updateUserToken] Error updating user token:', error)
+    throw error
+  }
+}
+
+/**
+ * Верифицирует email пользователя
+ */
+export async function verifyUserEmail(userID: string): Promise<void> {
+  const query = 'UPDATE users SET "emailVerified" = TRUE WHERE "userID" = $1'
+
+  try {
+    await pool.query(query, [userID])
+    console.log('[verifyUserEmail] Email verified for userID:', userID)
+  } catch (error) {
+    console.error('[verifyUserEmail] Error:', error)
+    throw error
+  }
+}
+
+/**
+ * Обновляет пароль пользователя
+ */
+export async function updatePassword(userID: string, passwordHash: string): Promise<void> {
+  const query = 'UPDATE users SET "passwordHash" = $1 WHERE "userID" = $2'
+
+  try {
+    await pool.query(query, [passwordHash, userID])
+    console.log('[updatePassword] Password updated for userID:', userID)
+  } catch (error) {
+    console.error('[updatePassword] Error:', error)
     throw error
   }
 }

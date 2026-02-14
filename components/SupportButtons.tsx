@@ -28,7 +28,7 @@ interface SupportButtonsProps {
 }
 
 function SupportButtonsComponent({ lang, onAction, t }: SupportButtonsProps) {
-  const { session, status, signIn } = useAuth()
+  const { session, status, signIn, signInWithCredentials } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
   const [isPending, startTransition] = useTransition()
@@ -201,8 +201,11 @@ function SupportButtonsComponent({ lang, onAction, t }: SupportButtonsProps) {
   }
 
   const handleSignIn = async (provider: 'google' | 'apple') => {
-    // Pass tickets page as callback URL so user lands there after auth
     await signIn(provider, `/${lang}/tickets`)
+  }
+
+  const handleCredentialsSignIn = async (email: string, password: string) => {
+    return signInWithCredentials(email, password, `/${lang}/tickets`)
   }
 
   return (
@@ -225,6 +228,7 @@ function SupportButtonsComponent({ lang, onAction, t }: SupportButtonsProps) {
         isOpen={isOpen}
         onOpenChange={() => onOpenChange(true)}
         onSignIn={handleSignIn}
+        onSignInWithCredentials={handleCredentialsSignIn}
         t={t}
         lang={lang}
       />

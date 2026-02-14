@@ -12,7 +12,7 @@ import { AuthModal } from './AuthModal'
 import { useTranslation } from './Providers'
 
 export function LoginLogout() {
-  const { session, status, signIn, signOut } = useAuth()
+  const { session, status, signIn, signInWithCredentials, signOut } = useAuth()
   const [selected, setSelected] = useState<Selection>(new Set())
   const router = useRouter()
   const lang = useLanguage()
@@ -34,8 +34,11 @@ export function LoginLogout() {
     [signIn]
   )
   const handleSignIn = async (provider: 'google' | 'apple') => {
-    // Pass tickets page as callback URL so user lands there after auth
     await signIn(provider, `/${lang}/tickets`)
+  }
+
+  const handleCredentialsSignIn = async (email: string, password: string) => {
+    return signInWithCredentials(email, password, `/${lang}/tickets`)
   }
   const handleAdmin = useCallback(
     (keys: Selection) => {
@@ -181,6 +184,7 @@ export function LoginLogout() {
         isOpen={isOpen}
         onOpenChange={() => setIsOpen(false)}
         onSignIn={handleSignIn}
+        onSignInWithCredentials={handleCredentialsSignIn}
         t={t}
         lang={lang}
       />    </>
