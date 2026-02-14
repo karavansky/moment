@@ -1,6 +1,6 @@
 'use client'
 
-import { Button, Form, TextField, Label, Input, FieldError } from '@heroui/react'
+import { Button, Form, TextField, Label, Input, FieldError, Spinner } from '@heroui/react'
 import Image from 'next/image'
 import { useState } from 'react'
 
@@ -108,9 +108,8 @@ export function SignInFormContent({ onSignIn, onSignInWithCredentials, t, lang, 
               variant="primary"
               className="w-full rounded-xl font-semibold"
               isDisabled={isLoading}
-              isLoading={isLoading}
             >
-              {t('auth.signIn', 'Sign In')}
+              {isLoading ? <Spinner /> : t('auth.signIn', 'Sign In')}
             </Button>
           </Form>
 
