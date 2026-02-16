@@ -11,9 +11,10 @@ import { Bell, X, Share, Plus } from 'lucide-react'
  */
 export function PushNotificationBanner() {
   const { session, status: authStatus } = useAuth()
-  const { permission, isSubscribed, needsPWAInstall, subscribe } = usePushNotifications()
+  const { permission, isSubscribed, isReady, needsPWAInstall, subscribe } = usePushNotifications()
   const [dismissed, setDismissed] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [showDeniedHelp, setShowDeniedHelp] = useState(false)
 
   // Restore dismissed state from localStorage
   useEffect(() => {
@@ -21,10 +22,11 @@ export function PushNotificationBanner() {
     if (stored) setDismissed(true)
   }, [])
 
-  // Don't show if not authenticated, already subscribed, already denied, or dismissed
+  // Don't show until subscription status is determined (prevents flash)
+  if (!isReady) return null
+  // Don't show if not authenticated, already subscribed, or dismissed
   if (authStatus !== 'authenticated') return null
   if (isSubscribed) return null
-  if (permission === 'denied') return null
   if (dismissed) return null
 
   // Only show to workers (1) and directors/managers (0, 3, null)
@@ -81,6 +83,56 @@ export function PushNotificationBanner() {
 
   // Unsupported browser
   if (permission === 'unsupported') return null
+
+  // Denied: try to re-enable, or show instructions
+  if (permission === 'denied') {
+    const handleRetryEnable = async () => {
+      setIsLoading(true)
+      const success = await subscribe()
+      setIsLoading(false)
+      if (success) {
+        setDismissed(true)
+      } else {
+        setShowDeniedHelp(true)
+      }
+    }
+
+    return (
+      <div className="mx-4 mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl relative">
+        <button
+          onClick={handleDismiss}
+          className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+        >
+          <X className="w-4 h-4" />
+        </button>
+        <div className="flex items-center gap-3">
+          <Bell className="w-5 h-5 text-amber-500 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-gray-900 dark:text-white">
+              Notifications are blocked. Try enabling or check browser settings.
+            </p>
+          </div>
+          <button
+            onClick={handleRetryEnable}
+            disabled={isLoading}
+            className="shrink-0 mr-8 px-3 py-1.5 text-sm font-medium text-white bg-amber-500 hover:bg-amber-600 rounded-lg disabled:opacity-50 transition-colors"
+          >
+            {isLoading ? 'Enabling...' : 'Enable'}
+          </button>
+        </div>
+        {showDeniedHelp && (
+          <div className="mt-2 ml-8 text-xs text-gray-600 dark:text-gray-400">
+            <p>Your browser has blocked notifications. To re-enable:</p>
+            <ol className="mt-1 ml-4 list-decimal space-y-0.5">
+              <li>Click the lock/info icon in the address bar</li>
+              <li>Find &quot;Notifications&quot; and set to &quot;Allow&quot;</li>
+              <li>Refresh the page and tap Enable again</li>
+            </ol>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   // Normal: show enable button
   return (

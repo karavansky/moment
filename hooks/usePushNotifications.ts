@@ -18,6 +18,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 export function usePushNotifications() {
   const [permission, setPermission] = useState<PushPermissionState>('prompt')
   const [isSubscribed, setIsSubscribed] = useState(false)
+  const [isReady, setIsReady] = useState(false)
   const [isStandalone, setIsStandalone] = useState(false)
   const [isIOS, setIsIOS] = useState(false)
 
@@ -33,22 +34,54 @@ export function usePushNotifications() {
     // Check push support
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
       setPermission('unsupported')
+      setIsReady(true)
       return
     }
 
     // iOS without PWA installation cannot use push
     if (ios && !standalone) {
       setPermission('unsupported')
+      setIsReady(true)
       return
     }
 
-    setPermission(Notification.permission as PushPermissionState)
+    const currentPermission = Notification.permission as PushPermissionState
+    setPermission(currentPermission)
 
-    // Check existing subscription
-    navigator.serviceWorker.ready.then(reg => {
-      reg.pushManager.getSubscription().then(sub => {
-        setIsSubscribed(!!sub)
-      })
+    // Check existing subscription, auto-resubscribe if permission granted but subscription lost
+    navigator.serviceWorker.ready.then(async (reg) => {
+      const sub = await reg.pushManager.getSubscription()
+      if (sub) {
+        setIsSubscribed(true)
+        setIsReady(true)
+        return
+      }
+
+      // Permission granted but no subscription — auto-resubscribe
+      if (currentPermission === 'granted') {
+        const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+        if (!vapidPublicKey) return
+
+        try {
+          const newSub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey).buffer as ArrayBuffer,
+          })
+          const response = await fetch('/api/push/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subscription: newSub.toJSON() }),
+          })
+          if (response.ok) {
+            setIsSubscribed(true)
+            console.log('[usePushNotifications] Auto-resubscribed after permission restore')
+          }
+        } catch (err) {
+          console.error('[usePushNotifications] Auto-resubscribe failed:', err)
+        }
+      }
+
+      setIsReady(true)
     })
   }, [])
 
@@ -114,5 +147,5 @@ export function usePushNotifications() {
 
   const needsPWAInstall = isIOS && !isStandalone
 
-  return { permission, isSubscribed, isStandalone, isIOS, needsPWAInstall, subscribe, unsubscribe }
+  return { permission, isSubscribed, isReady, isStandalone, isIOS, needsPWAInstall, subscribe, unsubscribe }
 }

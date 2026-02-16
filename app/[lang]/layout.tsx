@@ -9,6 +9,7 @@ import { WebVitals } from '@/components/WebVitals'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import { getSidebarState } from '@/lib/sidebar-actions'
 import { PushNotificationBanner } from '@/components/PushNotificationBanner'
+import { GeolocationBanner } from '@/components/GeolocationBanner'
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
@@ -212,6 +213,7 @@ export default async function RootLayout({
             <LayoutClient>
               <main className="flex-1 overflow-auto pt-16">
                 <PushNotificationBanner />
+                <GeolocationBanner />
                 {children}
               </main>
             </LayoutClient>

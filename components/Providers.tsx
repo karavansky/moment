@@ -31,6 +31,7 @@ const variantIcons: Record<string, React.ReactNode> = {
 }
 import { DemoNotificationWorker } from './DemoNotificationWorker'
 import { ServiceWorkerRegistrar } from './ServiceWorkerRegistrar'
+import { GeolocationTracker } from './GeolocationTracker'
 
 export interface ProvidersProps {
   children: React.ReactNode
@@ -171,6 +172,7 @@ export function Providers({
                     <NotificationProvider>
                       <SchedulingProvider>
                         <ServiceWorkerRegistrar />
+                        <GeolocationTracker />
                         <NotificationObserver />
                         <DemoNotificationWorker />
                         <div className="min-h-screen flex flex-col">{children}</div>

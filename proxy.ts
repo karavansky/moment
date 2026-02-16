@@ -189,6 +189,7 @@ export default async function proxy(request: NextRequest) {
     // Role guard: worker (status=1) and client (status=2) can only access /dienstplan and /auth/*
     const isAllowedForRestricted = pathAfterLocale.startsWith('/dienstplan')
       || pathAfterLocale.startsWith('/auth')
+      || pathAfterLocale.startsWith('/settings')
 
     if (!isAllowedForRestricted) {
       const session = await auth()
