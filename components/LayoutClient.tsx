@@ -4,7 +4,7 @@ import Navbar from './Navbar'
 import { LanguageSync } from './LanguageSync'
 import Sidebar from './Sidebar'
 import { useSidebar } from '@/contexts/SidebarContext'
-import { useRoleGuard } from '@/hooks/useRoleGuard'
+import { useAuth } from '@/components/AuthProvider'
 
 interface LayoutClientProps {
   children: React.ReactNode
@@ -12,8 +12,12 @@ interface LayoutClientProps {
 
 export function LayoutClient({ children }: LayoutClientProps) {
   const { toggleOpen, isExpanded, isHydrated } = useSidebar()
-  const { isRestricted, isLoading } = useRoleGuard()
-  const showSidebar = !isRestricted && !isLoading
+  const { session, status: authStatus } = useAuth()
+
+  // Sidebar скрыт для worker (1) и client (2), а также пока auth загружается
+  const userStatus = session?.user?.status
+  const isRestricted = authStatus === 'authenticated' && (userStatus === 1 || userStatus === 2)
+  const showSidebar = !isRestricted && authStatus !== 'loading'
 
   return (
     <>

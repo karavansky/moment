@@ -150,7 +150,7 @@ export const DemoNotificationWorker = () => {
         clearInterval(intervalId);
       }
     };
-  }, [addNotification, openAppointment]);
+  }, [addNotification, openAppointment, isLiveMode]);
 
   return null;
 };

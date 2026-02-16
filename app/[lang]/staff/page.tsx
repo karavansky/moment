@@ -8,7 +8,7 @@ export default async function WorkersPage() {
   const session = await auth()
 
   let isDemo = true
-
+  console.log('Session:', session) // Debug log
   if (session?.user?.email) {
     const user = await getUserByEmail(session.user.email)
 

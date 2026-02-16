@@ -181,10 +181,25 @@ export default async function proxy(request: NextRequest) {
     }
   }
 
-  // If pathname already has locale, add Content-Language header and continue
+  // If pathname already has locale, check role guard and add Content-Language header
   if (pathnameHasLocale)  {
-    //console.log(`[Locale] Path already has locale for ${ip}: ${path}`);
     const currentLocale = path.split("/")[1];
+    const pathAfterLocale = path.substring(currentLocale.length + 1); // e.g. "/dienstplan" or "/staff"
+
+    // Role guard: worker (status=1) and client (status=2) can only access /dienstplan and /auth/*
+    const isAllowedForRestricted = pathAfterLocale.startsWith('/dienstplan')
+      || pathAfterLocale.startsWith('/auth')
+
+    if (!isAllowedForRestricted) {
+      const session = await auth()
+      const userStatus = session?.user?.status
+      if (userStatus === 1 || userStatus === 2) {
+        const redirectUrl = request.nextUrl.clone()
+        redirectUrl.pathname = `/${currentLocale}/dienstplan`
+        return NextResponse.redirect(redirectUrl)
+      }
+    }
+
     const response = NextResponse.next();
     response.headers.set('Content-Language', currentLocale);
     return response;
