@@ -8,6 +8,7 @@ import { supportedLocales } from '@/config/locales'
 import { WebVitals } from '@/components/WebVitals'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import { getSidebarState } from '@/lib/sidebar-actions'
+import { PushNotificationBanner } from '@/components/PushNotificationBanner'
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
@@ -209,7 +210,10 @@ export default async function RootLayout({
         >
           <div className="flex h-dvh overflow-hidden">
             <LayoutClient>
-              <main className="flex-1 overflow-auto pt-16">{children}</main>
+              <main className="flex-1 overflow-auto pt-16">
+                <PushNotificationBanner />
+                {children}
+              </main>
             </LayoutClient>
           </div>
         </Providers>

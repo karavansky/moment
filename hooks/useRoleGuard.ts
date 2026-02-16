@@ -44,5 +44,8 @@ export function useRoleGuard() {
   const userStatus = session?.user?.status
   const isRestricted = authStatus === 'authenticated' && (userStatus === 1 || userStatus === 2)
 
-  return { isRestricted }
+  // Пока auth загружается — не знаем роль, скрываем Sidebar чтобы избежать мигания
+  const isLoading = authStatus === 'loading'
+
+  return { isRestricted, isLoading }
 }

@@ -1,5 +1,6 @@
 import pool from './db'
 import { generateId } from './generateId'
+import { sendPushToWorkers, sendPushToDirectors } from './push-notifications'
 
 function getChannel(firmaID: string): string {
   return `scheduling_${firmaID.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`
@@ -24,6 +25,110 @@ function notifyAppointmentChange(
       firmaID,
     }),
   ]).catch(err => console.error(`[appointments] pg_notify ${type} error:`, err))
+}
+
+async function getClientName(clientID: string): Promise<string> {
+  try {
+    const result = await pool.query(
+      `SELECT "name", "surname" FROM clients WHERE "clientID" = $1`,
+      [clientID]
+    )
+    if (result.rows[0]) {
+      return `${result.rows[0].name} ${result.rows[0].surname || ''}`.trim()
+    }
+  } catch {}
+  return 'a client'
+}
+
+async function getWorkerNames(workerIds: string[]): Promise<string> {
+  if (workerIds.length === 0) return ''
+  try {
+    const placeholders = workerIds.map((_, i) => `$${i + 1}`).join(', ')
+    const result = await pool.query(
+      `SELECT "name", "surname" FROM workers WHERE "workerID" IN (${placeholders})`,
+      workerIds
+    )
+    return result.rows.map((r: any) => `${r.name} ${r.surname || ''}`.trim()).join(', ')
+  } catch {}
+  return ''
+}
+
+/**
+ * Send push notifications for appointment changes. Fire-and-forget.
+ */
+function sendAppointmentPush(
+  firmaID: string,
+  type: 'appointment_created' | 'appointment_updated' | 'appointment_deleted',
+  data: {
+    appointmentID: string
+    workerIds: string[]
+    clientID: string
+    isOpen?: boolean
+    previousWorkerIds?: string[]
+  }
+) {
+  // Fire-and-forget: don't block API response
+  ;(async () => {
+    try {
+      const clientName = await getClientName(data.clientID)
+
+      if (type === 'appointment_created') {
+        await sendPushToWorkers(data.workerIds, {
+          title: 'New Appointment',
+          body: `You have been assigned to an appointment with ${clientName}.`,
+          url: '/dienstplan',
+          tag: `appointment-${data.appointmentID}`,
+        })
+      }
+
+      if (type === 'appointment_updated') {
+        // isOpen transition → push to directors
+        if (data.isOpen) {
+          const workerNames = await getWorkerNames(data.workerIds)
+          await sendPushToDirectors(firmaID, {
+            title: 'Appointment Started',
+            body: `${workerNames} started an appointment with ${clientName}.`,
+            url: `/map/${data.appointmentID}`,
+            tag: `appointment-open-${data.appointmentID}`,
+          })
+        }
+
+        // Worker additions/removals
+        if (data.previousWorkerIds) {
+          const added = data.workerIds.filter(id => !data.previousWorkerIds!.includes(id))
+          const removed = data.previousWorkerIds.filter(id => !data.workerIds.includes(id))
+
+          if (added.length > 0) {
+            await sendPushToWorkers(added, {
+              title: 'New Assignment',
+              body: `You have been assigned to an appointment with ${clientName}.`,
+              url: '/dienstplan',
+              tag: `appointment-${data.appointmentID}`,
+            })
+          }
+          if (removed.length > 0) {
+            await sendPushToWorkers(removed, {
+              title: 'Assignment Removed',
+              body: `You have been removed from an appointment with ${clientName}.`,
+              url: '/dienstplan',
+              tag: `appointment-${data.appointmentID}`,
+            })
+          }
+        }
+      }
+
+      if (type === 'appointment_deleted') {
+        await sendPushToWorkers(data.workerIds, {
+          title: 'Appointment Cancelled',
+          body: `Your appointment with ${clientName} has been cancelled.`,
+          url: '/dienstplan',
+          tag: `appointment-${data.appointmentID}`,
+        })
+      }
+    } catch (err) {
+      console.error(`[appointments] Push notification error for ${type}:`, err)
+    }
+  })()
 }
 
 export interface AppointmentRecord {
@@ -118,6 +223,11 @@ export async function createAppointment(
       workerIds: data.workerIds,
       clientID: created.clientID,
       isOpen: created.isOpen,
+    })
+    sendAppointmentPush(firmaID, 'appointment_created', {
+      appointmentID: created.appointmentID,
+      workerIds: data.workerIds,
+      clientID: created.clientID,
     })
 
     return created
@@ -259,6 +369,16 @@ export async function updateAppointment(
       result = res.rows.length > 0 ? res.rows[0] : null
     }
 
+    // Capture previous workerIds before updating (for push notification diff)
+    let previousWorkerIds: string[] | undefined
+    if (data.workerIds !== undefined) {
+      const prev = await dbClient.query(
+        `SELECT "workerID" FROM appointment_workers WHERE "appointmentID" = $1`,
+        [appointmentID]
+      )
+      previousWorkerIds = prev.rows.map((r: any) => r.workerID)
+    }
+
     // Update appointment_workers if provided
     if (data.workerIds !== undefined) {
       await dbClient.query(
@@ -311,6 +431,13 @@ export async function updateAppointment(
         openedAt: result.openedAt,
         closedAt: result.closedAt,
       })
+      sendAppointmentPush(firmaID, 'appointment_updated', {
+        appointmentID: result.appointmentID,
+        workerIds,
+        clientID: result.clientID,
+        isOpen: result.isOpen,
+        previousWorkerIds,
+      })
     }
 
     return result
@@ -344,9 +471,15 @@ export async function deleteAppointment(appointmentID: string, firmaID: string):
     const deleted = (result.rowCount ?? 0) > 0
     if (deleted && existing.rows[0]) {
       const row = existing.rows[0]
+      const workerIds = (row.workerIds || []).filter(Boolean)
       notifyAppointmentChange(firmaID, 'appointment_deleted', {
         appointmentID: row.appointmentID,
-        workerIds: (row.workerIds || []).filter(Boolean),
+        workerIds,
+        clientID: row.clientID,
+      })
+      sendAppointmentPush(firmaID, 'appointment_deleted', {
+        appointmentID: row.appointmentID,
+        workerIds,
         clientID: row.clientID,
       })
     }

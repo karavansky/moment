@@ -318,8 +318,45 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     if (user?.myWorkerID && !eventWorkerIds.includes(user.myWorkerID) && !existsLocally) return
     if (user?.myClientID && event.clientID !== user.myClientID && !existsLocally) return
 
-    if (event.type === 'appointment_created' || event.type === 'appointment_deleted') {
-      // Новый или удалённый appointment — перезагрузить список
+    if (event.type === 'appointment_created') {
+      refreshAppointments()
+      // In-app toast for worker: new appointment assigned
+      if (user?.myWorkerID && eventWorkerIds.includes(user.myWorkerID)) {
+        queueMicrotask(() => {
+          addNotification({
+            id: generateId(),
+            userID: 'system',
+            type: 'info',
+            title: 'New Appointment',
+            message: 'You have been assigned to a new appointment.',
+            date: new Date(),
+            isRead: false,
+            actionProps: {
+              children: 'View',
+              href: '/dienstplan',
+              variant: 'primary',
+            },
+          })
+        })
+      }
+      return
+    }
+
+    if (event.type === 'appointment_deleted') {
+      // In-app toast for worker: appointment cancelled
+      if (user?.myWorkerID && existsLocally) {
+        queueMicrotask(() => {
+          addNotification({
+            id: generateId(),
+            userID: 'system',
+            type: 'warning',
+            title: 'Appointment Cancelled',
+            message: 'An appointment you were assigned to has been cancelled.',
+            date: new Date(),
+            isRead: false,
+          })
+        })
+      }
       refreshAppointments()
       return
     }

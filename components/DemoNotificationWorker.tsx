@@ -94,12 +94,14 @@ const DEMO_NOTIFICATIONS: Omit<Notif, 'id' | 'date' | 'isRead'>[] = [
 ];
 
 export const DemoNotificationWorker = () => {
-    const { openAppointment } = useScheduling()
-  
+  const { openAppointment, isLiveMode } = useScheduling()
+
   const { addNotification } = useNotifications();
   const currentIndexRef = useRef(0);
 
   useEffect(() => {
+    // Не запускать для авторизованных пользователей
+    if (isLiveMode) return;
     console.log(`🔔 [Demo Worker] Mounting... timestamp=${Date.now()}, pathname=${window.location.pathname}`);
 
     const showNextNotification = () => {

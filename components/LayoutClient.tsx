@@ -12,20 +12,21 @@ interface LayoutClientProps {
 
 export function LayoutClient({ children }: LayoutClientProps) {
   const { toggleOpen, isExpanded, isHydrated } = useSidebar()
-  const { isRestricted } = useRoleGuard()
+  const { isRestricted, isLoading } = useRoleGuard()
+  const showSidebar = !isRestricted && !isLoading
 
   return (
     <>
       <LanguageSync />
 
-      {/* Sidebar — только для директора/менеджера/неавторизованных */}
-      {!isRestricted && <Sidebar />}
+      {/* Sidebar — только для директора/менеджера (скрыт пока auth загружается) */}
+      {showSidebar && <Sidebar />}
 
       {/* Основной контент с Navbar */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar
-          onMenuToggle={isRestricted ? undefined : toggleOpen}
-          sidebarExpanded={isRestricted ? false : isExpanded}
+          onMenuToggle={showSidebar ? toggleOpen : undefined}
+          sidebarExpanded={showSidebar ? isExpanded : false}
           isHydrated={isHydrated}
         />
         {children}

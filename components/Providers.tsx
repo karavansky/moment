@@ -30,6 +30,7 @@ const variantIcons: Record<string, React.ReactNode> = {
   danger: <XCircle className="w-6 h-6" strokeWidth={1.5} color="#dc3545" />,
 }
 import { DemoNotificationWorker } from './DemoNotificationWorker'
+import { ServiceWorkerRegistrar } from './ServiceWorkerRegistrar'
 
 export interface ProvidersProps {
   children: React.ReactNode
@@ -169,6 +170,7 @@ export function Providers({
                   <DictionaryContext.Provider value={memoizedDictionary}>
                     <NotificationProvider>
                       <SchedulingProvider>
+                        <ServiceWorkerRegistrar />
                         <NotificationObserver />
                         <DemoNotificationWorker />
                         <div className="min-h-screen flex flex-col">{children}</div>
