@@ -12,6 +12,7 @@ export interface User {
   provider: string
   isAdmin: boolean
   firmaID: string | null
+  status: number
 }
 
 /**
@@ -53,20 +54,21 @@ export async function createUserWithPassword(
   name: string,
   email: string,
   passwordHash: string,
-  firmaID: string
+  firmaID: string,
+  status: number = 0
 ): Promise<User> {
   const userID = generateId(20)
   const date = new Date()
 
   const query = `
-    INSERT INTO users ("userID", "name", "email", "passwordHash", "date", "provider", "emailVerified", "firmaID")
-    VALUES ($1, $2, $3, $4, $5, 'credentials', FALSE, $6)
+    INSERT INTO users ("userID", "name", "email", "passwordHash", "date", "provider", "emailVerified", "firmaID", "status")
+    VALUES ($1, $2, $3, $4, $5, 'credentials', FALSE, $6, $7)
     RETURNING *
   `
 
-  const values = [userID, name, email, passwordHash, date, firmaID]
+  const values = [userID, name, email, passwordHash, date, firmaID, status]
 
-  console.log('[createUserWithPassword] Creating credentials user:', { userID, name, email, firmaID })
+  console.log('[createUserWithPassword] Creating credentials user:', { userID, name, email, firmaID, status })
 
   try {
     const result = await pool.query(query, values)

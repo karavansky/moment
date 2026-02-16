@@ -1,5 +1,5 @@
 'use client'
-import React, { memo, useTransition } from 'react'
+import React, { memo, useMemo, useTransition } from 'react'
 import {
   Button,
   Dropdown,
@@ -11,6 +11,7 @@ import {
   Checkbox,
   DropdownItemIndicator,
   Input,
+  Modal,
   TextField,
   Label,
   ChipProps,
@@ -19,11 +20,13 @@ import {
 } from '@heroui/react'
 import { SortDescriptor } from '@heroui/table'
 import { motion, AnimatePresence } from 'framer-motion'
+import { QRCodeSVG } from 'qrcode.react'
 
 import { ChevronDownIcon, PlusIcon, SearchIcon, VerticalDotsIcon } from '@/components/icons'
 import scrollIntoView from 'scroll-into-view-if-needed'
 import { Client, Worker, Team } from '@/types/scheduling'
-import { Users } from 'lucide-react'
+import { QrCode, Users, Share2 } from 'lucide-react'
+
 
 interface WorkersTableProps {
   //  list: Record<string, any>[]
@@ -66,6 +69,59 @@ const WorkersTable = function WorkersTable(props: WorkersTableProps) {
   const { isShowColumns = false } = props
   const [filterValue, setFilterValue] = React.useState('')
   const [isPending, startTransition] = useTransition()
+
+  // Invite QR modal state
+  const [inviteModalOpen, setInviteModalOpen] = React.useState(false)
+  const [inviteUrl, setInviteUrl] = React.useState('')
+  const [isGeneratingInvite, setIsGeneratingInvite] = React.useState(false)
+
+  const inviteModalState = useMemo(
+    () => ({
+      isOpen: inviteModalOpen,
+      setOpen: (open: boolean) => { if (!open) setInviteModalOpen(false) },
+      open: () => setInviteModalOpen(true),
+      close: () => setInviteModalOpen(false),
+      toggle: () => setInviteModalOpen(prev => !prev),
+    }),
+    [inviteModalOpen]
+  )
+
+  const handleGenerateInvite = async () => {
+    setIsGeneratingInvite(true)
+    try {
+      const res = await fetch('/api/invites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 1 }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setInviteUrl(data.url)
+        setInviteModalOpen(true)
+      } else {
+        console.error('[Invite] Error:', data.error)
+      }
+    } catch (error) {
+      console.error('[Invite] Fetch error:', error)
+    } finally {
+      setIsGeneratingInvite(false)
+    }
+  }
+
+  const handleShareInvite = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Invite — Worker',
+          url: inviteUrl,
+        })
+      } catch {
+        // user cancelled share
+      }
+    } else {
+      await navigator.clipboard.writeText(inviteUrl)
+    }
+  }
 
   const list = React.useMemo(() => {
     return props.list
@@ -446,7 +502,22 @@ const WorkersTable = function WorkersTable(props: WorkersTableProps) {
                 </Dropdown.Menu>
               </Dropdown.Popover>
             </Dropdown>
-            <Button variant="primary" className="ml-auto sm:ml-0" onPress={props.onAddNew}>
+            <Button
+              variant="primary"
+              className="ml-auto sm:ml-0"
+              size="sm"
+              isIconOnly
+              isDisabled={isGeneratingInvite}
+              onPress={handleGenerateInvite}
+            >
+              {isGeneratingInvite ? <Spinner size="sm" /> : <QrCode />}
+            </Button>
+            <Button
+              variant="primary"
+              className="ml-auto sm:ml-0"
+              size="sm"
+              onPress={props.onAddNew}
+            >
               Add New
               <PlusIcon />
             </Button>
@@ -574,6 +645,43 @@ const WorkersTable = function WorkersTable(props: WorkersTableProps) {
           </table>
         </div>
       </div>
+
+      {/* Invite QR Modal */}
+      <Modal state={inviteModalState}>
+        <Modal.Backdrop isOpen={inviteModalOpen} onOpenChange={() => setInviteModalOpen(false)} variant="blur">
+          <Modal.Container placement="center" size="sm">
+            <Modal.Dialog>
+              <Modal.CloseTrigger />
+              <Modal.Header>
+                <h2 className="text-lg font-semibold">
+                  Invite Worker
+                </h2>
+              </Modal.Header>
+              <Modal.Body>
+                <div className="flex flex-col items-center gap-4 py-4">
+                  {inviteUrl && (
+                    <div className="p-4 bg-white rounded-xl">
+                      <QRCodeSVG value={inviteUrl} size={200} />
+                    </div>
+                  )}
+                  <p className="text-sm text-muted text-center break-all max-w-70">
+                    {inviteUrl}
+                  </p>
+                </div>
+              </Modal.Body>
+              <Modal.Footer className="flex gap-2">
+                <Button variant="tertiary" onPress={() => setInviteModalOpen(false)}>
+                  Close
+                </Button>
+                <Button variant="primary" onPress={handleShareInvite}>
+                  <Share2 className="w-4 h-4" />
+                  Share
+                </Button>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
     </div>
   )
 }

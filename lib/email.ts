@@ -269,10 +269,11 @@ export interface NewUserEmailData {
   userName: string
   provider: string
   date: Date
+  organisation: string
 }
 
 export async function sendNewUserNotification(data: NewUserEmailData): Promise<void> {
-  const { userEmail, userName, provider, date } = data
+  const { userEmail, userName, provider, date, organisation } = data
 
   const formattedDate = new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
@@ -384,6 +385,11 @@ export async function sendNewUserNotification(data: NewUserEmailData): Promise<v
             <span class="value">${userEmail}</span>
           </div>
 
+          <div class="info-row">
+            <span class="label">Organisation:</span>
+            <span class="value">${organisation}</span>
+          </div>
+          
           <div class="info-row">
             <span class="label">Provider:</span>
             <span class="provider-badge provider-${provider.toLowerCase()}">${provider}</span>

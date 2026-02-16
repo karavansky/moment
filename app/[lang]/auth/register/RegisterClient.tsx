@@ -3,10 +3,23 @@
 import { Button, Form, TextField, Label, Input, FieldError, Description, Spinner } from '@heroui/react'
 import { Turnstile } from '@marsidev/react-turnstile'
 import Image from 'next/image'
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useTranslation } from '@/components/Providers'
 import type { SupportedLocale } from '@/config/locales'
 import type { TurnstileInstance } from '@marsidev/react-turnstile'
+
+interface InviteData {
+  firmaID: string
+  organisationName: string
+  status: number
+}
+
+const ROLE_LABELS: Record<number, string> = {
+  1: 'Worker',
+  2: 'Client',
+  3: 'Manager',
+}
 
 interface RegisterClientProps {
   lang: SupportedLocale
@@ -14,11 +27,29 @@ interface RegisterClientProps {
 
 export default function RegisterClient({ lang }: RegisterClientProps) {
   const { t } = useTranslation()
+  const searchParams = useSearchParams()
+  const inviteToken = searchParams.get('invite')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
   const turnstileRef = useRef<TurnstileInstance>(null)
+  const [inviteData, setInviteData] = useState<InviteData | null>(null)
+  const [inviteLoading, setInviteLoading] = useState(!!inviteToken)
+
+  // Загружаем данные invite при наличии токена
+  useEffect(() => {
+    if (!inviteToken) return
+    setInviteLoading(true)
+    fetch(`/api/invites?token=${inviteToken}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data) setInviteData(data)
+        else setError(t('auth.invalidInvite', 'Invalid invite link'))
+      })
+      .catch(() => setError(t('auth.invalidInvite', 'Invalid invite link')))
+      .finally(() => setInviteLoading(false))
+  }, [inviteToken])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -27,7 +58,7 @@ export default function RegisterClient({ lang }: RegisterClientProps) {
     const formData = new FormData(e.currentTarget)
     const name = formData.get('name')?.toString() || ''
     const email = formData.get('email')?.toString() || ''
-    const organisation = formData.get('organisation')?.toString() || ''
+    const organisation = inviteData ? inviteData.organisationName : (formData.get('organisation')?.toString() || '')
     const password = formData.get('password')?.toString() || ''
     const confirmPassword = formData.get('confirmPassword')?.toString() || ''
 
@@ -47,7 +78,7 @@ export default function RegisterClient({ lang }: RegisterClientProps) {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, organisation, turnstileToken }),
+        body: JSON.stringify({ name, email, password, organisation, turnstileToken, inviteToken: inviteToken || undefined }),
       })
 
       const data = await res.json()
@@ -147,17 +178,36 @@ export default function RegisterClient({ lang }: RegisterClientProps) {
           <FieldError />
         </TextField>
 
-        <TextField
-          isRequired
-          name="organisation"
-          type="text"
-          maxLength={80}
-          autoComplete="organization"
-        >
-          <Label>{t('auth.organisation', 'Organisation')}</Label>
-          <Input placeholder={t('auth.organisationPlaceholder', 'Your company or organisation')} />
-          <FieldError />
-        </TextField>
+        {inviteLoading ? (
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50">
+            <Spinner size="sm" />
+            <span className="text-sm text-muted">{t('auth.loadingInvite', 'Loading invite...')}</span>
+          </div>
+        ) : inviteData ? (
+          <div className="p-3 rounded-xl bg-earth-50 dark:bg-earth-900/20 border border-earth-200 dark:border-earth-700">
+            <p className="text-sm text-earth-600 dark:text-earth-400">
+              {t('auth.joiningOrganisation', 'Joining organisation')}
+            </p>
+            <p className="font-semibold text-earth-900 dark:text-gray-100">
+              {inviteData.organisationName}
+            </p>
+            <p className="text-xs text-muted mt-1">
+              {t('auth.roleLabel', 'Role')}: {ROLE_LABELS[inviteData.status] || 'User'}
+            </p>
+          </div>
+        ) : (
+          <TextField
+            isRequired
+            name="organisation"
+            type="text"
+            maxLength={80}
+            autoComplete="organization"
+          >
+            <Label>{t('auth.organisation', 'Organisation')}</Label>
+            <Input placeholder={t('auth.organisationPlaceholder', 'Your company or organisation')} />
+            <FieldError />
+          </TextField>
+        )}
 
         <TextField
           isRequired

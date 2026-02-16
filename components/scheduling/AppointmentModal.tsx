@@ -222,6 +222,7 @@ export default function AppointmentModal({
       endTime,
       fahrzeit: formData.fahrzeit,
       workerId: formData.workers[0]?.id || '',
+      workerIds: formData.workers.map(w => w.id),
       worker: formData.workers,
       client: selectedClient,
       reports: appointment?.reports || [],

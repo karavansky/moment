@@ -8,6 +8,7 @@ import React, {
   useMemo,
   ReactNode,
   useRef,
+  useCallback,
 } from 'react'
 import {
   Appointment,
@@ -23,12 +24,12 @@ import {
 } from '@/types/scheduling'
 import getAllSampleObjects from '@/lib/scheduling-mock-data'
 import { useNotifications } from '@/contexts/NotificationContext'
-import { flushSync } from 'react-dom'
 import { generateId } from '@/lib/generateId'
+import { useAuth } from '@/components/AuthProvider'
+import { useSchedulingEvents, SchedulingEvent } from '@/hooks/useSchedulingEvents'
 
 // Мост между двумя Providers-экземплярами (/ и /[lang]/)
 // Живёт на уровне JS-модуля: переживает SPA-навигацию, сбрасывается при F5
-// Формат: { appointmentId: Partial<Appointment> } — хранит только изменённые поля
 const appointmentOverrides: Record<string, Partial<Appointment>> = {}
 
 // Типы для группированных данных
@@ -44,8 +45,8 @@ interface TeamsWithWorkers {
 
 interface ServiceOption {
   id: string
-  name: string // Название с duration и price: "Ganzkörperwäsche, 30 Min, 25€"
-  fullPath: string // Полный путь для чипов: "Ganzkörperwäsche - Körperpflege - Grundpflege"
+  name: string
+  fullPath: string
 }
 
 interface ServiceGroupForSelect {
@@ -71,6 +72,7 @@ interface SchedulingState {
   services: ServiceTreeItem[]
   firmaID: string
   isLoading: boolean
+  isLiveMode: boolean
   selectedWorker: Worker | null
   selectedClient: Client | null
   selectedDate: Date
@@ -111,6 +113,7 @@ interface SchedulingActions {
   deleteService: (id: string) => void
   refreshData: () => void
   openAppointment: (appointmentId: string, workerId: string) => void
+  closeAppointment: (appointmentId: string) => void
 }
 
 // Комбинированный тип для контекста
@@ -119,10 +122,39 @@ type SchedulingContextType = SchedulingState & SchedulingActions & SchedulingDer
 // Создаем контекст
 const SchedulingContext = createContext<SchedulingContextType | undefined>(undefined)
 
+// Helper: fetch с обработкой ошибок
+async function apiFetch(url: string, options?: RequestInit) {
+  const res = await fetch(url, {
+    headers: { 'Content-Type': 'application/json' },
+    ...options,
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.error || `API error ${res.status}`)
+  }
+  return res.json()
+}
+
 // Провайдер контекста
 export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const mountIdRef = useRef(Math.random().toString(36).slice(2, 8))
   const { addNotification } = useNotifications()
+  const { session, status: authStatus } = useAuth()
+
+  // Определяем режим: live (авторизованный с firmaID) или mock (демо)
+  // status=0 (директор), 1 (worker), 2 (client), null/undefined (до миграции)
+  const userStatus = session?.user?.status
+  const isLiveMode = authStatus === 'authenticated' && (userStatus === 0 || userStatus === 1 || userStatus === 2 || userStatus == null) && !!session?.user?.firmaID
+
+  console.log('[SchedulingProvider] Mode check:', {
+    authStatus,
+    userStatus: session?.user?.status,
+    firmaID: session?.user?.firmaID,
+    isLiveMode,
+  })
+  const isLiveModeRef = useRef(isLiveMode)
+  isLiveModeRef.current = isLiveMode
+  const stateRef = useRef<SchedulingState | null>(null)
 
   const [state, setState] = useState<SchedulingState>({
     user: null,
@@ -135,13 +167,14 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     services: [],
     firmaID: '',
     isLoading: true,
+    isLiveMode: false,
     selectedWorker: null,
     selectedClient: null,
     selectedDate: new Date(),
     selectedAppointment: null,
   })
+  stateRef.current = state
 
-  // Логируем монтирование/размонтирование
   useEffect(() => {
     console.log(`🟢 SchedulingProvider MOUNTED [${mountIdRef.current}]`)
     return () => {
@@ -149,29 +182,19 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   }, [])
 
-  // Инициализация данных при монтировании
-  useEffect(() => {
-    loadMockData()
-  }, [])
-
   // Загрузка mock данных
-  const loadMockData = () => {
+  const loadMockData = useCallback(() => {
     setState(prev => ({ ...prev, isLoading: true }))
 
     try {
       const mockData = getAllSampleObjects()
 
-      // Восстанавливаем open state из module-level переменной (мост между Providers при навигации / → /[lang]/)
       let appointments = mockData.appointments
       const overrideKeys = Object.keys(appointmentOverrides)
       if (overrideKeys.length > 0) {
-        console.log(`📌 [SchedulingProvider] Restoring open appointments from appointmentOverrides:`, { ...appointmentOverrides })
         appointments = appointments.map(apt => {
           const overrides = appointmentOverrides[apt.id]
-          if (overrides) {
-            return { ...apt, ...overrides }
-          }
-          return apt
+          return overrides ? { ...apt, ...overrides } : apt
         })
       }
 
@@ -186,6 +209,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         services: mockData.services,
         firmaID: mockData.firmaID,
         isLoading: false,
+        isLiveMode: false,
         selectedWorker: null,
         selectedClient: null,
         selectedDate: new Date(),
@@ -201,9 +225,174 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
       console.error('Error loading mock data:', error)
       setState(prev => ({ ...prev, isLoading: false }))
     }
-  }
+  }, [])
 
-  // Действия для управления состоянием - мемоизированы для предотвращения лишних ре-рендеров
+  // Загрузка реальных данных из API
+  const loadLiveData = useCallback(async () => {
+    setState(prev => ({ ...prev, isLoading: true }))
+
+    try {
+      const data = await apiFetch('/api/scheduling')
+
+      // Convert date strings from JSON to Date objects
+      const appointments = (data.appointments || []).map((apt: Record<string, unknown>) => ({
+        ...apt,
+        date: new Date(apt.date as string),
+        startTime: apt.startTime ? new Date(apt.startTime as string) : apt.startTime,
+        endTime: apt.endTime ? new Date(apt.endTime as string) : apt.endTime,
+        openedAt: apt.openedAt ? new Date(apt.openedAt as string) : apt.openedAt,
+        closedAt: apt.closedAt ? new Date(apt.closedAt as string) : apt.closedAt,
+      }))
+
+      setState({
+        user: data.user,
+        teams: data.teams,
+        groups: data.groupes,
+        workers: data.workers,
+        clients: data.clients,
+        appointments,
+        reports: data.reports,
+        services: data.services,
+        firmaID: data.firmaID,
+        isLoading: false,
+        isLiveMode: true,
+        selectedWorker: null,
+        selectedClient: null,
+        selectedDate: new Date(),
+        selectedAppointment: null,
+      })
+
+      console.log('Live data loaded:', {
+        workers: data.workers.length,
+        clients: data.clients.length,
+        appointments: data.appointments.length,
+      })
+    } catch (error) {
+      console.error('Error loading live data:', error)
+      // Не fallback на mock — показываем пустое состояние для авторизованного пользователя
+      setState(prev => ({ ...prev, isLoading: false, isLiveMode: true }))
+    }
+  }, [])
+
+  // Лёгкое обновление только appointments (для SSE-событий)
+  const refreshAppointments = useCallback(async () => {
+    try {
+      const data = await apiFetch('/api/scheduling/appointments')
+      const appointments = (data.appointments || []).map((apt: Record<string, unknown>) => ({
+        ...apt,
+        date: new Date(apt.date as string),
+        startTime: apt.startTime ? new Date(apt.startTime as string) : apt.startTime,
+        endTime: apt.endTime ? new Date(apt.endTime as string) : apt.endTime,
+        openedAt: apt.openedAt ? new Date(apt.openedAt as string) : apt.openedAt,
+        closedAt: apt.closedAt ? new Date(apt.closedAt as string) : apt.closedAt,
+      }))
+
+      setState(prev => ({ ...prev, appointments }))
+      console.log('[SSE] Appointments refreshed:', appointments.length)
+    } catch (error) {
+      console.error('[SSE] Failed to refresh appointments:', error)
+    }
+  }, [])
+
+  // Инициализация данных — зависит от auth
+  useEffect(() => {
+    if (authStatus === 'loading') return
+
+    if (isLiveMode) {
+      loadLiveData()
+    } else {
+      loadMockData()
+    }
+  }, [authStatus, isLiveMode, loadLiveData, loadMockData])
+
+  // SSE: подписка на real-time события
+  const handleSchedulingEvent = useCallback((event: SchedulingEvent) => {
+    if (!event.appointmentID) return
+
+    // Для worker/client: событие релевантно если:
+    // 1) appointment назначен на этого worker/client (workerIds includes myWorkerID), ИЛИ
+    // 2) appointment уже есть в локальном state (мог быть переназначен ОТ этого worker/client)
+    const user = stateRef.current?.user
+    const existsLocally = stateRef.current?.appointments.some(apt => apt.id === event.appointmentID)
+    const eventWorkerIds = event.workerIds || []
+    if (user?.myWorkerID && !eventWorkerIds.includes(user.myWorkerID) && !existsLocally) return
+    if (user?.myClientID && event.clientID !== user.myClientID && !existsLocally) return
+
+    if (event.type === 'appointment_created' || event.type === 'appointment_deleted') {
+      // Новый или удалённый appointment — перезагрузить список
+      refreshAppointments()
+      return
+    }
+
+    if (event.type === 'appointment_updated') {
+      // Для любого update, который меняет workerIds или clientID — полный рефреш
+      // (мы не можем определить из SSE payload какие именно поля изменились, кроме isOpen)
+      // Быстрый путь: если isOpen изменился — inline update
+      setState(prev => {
+        const existing = prev.appointments.find(apt => apt.id === event.appointmentID)
+        if (!existing) {
+          // Appointment не в локальном state — возможно, назначен на этого работника
+          refreshAppointments()
+          return prev
+        }
+
+        // Проверяем: изменились ли workers (сравниваем workerIds с existing.worker)
+        const existingWorkerIds = existing.worker?.map(w => w.id).sort() || []
+        const newWorkerIds = [...eventWorkerIds].sort()
+        const workersChanged = existingWorkerIds.length !== newWorkerIds.length ||
+          existingWorkerIds.some((id, i) => id !== newWorkerIds[i])
+
+        if (workersChanged || (event.clientID && event.clientID !== existing.clientID)) {
+          refreshAppointments()
+          return prev
+        }
+
+        // Быстрое обновление isOpen/openedAt/closedAt из SSE payload
+        const updated = {
+          ...existing,
+          isOpen: event.isOpen ?? existing.isOpen,
+          openedAt: event.openedAt ? new Date(event.openedAt) : existing.openedAt,
+          closedAt: event.closedAt ? new Date(event.closedAt) : existing.closedAt,
+        }
+
+        // Notification для директора при открытии appointment
+        if (event.isOpen && !existing.isOpen) {
+          const client = existing.client
+          const workerNames = existing.worker?.map(w => `${w.name} ${w.surname}`).join(', ')
+          if (workerNames && client) {
+            queueMicrotask(() => {
+              const notification: Notif = {
+                userID: 'system',
+                type: 'info',
+                title: 'Starting Appointment!',
+                message: `${workerNames} started an appointment with ${client.name} ${client.surname} ${client.street} ${client.houseNumber}, ${client.city}.`,
+                actionProps: {
+                  children: 'See on map',
+                  href: `/map/${event.appointmentID}`,
+                  variant: 'primary',
+                },
+                id: generateId(),
+                date: new Date(),
+                isRead: false,
+              }
+              addNotification(notification)
+            })
+          }
+        }
+
+        return {
+          ...prev,
+          appointments: prev.appointments.map(apt =>
+            apt.id === event.appointmentID ? updated : apt
+          ),
+        }
+      })
+    }
+  }, [addNotification, refreshAppointments])
+
+  useSchedulingEvents(isLiveMode, handleSchedulingEvent)
+
+  // Действия для управления состоянием
   const actions: SchedulingActions = useMemo(
     () => ({
       setSelectedWorker: worker => {
@@ -222,27 +411,89 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         setState(prev => ({ ...prev, selectedAppointment: appointment }))
       },
 
-      addAppointment: appointment => {
+      addAppointment: (appointment: Appointment) => {
         setState(prev => ({
           ...prev,
           appointments: [...prev.appointments, appointment],
         }))
+
+        if (isLiveModeRef.current) {
+          apiFetch('/api/scheduling/appointments', {
+            method: 'POST',
+            body: JSON.stringify({
+              clientID: appointment.clientID,
+              workerIds: appointment.worker?.map(w => w.id) || [],
+              date: appointment.date,
+              isFixedTime: appointment.isFixedTime,
+              startTime: appointment.startTime,
+              endTime: appointment.endTime,
+              duration: appointment.duration,
+              fahrzeit: appointment.fahrzeit,
+              latitude: appointment.latitude,
+              longitude: appointment.longitude,
+              serviceIds: appointment.services?.map(s => s.id),
+            }),
+          }).then(result => {
+            setState(prev => ({
+              ...prev,
+              appointments: prev.appointments.map(a =>
+                a.id === appointment.id ? { ...appointment, id: result.appointmentID } : a
+              ),
+            }))
+          }).catch(error => {
+            console.error('[addAppointment] API error:', error)
+            setState(prev => ({
+              ...prev,
+              appointments: prev.appointments.filter(a => a.id !== appointment.id),
+            }))
+          })
+        }
       },
 
-      updateAppointment: updatedAppointment => {
+      updateAppointment: (updatedAppointment: Appointment) => {
         setState(prev => ({
           ...prev,
           appointments: prev.appointments.map(apt =>
             apt.id === updatedAppointment.id ? updatedAppointment : apt
           ),
         }))
+
+        if (isLiveModeRef.current) {
+          apiFetch('/api/scheduling/appointments', {
+            method: 'PUT',
+            body: JSON.stringify({
+              id: updatedAppointment.id,
+              date: updatedAppointment.date,
+              isFixedTime: updatedAppointment.isFixedTime,
+              startTime: updatedAppointment.startTime,
+              endTime: updatedAppointment.endTime,
+              duration: updatedAppointment.duration,
+              fahrzeit: updatedAppointment.fahrzeit,
+              workerIds: updatedAppointment.worker?.map(w => w.id) || [],
+              clientID: updatedAppointment.clientID,
+              isOpen: updatedAppointment.isOpen,
+              openedAt: updatedAppointment.openedAt,
+              closedAt: updatedAppointment.closedAt,
+              latitude: updatedAppointment.latitude,
+              longitude: updatedAppointment.longitude,
+              serviceIds: updatedAppointment.services?.map(s => s.id),
+            }),
+          }).catch(error => console.error('[updateAppointment] API error:', error))
+        }
       },
 
-      deleteAppointment: id => {
+      deleteAppointment: (id: string) => {
         setState(prev => ({
           ...prev,
           appointments: prev.appointments.filter(apt => apt.id !== id),
         }))
+
+        if (isLiveModeRef.current) {
+          apiFetch('/api/scheduling/appointments', {
+            method: 'DELETE',
+            body: JSON.stringify({ id }),
+          }).catch(error => console.error('[deleteAppointment] API error:', error))
+        }
       },
 
       moveAppointmentToDate: (appointmentId, newDate) => {
@@ -250,12 +501,10 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
           const appointment = prev.appointments.find(apt => apt.id === appointmentId)
           if (!appointment) return prev
 
-          // Вычисляем разницу в днях между старой и новой датой
           const oldDate = appointment.date
           const timeDiff = newDate.getTime() - oldDate.getTime()
           const daysDiff = Math.round(timeDiff / (1000 * 60 * 60 * 24))
 
-          // Обновляем дату и времена назначения
           const newStartTime = new Date(appointment.startTime)
           newStartTime.setDate(newStartTime.getDate() + daysDiff)
 
@@ -269,12 +518,17 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
             endTime: newEndTime,
           }
 
-          console.log('Moving appointment:', {
-            id: appointmentId,
-            oldDate: oldDate.toLocaleDateString(),
-            newDate: newDate.toLocaleDateString(),
-            daysDiff,
-          })
+          if (isLiveModeRef.current) {
+            apiFetch('/api/scheduling/appointments', {
+              method: 'PUT',
+              body: JSON.stringify({
+                id: appointmentId,
+                date: newDate,
+                startTime: newStartTime,
+                endTime: newEndTime,
+              }),
+            }).catch(error => console.error('[moveAppointmentToDate] API error:', error))
+          }
 
           return {
             ...prev,
@@ -286,82 +540,261 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
       },
 
       addClient: (client: Client) => {
-        console.log('Adding new client:', client)
         setState(prev => ({
           ...prev,
           clients: [...prev.clients, client],
         }))
+
+        if (isLiveModeRef.current) {
+          apiFetch('/api/scheduling/clients', {
+            method: 'POST',
+            body: JSON.stringify({
+              name: client.name,
+              surname: client.surname,
+              email: client.email,
+              phone: client.phone,
+              phone2: client.phone2,
+              status: client.status,
+              groupeID: client.groupe?.id,
+              country: client.country,
+              street: client.street,
+              postalCode: client.postalCode,
+              city: client.city,
+              houseNumber: client.houseNumber,
+              apartment: client.apartment,
+              district: client.district,
+              latitude: client.latitude,
+              longitude: client.longitude,
+            }),
+          }).then(result => {
+            setState(prev => ({
+              ...prev,
+              clients: prev.clients.map(c =>
+                c.id === client.id ? { ...client, id: result.clientID } : c
+              ),
+            }))
+          }).catch(error => {
+            console.error('[addClient] API error:', error)
+            setState(prev => ({
+              ...prev,
+              clients: prev.clients.filter(c => c.id !== client.id),
+            }))
+          })
+        }
       },
 
-      updateClient: updatedClient => {
-        console.log('Updating client:', updatedClient)
+      updateClient: (updatedClient: Client) => {
         setState(prev => ({
           ...prev,
           clients: prev.clients.map(client =>
             client.id === updatedClient.id ? updatedClient : client
           ),
         }))
+
+        if (isLiveModeRef.current) {
+          apiFetch('/api/scheduling/clients', {
+            method: 'PUT',
+            body: JSON.stringify({
+              id: updatedClient.id,
+              name: updatedClient.name,
+              surname: updatedClient.surname,
+              email: updatedClient.email,
+              phone: updatedClient.phone,
+              phone2: updatedClient.phone2,
+              status: updatedClient.status,
+              groupeID: updatedClient.groupe?.id,
+              country: updatedClient.country,
+              street: updatedClient.street,
+              postalCode: updatedClient.postalCode,
+              city: updatedClient.city,
+              houseNumber: updatedClient.houseNumber,
+              apartment: updatedClient.apartment,
+              district: updatedClient.district,
+              latitude: updatedClient.latitude,
+              longitude: updatedClient.longitude,
+            }),
+          }).catch(error => console.error('[updateClient] API error:', error))
+        }
       },
 
-      deleteClient: id => {
-        console.log('Deleting client:', id)
+      deleteClient: (id: string) => {
         setState(prev => ({
           ...prev,
           clients: prev.clients.filter(client => client.id !== id),
-          // Также удаляем все связанные appointments
           appointments: prev.appointments.filter(apt => apt.clientID !== id),
         }))
+
+        if (isLiveModeRef.current) {
+          apiFetch('/api/scheduling/clients', {
+            method: 'DELETE',
+            body: JSON.stringify({ id }),
+          }).catch(error => console.error('[deleteClient] API error:', error))
+        }
       },
-      addWorker: worker => {
-        console.log('Adding new worker:', worker)
+
+      addWorker: (worker: Worker) => {
         setState(prev => ({
           ...prev,
           workers: [...prev.workers, worker],
         }))
+
+        if (isLiveModeRef.current) {
+          apiFetch('/api/scheduling/workers', {
+            method: 'POST',
+            body: JSON.stringify({
+              name: worker.name,
+              surname: worker.surname,
+              email: worker.email,
+              phone: worker.phone,
+              phone2: worker.phone2,
+              teamId: worker.teamId,
+              isAdress: worker.isAdress,
+              status: worker.status,
+              country: worker.country,
+              street: worker.street,
+              postalCode: worker.postalCode,
+              city: worker.city,
+              houseNumber: worker.houseNumber,
+              apartment: worker.apartment,
+              district: worker.district,
+              latitude: worker.latitude,
+              longitude: worker.longitude,
+            }),
+          }).then(result => {
+            setState(prev => ({
+              ...prev,
+              workers: prev.workers.map(w =>
+                w.id === worker.id ? { ...worker, id: result.workerID } : w
+              ),
+            }))
+          }).catch(error => {
+            console.error('[addWorker] API error:', error)
+            setState(prev => ({
+              ...prev,
+              workers: prev.workers.filter(w => w.id !== worker.id),
+            }))
+          })
+        }
       },
 
-      updateWorker: updatedWorker => {
-        console.log('Updating worker:', updatedWorker)
+      updateWorker: (updatedWorker: Worker) => {
         setState(prev => ({
           ...prev,
           workers: prev.workers.map(worker =>
             worker.id === updatedWorker.id ? updatedWorker : worker
           ),
         }))
+
+        if (isLiveModeRef.current) {
+          apiFetch('/api/scheduling/workers', {
+            method: 'PUT',
+            body: JSON.stringify({
+              id: updatedWorker.id,
+              name: updatedWorker.name,
+              surname: updatedWorker.surname,
+              email: updatedWorker.email,
+              phone: updatedWorker.phone,
+              phone2: updatedWorker.phone2,
+              teamId: updatedWorker.teamId,
+              isAdress: updatedWorker.isAdress,
+              status: updatedWorker.status,
+              country: updatedWorker.country,
+              street: updatedWorker.street,
+              postalCode: updatedWorker.postalCode,
+              city: updatedWorker.city,
+              houseNumber: updatedWorker.houseNumber,
+              apartment: updatedWorker.apartment,
+              district: updatedWorker.district,
+              latitude: updatedWorker.latitude,
+              longitude: updatedWorker.longitude,
+            }),
+          }).catch(error => console.error('[updateWorker] API error:', error))
+        }
       },
 
-      deleteWorker: id => {
-        console.log('Deleting worker:', id)
+      deleteWorker: (id: string) => {
         setState(prev => ({
           ...prev,
           workers: prev.workers.filter(worker => worker.id !== id),
-          // Также удаляем все связанные appointments
           appointments: prev.appointments.filter(apt => apt.workerId !== id),
         }))
+
+        if (isLiveModeRef.current) {
+          apiFetch('/api/scheduling/workers', {
+            method: 'DELETE',
+            body: JSON.stringify({ id }),
+          }).catch(error => console.error('[deleteWorker] API error:', error))
+        }
       },
 
-      addService: service => {
-        console.log('Adding new service:', service)
+      addService: (service: ServiceTreeItem) => {
         setState(prev => ({
           ...prev,
           services: [...prev.services, service],
         }))
+
+        if (isLiveModeRef.current) {
+          const body: Record<string, any> = {
+            name: service.name,
+            description: service.description,
+            parentId: service.parentId,
+            isGroup: service.isGroup,
+            order: service.order,
+          }
+          if (!service.isGroup) {
+            body.duration = (service as Service).duration
+            body.price = (service as Service).price
+          }
+          apiFetch('/api/scheduling/services', {
+            method: 'POST',
+            body: JSON.stringify(body),
+          }).then(result => {
+            setState(prev => ({
+              ...prev,
+              services: prev.services.map(s =>
+                s.id === service.id ? { ...service, id: result.serviceID } : s
+              ),
+            }))
+          }).catch(error => {
+            console.error('[addService] API error:', error)
+            setState(prev => ({
+              ...prev,
+              services: prev.services.filter(s => s.id !== service.id),
+            }))
+          })
+        }
       },
 
-      updateService: updatedService => {
-        console.log('Updating service:', updatedService)
+      updateService: (updatedService: ServiceTreeItem) => {
         setState(prev => ({
           ...prev,
           services: prev.services.map(service =>
             service.id === updatedService.id ? updatedService : service
           ),
         }))
+
+        if (isLiveModeRef.current) {
+          const body: Record<string, any> = {
+            id: updatedService.id,
+            name: updatedService.name,
+            description: updatedService.description,
+            parentId: updatedService.parentId,
+            isGroup: updatedService.isGroup,
+            order: updatedService.order,
+          }
+          if (!updatedService.isGroup) {
+            body.duration = (updatedService as Service).duration
+            body.price = (updatedService as Service).price
+          }
+          apiFetch('/api/scheduling/services', {
+            method: 'PUT',
+            body: JSON.stringify(body),
+          }).catch(error => console.error('[updateService] API error:', error))
+        }
       },
 
-      deleteService: id => {
-        console.log('Deleting service:', id)
+      deleteService: (id: string) => {
         setState(prev => {
-          // Рекурсивно собираем все ID для удаления (сам элемент + все дочерние)
           const getChildIds = (parentId: string): string[] => {
             const children = prev.services.filter(s => s.parentId === parentId)
             return children.flatMap(child => [child.id, ...getChildIds(child.id)])
@@ -372,59 +805,48 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
             services: prev.services.filter(service => !idsToDelete.includes(service.id)),
           }
         })
+
+        if (isLiveModeRef.current) {
+          apiFetch('/api/scheduling/services', {
+            method: 'DELETE',
+            body: JSON.stringify({ id }),
+          }).catch(error => console.error('[deleteService] API error:', error))
+        }
       },
 
       refreshData: () => {
-        loadMockData()
+        if (isLiveModeRef.current) {
+          loadLiveData()
+        } else {
+          loadMockData()
+        }
       },
 
       openAppointment: (appointmentId: string, workerId: string) => {
-        console.log(`📌 [openAppointment] Called with appointmentId=${appointmentId}, workerId=${workerId}, timestamp=${Date.now()}`)
-
-        // Сначала обновляем state (чистая функция в setState)
         setState(prev => {
           const appointment = prev.appointments.find(apt => apt.id === appointmentId)
-          if (!appointment) {
-            console.warn('📌 [openAppointment] Appointment not found:', appointmentId)
-            return prev
-          }
-          if (!appointment.client) {
-            console.warn('📌 [openAppointment] Client in appointment not found:', appointmentId)
-            return prev
-          }
+          if (!appointment) return prev
+          if (!appointment.client) return prev
           const worker = appointment.worker.find(w => w.id === workerId)
-          if (!worker) {
-            console.warn('📌 [openAppointment] Worker not found:', workerId)
-            return prev
-          }
-
-          if (prev.appointments.find(apt => apt.id === appointmentId)?.isOpen) {
-            console.log('📌 [openAppointment] Appointment already open, skipping')
-            return prev
-          }
+          if (!worker) return prev
+          if (prev.appointments.find(apt => apt.id === appointmentId)?.isOpen) return prev
 
           const startDate = new Date()
-          console.log(`📌 [openAppointment] Setting isOpen=true, openedAt=${startDate.toISOString()} for appointment ${appointmentId}`)
 
-          // Сохраняем в module-level переменную для восстановления при re-mount Providers
           appointmentOverrides[appointmentId] = {
             ...appointmentOverrides[appointmentId],
             isOpen: true,
             openedAt: startDate,
           }
 
-          // Захватываем client до queueMicrotask для TypeScript narrowing
           const client = appointment.client
 
-          // Вызов addNotification ВЫНЕСЕН из setState (был анти-паттерн)
-          // Используем queueMicrotask чтобы вызвать после завершения setState
           queueMicrotask(() => {
-            console.log(`📌 [openAppointment] Sending notification (via queueMicrotask)`)
             const notification: Notif = {
-              userID: 'system-demo',
+              userID: 'system',
               type: 'info',
               title: 'Starting Appointment!',
-              message: `Worker ${worker.name} ${worker.surname} has started ${startDate.getTime().toString()} an appointment with ${client.name} ${client.surname} ${client.street} ${client.houseNumber}, ${client.city}.`,
+              message: `Worker ${worker.name} ${worker.surname} has started an appointment with ${client.name} ${client.surname} ${client.street} ${client.houseNumber}, ${client.city}.`,
               actionProps: {
                 children: 'See on map',
                 href: `/map/${appointmentId}`,
@@ -437,6 +859,17 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
             addNotification(notification)
           })
 
+          if (isLiveModeRef.current) {
+            apiFetch('/api/scheduling/appointments', {
+              method: 'PUT',
+              body: JSON.stringify({
+                id: appointmentId,
+                isOpen: true,
+                openedAt: startDate,
+              }),
+            }).catch(error => console.error('[openAppointment] API error:', error))
+          }
+
           return {
             ...prev,
             appointments: prev.appointments.map(apt =>
@@ -445,16 +878,48 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
           }
         })
       },
+
+      closeAppointment: (appointmentId: string) => {
+        const closedAt = new Date()
+
+        setState(prev => {
+          const appointment = prev.appointments.find(apt => apt.id === appointmentId)
+          if (!appointment || !appointment.isOpen) return prev
+
+          appointmentOverrides[appointmentId] = {
+            ...appointmentOverrides[appointmentId],
+            isOpen: false,
+            closedAt,
+          }
+
+          if (isLiveModeRef.current) {
+            apiFetch('/api/scheduling/appointments', {
+              method: 'PUT',
+              body: JSON.stringify({
+                id: appointmentId,
+                isOpen: false,
+                closedAt,
+              }),
+            }).catch(error => console.error('[closeAppointment] API error:', error))
+          }
+
+          return {
+            ...prev,
+            appointments: prev.appointments.map(apt =>
+              apt.id === appointmentId ? { ...apt, isOpen: false, closedAt } : apt
+            ),
+          }
+        })
+      },
     }),
-    []
-  ) // Без зависимостей, так как все функции используют setState с функциональным обновлением
+    [loadLiveData, loadMockData, addNotification]
+  )
 
   // Конвертация дерева услуг в формат для select с optgroup
   const servicesForSelect = useMemo<ServicesForSelect>(() => {
     const rootServices: ServiceOption[] = []
     const groups: ServiceGroupForSelect[] = []
 
-    // Функция для построения цепочки родителей группы (вершина справа)
     const buildGroupChain = (groupId: string): string => {
       const group = state.services.find(s => s.id === groupId && s.isGroup)
       if (!group) return ''
@@ -472,19 +937,15 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         }
       }
 
-      // chain = ['Körperpflege', 'Grundpflege'] → 'Körperpflege - Grundpflege'
       return chain.join(' - ')
     }
 
-    // Функция для построения полного пути услуги (услуга - родители)
     const buildServiceFullPath = (serviceName: string, parentId: string | null): string => {
       if (!parentId) return serviceName
-
       const parentChain = buildGroupChain(parentId)
       return parentChain ? `${serviceName} - ${parentChain}` : serviceName
     }
 
-    // Функция для форматирования названия услуги с duration и price
     const formatServiceName = (service: Service): string => {
       const parts = [service.name]
       if (service.duration) parts.push(`${service.duration} Min`)
@@ -492,11 +953,9 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
       return parts.join(', ')
     }
 
-    // Рекурсивная функция для обхода дерева и сбора групп с услугами
     const processGroup = (parentId: string | null) => {
       const children = state.services.filter(s => s.parentId === parentId)
 
-      // Сначала обрабатываем услуги (isGroup = false)
       const services = children.filter((s): s is Service => !s.isGroup)
       const serviceOptions: ServiceOption[] = services.map(service => ({
         id: service.id,
@@ -504,19 +963,15 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         fullPath: buildServiceFullPath(service.name, service.parentId),
       }))
 
-      // Если это корневой уровень и есть услуги — добавляем в rootServices
       if (parentId === null && serviceOptions.length > 0) {
         rootServices.push(...serviceOptions)
       }
 
-      // Обрабатываем подгруппы (isGroup = true)
       const subgroups = children.filter(s => s.isGroup)
       for (const group of subgroups) {
-        // Получаем услуги непосредственно в этой группе
         const groupChildren = state.services.filter(s => s.parentId === group.id)
         const groupServices = groupChildren.filter((s): s is Service => !s.isGroup)
 
-        // Если в группе есть услуги — добавляем как optgroup
         if (groupServices.length > 0) {
           const options: ServiceOption[] = groupServices.map(service => ({
             id: service.id,
@@ -531,50 +986,74 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
           })
         }
 
-        // Рекурсивно обрабатываем вложенные группы
         processGroup(group.id)
       }
     }
 
-    // Начинаем с корневых элементов
     processGroup(null)
 
     return { rootServices, groups }
   }, [state.services])
 
-  // Группировка клиентов по группам - вычисляется при изменении clients или groups
+  // Группировка клиентов по группам
   const groupedClients = useMemo<GroupedClients[]>(() => {
-    return state.groups
+    const sortFn = (a: Client, b: Client) =>
+      a.surname.localeCompare(b.surname, undefined, { sensitivity: 'base', numeric: true })
+
+    // Клиенты с группами
+    const grouped = state.groups
       .map(group => ({
         group,
         clients: state.clients
           .filter(c => c.groupe?.id === group.id)
-          .sort((a, b) =>
-            a.surname.localeCompare(b.surname, undefined, {
-              sensitivity: 'base',
-              numeric: true,
-            })
-          ),
+          .sort(sortFn),
       }))
       .filter(({ clients }) => clients.length > 0)
-  }, [state.groups, state.clients])
 
-  // Группировка workers по teams - вычисляется при изменении workers или teams
+    // Клиенты без группы
+    const ungrouped = state.clients
+      .filter(c => !c.groupe?.id)
+      .sort(sortFn)
+
+    if (ungrouped.length > 0) {
+      grouped.push({
+        group: { id: '__ungrouped__', groupeName: 'Ohne Gruppe', firmaID: state.firmaID },
+        clients: ungrouped,
+      })
+    }
+
+    return grouped
+  }, [state.groups, state.clients, state.firmaID])
+
+  // Группировка workers по teams
   const teamsWithWorkers = useMemo<TeamsWithWorkers[]>(() => {
-    return state.teams
+    const sortFn = (a: Worker, b: Worker) =>
+      a.surname.localeCompare(b.surname, undefined, { sensitivity: 'base', numeric: true })
+
+    // Работники с командами
+    const grouped = state.teams
       .map(team => ({
         team,
         workers: state.workers
           .filter(w => w.teamId === team.id)
-          .sort((a, b) =>
-            a.surname.localeCompare(b.surname, undefined, {
-              sensitivity: 'base',
-              numeric: true,
-            })
-          ),
+          .sort(sortFn),
       }))
       .filter(({ workers }) => workers.length > 0)
-  }, [state.teams, state.workers])
+
+    // Работники без команды
+    const ungrouped = state.workers
+      .filter(w => !w.teamId)
+      .sort(sortFn)
+
+    if (ungrouped.length > 0) {
+      grouped.push({
+        team: { id: '__ungrouped__', teamName: 'Ohne Team', firmaID: state.firmaID },
+        workers: ungrouped,
+      })
+    }
+
+    return grouped
+  }, [state.teams, state.workers, state.firmaID])
 
   // Appointments на сегодня с привязанными клиентами (для карты)
   const todayAppointments = useMemo<AppointmentWithClient[]>(() => {
@@ -596,7 +1075,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
       .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
   }, [state.appointments, state.clients])
 
-  // Мемоизируем contextValue для предотвращения лишних ре-рендеров потребителей контекста
+  // Мемоизируем contextValue
   const contextValue: SchedulingContextType = useMemo(
     () => ({
       ...state,

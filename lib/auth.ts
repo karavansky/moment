@@ -60,6 +60,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           provider: 'credentials',
           isAdmin: user.isAdmin,
           firmaID: user.firmaID ?? undefined,
+          status: user.status,
         }
       },
     }),
@@ -89,6 +90,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.userId = user.id
           token.isAdmin = user.isAdmin
           token.firmaID = user.firmaID
+          token.status = user.status
           if (user.firmaID) {
             try {
               const org = await getOrganisationById(user.firmaID)
@@ -112,6 +114,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 token.userId = existingUser.userID
                 token.isAdmin = existingUser.isAdmin
                 token.firmaID = existingUser.firmaID ?? undefined
+                token.status = existingUser.status
                 if (existingUser.firmaID) {
                   const org = await getOrganisationById(existingUser.firmaID)
                   token.organisationName = org?.name
@@ -127,13 +130,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 console.log('[JWT Callback] New user created. UserID:', newUser.userID)
                 token.userId = newUser.userID
                 token.isAdmin = newUser.isAdmin
-
+                token.status = newUser.status
+                if (newUser.firmaID) {
+                  const org = await getOrganisationById(newUser.firmaID)
+                  token.organisationName = org?.name
+                }
                 try {
                   await sendNewUserNotification({
                     userEmail: newUser.email,
                     userName: newUser.name,
                     provider: newUser.provider,
                     date: newUser.date,
+                    organisation: token.organisationName || 'N/A',
                   })
                   console.log('[JWT Callback] New user notification email sent')
                 } catch (emailError) {
@@ -204,6 +212,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
         if (token.organisationName) {
           session.user.organisationName = token.organisationName as string
+        }
+        if (token.status !== undefined) {
+          session.user.status = token.status as number
         }
       }
       return session

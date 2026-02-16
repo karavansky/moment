@@ -4,13 +4,21 @@ import { hashPassword } from '@/lib/password'
 import { createVerificationToken } from '@/lib/verification-tokens'
 import { sendEmailVerification, sendNewUserNotification } from '@/lib/email'
 import { createOrganisation } from '@/lib/organisations'
+import { getInviteByToken } from '@/lib/invites'
+import { createWorker } from '@/lib/workers'
+import { createClient } from '@/lib/clients'
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password, organisation, turnstileToken } = await request.json()
+    const { name, email, password, organisation, turnstileToken, inviteToken } = await request.json()
 
-    if (!name || !email || !password || !organisation) {
-      return NextResponse.json({ error: 'Name, email, password and organisation are required' }, { status: 400 })
+    if (!name || !email || !password) {
+      return NextResponse.json({ error: 'Name, email and password are required' }, { status: 400 })
+    }
+
+    // Organisation обязательна только без invite
+    if (!inviteToken && !organisation) {
+      return NextResponse.json({ error: 'Organisation is required' }, { status: 400 })
     }
 
     if (password.length < 8) {
@@ -56,9 +64,24 @@ export async function POST(request: Request) {
       await updatePassword(existingUser.userID, passwordHash)
       user = existingUser
       isResend = true
+    } else if (inviteToken) {
+      // Регистрация по invite — берём firmaID и status из invite
+      const invite = await getInviteByToken(inviteToken)
+      if (!invite) {
+        return NextResponse.json({ error: 'Invalid invite token' }, { status: 400 })
+      }
+      user = await createUserWithPassword(name, email, passwordHash, invite.firmaID, invite.status)
+
+      // Создаём запись в workers/clients в зависимости от роли
+      if (invite.status === 1) {
+        await createWorker({ userID: user.userID, firmaID: invite.firmaID, name, email })
+      } else if (invite.status === 2) {
+        await createClient({ userID: user.userID, firmaID: invite.firmaID, name, email })
+      }
     } else {
+      // Обычная регистрация — создаём организацию, status=0 (директор)
       const org = await createOrganisation(organisation)
-      user = await createUserWithPassword(name, email, passwordHash, org.firmaID)
+      user = await createUserWithPassword(name, email, passwordHash, org.firmaID, 0)
     }
 
     const token = await createVerificationToken(user.userID, 'email_verify')
@@ -74,6 +97,7 @@ export async function POST(request: Request) {
         await sendNewUserNotification({
           userEmail: email,
           userName: name,
+          organisation: organisation || 'via invite',
           provider: 'credentials',
           date: user.date,
         })

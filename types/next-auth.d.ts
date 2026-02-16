@@ -9,6 +9,7 @@ declare module 'next-auth' {
       sessionId?: string
       firmaID?: string
       organisationName?: string
+      status?: number
     } & DefaultSession['user']
   }
 
@@ -17,6 +18,7 @@ declare module 'next-auth' {
     provider?: string
     isAdmin?: boolean
     firmaID?: string
+    status?: number
   }
 }
 
@@ -29,5 +31,6 @@ declare module 'next-auth/jwt' {
     sessionId?: string
     firmaID?: string
     organisationName?: string
+    status?: number
   }
 }

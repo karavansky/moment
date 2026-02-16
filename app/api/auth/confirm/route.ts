@@ -78,6 +78,7 @@ export async function GET(request: Request) {
         sessionId: dbSession.sessionID,
         firmaID: user.firmaID ?? undefined,
         organisationName,
+        status: user.status,
       },
       secret: process.env.AUTH_SECRET!,
       salt: cookieName,

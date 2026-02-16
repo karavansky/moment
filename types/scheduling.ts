@@ -100,6 +100,7 @@ export interface Appointment {
   endTime: Date
   fahrzeit: number // время в пути (driving time)
   workerId: string
+  workerIds?: string[]
   worker: Worker[]
   client?: Client
   reports?: Report[]
@@ -133,6 +134,9 @@ export interface User {
   id: string
   firmaID: string
   userName: string
+  status?: number | null
+  myWorkerID?: string | null
+  myClientID?: string | null
 }
 
 // DTO для создания назначения
