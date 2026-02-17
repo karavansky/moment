@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Switch, Spinner } from '@heroui/react'
-import { Bell, MapPin, ShieldAlert } from 'lucide-react'
+import { Bell, MapPin, ShieldAlert, Share, Plus } from 'lucide-react'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { useAuth } from '@/components/AuthProvider'
@@ -80,45 +80,68 @@ export default function SettingsPage() {
           </h2>
         </div>
 
-        {/* Browser permission status */}
-        <PermissionRow
-          label="Browser permission"
-          permission={push.permission}
-          isReady={push.isReady}
-          onRequest={push.permission === 'prompt' ? push.subscribe : undefined}
-          requestLabel="Enable"
-        />
-
-        {/* Server toggle */}
-        {settings && (
-          <div className="flex items-center justify-between py-1">
-            <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                Receive notifications
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Get notified about appointment changes
-              </p>
-            </div>
-            <Switch
-              isSelected={settings.pushNotificationsEnabled}
-              isDisabled={saving}
-              onChange={(value: boolean) => updateSetting('pushNotificationsEnabled', value)}
-              size="sm"
+        {/* iOS without PWA: show install instructions */}
+        {push.needsPWAInstall ? (
+          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <p className="text-sm font-medium text-gray-900 dark:text-white">
+              Install app to enable notifications
+            </p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+              Push notifications require the app to be installed on your home screen:
+            </p>
+            <ol className="text-xs text-gray-600 dark:text-gray-400 mt-2 space-y-1">
+              <li className="flex items-center gap-1.5">
+                <span>1.</span> Tap <Share className="w-3.5 h-3.5 inline" /> Share in Safari
+              </li>
+              <li className="flex items-center gap-1.5">
+                <span>2.</span> Tap <Plus className="w-3.5 h-3.5 inline" /> Add to Home Screen
+              </li>
+              <li>3. Open the app from your home screen</li>
+            </ol>
+          </div>
+        ) : (
+          <>
+            {/* Browser permission status */}
+            <PermissionRow
+              label="Browser permission"
+              permission={push.permission}
+              isReady={push.isReady}
+              onRequest={push.permission === 'prompt' ? push.subscribe : undefined}
+              requestLabel="Enable"
             />
-          </div>
-        )}
 
-        {/* Subscription status */}
-        {push.isReady && (
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            {push.isSubscribed
-              ? 'Active push subscription on this device'
-              : push.permission === 'granted'
-                ? 'Reconnecting subscription...'
-                : 'No active subscription'
-            }
-          </div>
+            {/* Server toggle */}
+            {settings && (
+              <div className="flex items-center justify-between py-1">
+                <div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    Receive notifications
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Get notified about appointment changes
+                  </p>
+                </div>
+                <Switch
+                  isSelected={settings.pushNotificationsEnabled}
+                  isDisabled={saving}
+                  onChange={(value: boolean) => updateSetting('pushNotificationsEnabled', value)}
+                  size="sm"
+                />
+              </div>
+            )}
+
+            {/* Subscription status */}
+            {push.isReady && (
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                {push.isSubscribed
+                  ? 'Active push subscription on this device'
+                  : push.permission === 'granted'
+                    ? 'Reconnecting subscription...'
+                    : 'No active subscription'
+                }
+              </div>
+            )}
+          </>
         )}
       </section>
 

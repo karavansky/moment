@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useAuth } from '@/components/AuthProvider'
 import { Bell, X, Share, Plus } from 'lucide-react'
@@ -11,16 +12,25 @@ import { Bell, X, Share, Plus } from 'lucide-react'
  */
 export function PushNotificationBanner() {
   const { session, status: authStatus } = useAuth()
+  const pathname = usePathname()
   const { permission, isSubscribed, isReady, needsPWAInstall, subscribe } = usePushNotifications()
   const [dismissed, setDismissed] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [showDeniedHelp, setShowDeniedHelp] = useState(false)
 
   // Restore dismissed state from localStorage
+  // Reset dismissed if subscription was lost (permission changed or unsubscribed)
   useEffect(() => {
+    if (!isReady) return
     const stored = localStorage.getItem('push-banner-dismissed')
-    if (stored) setDismissed(true)
-  }, [])
+    if (stored && !isSubscribed) {
+      // Subscription lost — clear dismissed so banner reappears
+      localStorage.removeItem('push-banner-dismissed')
+      setDismissed(false)
+    } else if (stored) {
+      setDismissed(true)
+    }
+  }, [isReady, isSubscribed])
 
   // Don't show until subscription status is determined (prevents flash)
   if (!isReady) return null
@@ -28,6 +38,7 @@ export function PushNotificationBanner() {
   if (authStatus !== 'authenticated') return null
   if (isSubscribed) return null
   if (dismissed) return null
+  if (pathname?.includes('/settings')) return null
 
   // Only show to workers (1) and directors/managers (0, 3, null)
   const userStatus = session?.user?.status

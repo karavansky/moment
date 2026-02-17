@@ -23,8 +23,9 @@ export function usePushNotifications() {
   const [isIOS, setIsIOS] = useState(false)
 
   useEffect(() => {
-    // Detect platform
+    // Detect platform (iPadOS 13+ reports as "Macintosh" in userAgent)
     const ios = /iPad|iPhone|iPod/.test(navigator.userAgent)
+      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
     setIsIOS(ios)
 
     const standalone = window.matchMedia('(display-mode: standalone)').matches

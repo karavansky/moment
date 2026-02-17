@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { Modal, Button, Separator, Label, Switch, TextField, FieldError } from '@heroui/react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { Appointment, Service, Worker } from '@/types/scheduling'
-import { Clock, Save, Trash2, Car, HandHeart, Users, UserStar } from 'lucide-react'
+import { Clock, Save, Trash2, Car, HandHeart, Users, UserStar, Play, Pause, Square } from 'lucide-react'
 import { formatTime } from '@/lib/calendar-utils'
 import { parseDate, Time, today, getLocalTimeZone } from '@internationalized/date'
 import DatePicker from '@/components/ui/DatePicker'
@@ -42,6 +42,8 @@ export default function AppointmentModal({
     addAppointment,
     updateAppointment,
     deleteAppointment,
+    openAppointment,
+    closeAppointment,
     groupedClients,
     teamsWithWorkers,
     servicesForSelect,
@@ -591,8 +593,57 @@ export default function AppointmentModal({
 
             </Modal.Body>
             <Modal.Footer>
-              {/* Footer Buttons */}
-              <div className="flex items-center w-full">
+              {user?.status === 1 && isEditMode ? (
+                /* Worker footer: Start / Pause / Finish */
+                <div className="flex items-center gap-2 w-full">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    className="gap-2"
+                    isDisabled={appointment?.isOpen}
+                    onPress={() => {
+                      if (appointment && user?.myWorkerID) {
+                        openAppointment(appointment.id, user.myWorkerID)
+                        handleClose()
+                      }
+                    }}
+                  >
+                    <Play className="w-4 h-4" />
+                    {t('appointment.edit.start')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="gap-2"
+                    isDisabled={!appointment?.isOpen}
+                    onPress={() => {
+                      if (appointment) {
+                        closeAppointment(appointment.id)
+                      }
+                    }}
+                  >
+                    <Pause className="w-4 h-4" />
+                    {t('appointment.edit.pause')}
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    className="gap-2 ml-auto"
+                    isDisabled={!appointment?.isOpen}
+                    onPress={() => {
+                      if (appointment) {
+                        closeAppointment(appointment.id)
+                        handleClose()
+                      }
+                    }}
+                  >
+                    <Square className="w-4 h-4" />
+                    {t('appointment.edit.finish')}
+                  </Button>
+                </div>
+              ) : (
+                /* Director/Manager footer: Delete / Save */
+                <div className="flex items-center w-full">
                   {isEditMode && !readOnly && (
                     <Button variant="danger" onPress={handleDelete} size='sm' className="gap-2 ">
                       <Trash2 className="w-4 h-4" />
@@ -605,7 +656,8 @@ export default function AppointmentModal({
                       {isEditMode ? t('appointment.edit.save') : t('appointment.edit.create')}
                     </Button>
                   )}
-              </div>
+                </div>
+              )}
             </Modal.Footer>
           </Modal.Dialog>
         </Modal.Container>

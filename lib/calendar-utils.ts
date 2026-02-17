@@ -36,6 +36,28 @@ export const getOnlyDate = (date: Date): Date => {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 };
 
+// Конвертировать Date в строку YYYY-MM-DD в локальном timezone
+// Используется при отправке на сервер чтобы избежать сдвига даты из-за UTC конвертации
+export const toLocalDateString = (date: Date): string => {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+};
+
+// Парсит строку даты как локальное время (не UTC)
+// "2025-02-17" → new Date(2025, 1, 17) (midnight local)
+// "2025-02-17T10:00:00.000Z" → new Date("...") (оставляем как есть для timestamp'ов)
+export const parseLocalDate = (value: string | Date): Date => {
+  if (value instanceof Date) return value
+  // Строка формата YYYY-MM-DD (без времени) — парсим как local
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [y, m, d] = value.split('-').map(Number)
+    return new Date(y, m - 1, d)
+  }
+  return new Date(value)
+};
+
 // Добавить дни к дате
 export const addDays = (date: Date, days: number): Date => {
   const result = new Date(date);

@@ -30,23 +30,61 @@ export function useGeolocation() {
       return
     }
 
-    // Use Permissions API to check current state without triggering a prompt
-    if ('permissions' in navigator) {
-      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
-        setPermission(result.state as GeoPermissionState)
-        setIsReady(true)
+    // Check if permission was previously granted (stored by requestPermission)
+    const storedPermission = localStorage.getItem('geo-permission')
 
-        // Listen for permission changes (e.g., user changes in browser settings)
+    // Helper: verify stored permission with a quick position check
+    const verifyWithPosition = () => {
+      navigator.geolocation.getCurrentPosition(
+        () => {
+          setPermission('granted')
+          setIsReady(true)
+        },
+        () => {
+          localStorage.removeItem('geo-permission')
+          setPermission('prompt')
+          setIsReady(true)
+        },
+        { timeout: 3000, maximumAge: Infinity }
+      )
+    }
+
+    // Use Permissions API to check current state without triggering a prompt
+    const hasPermissionsApi = typeof navigator.permissions?.query === 'function'
+
+    if (hasPermissionsApi) {
+      navigator.permissions!.query({ name: 'geolocation' }).then((result) => {
+        // Safari may return 'prompt' even when granted — check if it's reliable
+        if (result.state === 'granted' || result.state === 'denied') {
+          setPermission(result.state as GeoPermissionState)
+          setIsReady(true)
+          localStorage.setItem('geo-permission', result.state)
+        } else if (storedPermission === 'granted') {
+          // Permissions API says 'prompt' but we know user granted before (Safari bug)
+          verifyWithPosition()
+          return
+        } else {
+          setPermission('prompt')
+          setIsReady(true)
+        }
+
+        // Listen for permission changes
         result.onchange = () => {
           setPermission(result.state as GeoPermissionState)
+          localStorage.setItem('geo-permission', result.state)
         }
       }).catch(() => {
-        // Permissions API not fully supported, fall back to prompt
-        setPermission('prompt')
-        setIsReady(true)
+        // Permissions API not supported for geolocation (Safari)
+        if (storedPermission === 'granted') {
+          verifyWithPosition()
+        } else {
+          setPermission('prompt')
+          setIsReady(true)
+        }
       })
+    } else if (storedPermission === 'granted') {
+      verifyWithPosition()
     } else {
-      // No Permissions API, assume prompt
       setPermission('prompt')
       setIsReady(true)
     }
@@ -59,6 +97,7 @@ export function useGeolocation() {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           setPermission('granted')
+          localStorage.setItem('geo-permission', 'granted')
           setPosition({
             latitude: pos.coords.latitude,
             longitude: pos.coords.longitude,
@@ -68,6 +107,7 @@ export function useGeolocation() {
         (err) => {
           if (err.code === err.PERMISSION_DENIED) {
             setPermission('denied')
+            localStorage.setItem('geo-permission', 'denied')
           }
           resolve(false)
         },

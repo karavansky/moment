@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { useAuth } from '@/components/AuthProvider'
 import { MapPin, X } from 'lucide-react'
@@ -11,22 +12,32 @@ import { MapPin, X } from 'lucide-react'
  */
 export function GeolocationBanner() {
   const { session, status: authStatus } = useAuth()
+  const pathname = usePathname()
   const { permission, isReady, requestPermission } = useGeolocation()
   const [dismissed, setDismissed] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [showDeniedHelp, setShowDeniedHelp] = useState(false)
 
   // Restore dismissed state from localStorage
+  // Reset dismissed if permission was revoked
   useEffect(() => {
+    if (!isReady) return
     const stored = localStorage.getItem('geo-banner-dismissed')
-    if (stored) setDismissed(true)
-  }, [])
+    if (stored && permission !== 'granted') {
+      // Permission lost — clear dismissed so banner reappears
+      localStorage.removeItem('geo-banner-dismissed')
+      setDismissed(false)
+    } else if (stored) {
+      setDismissed(true)
+    }
+  }, [isReady, permission])
 
   // Don't show until permission status is determined (prevents flash)
   if (!isReady) return null
   if (authStatus !== 'authenticated') return null
   if (permission === 'granted') return null
   if (dismissed) return null
+  if (pathname?.includes('/settings')) return null
 
   // Only show to workers (status=1)
   const userStatus = session?.user?.status

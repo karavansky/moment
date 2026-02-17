@@ -524,6 +524,9 @@
       "delete": "Löschen",
       "save": "Speichern",
       "create": "Erstellen",
+      "start": "Starten",
+      "pause": "Pause",
+      "finish": "Beenden",
       "confirmDelete": "Möchten Sie diesen Termin wirklich löschen?",
       "validation": {
         "clientRequired": "Bitte wählen Sie einen Klienten aus",

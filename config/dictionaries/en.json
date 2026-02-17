@@ -491,6 +491,9 @@
       "delete": "Delete",
       "save": "Save",
       "create": "Create",
+      "start": "Start",
+      "pause": "Pause",
+      "finish": "Finish",
       "confirmDelete": "Do you really want to delete this appointment?",
       "validation": {
         "clientRequired": "Please select a client",

@@ -26,6 +26,7 @@ import getAllSampleObjects from '@/lib/scheduling-mock-data'
 import { useNotifications } from '@/contexts/NotificationContext'
 import { generateId } from '@/lib/generateId'
 import { useAuth } from '@/components/AuthProvider'
+import { toLocalDateString, parseLocalDate } from '@/lib/calendar-utils'
 import { useSchedulingEvents, SchedulingEvent } from '@/hooks/useSchedulingEvents'
 
 // Мост между двумя Providers-экземплярами (/ и /[lang]/)
@@ -237,7 +238,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
       // Convert date strings from JSON to Date objects
       const appointments = (data.appointments || []).map((apt: Record<string, unknown>) => ({
         ...apt,
-        date: new Date(apt.date as string),
+        date: parseLocalDate(apt.date as string),
         startTime: apt.startTime ? new Date(apt.startTime as string) : apt.startTime,
         endTime: apt.endTime ? new Date(apt.endTime as string) : apt.endTime,
         openedAt: apt.openedAt ? new Date(apt.openedAt as string) : apt.openedAt,
@@ -280,7 +281,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
       const data = await apiFetch('/api/scheduling/appointments')
       const appointments = (data.appointments || []).map((apt: Record<string, unknown>) => ({
         ...apt,
-        date: new Date(apt.date as string),
+        date: parseLocalDate(apt.date as string),
         startTime: apt.startTime ? new Date(apt.startTime as string) : apt.startTime,
         endTime: apt.endTime ? new Date(apt.endTime as string) : apt.endTime,
         openedAt: apt.openedAt ? new Date(apt.openedAt as string) : apt.openedAt,
@@ -460,7 +461,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
             body: JSON.stringify({
               clientID: appointment.clientID,
               workerIds: appointment.worker?.map(w => w.id) || [],
-              date: appointment.date,
+              date: toLocalDateString(appointment.date),
               isFixedTime: appointment.isFixedTime,
               startTime: appointment.startTime,
               endTime: appointment.endTime,
@@ -500,7 +501,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
             method: 'PUT',
             body: JSON.stringify({
               id: updatedAppointment.id,
-              date: updatedAppointment.date,
+              date: toLocalDateString(updatedAppointment.date),
               isFixedTime: updatedAppointment.isFixedTime,
               startTime: updatedAppointment.startTime,
               endTime: updatedAppointment.endTime,
@@ -560,7 +561,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
               method: 'PUT',
               body: JSON.stringify({
                 id: appointmentId,
-                date: newDate,
+                date: toLocalDateString(newDate),
                 startTime: newStartTime,
                 endTime: newEndTime,
               }),

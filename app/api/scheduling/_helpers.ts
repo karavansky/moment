@@ -1,4 +1,20 @@
 /**
+ * Normalize a Date or date string to YYYY-MM-DD format.
+ * PostgreSQL DATE columns come as Date objects at UTC midnight via pg driver,
+ * so we use UTC methods to extract the correct date regardless of server timezone.
+ */
+function toDateOnly(value: Date | string | null | undefined): string | null {
+  if (!value) return null
+  // If already a YYYY-MM-DD string, return as-is
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) return value
+  const d = value instanceof Date ? value : new Date(value)
+  const y = d.getUTCFullYear()
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(d.getUTCDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+/**
  * Maps raw DB appointment row to frontend Appointment format.
  * Shared between GET /api/scheduling and GET /api/scheduling/appointments.
  */
@@ -10,7 +26,7 @@ export function mapAppointmentToFrontend(a: any) {
     clientID: a.clientID,
     workerId: a.workerId,
     workerIds: a.workerIds || [],
-    date: a.date,
+    date: toDateOnly(a.date),
     isFixedTime: a.isFixedTime,
     startTime: a.startTime,
     endTime: a.endTime,
