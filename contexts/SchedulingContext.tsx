@@ -363,9 +363,6 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     }
 
     if (event.type === 'appointment_updated') {
-      // Для любого update, который меняет workerIds или clientID — полный рефреш
-      // (мы не можем определить из SSE payload какие именно поля изменились, кроме isOpen)
-      // Быстрый путь: если isOpen изменился — inline update
       setState(prev => {
         const existing = prev.appointments.find(apt => apt.id === event.appointmentID)
         if (!existing) {
@@ -374,56 +371,61 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
           return prev
         }
 
-        // Проверяем: изменились ли workers (сравниваем workerIds с existing.worker)
-        const existingWorkerIds = existing.worker?.map(w => w.id).sort() || []
-        const newWorkerIds = [...eventWorkerIds].sort()
-        const workersChanged = existingWorkerIds.length !== newWorkerIds.length ||
-          existingWorkerIds.some((id, i) => id !== newWorkerIds[i])
+        // Быстрый путь: если только isOpen изменился — inline update без рефреша
+        const isOpenChanged = event.isOpen !== undefined && event.isOpen !== existing.isOpen
+        const workersChanged = (() => {
+          const existingWorkerIds = existing.worker?.map(w => w.id).sort() || []
+          const newWorkerIds = [...eventWorkerIds].sort()
+          return existingWorkerIds.length !== newWorkerIds.length ||
+            existingWorkerIds.some((id, i) => id !== newWorkerIds[i])
+        })()
+        const clientChanged = event.clientID && event.clientID !== existing.clientID
 
-        if (workersChanged || (event.clientID && event.clientID !== existing.clientID)) {
-          refreshAppointments()
-          return prev
-        }
+        if (isOpenChanged && !workersChanged && !clientChanged) {
+          // Только isOpen/openedAt/closedAt изменился — быстрый inline update
+          const updated = {
+            ...existing,
+            isOpen: event.isOpen ?? existing.isOpen,
+            openedAt: event.openedAt ? new Date(event.openedAt) : existing.openedAt,
+            closedAt: event.closedAt ? new Date(event.closedAt) : existing.closedAt,
+          }
 
-        // Быстрое обновление isOpen/openedAt/closedAt из SSE payload
-        const updated = {
-          ...existing,
-          isOpen: event.isOpen ?? existing.isOpen,
-          openedAt: event.openedAt ? new Date(event.openedAt) : existing.openedAt,
-          closedAt: event.closedAt ? new Date(event.closedAt) : existing.closedAt,
-        }
+          // Notification для директора при открытии appointment
+          if (event.isOpen && !existing.isOpen) {
+            const client = existing.client
+            const workerNames = existing.worker?.map(w => `${w.name} ${w.surname}`).join(', ')
+            if (workerNames && client) {
+              queueMicrotask(() => {
+                const notification: Notif = {
+                  userID: 'system',
+                  type: 'info',
+                  title: 'Starting Appointment!',
+                  message: `${workerNames} started an appointment with ${client.name} ${client.surname} ${client.street} ${client.houseNumber}, ${client.city}.`,
+                  actionProps: {
+                    children: 'See on map',
+                    href: `/map/${event.appointmentID}`,
+                    variant: 'primary',
+                  },
+                  id: generateId(),
+                  date: new Date(),
+                  isRead: false,
+                }
+                addNotification(notification)
+              })
+            }
+          }
 
-        // Notification для директора при открытии appointment
-        if (event.isOpen && !existing.isOpen) {
-          const client = existing.client
-          const workerNames = existing.worker?.map(w => `${w.name} ${w.surname}`).join(', ')
-          if (workerNames && client) {
-            queueMicrotask(() => {
-              const notification: Notif = {
-                userID: 'system',
-                type: 'info',
-                title: 'Starting Appointment!',
-                message: `${workerNames} started an appointment with ${client.name} ${client.surname} ${client.street} ${client.houseNumber}, ${client.city}.`,
-                actionProps: {
-                  children: 'See on map',
-                  href: `/map/${event.appointmentID}`,
-                  variant: 'primary',
-                },
-                id: generateId(),
-                date: new Date(),
-                isRead: false,
-              }
-              addNotification(notification)
-            })
+          return {
+            ...prev,
+            appointments: prev.appointments.map(apt =>
+              apt.id === event.appointmentID ? updated : apt
+            ),
           }
         }
 
-        return {
-          ...prev,
-          appointments: prev.appointments.map(apt =>
-            apt.id === event.appointmentID ? updated : apt
-          ),
-        }
+        // Любые другие изменения (date, time, workers, client) — полный рефреш
+        refreshAppointments()
+        return prev
       })
     }
   }, [addNotification, refreshAppointments])
