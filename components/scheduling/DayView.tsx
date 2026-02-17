@@ -10,6 +10,7 @@ import type { Appointment } from '@/types/scheduling'
 import { usePlatformContext } from '@/contexts/PlatformContext'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useDragEndReset } from '@/contexts/CalendarDragContext'
+import { useAuth } from '@/components/AuthProvider'
 
 interface DayViewProps {
   day: CalendarDay
@@ -34,6 +35,7 @@ function DayView({
   onAddReport,
 }: DayViewProps) {
   const { setSelectedDate, setSelectedAppointment, moveAppointmentToDate } = useScheduling()
+  const { session, status: authStatus } = useAuth()
   const [isDragOver, setIsDragOver] = useState(false)
   const [isPressed, setIsPressed] = useState(false)
   // State for controlled Dropdown - stores appointment ID that has open dropdown
@@ -298,7 +300,7 @@ function DayView({
             {/* Appointments */}
             <div className="space-y-1 " onMouseDown={e => e.stopPropagation()}>
               {day.appointments.map(appointment => (
-                isToday && onEditAppointment && onAddReport && !isMobileLayout ? (
+                isToday && onEditAppointment && onAddReport && (authStatus === 'unauthenticated' || (authStatus === 'authenticated' && session?.user?.status === 0)) ? (
                   <div key={appointment.id} className="relative">
                     <AppointmentCard
                       appointment={appointment}
@@ -405,7 +407,7 @@ function DayView({
           {/* Appointments */}
           <div className="space-y-2 flex-1" onMouseDown={e => e.stopPropagation()}>
             {day.appointments.slice(0, 3).map(appointment => (
-              isToday && onEditAppointment && onAddReport && isMobileLayout ? (
+              isToday && onEditAppointment && onAddReport && (authStatus === 'unauthenticated' || (authStatus === 'authenticated' && session?.user?.status === 0)) ? (
                 <div key={appointment.id} className="relative">
                   <AppointmentCard
                     appointment={appointment}

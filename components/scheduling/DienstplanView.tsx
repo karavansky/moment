@@ -13,6 +13,7 @@ import AppointmentReport from './AppointmentReport'
 import { useLanguage } from '@/hooks/useLanguage'
 import { useTranslation } from '@/components/Providers'
 import FooterDienst from './FooterDienst'
+import TodayDienst from './TodayDienst'
 
 type ViewMode = 'month' | 'week'
 
@@ -26,6 +27,7 @@ function DienstplanView() {
     selectedAppointment,
     setSelectedAppointment,
     setSelectedDate,
+    user,
   } = useScheduling()
   const [viewMode, setViewMode] = useState<ViewMode>('month')
   const [isPending, startTransition] = useTransition()
@@ -103,6 +105,13 @@ function DienstplanView() {
       console.log('handlePressOnAppointment:', appointment)
       setSelectedAppointment(appointment)
       setIsNewAppointment(false)
+
+      // Worker (status === 1) always opens Report modal
+      if (user?.status === 1) {
+        setIsReportModalOpen(true)
+        return
+      }
+
       // Check if appointment date is today
       const appDate = new Date(appointment.date)
       const isPast = new Date(appDate.toDateString()) < new Date(today.toDateString())
@@ -113,7 +122,7 @@ function DienstplanView() {
         setIsModalOpen(true)
       }
     },
-    [setSelectedAppointment, today]
+    [setSelectedAppointment, today, user?.status]
   )
 
   // Обработчик редактирования appointment (из Dropdown для сегодняшних)
@@ -302,7 +311,17 @@ function DienstplanView() {
       </div>
 
       {/* Horizontal ScrollShadow - прижат к bottom */}
-      <FooterDienst />
+      {user?.status === 1 ? (
+        <TodayDienst
+          onAppointmentPress={handlePressOnAppointment}
+          onFinish={(appointment) => {
+            setSelectedAppointment(appointment)
+            setIsReportModalOpen(true)
+          }}
+        />
+      ) : (
+        <FooterDienst />
+      )}
 
       {/* Appointment Modal */}
       <AppointmentModal

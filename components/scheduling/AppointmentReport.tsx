@@ -2,11 +2,12 @@ import React, { useState, useRef } from 'react'
 import { Modal, Button, Separator, TextArea, TextField, Label, Input } from '@heroui/react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { Appointment, Report, Photo } from '@/types/scheduling'
-import { Save, Plus, X, Upload, FileText, Image as ImageIcon, Loader2 } from 'lucide-react'
+import { Save, Plus, X, Upload, FileText, Image as ImageIcon, Loader2, Play, Pause, Square } from 'lucide-react'
 import { formatTime } from '@/lib/calendar-utils'
 import imageCompression from 'browser-image-compression'
 import { generateId } from '@/lib/generate-id'
 import { useTranslation } from '@/components/Providers'
+import ElapsedTimer from './ElapsedTimer'
 
 interface PhotoUrlContext {
   firmaID: string
@@ -41,7 +42,7 @@ export default function AppointmentReport({
   onClose,
   appointment,
 }: AppointmentReportProps) {
-  const { updateAppointment, user } = useScheduling()
+  const { updateAppointment, user, openAppointment, closeAppointment } = useScheduling()
   const { t } = useTranslation()
   const [reportNote, setReportNote] = useState('')
   const [photos, setPhotos] = useState<Photo[]>([])
@@ -315,7 +316,12 @@ export default function AppointmentReport({
               <Modal.CloseTrigger />
 
               <Modal.Header>
-                <h2 className="text-xl font-bold">{t('appointment.report.title')}</h2>
+                <div className="flex items-center justify-between w-full">
+                  <h2 className="text-xl font-bold">{t('appointment.report.title')}</h2>
+                  {appointment.openedAt && (
+                    <ElapsedTimer openedAt={appointment.openedAt} closedAt={appointment.closedAt} className="text-base" />
+                  )}
+                </div>
               </Modal.Header>
 
               <Modal.Body className="gap-6">
@@ -452,13 +458,63 @@ export default function AppointmentReport({
               </Modal.Body>
 
               <Modal.Footer>
-                <Button variant="ghost" onPress={onClose} >
-                  {t('appointment.report.cancel')}
-                </Button>
-                <Button variant="primary" onPress={handleSave} className="gap-2">
-                  <Save className="w-4 h-4" />
-                  {t('appointment.report.save')}
-                </Button>
+                {user?.status === 1 ? (
+                  <div className="flex items-center gap-2 w-full">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      className="gap-2"
+                      isDisabled={appointment?.isOpen}
+                      onPress={() => {
+                        if (appointment && user?.myWorkerID) {
+                          openAppointment(appointment.id, user.myWorkerID)
+                          onClose()
+                        }
+                      }}
+                    >
+                      <Play className="w-4 h-4" />
+                      {t('appointment.edit.start')}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="gap-2"
+                      isDisabled={!appointment?.isOpen}
+                      onPress={() => {
+                        if (appointment) {
+                          closeAppointment(appointment.id)
+                        }
+                      }}
+                    >
+                      <Pause className="w-4 h-4" />
+                      {t('appointment.edit.pause')}
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      className="gap-2 ml-auto"
+                      isDisabled={!appointment?.isOpen}
+                      onPress={() => {
+                        if (appointment) {
+                          closeAppointment(appointment.id)
+                        }
+                      }}
+                    >
+                      <Square className="w-4 h-4" />
+                      {t('appointment.edit.finish')}
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <Button variant="ghost" onPress={onClose} >
+                      {t('appointment.report.cancel')}
+                    </Button>
+                    <Button variant="primary" onPress={handleSave} className="gap-2">
+                      <Save className="w-4 h-4" />
+                      {t('appointment.report.save')}
+                    </Button>
+                  </>
+                )}
               </Modal.Footer>
             </Modal.Dialog>
           </Modal.Container>

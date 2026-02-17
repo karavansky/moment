@@ -10,7 +10,7 @@ import { useScheduling, AppointmentWithClient } from '@/contexts/SchedulingConte
 import { useLanguage } from '@/hooks/useLanguage'
 import { useTranslation } from '@/components/Providers'
 
-// Компонент таймера для отображения времени с openedAt
+//к Компонент таймера для отображения времени с openedAt
 const ElapsedTimer = ({ openedAt }: { openedAt: Date }) => {
   const [elapsed, setElapsed] = useState(() => Math.floor((Date.now() - new Date(openedAt).getTime()) / 1000))
 
