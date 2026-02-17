@@ -145,7 +145,10 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
   // Определяем режим: live (авторизованный с firmaID) или mock (демо)
   // status=0 (директор), 1 (worker), 2 (client), null/undefined (до миграции)
   const userStatus = session?.user?.status
-  const isLiveMode = authStatus === 'authenticated' && (userStatus === 0 || userStatus === 1 || userStatus === 2 || userStatus == null) && !!session?.user?.firmaID
+  const isLiveMode =
+    authStatus === 'authenticated' &&
+    (userStatus === 0 || userStatus === 1 || userStatus === 2 || userStatus == null) &&
+    !!session?.user?.firmaID
 
   console.log('[SchedulingProvider] Mode check:', {
     authStatus,
@@ -307,128 +310,135 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
   }, [authStatus, isLiveMode, loadLiveData, loadMockData])
 
   // SSE: подписка на real-time события
-  const handleSchedulingEvent = useCallback((event: SchedulingEvent) => {
-    if (!event.appointmentID) return
+  const handleSchedulingEvent = useCallback(
+    (event: SchedulingEvent) => {
+      if (!event.appointmentID) return
 
-    // Для worker/client: событие релевантно если:
-    // 1) appointment назначен на этого worker/client (workerIds includes myWorkerID), ИЛИ
-    // 2) appointment уже есть в локальном state (мог быть переназначен ОТ этого worker/client)
-    const user = stateRef.current?.user
-    const existsLocally = stateRef.current?.appointments.some(apt => apt.id === event.appointmentID)
-    const eventWorkerIds = event.workerIds || []
-    if (user?.myWorkerID && !eventWorkerIds.includes(user.myWorkerID) && !existsLocally) return
-    if (user?.myClientID && event.clientID !== user.myClientID && !existsLocally) return
+      // Для worker/client: событие релевантно если:
+      // 1) appointment назначен на этого worker/client (workerIds includes myWorkerID), ИЛИ
+      // 2) appointment уже есть в локальном state (мог быть переназначен ОТ этого worker/client)
+      const user = stateRef.current?.user
+      const existsLocally = stateRef.current?.appointments.some(
+        apt => apt.id === event.appointmentID
+      )
+      const eventWorkerIds = event.workerIds || []
+      if (user?.myWorkerID && !eventWorkerIds.includes(user.myWorkerID) && !existsLocally) return
+      if (user?.myClientID && event.clientID !== user.myClientID && !existsLocally) return
 
-    if (event.type === 'appointment_created') {
-      refreshAppointments()
-      // In-app toast for worker: new appointment assigned
-      if (user?.myWorkerID && eventWorkerIds.includes(user.myWorkerID)) {
-        queueMicrotask(() => {
-          addNotification({
-            id: generateId(),
-            userID: 'system',
-            type: 'info',
-            title: 'New Appointment',
-            message: 'You have been assigned to a new appointment.',
-            date: new Date(),
-            isRead: false,
-            actionProps: {
-              children: 'View',
-              href: '/dienstplan',
-              variant: 'primary',
-            },
+      if (event.type === 'appointment_created') {
+        refreshAppointments()
+        // In-app toast for worker: new appointment assigned
+        if (user?.myWorkerID && eventWorkerIds.includes(user.myWorkerID)) {
+          queueMicrotask(() => {
+            addNotification({
+              id: generateId(),
+              userID: 'system',
+              type: 'info',
+              title: 'New Appointment',
+              message: 'You have been assigned to a new appointment.',
+              date: new Date(),
+              isRead: false,
+              actionProps: {
+                children: 'View',
+                href: '/dienstplan',
+                variant: 'primary',
+              },
+            })
           })
-        })
-      }
-      return
-    }
-
-    if (event.type === 'appointment_deleted') {
-      // In-app toast for worker: appointment cancelled
-      if (user?.myWorkerID && existsLocally) {
-        queueMicrotask(() => {
-          addNotification({
-            id: generateId(),
-            userID: 'system',
-            type: 'warning',
-            title: 'Appointment Cancelled',
-            message: 'An appointment you were assigned to has been cancelled.',
-            date: new Date(),
-            isRead: false,
-          })
-        })
-      }
-      refreshAppointments()
-      return
-    }
-
-    if (event.type === 'appointment_updated') {
-      setState(prev => {
-        const existing = prev.appointments.find(apt => apt.id === event.appointmentID)
-        if (!existing) {
-          // Appointment не в локальном state — возможно, назначен на этого работника
-          refreshAppointments()
-          return prev
         }
+        return
+      }
 
-        // Быстрый путь: если только isOpen изменился — inline update без рефреша
-        const isOpenChanged = event.isOpen !== undefined && event.isOpen !== existing.isOpen
-        const workersChanged = (() => {
-          const existingWorkerIds = existing.worker?.map(w => w.id).sort() || []
-          const newWorkerIds = [...eventWorkerIds].sort()
-          return existingWorkerIds.length !== newWorkerIds.length ||
-            existingWorkerIds.some((id, i) => id !== newWorkerIds[i])
-        })()
-        const clientChanged = event.clientID && event.clientID !== existing.clientID
+      if (event.type === 'appointment_deleted') {
+        // In-app toast for worker: appointment cancelled
+        if (user?.myWorkerID && existsLocally) {
+          queueMicrotask(() => {
+            addNotification({
+              id: generateId(),
+              userID: 'system',
+              type: 'warning',
+              title: 'Appointment Cancelled',
+              message: 'An appointment you were assigned to has been cancelled.',
+              date: new Date(),
+              isRead: false,
+            })
+          })
+        }
+        refreshAppointments()
+        return
+      }
 
-        if (isOpenChanged && !workersChanged && !clientChanged) {
-          // Только isOpen/openedAt/closedAt изменился — быстрый inline update
-          const updated = {
-            ...existing,
-            isOpen: event.isOpen ?? existing.isOpen,
-            openedAt: event.openedAt ? new Date(event.openedAt) : existing.openedAt,
-            closedAt: event.closedAt ? new Date(event.closedAt) : existing.closedAt,
+      if (event.type === 'appointment_updated') {
+        setState(prev => {
+          const existing = prev.appointments.find(apt => apt.id === event.appointmentID)
+          if (!existing) {
+            // Appointment не в локальном state — возможно, назначен на этого работника
+            refreshAppointments()
+            return prev
           }
 
-          // Notification для директора при открытии appointment
-          if (event.isOpen && !existing.isOpen) {
-            const client = existing.client
-            const workerNames = existing.worker?.map(w => `${w.name} ${w.surname}`).join(', ')
-            if (workerNames && client) {
-              queueMicrotask(() => {
-                const notification: Notif = {
-                  userID: 'system',
-                  type: 'info',
-                  title: 'Starting Appointment!',
-                  message: `${workerNames} started an appointment with ${client.name} ${client.surname} ${client.street} ${client.houseNumber}, ${client.city}.`,
-                  actionProps: {
-                    children: 'See on map',
-                    href: `/map/${event.appointmentID}`,
-                    variant: 'primary',
-                  },
-                  id: generateId(),
-                  date: new Date(),
-                  isRead: false,
-                }
-                addNotification(notification)
-              })
+          // Быстрый путь: если только isOpen изменился — inline update без рефреша
+          const isOpenChanged = event.isOpen !== undefined && event.isOpen !== existing.isOpen
+          const workersChanged = (() => {
+            const existingWorkerIds = existing.worker?.map(w => w.id).sort() || []
+            const newWorkerIds = [...eventWorkerIds].sort()
+            return (
+              existingWorkerIds.length !== newWorkerIds.length ||
+              existingWorkerIds.some((id, i) => id !== newWorkerIds[i])
+            )
+          })()
+          const clientChanged = event.clientID && event.clientID !== existing.clientID
+
+          if (isOpenChanged && !workersChanged && !clientChanged) {
+            // Только isOpen/openedAt/closedAt изменился — быстрый inline update
+            const updated = {
+              ...existing,
+              isOpen: event.isOpen ?? existing.isOpen,
+              openedAt: event.openedAt ? new Date(event.openedAt) : existing.openedAt,
+              closedAt: event.closedAt ? new Date(event.closedAt) : existing.closedAt,
+            }
+
+            // Notification для директора при открытии appointment
+            if (event.isOpen && !existing.isOpen) {
+              const client = existing.client
+              const workerNames = existing.worker?.map(w => `${w.name} ${w.surname}`).join(', ')
+              if (workerNames && client) {
+                queueMicrotask(() => {
+                  const notification: Notif = {
+                    userID: 'system',
+                    type: 'info',
+                    title: 'Starting Appointment!',
+                    message: `${workerNames} started an appointment with ${client.name} ${client.surname} ${client.street} ${client.houseNumber}, ${client.city}.`,
+                    actionProps: {
+                      children: 'See on map',
+                      href: `/map/${event.appointmentID}`,
+                      variant: 'primary',
+                    },
+                    id: generateId(),
+                    date: new Date(),
+                    isRead: false,
+                  }
+                  addNotification(notification)
+                })
+              }
+            }
+
+            return {
+              ...prev,
+              appointments: prev.appointments.map(apt =>
+                apt.id === event.appointmentID ? updated : apt
+              ),
             }
           }
 
-          return {
-            ...prev,
-            appointments: prev.appointments.map(apt =>
-              apt.id === event.appointmentID ? updated : apt
-            ),
-          }
-        }
-
-        // Любые другие изменения (date, time, workers, client) — полный рефреш
-        refreshAppointments()
-        return prev
-      })
-    }
-  }, [addNotification, refreshAppointments])
+          // Любые другие изменения (date, time, workers, client) — полный рефреш
+          refreshAppointments()
+          return prev
+        })
+      }
+    },
+    [addNotification, refreshAppointments]
+  )
 
   useSchedulingEvents(isLiveMode, handleSchedulingEvent)
 
@@ -473,20 +483,22 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
               longitude: appointment.longitude,
               serviceIds: appointment.services?.map(s => s.id),
             }),
-          }).then(result => {
-            setState(prev => ({
-              ...prev,
-              appointments: prev.appointments.map(a =>
-                a.id === appointment.id ? { ...appointment, id: result.appointmentID } : a
-              ),
-            }))
-          }).catch(error => {
-            console.error('[addAppointment] API error:', error)
-            setState(prev => ({
-              ...prev,
-              appointments: prev.appointments.filter(a => a.id !== appointment.id),
-            }))
           })
+            .then(result => {
+              setState(prev => ({
+                ...prev,
+                appointments: prev.appointments.map(a =>
+                  a.id === appointment.id ? { ...appointment, id: result.appointmentID } : a
+                ),
+              }))
+            })
+            .catch(error => {
+              console.error('[addAppointment] API error:', error)
+              setState(prev => ({
+                ...prev,
+                appointments: prev.appointments.filter(a => a.id !== appointment.id),
+              }))
+            })
         }
       },
 
@@ -606,20 +618,22 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
               latitude: client.latitude,
               longitude: client.longitude,
             }),
-          }).then(result => {
-            setState(prev => ({
-              ...prev,
-              clients: prev.clients.map(c =>
-                c.id === client.id ? { ...client, id: result.clientID } : c
-              ),
-            }))
-          }).catch(error => {
-            console.error('[addClient] API error:', error)
-            setState(prev => ({
-              ...prev,
-              clients: prev.clients.filter(c => c.id !== client.id),
-            }))
           })
+            .then(result => {
+              setState(prev => ({
+                ...prev,
+                clients: prev.clients.map(c =>
+                  c.id === client.id ? { ...client, id: result.clientID } : c
+                ),
+              }))
+            })
+            .catch(error => {
+              console.error('[addClient] API error:', error)
+              setState(prev => ({
+                ...prev,
+                clients: prev.clients.filter(c => c.id !== client.id),
+              }))
+            })
         }
       },
 
@@ -700,20 +714,22 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
               latitude: worker.latitude,
               longitude: worker.longitude,
             }),
-          }).then(result => {
-            setState(prev => ({
-              ...prev,
-              workers: prev.workers.map(w =>
-                w.id === worker.id ? { ...worker, id: result.workerID } : w
-              ),
-            }))
-          }).catch(error => {
-            console.error('[addWorker] API error:', error)
-            setState(prev => ({
-              ...prev,
-              workers: prev.workers.filter(w => w.id !== worker.id),
-            }))
           })
+            .then(result => {
+              setState(prev => ({
+                ...prev,
+                workers: prev.workers.map(w =>
+                  w.id === worker.id ? { ...worker, id: result.workerID } : w
+                ),
+              }))
+            })
+            .catch(error => {
+              console.error('[addWorker] API error:', error)
+              setState(prev => ({
+                ...prev,
+                workers: prev.workers.filter(w => w.id !== worker.id),
+              }))
+            })
         }
       },
 
@@ -788,20 +804,22 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
           apiFetch('/api/scheduling/services', {
             method: 'POST',
             body: JSON.stringify(body),
-          }).then(result => {
-            setState(prev => ({
-              ...prev,
-              services: prev.services.map(s =>
-                s.id === service.id ? { ...service, id: result.serviceID } : s
-              ),
-            }))
-          }).catch(error => {
-            console.error('[addService] API error:', error)
-            setState(prev => ({
-              ...prev,
-              services: prev.services.filter(s => s.id !== service.id),
-            }))
           })
+            .then(result => {
+              setState(prev => ({
+                ...prev,
+                services: prev.services.map(s =>
+                  s.id === service.id ? { ...service, id: result.serviceID } : s
+                ),
+              }))
+            })
+            .catch(error => {
+              console.error('[addService] API error:', error)
+              setState(prev => ({
+                ...prev,
+                services: prev.services.filter(s => s.id !== service.id),
+              }))
+            })
         }
       },
 
@@ -880,24 +898,26 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
           }
 
           const client = appointment.client
-
-          queueMicrotask(() => {
-            const notification: Notif = {
-              userID: 'system',
-              type: 'info',
-              title: 'Starting Appointment!',
-              message: `Worker ${worker.name} ${worker.surname} has started an appointment with ${client.name} ${client.surname} ${client.street} ${client.houseNumber}, ${client.city}.`,
-              actionProps: {
-                children: 'See on map',
-                href: `/map/${appointmentId}`,
-                variant: 'primary',
-              },
-              id: generateId(),
-              date: startDate,
-              isRead: false,
-            }
-            addNotification(notification)
-          })
+  
+          if (session?.user?.id !== workerId) {
+            queueMicrotask(() => {
+              const notification: Notif = {
+                userID: 'system',
+                type: 'info',
+                title: 'Starting Appointment!',
+                message: `Worker ${worker.name} ${worker.surname} has started an appointment with ${client.name} ${client.surname} ${client.street} ${client.houseNumber}, ${client.city}.`,
+                actionProps: {
+                  children: 'See on map',
+                  href: `/map/${appointmentId}`,
+                  variant: 'primary',
+                },
+                id: generateId(),
+                date: startDate,
+                isRead: false,
+              }
+              addNotification(notification)
+            })
+          }
 
           if (isLiveModeRef.current) {
             apiFetch('/api/scheduling/appointments', {
@@ -1044,16 +1064,12 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     const grouped = state.groups
       .map(group => ({
         group,
-        clients: state.clients
-          .filter(c => c.groupe?.id === group.id)
-          .sort(sortFn),
+        clients: state.clients.filter(c => c.groupe?.id === group.id).sort(sortFn),
       }))
       .filter(({ clients }) => clients.length > 0)
 
     // Клиенты без группы
-    const ungrouped = state.clients
-      .filter(c => !c.groupe?.id)
-      .sort(sortFn)
+    const ungrouped = state.clients.filter(c => !c.groupe?.id).sort(sortFn)
 
     if (ungrouped.length > 0) {
       grouped.push({
@@ -1074,16 +1090,12 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     const grouped = state.teams
       .map(team => ({
         team,
-        workers: state.workers
-          .filter(w => w.teamId === team.id)
-          .sort(sortFn),
+        workers: state.workers.filter(w => w.teamId === team.id).sort(sortFn),
       }))
       .filter(({ workers }) => workers.length > 0)
 
     // Работники без команды
-    const ungrouped = state.workers
-      .filter(w => !w.teamId)
-      .sort(sortFn)
+    const ungrouped = state.workers.filter(w => !w.teamId).sort(sortFn)
 
     if (ungrouped.length > 0) {
       grouped.push({
