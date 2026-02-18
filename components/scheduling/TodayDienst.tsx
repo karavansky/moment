@@ -83,7 +83,7 @@ export default memo(function TodayDienst({ onAppointmentPress, onFinish }: Today
                   return (
                     <div
                       key={appointment.id}
-                      className="flex flex-col justify-between p-3 border border-divider bg-white dark:bg-gray-800 rounded-xl shadow-sm shrink-0 h-[104px] cursor-pointer hover:border-primary transition-colors"
+                      className="flex flex-col justify-between p-3 border border-divider bg-white dark:bg-gray-800 rounded-xl shadow-sm shrink-0 h-26 cursor-pointer hover:border-primary transition-colors"
                       onClick={() => handleCardPress(appointment)}
                     >
                       <div className="flex flex-col gap-0.5 min-w-0">

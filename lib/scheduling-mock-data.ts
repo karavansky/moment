@@ -79,6 +79,7 @@ export const getAllSampleObjects = () => {
   // Workers - Team 1 (Pflege)
   const worker_1: Worker = {
     id: generateId(),
+    userID: generateId(),
     firmaID: firmaID,
     name: 'Tom',
     surname: 'Hanks',
@@ -91,6 +92,7 @@ export const getAllSampleObjects = () => {
 
   const worker_2: Worker = {
     id: generateId(),
+    userID: generateId(),
     firmaID: firmaID,
     name: 'Leonardo',
     surname: 'DiCaprio',
@@ -103,6 +105,7 @@ export const getAllSampleObjects = () => {
 
   const worker_3: Worker = {
     id: generateId(),
+    userID: generateId(),
     firmaID: firmaID,
     name: 'Brad',
     surname: 'Pitt',
@@ -115,6 +118,7 @@ export const getAllSampleObjects = () => {
 
   const worker_4: Worker = {
     id: generateId(),
+    userID: generateId(),
     firmaID: firmaID,
     name: 'Johnny',
     surname: 'Depp',
@@ -127,6 +131,7 @@ export const getAllSampleObjects = () => {
 
   const worker_5: Worker = {
     id: generateId(),
+    userID: generateId(),
     firmaID: firmaID,
     name: 'Robert',
     surname: 'Downey',
@@ -139,6 +144,7 @@ export const getAllSampleObjects = () => {
 
   const worker_6: Worker = {
     id: '3Eoxlmzdr4uEJggFueFnB',
+    userID: '3Eoxlmzdr4uEJggFueFnB',
     firmaID: firmaID,
     name: 'Denzel',
     surname: 'Washington',
@@ -151,6 +157,7 @@ export const getAllSampleObjects = () => {
 
   const worker_7: Worker = {
     id: generateId(),
+    userID: generateId(),
     firmaID: firmaID,
     name: 'Morgan',
     surname: 'Freeman',
@@ -163,6 +170,7 @@ export const getAllSampleObjects = () => {
 
   const worker_8: Worker = {
     id: generateId(),
+    userID: generateId(),
     firmaID: firmaID,
     name: 'Matt',
     surname: 'Damon',
@@ -176,6 +184,7 @@ export const getAllSampleObjects = () => {
   // Workers - Team 2 (Reinigung)
   const worker_11: Worker = {
     id: generateId(),
+    userID: generateId(),
     firmaID: firmaID,
     name: 'Ryan',
     surname: 'Gosling',
@@ -188,6 +197,7 @@ export const getAllSampleObjects = () => {
 
   const worker_21: Worker = {
     id: generateId(),
+    userID: generateId(),
     firmaID: firmaID,
     name: 'Chris',
     surname: 'Hemsworth',
@@ -200,6 +210,7 @@ export const getAllSampleObjects = () => {
 
   const worker_31: Worker = {
     id: generateId(),
+    userID: generateId(),
     firmaID: firmaID,
     name: 'Scarlett',
     surname: 'Johansson',
@@ -212,6 +223,7 @@ export const getAllSampleObjects = () => {
 
   const worker_41: Worker = {
     id: generateId(),
+    userID: generateId(),
     firmaID: firmaID,
     name: 'Meryl',
     surname: 'Streep',
@@ -224,6 +236,7 @@ export const getAllSampleObjects = () => {
 
   const worker_51: Worker = {
     id: generateId(),
+    userID: generateId(),
     firmaID: firmaID,
     name: 'Angelina',
     surname: 'Jolie',
@@ -236,6 +249,7 @@ export const getAllSampleObjects = () => {
 
   const worker_61: Worker = {
     id: generateId(),
+    userID: generateId(),
     firmaID: firmaID,
     name: 'Nicole',
     surname: 'Kidman',
@@ -248,6 +262,7 @@ export const getAllSampleObjects = () => {
 
   const worker_71: Worker = {
     id: generateId(),
+    userID: generateId(),
     firmaID: firmaID,
     name: 'Natalie',
     surname: 'Portman',
@@ -260,6 +275,7 @@ export const getAllSampleObjects = () => {
 
   const worker_81: Worker = {
     id: generateId(),
+    userID: generateId(),
     firmaID: firmaID,
     name: 'Julia',
     surname: 'Roberts',

@@ -308,6 +308,7 @@ function DayView({
                       onShortPress={handleShortPress}
                       isDraggable={!isPast}
                     />
+                    {!isCompact && (
                     <Dropdown
                       isOpen={openDropdownId === appointment.id}
                       onOpenChange={(open) => setOpenDropdownId(open ? appointment.id : null)}
@@ -338,6 +339,7 @@ function DayView({
                       </Dropdown.Menu>
                     </Dropdown.Popover>
                   </Dropdown>
+                    )}
                   </div>
                 ) : (
                   <AppointmentCard
@@ -415,6 +417,7 @@ function DayView({
                     onShortPress={handleShortPress}
                     isDraggable={!isPast}
                   />
+                  {isCompact && (
                   <Dropdown
                     isOpen={openDropdownId === appointment.id}
                     onOpenChange={(open) => setOpenDropdownId(open ? appointment.id : null)}
@@ -445,6 +448,7 @@ function DayView({
                       </Dropdown.Menu>
                     </Dropdown.Popover>
                   </Dropdown>
+                  )}
                 </div>
               ) : (
                 <AppointmentCard
