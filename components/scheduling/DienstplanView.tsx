@@ -39,7 +39,7 @@ function DienstplanView() {
 
   // Названия месяцев из словаря локализации
   const monthNames = t('dienstplan.calendar.months') as unknown as string[]
-  
+
   useEffect(() => {
     const updateIndicator = () => {
       if (viewMode === 'month' && monthRef.current) {
@@ -209,11 +209,21 @@ function DienstplanView() {
           {/* View mode switcher */}
           <div className="flex flex-col relative">
             <div className="flex gap-2">
-              <Button ref={monthRef} variant={viewMode === 'month' ? 'tertiary' : 'outline'} size="sm" onPress={handleSetMonthMode}>
+              <Button
+                ref={monthRef}
+                variant={viewMode === 'month' ? 'tertiary' : 'outline'}
+                size="sm"
+                onPress={handleSetMonthMode}
+              >
                 <CalendarIcon className="w-3 h-3 mr-1" />
                 {t('dienstplan.month')}
               </Button>
-              <Button ref={weekRef} variant={viewMode === 'week' ? 'tertiary' : 'outline'} size="sm" onPress={handleSetWeekMode}>
+              <Button
+                ref={weekRef}
+                variant={viewMode === 'week' ? 'tertiary' : 'outline'}
+                size="sm"
+                onPress={handleSetWeekMode}
+              >
                 <CalendarDays className="w-3 h-3 mr-1" />
                 {t('dienstplan.week')}
               </Button>
@@ -314,7 +324,7 @@ function DienstplanView() {
       {user?.status === 1 ? (
         <TodayDienst
           onAppointmentPress={handlePressOnAppointment}
-          onFinish={(appointment) => {
+          onFinish={appointment => {
             setSelectedAppointment(appointment)
             setIsReportModalOpen(true)
           }}

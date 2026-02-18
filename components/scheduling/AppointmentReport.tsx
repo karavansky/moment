@@ -2,8 +2,19 @@ import React, { useState, useRef } from 'react'
 import { Modal, Button, Separator, TextArea, TextField, Label, Input } from '@heroui/react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { Appointment, Report, Photo } from '@/types/scheduling'
-import { Save, Plus, X, Upload, FileText, Image as ImageIcon, Loader2, Play, Pause, Square } from 'lucide-react'
-import { formatTime } from '@/lib/calendar-utils'
+import {
+  Save,
+  Plus,
+  X,
+  Upload,
+  FileText,
+  Image as ImageIcon,
+  Loader2,
+  Play,
+  Pause,
+  Square,
+} from 'lucide-react'
+import { formatTime, isSameDate } from '@/lib/calendar-utils'
 import imageCompression from 'browser-image-compression'
 import { generateId } from '@/lib/generate-id'
 import { useTranslation } from '@/components/Providers'
@@ -40,10 +51,17 @@ interface AppointmentReportProps {
 export default function AppointmentReport({
   isOpen,
   onClose,
-  appointment,
+  appointment: propAppointment,
 }: AppointmentReportProps) {
-  const { updateAppointment, user, openAppointment, closeAppointment } = useScheduling()
+  const { updateAppointment, user, openAppointment, closeAppointment, appointments } =
+    useScheduling()
   const { t } = useTranslation()
+
+  const appointment = React.useMemo(() => {
+    if (!propAppointment) return null
+    return appointments.find(a => a.id === propAppointment.id) || propAppointment
+  }, [appointments, propAppointment])
+
   const [reportNote, setReportNote] = useState('')
   const [photos, setPhotos] = useState<Photo[]>([])
   const [isUploading, setIsUploading] = useState(false)
@@ -223,7 +241,8 @@ export default function AppointmentReport({
         console.error('Error keys:', Object.keys(error))
         console.error('Error own props:', Object.getOwnPropertyNames(error))
       }
-      const errorMessage = error instanceof Error ? error.message : t('appointment.report.unknownError')
+      const errorMessage =
+        error instanceof Error ? error.message : t('appointment.report.unknownError')
       alert(`${t('appointment.report.uploadError')} ${errorMessage}`)
     } finally {
       setIsUploading(false)
@@ -319,22 +338,74 @@ export default function AppointmentReport({
                 <div className="flex items-center justify-between w-full">
                   <h2 className="text-xl font-bold">{t('appointment.report.title')}</h2>
                   {appointment.openedAt && (
-                    <ElapsedTimer openedAt={appointment.openedAt} closedAt={appointment.closedAt} className="text-base px-6" />
+                    <ElapsedTimer
+                      openedAt={appointment.openedAt}
+                      closedAt={appointment.closedAt}
+                      className="text-base px-6"
+                    />
                   )}
                 </div>
+                {user?.status === 1 && isSameDate(appointment.date, new Date()) ? (
+                  <div className="flex items-center gap-2 w-full">
+                    <Button
+                      size="sm"
+                      className="gap-2 bg-green-500! text-white! hover:bg-green-600!"
+                      isDisabled={appointment?.isOpen}
+                      onPress={() => {
+                        if (appointment && user?.myWorkerID) {
+                          openAppointment(appointment.id, user.myWorkerID)
+                        }
+                      }}
+                    >
+                      <Play className="w-4 h-4" />
+                      {t('appointment.edit.start')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="gap-2 bg-yellow-500! text-white! hover:bg-yellow-600!"
+                      isDisabled={!appointment?.isOpen}
+                      onPress={() => {
+                        if (appointment) {
+                          closeAppointment(appointment.id)
+                        }
+                      }}
+                    >
+                      <Pause className="w-4 h-4" />
+                      {t('appointment.edit.pause')}
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      className="gap-2 ml-auto"
+                      isDisabled={!appointment?.isOpen}
+                      onPress={() => {
+                        if (appointment) {
+                          closeAppointment(appointment.id)
+                        }
+                      }}
+                    >
+                      <Square className="w-4 h-4" />
+                      {t('appointment.edit.finish')}
+                    </Button>
+                  </div>
+                ) : null}
               </Modal.Header>
 
               <Modal.Body className="gap-6">
                 {/* Appointment Details (Read-only) */}
                 <div className="grid grid-cols-2 gap-4 p-4 bg-default-50 rounded-lg">
                   <div>
-                    <p className="text-xs text-default-500 uppercase font-semibold">{t('appointment.report.client')}</p>
+                    <p className="text-xs text-default-500 uppercase font-semibold">
+                      {t('appointment.report.client')}
+                    </p>
                     <p className="font-medium">
                       {appointment.client?.name} {appointment.client?.surname}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-default-500 uppercase font-semibold">{t('appointment.report.staff')}</p>
+                    <p className="text-xs text-default-500 uppercase font-semibold">
+                      {t('appointment.report.staff')}
+                    </p>
                     <div className="flex flex-wrap gap-1">
                       {appointment.worker.map(w => (
                         <span
@@ -347,18 +418,26 @@ export default function AppointmentReport({
                     </div>
                   </div>
                   <div>
-                    <p className="text-xs text-default-500 uppercase font-semibold">{t('appointment.report.time')}</p>
+                    <p className="text-xs text-default-500 uppercase font-semibold">
+                      {t('appointment.report.time')}
+                    </p>
                     <p className="font-medium">
                       {appointment.date.toLocaleDateString('de-DE')} | {formatTime(startTime)} -{' '}
                       {formatTime(endTime)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-default-500 uppercase font-semibold">{t('appointment.report.duration')}</p>
-                    <p className="font-medium">{appointment.duration} {t('appointment.report.min')}</p>
+                    <p className="text-xs text-default-500 uppercase font-semibold">
+                      {t('appointment.report.duration')}
+                    </p>
+                    <p className="font-medium">
+                      {appointment.duration} {t('appointment.report.min')}
+                    </p>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-xs text-default-500 uppercase font-semibold">{t('appointment.report.services')}</p>
+                    <p className="text-xs text-default-500 uppercase font-semibold">
+                      {t('appointment.report.services')}
+                    </p>
                     <ul className="list-disc list-inside text-sm">
                       {appointment.services.map(s => (
                         <li key={s.id}>{s.name}</li>
@@ -414,7 +493,8 @@ export default function AppointmentReport({
                         <Loader2 className="w-4 h-4 text-primary animate-spin" />
                         <span className="text-sm text-primary font-medium">
                           {uploadStage === 'converting' && t('appointment.report.convertingHeic')}
-                          {uploadStage === 'compressing' && t('appointment.report.compressingImage')}
+                          {uploadStage === 'compressing' &&
+                            t('appointment.report.compressingImage')}
                           {uploadStage === 'uploading' && t('appointment.report.uploading')}
                         </span>
                       </div>
@@ -458,63 +538,13 @@ export default function AppointmentReport({
               </Modal.Body>
 
               <Modal.Footer>
-                {user?.status === 1 ? (
-                  <div className="flex items-center gap-2 w-full">
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      className="gap-2"
-                      isDisabled={appointment?.isOpen}
-                      onPress={() => {
-                        if (appointment && user?.myWorkerID) {
-                          openAppointment(appointment.id, user.myWorkerID)
-                          onClose()
-                        }
-                      }}
-                    >
-                      <Play className="w-4 h-4" />
-                      {t('appointment.edit.start')}
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="gap-2"
-                      isDisabled={!appointment?.isOpen}
-                      onPress={() => {
-                        if (appointment) {
-                          closeAppointment(appointment.id)
-                        }
-                      }}
-                    >
-                      <Pause className="w-4 h-4" />
-                      {t('appointment.edit.pause')}
-                    </Button>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      className="gap-2 ml-auto"
-                      isDisabled={!appointment?.isOpen}
-                      onPress={() => {
-                        if (appointment) {
-                          closeAppointment(appointment.id)
-                        }
-                      }}
-                    >
-                      <Square className="w-4 h-4" />
-                      {t('appointment.edit.finish')}
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <Button variant="ghost" onPress={onClose} >
-                      {t('appointment.report.cancel')}
-                    </Button>
-                    <Button variant="primary" onPress={handleSave} className="gap-2">
-                      <Save className="w-4 h-4" />
-                      {t('appointment.report.save')}
-                    </Button>
-                  </>
-                )}
+                <Button variant="ghost" onPress={onClose}>
+                  {t('appointment.report.cancel')}
+                </Button>
+                <Button variant="primary" onPress={handleSave} className="gap-2">
+                  <Save className="w-4 h-4" />
+                  {t('appointment.report.save')}
+                </Button>
               </Modal.Footer>
             </Modal.Dialog>
           </Modal.Container>
@@ -535,7 +565,7 @@ export default function AppointmentReport({
               <Modal.CloseTrigger className="z-50" />
 
               {selectedPhoto && (
-                <Modal.Body className='relative flex-1 flex items-center justify-center bg-default-100 rounded-lg overflow-hidden group min-h-0'>
+                <Modal.Body className="relative flex-1 flex items-center justify-center bg-default-100 rounded-lg overflow-hidden group min-h-0">
                   <img
                     src={getPhotoUrl(selectedPhoto.url, {
                       firmaID: user?.firmaID || '',
