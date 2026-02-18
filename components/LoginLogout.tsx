@@ -245,13 +245,10 @@ export function LoginLogout() {
             selectedKeys={selected}
             onSelectionChange={handleAuth}
           >
-            <Dropdown.Item id="profile" textValue="Profile">
-              <Label>Profile</Label>
-            </Dropdown.Item>
             <Dropdown.Item id="settings" textValue="Settings">
               <div className="flex w-full items-center justify-between gap-2">
                 <Label>Settings</Label>
-                <Settings className="size-3.5 text-muted" />
+                <Settings className="size-3.5 " />
               </div>
             </Dropdown.Item>
             <Dropdown.Item id="logout" textValue="Logout" variant="danger">
