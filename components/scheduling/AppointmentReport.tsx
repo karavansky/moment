@@ -319,7 +319,7 @@ export default function AppointmentReport({
                 <div className="flex items-center justify-between w-full">
                   <h2 className="text-xl font-bold">{t('appointment.report.title')}</h2>
                   {appointment.openedAt && (
-                    <ElapsedTimer openedAt={appointment.openedAt} closedAt={appointment.closedAt} className="text-base" />
+                    <ElapsedTimer openedAt={appointment.openedAt} closedAt={appointment.closedAt} className="text-base px-6" />
                   )}
                 </div>
               </Modal.Header>

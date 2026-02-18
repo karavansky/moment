@@ -4,7 +4,6 @@ import { forwardRef, memo } from 'react'
 import { CalendarWeek } from '@/lib/calendar-utils'
 import DayView from './DayView'
 import { isSameDate } from '@/lib/calendar-utils'
-import { Separator } from '@heroui/react'
 import type { Appointment } from '@/types/scheduling'
 
 interface WeekViewProps {
@@ -19,17 +18,26 @@ interface WeekViewProps {
 }
 
 const WeekView = forwardRef<HTMLDivElement, WeekViewProps>(
-  ({ week, today, selectedDate, onAppointmentPress, onExternalDrop, onDayPress, onEditAppointment, onAddReport }, ref) => {
+  (
+    {
+      week,
+      today,
+      selectedDate,
+      onAppointmentPress,
+      onExternalDrop,
+      onDayPress,
+      onEditAppointment,
+      onAddReport,
+    },
+    ref
+  ) => {
     return (
-      <div ref={ref} className="mb-2 sm:mb-4 select-none h-full flex flex-col">
+      <div ref={ref} className="select-none h-full flex flex-col">
         {/* Название месяца (если это первая неделя месяца) */}
         {week.monthName && (
-          <>
-            <Separator className='mt-2'/>
-            <div className="bg-default-100 px-3 sm:px-4 pt-2 pb-0 select-none shrink-0">
-              <h2 className="text-base sm:text-lg font-bold text-foreground">{week.monthName}</h2>
-            </div>
-          </>
+          <div className="mt-2 border-t border-divider bg-default-100 px-3 sm:px-4 py-2 select-none shrink-0">
+            <h2 className="text-base sm:text-lg font-bold text-foreground">{week.monthName}</h2>
+          </div>
         )}
 
         {/* Дни недели */}

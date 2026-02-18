@@ -28,6 +28,7 @@ export default memo(function TodayDienst({ onAppointmentPress, onFinish }: Today
 
   const handleStart = useCallback(
     (appointment: Appointment) => {
+      console.log(`[TodayDienst] Starting appointment ${appointment.id} for user ${user?.id}`)
       if (user?.myWorkerID) {
         openAppointment(appointment.id, user.myWorkerID)
       }

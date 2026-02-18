@@ -80,6 +80,7 @@ export async function GET() {
 
     const workers = workersRaw.map(w => ({
       id: w.workerID,
+      userID: w.userID,
       firmaID: w.firmaID,
       name: w.name,
       surname: w.surname || '',

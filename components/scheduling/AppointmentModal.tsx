@@ -163,6 +163,22 @@ export default function AppointmentModal({
         reports: appointment.reports || [],
         firmaID: appointment.firmaID || '',
       })
+    } else if (isNewAppointment && !appointment) {
+      setFormData({
+        clientID: '',
+        workers: [],
+        date: new Date(selectedDate || new Date()),
+        startHour: 0,
+        startMinute: 0,
+        duration: 0,
+        fahrzeit: 0,
+        isDuration: false,
+        isDriveTime: false,
+        isFixedTime: false,
+        services: [],
+        reports: [],
+        firmaID: '',
+      })
     } else if (selectedDate) {
       setFormData(prev => ({
         ...prev,

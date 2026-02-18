@@ -885,8 +885,10 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
           const appointment = prev.appointments.find(apt => apt.id === appointmentId)
           if (!appointment) return prev
           if (!appointment.client) return prev
-          const worker = appointment.worker.find(w => w.id === workerId)
-          if (!worker) return prev
+          const assignedWorker = appointment.worker.find(w => w.id === workerId)
+          if (!assignedWorker) return prev
+          // Берем полные данные (с userID) из общего списка workers, если возможно
+          const worker = prev.workers.find(w => w.id === workerId) || assignedWorker
           if (prev.appointments.find(apt => apt.id === appointmentId)?.isOpen) return prev
 
           const startDate = new Date()
@@ -898,8 +900,10 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
           }
 
           const client = appointment.client
-  
-          if (session?.user?.id !== workerId) {
+          console.log(
+            `[openAppointment] Worker id: ${worker.id}   started  user: ${session?.user?.id}, worker userID: ${worker.userID}, client: ${client.name} ${client.surname}`
+          )
+          if (session?.user?.id !== worker.userID) {
             queueMicrotask(() => {
               const notification: Notif = {
                 userID: 'system',
@@ -972,7 +976,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         })
       },
     }),
-    [loadLiveData, loadMockData, addNotification]
+    [loadLiveData, loadMockData, addNotification, session]
   )
 
   // Конвертация дерева услуг в формат для select с optgroup

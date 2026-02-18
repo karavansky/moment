@@ -63,6 +63,7 @@ export interface Team {
 // Работник
 export interface Worker {
   id: string
+  userID: string
   firmaID: string
   name: string
   surname: string

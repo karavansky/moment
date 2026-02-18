@@ -46,7 +46,7 @@ const findStartIndex = (items: VirtualItem[], scrollTop: number) => {
 
 // Helper to estimate appointment card height (moved outside component)
 const estimateAppointmentHeight = () => {
-  return 12 + 8 + 50 // Base padding + margin-bottom + content
+  return 12 + 8 + 60 // Base padding + margin-bottom + content
 }
 
 // Stable default date to avoid new Date() on every render
@@ -82,7 +82,7 @@ function CalendarView({
     windowWidth
   )
   const MIN_WEEK_HEIGHT = isMobileLayout ? 60 : 104
-  const HEADER_HEIGHT = isMobileLayout ? 38 : 46
+  const HEADER_HEIGHT = isMobileLayout ? 38 : 60
   const DAY_HEADER_HEIGHT_DESKTOP = 30
   // Названия дней недели из словаря локализации (не зависят от локали браузера)
   const WEEKDAY_HEADERS_FULL = t('dienstplan.calendar.weekdaysFull') as unknown as string[]
