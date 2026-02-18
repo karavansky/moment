@@ -1,6 +1,6 @@
 'use client'
 
-import { Image, LogOut, Settings } from 'lucide-react'
+import { Calendar1, Image, LogOut, Settings } from 'lucide-react'
 import { useAuth } from './AuthProvider'
 import { Button, Avatar, Dropdown, Label } from '@heroui/react'
 import { useCallback, useState } from 'react'
@@ -48,7 +48,7 @@ export function LoginLogout() {
       console.log('Selected key:', selectedKey)
       switch (selectedKey) {
         case 'dashboard':
-          router.push(localizedLink('admin', lang ))
+          router.push(localizedLink('admin', lang))
           break
         case 'profile':
           break
@@ -64,7 +64,6 @@ export function LoginLogout() {
         default:
           break
       }
-
     },
     [signIn, router]
   )
@@ -84,7 +83,28 @@ export function LoginLogout() {
         default:
           break
       }
-
+    },
+    [signIn, router]
+  )
+  const handleStaff = useCallback(
+    (keys: Selection) => {
+      console.log('LoginLogout handleLogin called with keys:', keys)
+      if (keys === 'all') return
+      const selectedKey = keys.values().next().value
+      console.log('Selected key:', selectedKey)
+      switch (selectedKey) {
+        case 'plan':
+          router.push(`/${lang}/dienstplan`)
+          break
+        case 'settings':
+          router.push(`/${lang}/settings`)
+          break
+        case 'logout':
+          signOut()
+          break
+        default:
+          break
+      }
     },
     [signIn, router]
   )
@@ -148,7 +168,56 @@ export function LoginLogout() {
       </Dropdown>
     )
   }
-
+  if (status === 'authenticated' && session?.user?.status === 1) {
+    return (
+      <Dropdown>
+        <Dropdown.Trigger className="rounded-full">
+          <Avatar>
+            <Avatar.Image alt={session.user.name || 'User'} src={session.user.image || ''} />
+            <Avatar.Fallback delayMs={600}>JD</Avatar.Fallback>
+          </Avatar>
+        </Dropdown.Trigger>
+        <Dropdown.Popover>
+          <div className="px-3 pt-3 pb-1">
+            <div className="flex items-center gap-2">
+              <Avatar size="sm">
+                <Avatar.Image alt={session.user.name || 'User'} src={session.user.image || ''} />
+                <Avatar.Fallback delayMs={600}>JD</Avatar.Fallback>
+              </Avatar>
+              <div className="flex flex-col gap-0">
+                <p className="text-sm leading-5 font-medium">{session.user.name || 'User'}</p>
+                <p className="text-xs leading-none text-muted">{session.user.email}</p>
+              </div>
+            </div>
+          </div>
+          <Dropdown.Menu
+            selectionMode="single"
+            selectedKeys={selected}
+            onSelectionChange={handleStaff}
+          >
+            <Dropdown.Item id="plan" textValue="Terminplan">
+              <div className="flex w-full items-center justify-between gap-2">
+                <Label>Terminplan</Label>
+                <Calendar1 className="size-3.5 " />
+              </div>
+            </Dropdown.Item>
+            <Dropdown.Item id="settings" textValue="Settings">
+              <div className="flex w-full items-center justify-between gap-2">
+                <Label>Settings</Label>
+                <Settings className="size-3.5 " />
+              </div>
+            </Dropdown.Item>
+            <Dropdown.Item id="logout" textValue="Logout" variant="danger">
+              <div className="flex w-full items-center justify-between gap-2">
+                <Label>Log Out</Label>
+                <LogOut className="size-3.5 text-danger" />
+              </div>
+            </Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown.Popover>
+      </Dropdown>
+    )
+  }
   if (status === 'authenticated' && session?.user) {
     return (
       <Dropdown>
@@ -199,7 +268,9 @@ export function LoginLogout() {
 
   return (
     <>
-      <Button variant="tertiary" onPress={() => setIsOpen(true)}>Anmelden</Button>
+      <Button variant="tertiary" onPress={() => setIsOpen(true)}>
+        Anmelden
+      </Button>
       <AuthModal
         isOpen={isOpen}
         onOpenChange={() => setIsOpen(false)}
@@ -207,7 +278,8 @@ export function LoginLogout() {
         onSignInWithCredentials={handleCredentialsSignIn}
         t={t}
         lang={lang}
-      />    </>
+      />{' '}
+    </>
   )
 }
 
