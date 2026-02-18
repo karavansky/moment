@@ -100,7 +100,7 @@ interface SchedulingActions {
   setSelectedDate: (date: Date) => void
   setSelectedAppointment: (appointment: Appointment | null) => void
   addAppointment: (appointment: Appointment) => void
-  updateAppointment: (appointment: Appointment) => void
+  updateAppointment: (appointment: Appointment, skipNetwork?: boolean) => void
   deleteAppointment: (id: string) => void
   moveAppointmentToDate: (appointmentId: string, newDate: Date) => void
   addClient: (client: Client) => void
@@ -502,15 +502,17 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         }
       },
 
-      updateAppointment: (updatedAppointment: Appointment) => {
+      updateAppointment: (updatedAppointment: Appointment, skipNetwork = false) => {
         setState(prev => ({
           ...prev,
           appointments: prev.appointments.map(apt =>
             apt.id === updatedAppointment.id ? updatedAppointment : apt
           ),
         }))
-
-        if (isLiveModeRef.current) {
+        console.log(`[updateAppointment] Updated appointment:`, updatedAppointment)
+        console.log(`[updateAppointment] skipNetwork:`, skipNetwork)
+        console.log(`[updateAppointment] isLiveMode:`, isLiveModeRef.current)
+        if (isLiveModeRef.current && !skipNetwork) {
           apiFetch('/api/scheduling/appointments', {
             method: 'PUT',
             body: JSON.stringify({
@@ -529,6 +531,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
               latitude: updatedAppointment.latitude,
               longitude: updatedAppointment.longitude,
               serviceIds: updatedAppointment.services?.map(s => s.id),
+              reports: updatedAppointment.reports,
             }),
           }).catch(error => console.error('[updateAppointment] API error:', error))
         }
