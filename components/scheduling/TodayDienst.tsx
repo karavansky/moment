@@ -93,7 +93,10 @@ export default memo(function TodayDienst({ onAppointmentPress, onFinish }: Today
                             {client ? `${client.name} ${client.surname}` : '—'}
                           </span>
                           {appointment.isOpen && appointment.openedAt && (
-                            <ElapsedTimer openedAt={appointment.openedAt} className="ml-auto text-xs shrink-0" />
+                            <ElapsedTimer
+                              openedAt={appointment.openedAt}
+                              className="ml-auto text-xs shrink-0"
+                            />
                           )}
                         </div>
                         <div className="flex items-center gap-1.5 text-xs text-default-500 truncate">
@@ -101,11 +104,13 @@ export default memo(function TodayDienst({ onAppointmentPress, onFinish }: Today
                           {address || '—'}
                         </div>
                       </div>
-                      <div className="flex items-center gap-1.5 mt-1" onClick={e => e.stopPropagation()}>
+                      <div
+                        className="flex items-center gap-1.5 mt-1"
+                        onClick={e => e.stopPropagation()}
+                      >
                         <Button
-                          variant="primary"
                           size="sm"
-                          className="gap-1"
+                          className="gap-1 bg-green-500! text-white! hover:bg-green-600!"
                           isDisabled={appointment.isOpen}
                           onPress={() => handleStart(appointment)}
                         >
@@ -113,9 +118,8 @@ export default memo(function TodayDienst({ onAppointmentPress, onFinish }: Today
                           {t('appointment.edit.start')}
                         </Button>
                         <Button
-                          variant="secondary"
                           size="sm"
-                          className="gap-1"
+                          className="gap-1 bg-yellow-500! text-white! hover:bg-yellow-600!"
                           isDisabled={!appointment.isOpen}
                           onPress={() => handlePause(appointment)}
                         >
