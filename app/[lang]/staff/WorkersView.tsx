@@ -27,9 +27,11 @@ export default function WorkersView() {
   const onAddNewWorker = () => {
     startTransition(() => {
       // Создаем пустой объект клиента с дефолтными значениями
+      const id = generateId()
       const newWorker: Worker = {
-        id: generateId(),
+        id: id,
         firmaID: firmaID,
+        userID: id,
         status: 0,
         name: '',
         surname: '',

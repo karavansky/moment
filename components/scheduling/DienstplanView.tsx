@@ -62,8 +62,42 @@ function DienstplanView() {
 
   // Генерация календарных недель из appointments
   const calendarWeeks = useMemo(() => {
-    if (appointments.length === 0) return []
-    return generateCalendarWeeks(appointments, monthNames)
+    // Force calendar range to be at least today + 12 months
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const futureDate = new Date(today)
+    futureDate.setMonth(today.getMonth() + 12)
+    futureDate.setHours(0, 0, 0, 0)
+
+    const startDummy = {
+      id: 'range-start',
+      date: today,
+      startTime: today,
+      endTime: today,
+    } as any
+
+    const endDummy = {
+      id: 'range-end',
+      date: futureDate,
+      startTime: futureDate,
+      endTime: futureDate,
+    } as any
+
+    const allAppointments = [...appointments, startDummy, endDummy]
+    const weeks = generateCalendarWeeks(allAppointments, monthNames)
+
+    // Remove dummy appointments from display
+    weeks.forEach(week => {
+      week.days.forEach(day => {
+        if (day.appointments) {
+          day.appointments = day.appointments.filter(
+            a => a.id !== 'range-start' && a.id !== 'range-end'
+          )
+        }
+      })
+    })
+
+    return weeks
   }, [appointments, monthNames])
 
   // Мемоизируем обработчики для предотвращения ре-рендеров
@@ -267,57 +301,43 @@ function DienstplanView() {
 
       {/* Calendar - занимает оставшееся пространство */}
       <div className="flex-1 min-h-0 overflow-hidden">
-        {appointments.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <Card className="max-w-sm">
-              <Card.Content className="p-8 text-center">
-                <CalendarIcon className="mx-auto h-12 w-12 text-default-400 mb-4" />
-                <h3 className="text-base font-medium text-foreground mb-2">
-                  {t('dienstplan.noAppointments')}
-                </h3>
-                <p className="text-sm text-default-500">{t('dienstplan.noAppointmentsHint')}</p>
-              </Card.Content>
-            </Card>
-          </div>
-        ) : (
-          <AnimatePresence mode="wait" initial={false}>
-            {viewMode === 'month' ? (
-              <motion.div
-                key="month"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.2 }}
-                className="w-full h-full"
-              >
-                <CalendarView
-                  weeks={calendarWeeks}
-                  today={today}
-                  selectedDate={selectedDate}
-                  onAppointmentPress={handlePressOnAppointment}
-                  onExternalDrop={handleExternalDrop}
-                  onDayPress={handlePressOnDay}
-                  onEditAppointment={handleEditAppointment}
-                  onAddReport={handleAddReport}
-                />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="week"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-                className="w-full h-full"
-              >
-                <WeeklyView
-                  onAppointmentPress={handlePressOnAppointment}
-                  onExternalDrop={handleExternalDrop}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        )}
+        <AnimatePresence mode="wait" initial={false}>
+          {viewMode === 'month' ? (
+            <motion.div
+              key="month"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.2 }}
+              className="w-full h-full"
+            >
+              <CalendarView
+                weeks={calendarWeeks}
+                today={today}
+                selectedDate={selectedDate}
+                onAppointmentPress={handlePressOnAppointment}
+                onExternalDrop={handleExternalDrop}
+                onDayPress={handlePressOnDay}
+                onEditAppointment={handleEditAppointment}
+                onAddReport={handleAddReport}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="week"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+              className="w-full h-full"
+            >
+              <WeeklyView
+                onAppointmentPress={handlePressOnAppointment}
+                onExternalDrop={handleExternalDrop}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Horizontal ScrollShadow - прижат к bottom */}
