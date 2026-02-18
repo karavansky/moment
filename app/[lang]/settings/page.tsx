@@ -20,19 +20,47 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState<UserSettings | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [policyError, setPolicyError] = useState(false)
 
   // Fetch settings from server
   useEffect(() => {
     if (authStatus !== 'authenticated') return
 
     fetch('/api/settings')
-      .then((res) => res.ok ? res.json() : null)
-      .then((data) => {
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => {
         if (data) setSettings(data)
       })
-      .catch((err) => console.error('[Settings] Fetch error:', err))
+      .catch(err => console.error('[Settings] Fetch error:', err))
       .finally(() => setLoading(false))
   }, [authStatus])
+
+  // Debug: Check actual permission status
+  useEffect(() => {
+    console.log('[SettingsPage] Geo hook state:', {
+      permission: geo.permission,
+      isReady: geo.isReady,
+      isTracking: geo.isTracking,
+    })
+
+    if (typeof window !== 'undefined' && 'geolocation' in navigator) {
+      // Check permissions API
+      navigator.permissions?.query({ name: 'geolocation' }).then(result => {
+        console.log('[SettingsPage] navigator.permissions.query:', result.state)
+      })
+
+      // Try to get position to verify access
+      navigator.geolocation.getCurrentPosition(
+        () => console.log('[SettingsPage] getCurrentPosition: Success'),
+        error => {
+          console.log('[SettingsPage] getCurrentPosition: Error', error.message)
+          if (error.message.toLowerCase().includes('permissions policy')) {
+            setPolicyError(true)
+          }
+        }
+      )
+    }
+  }, [geo.permission, geo.isReady, geo.isTracking])
 
   const updateSetting = async (key: keyof UserSettings, value: boolean) => {
     setSaving(true)
@@ -67,9 +95,7 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-4 sm:p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        Settings
-      </h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
 
       {/* Push Notifications Section */}
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 space-y-4">
@@ -137,8 +163,7 @@ export default function SettingsPage() {
                   ? 'Active push subscription on this device'
                   : push.permission === 'granted'
                     ? 'Reconnecting subscription...'
-                    : 'No active subscription'
-                }
+                    : 'No active subscription'}
               </div>
             )}
           </>
@@ -149,9 +174,7 @@ export default function SettingsPage() {
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 space-y-4">
         <div className="flex items-center gap-3">
           <MapPin className="w-5 h-5 text-green-500" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            GPS Location
-          </h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">GPS Location</h2>
         </div>
 
         {/* Browser permission status */}
@@ -159,17 +182,30 @@ export default function SettingsPage() {
           label="Browser permission"
           permission={geo.permission}
           isReady={geo.isReady}
-          onRequest={geo.permission === 'prompt' ? geo.requestPermission : undefined}
+          onRequest={geo.requestPermission}
           requestLabel="Allow"
         />
+
+        {policyError && (
+          <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
+            <ShieldAlert className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-red-900 dark:text-red-200">
+                Server Configuration Error
+              </p>
+              <p className="text-xs text-red-700 dark:text-red-300 mt-1">
+                Geolocation is blocked by the server&apos;s <code>Permissions-Policy</code> header.
+                Please check your Nginx or Next.js configuration.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Server toggle */}
         {settings && (
           <div className="flex items-center justify-between py-1">
             <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                Location tracking
-              </p>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">Location tracking</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Share your location during open appointments
               </p>
@@ -186,7 +222,8 @@ export default function SettingsPage() {
         {/* Tracking status */}
         {geo.isReady && geo.isTracking && geo.position && (
           <div className="text-xs text-gray-500 dark:text-gray-400">
-            Currently tracking: {geo.position.latitude.toFixed(4)}, {geo.position.longitude.toFixed(4)}
+            Currently tracking: {geo.position.latitude.toFixed(4)},{' '}
+            {geo.position.longitude.toFixed(4)}
           </div>
         )}
       </section>
@@ -217,8 +254,20 @@ function PermissionRow({
     setRequesting(false)
   }
 
-  const handleDeniedClick = () => {
-    setShowDeniedHelp(!showDeniedHelp)
+  const handleDeniedClick = async () => {
+    if (showDeniedHelp) {
+      setShowDeniedHelp(false)
+      return
+    }
+
+    if (onRequest) {
+      setRequesting(true)
+      const success = await onRequest()
+      setRequesting(false)
+      if (!success) setShowDeniedHelp(true)
+    } else {
+      setShowDeniedHelp(true)
+    }
   }
 
   if (!isReady) {
@@ -243,10 +292,11 @@ function PermissionRow({
           {permission === 'denied' && (
             <button
               onClick={handleDeniedClick}
-              className="flex items-center gap-1 text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+              disabled={requesting}
+              className="flex items-center gap-1 text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50"
             >
-              <ShieldAlert className="w-3 h-3" />
-              Blocked
+              {requesting ? <Spinner size="sm" /> : <ShieldAlert className="w-3 h-3" />}
+              {requesting ? 'Checking...' : 'Blocked'}
             </button>
           )}
           {permission === 'prompt' && onRequest && (

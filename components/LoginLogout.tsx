@@ -53,10 +53,30 @@ export function LoginLogout() {
         case 'profile':
           break
         case 'settings':
-          router.push('/admin/settings')
+          router.push(`/${lang}/settings`)
           break
         case 'new-project':
-          router.push('/admin/s3-storage')
+          router.push(`/${lang}/s3-storage`)
+          break
+        case 'logout':
+          signOut()
+          break
+        default:
+          break
+      }
+
+    },
+    [signIn, router]
+  )
+  const handleAuth = useCallback(
+    (keys: Selection) => {
+      console.log('LoginLogout handleLogin called with keys:', keys)
+      if (keys === 'all') return
+      const selectedKey = keys.values().next().value
+      console.log('Selected key:', selectedKey)
+      switch (selectedKey) {
+        case 'settings':
+          router.push(`/${lang}/settings`)
           break
         case 'logout':
           signOut()
@@ -154,7 +174,7 @@ export function LoginLogout() {
           <Dropdown.Menu
             selectionMode="single"
             selectedKeys={selected}
-            onSelectionChange={handleAdmin}
+            onSelectionChange={handleAuth}
           >
             <Dropdown.Item id="profile" textValue="Profile">
               <Label>Profile</Label>
