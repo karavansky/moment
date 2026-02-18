@@ -22,13 +22,13 @@ export function GeolocationBanner() {
   // Reset dismissed if permission was revoked
   useEffect(() => {
     if (!isReady) return
-    const stored = localStorage.getItem('geo-banner-dismissed')
-    if (stored && permission !== 'granted') {
-      // Permission lost — clear dismissed so banner reappears
+
+    if (permission === 'granted') {
       localStorage.removeItem('geo-banner-dismissed')
-      setDismissed(false)
-    } else if (stored) {
       setDismissed(true)
+    } else {
+      const stored = localStorage.getItem('geo-banner-dismissed')
+      setDismissed(!!stored)
     }
   }, [isReady, permission])
 

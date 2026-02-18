@@ -46,7 +46,7 @@ const findStartIndex = (items: VirtualItem[], scrollTop: number) => {
 
 // Helper to estimate appointment card height (moved outside component)
 const estimateAppointmentHeight = () => {
-  return 12 + 8 + 60 // Base padding + margin-bottom + content
+  return 12 + 8 + 50 // Base padding + margin-bottom + content
 }
 
 // Stable default date to avoid new Date() on every render
@@ -82,7 +82,7 @@ function CalendarView({
     windowWidth
   )
   const MIN_WEEK_HEIGHT = isMobileLayout ? 60 : 104
-  const HEADER_HEIGHT = isMobileLayout ? 38 : 60
+  const HEADER_HEIGHT = isMobileLayout ? 38 : 52
   const DAY_HEADER_HEIGHT_DESKTOP = 30
   // Названия дней недели из словаря локализации (не зависят от локали браузера)
   const WEEKDAY_HEADERS_FULL = t('dienstplan.calendar.weekdaysFull') as unknown as string[]
@@ -238,17 +238,21 @@ function CalendarView({
         targetTop = scrollContainerRef.current.scrollTop
       }
 
+      // Clamp targetTop to max possible scroll to ensure virtualization matches reality
+      const maxScroll = Math.max(0, totalHeight - containerHeight)
+      const finalScrollTop = Math.min(targetTop, maxScroll)
+
       // Apply scroll
-      if (scrollContainerRef.current.scrollTop !== targetTop) {
-        scrollContainerRef.current.scrollTop = targetTop
+      if (scrollContainerRef.current.scrollTop !== finalScrollTop) {
+        scrollContainerRef.current.scrollTop = finalScrollTop
       }
       // Sync state
-      setScrollTop(targetTop)
+      setScrollTop(finalScrollTop)
 
       // Mark as done immediately
       setIsInitialScrollDone(true)
     }
-  }, [containerHeight, items, today, isInitialScrollDone])
+  }, [containerHeight, items, today, isInitialScrollDone, totalHeight])
 
   // Calculate visible range
   const visibleItems = useMemo(() => {
