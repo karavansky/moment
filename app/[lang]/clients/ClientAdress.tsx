@@ -25,7 +25,6 @@ import dynamic from 'next/dynamic'
 import { useAsyncList } from '@react-stately/data'
 import { ChevronDown, List } from 'lucide-react'
 import { useTranslation } from '@/components/Providers'
-import { useLanguage } from '@/hooks/useLanguage'
 
 // Динамический импорт карты для избежания SSR проблем
 const AddressMap = dynamic(() => import('./AddressMap'), { ssr: false })
@@ -45,14 +44,13 @@ export const ClientAdress = memo(function ClientAdress({
   className,
 }: ClientAdressProps) {
   const { t } = useTranslation()
-  const lang = useLanguage()
   const { updateClient, addClient } = useScheduling()
   const [addressData, setAddressData] = useState({
     street: client.street || '',
     city: client.city || '',
     zipCode: client.postalCode || '',
     houseNumber: client.houseNumber || '',
-    country: isCreateNew ? lang : client.country || '',
+    country: client.country || '',
     district: client.district || '',
     latitude: client.latitude || 0,
     longitude: client.longitude || 0,
@@ -82,15 +80,13 @@ export const ClientAdress = memo(function ClientAdress({
     client.latitude && client.longitude ? { lat: client.latitude, lng: client.longitude } : null
   )
 
-  // Получаем код страны из названия или напрямую из кода
-  const normalizedCountry = CountriesHelper.getNameByCode(
-    isCreateNew ? lang : client.country.toLowerCase()
-  )
-  const [countryCode, setCountryCode] = useState(
-    isCreateNew
-      ? lang
-      : CountriesHelper.getCodeByName(client.country.toLowerCase()) || client.country.toLowerCase()
-  )
+  // Resolve country: client.country may be a code ('de') or a full name ('Germany')
+  const resolvedCountryCode =
+    CountriesHelper.getCountryByCode(client.country)
+      ? client.country.toLowerCase()
+      : CountriesHelper.getCodeByName(client.country) ?? ''
+  const normalizedCountry = CountriesHelper.getNameByCode(resolvedCountryCode)
+  const [countryCode, setCountryCode] = useState(resolvedCountryCode)
 
   const countriesList = useMemo(
     () =>
@@ -114,17 +110,16 @@ export const ClientAdress = memo(function ClientAdress({
       if (!filterText || filterText.length < 2) {
         return { items: [] }
       }
-
+      console.log('Fetching cities from API with query:', filterText, 'and country:', country, 'code:', countryCode)
       try {
-        const searchQuery = `${filterText} ${country}`
-
         const isGermany = countryCode?.toLowerCase() === 'de'
         const baseUrl = isGermany ? '/api/photon' : 'https://photon.komoot.io/api'
-        const url = `${baseUrl}?q=${encodeURIComponent(searchQuery)}&osm_tag=place&lang=de&limit=20`
+        const url = `${baseUrl}?q=${encodeURIComponent(filterText)}&osm_tag=place&lang=de&limit=50`
 
         const res = await fetch(url, { signal })
 
         if (!res.ok) {
+          console.error('API error:', res.status, await res.text())
           return { items: [] }
         }
 
@@ -153,7 +148,7 @@ export const ClientAdress = memo(function ClientAdress({
         }
 
         const uniqueLocations = Array.from(acc.values())
-
+        console.log('Unique cities after filtering:', uniqueLocations)
         if (filterText) {
           const searchLower = filterText.toLowerCase()
           uniqueLocations.sort((a, b) => {
@@ -174,7 +169,7 @@ export const ClientAdress = memo(function ClientAdress({
           return { items: [] }
         }
 
-        //  console.error('❌ Error loading cities:', error)
+        console.error('❌ Error loading cities:', error)
 
         return { items: [] }
       }
@@ -730,14 +725,13 @@ export const ClientAdress = memo(function ClientAdress({
                 <TextField isRequired name="city" type="text" isInvalid={isCityInvalid}>
                   <Label className="text-base font-normal ">{t('clients.address.city')}</Label>
                   <div className="relative w-full">
-                    <Input
+                    <input
                       value={cityQuery}
                       onChange={e => {
                         const val = e.target.value
                         setCityQuery(val)
 
                         const selected = listCities.items.find(c => c.name === val)
-
                         if (selected) {
                           handleCitySelection(selected.name)
                           setIsCityInvalid(false)
@@ -754,7 +748,7 @@ export const ClientAdress = memo(function ClientAdress({
                       placeholder={country ? t('clients.address.cityPlaceholder') : t('clients.address.citySelectCountryFirst')}
                       autoComplete="off"
                       list="city-options"
-                      className="text-lg md:text-base font-normal w-full pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0"
+                      className="input input--primary text-lg md:text-base font-normal w-full pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0"
                       disabled={!country}
                       required
                     />

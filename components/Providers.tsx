@@ -129,7 +129,7 @@ export function Providers({
           <PlatformProvider>
             <SidebarProvider initialExpanded={initialSidebarExpanded}>
               <HeroUIThemeWrapper>
-                <Toast.Container queue={toastQueue} placement="top">
+                <Toast.Provider queue={toastQueue} placement="top">
                   {({ toast: toastItem }) => {
                     const content = toastItem.content as ToastContentValue
                     return (
@@ -166,7 +166,7 @@ export function Providers({
                       </Toast>
                     )
                   }}
-                </Toast.Container>
+                </Toast.Provider>
                 <ServerLanguageContext.Provider value={lang}>
                   <DictionaryContext.Provider value={memoizedDictionary}>
                     <NotificationProvider>

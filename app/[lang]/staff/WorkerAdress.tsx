@@ -25,7 +25,6 @@ import dynamic from 'next/dynamic'
 import { useAsyncList } from '@react-stately/data'
 import { ChevronDown, List } from 'lucide-react'
 import { useTranslation } from '@/components/Providers'
-import { useLanguage } from '@/hooks/useLanguage'
 
 // Динамический импорт карты для избежания SSR проблем
 const AddressMap = dynamic(() => import('./AddressMap'), { ssr: false })
@@ -45,14 +44,13 @@ export const WorkerAdress = memo(function WorkerAdress({
   className,
 }: WorkerAdressProps) {
   const { t } = useTranslation()
-  const lang = useLanguage()
   const { updateWorker, addWorker } = useScheduling()
   const [addressData, setAddressData] = useState({
     street: worker.street || '',
     city: worker.city || '',
     zipCode: worker.postalCode || '',
     houseNumber: worker.houseNumber || '',
-    country: isCreateNew ? lang : worker.country || '',
+    country: worker.country || '',
     district: worker.district || '',
     latitude: worker.latitude || 0,
     longitude: worker.longitude || 0,
@@ -82,16 +80,13 @@ export const WorkerAdress = memo(function WorkerAdress({
     worker.latitude && worker.longitude ? { lat: worker.latitude, lng: worker.longitude } : null
   )
 
-  // Получаем код страны из названия или напрямую из кода
-  const defaultCountry = worker.country ? worker.country.toLowerCase() : 'en'
-  const normalizedCountry = CountriesHelper.getNameByCode(
-    isCreateNew ? lang : defaultCountry
-  )
-  const [countryCode, setCountryCode] = useState(
-    isCreateNew
-      ? lang
-      : CountriesHelper.getCodeByName(defaultCountry) || defaultCountry
-  )
+  // Resolve country: worker.country may be a code ('de') or a full name ('Germany')
+  const resolvedCountryCode =
+    CountriesHelper.getCountryByCode(worker.country ?? '')
+      ? (worker.country ?? '').toLowerCase()
+      : CountriesHelper.getCodeByName(worker.country ?? '') ?? ''
+  const normalizedCountry = CountriesHelper.getNameByCode(resolvedCountryCode)
+  const [countryCode, setCountryCode] = useState(resolvedCountryCode)
 
   const countriesList = useMemo(
     () =>
@@ -117,11 +112,9 @@ export const WorkerAdress = memo(function WorkerAdress({
       }
 
       try {
-        const searchQuery = `${filterText} ${country}`
-
         const isGermany = countryCode?.toLowerCase() === 'de'
         const baseUrl = isGermany ? '/api/photon' : 'https://photon.komoot.io/api'
-        const url = `${baseUrl}?q=${encodeURIComponent(searchQuery)}&osm_tag=place&lang=de&limit=20`
+        const url = `${baseUrl}?q=${encodeURIComponent(filterText)}&osm_tag=place&lang=de&limit=50`
 
         const res = await fetch(url, { signal })
 
@@ -339,12 +332,10 @@ export const WorkerAdress = memo(function WorkerAdress({
       isFetchingCities.current = true
 
       try {
-        const searchQuery = `${query} ${countryName}`
         const isGermany = countryCodeValue?.toLowerCase() === 'de'
         const baseUrl = isGermany ? '/api/photon' : 'https://photon.komoot.io/api'
 
-        // const url = `/api/photon?q=${encodeURIComponent(searchQuery)}&osm_tag=place&lang=de&limit=20`
-        const url = `${baseUrl}?q=${encodeURIComponent(searchQuery)}&osm_tag=place&lang=de&limit=20`
+        const url = `${baseUrl}?q=${encodeURIComponent(query)}&osm_tag=place&lang=de&limit=50`
 
         const res = await fetch(url, { signal })
 
@@ -680,7 +671,7 @@ export const WorkerAdress = memo(function WorkerAdress({
   }, [addressData.latitude, addressData.longitude, setAddressCoordinates])
 
   const handleReset = useCallback(() => {
-    const resetCountryName = CountriesHelper.getNameByCode(defaultCountry)
+    const resetCountryName = CountriesHelper.getNameByCode(resolvedCountryCode)
 
     setAddressData({
       street: worker.street || '',
@@ -731,7 +722,7 @@ export const WorkerAdress = memo(function WorkerAdress({
                 <TextField isRequired name="city" type="text" isInvalid={isCityInvalid}>
                   <Label className="text-base font-normal ">Stadt</Label>
                   <div className="relative w-full">
-                    <Input
+                    <input
                       value={cityQuery}
                       onChange={e => {
                         const val = e.target.value
@@ -755,7 +746,7 @@ export const WorkerAdress = memo(function WorkerAdress({
                       placeholder={country ? 'Type city name...' : 'Select country first'}
                       autoComplete="off"
                       list="city-options"
-                      className="text-lg md:text-base font-normal w-full pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0"
+                      className="input input--primary text-lg md:text-base font-normal w-full pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0"
                       disabled={!country}
                       required
                     />

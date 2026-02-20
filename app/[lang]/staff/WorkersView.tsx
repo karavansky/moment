@@ -38,7 +38,7 @@ export default function WorkersView() {
         email: '',
         phone: '',
         phone2: '',
-        country: '',
+        country: lang,
         street: '',
         postalCode: '',
         city: '',

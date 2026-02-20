@@ -7,7 +7,6 @@ import {
   Surface,
   TimeField,
   Label as HeroLabel,
-  DateInputGroup,
   Label,
 } from '@heroui/react'
 import { DateValue, parseDate, getLocalTimeZone, Time } from '@internationalized/date'
@@ -516,14 +515,14 @@ const DatePicker: React.FC<DatePickerProps> = ({
                       }}
                       hourCycle={24}
                     >
-                      <DateInputGroup>
-                        <DateInputGroup.Prefix>
+                      <TimeField.Group>
+                        <TimeField.Prefix>
                           <Clock className="size-4 text-muted" />
-                        </DateInputGroup.Prefix>
-                        <DateInputGroup.Input>
-                          {segment => <DateInputGroup.Segment segment={segment} />}
-                        </DateInputGroup.Input>
-                      </DateInputGroup>
+                        </TimeField.Prefix>
+                        <TimeField.Input>
+                          {segment => <TimeField.Segment segment={segment} />}
+                        </TimeField.Input>
+                      </TimeField.Group>
                     </TimeField>
                   </div>
                 )}

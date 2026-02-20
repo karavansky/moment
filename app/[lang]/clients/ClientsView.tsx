@@ -28,6 +28,7 @@ export default function ClientsView() {
   const onAddNewClient = () => {
     startTransition(() => {
       // Создаем пустой объект клиента с дефолтными значениями
+      
       const newClient: Client = {
         id: generateId(),
         firmaID: firmaID,
@@ -37,7 +38,7 @@ export default function ClientsView() {
         email: '',
         phone: '',
         phone2: '',
-        country: '',
+        country: lang,
         street: '',
         postalCode: '',
         city: '',

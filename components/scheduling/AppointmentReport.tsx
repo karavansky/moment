@@ -15,7 +15,8 @@ import {
 } from 'lucide-react'
 import { formatTime, isSameDate } from '@/lib/calendar-utils'
 import imageCompression from 'browser-image-compression'
-import { useTranslation, useServerLanguage } from '@/components/Providers'
+import { useTranslation } from '@/components/Providers'
+import { useLanguage } from '@/hooks/useLanguage'
 import ElapsedTimer from './ElapsedTimer'
 
 /** Haversine distance between two coordinates, returns meters */
@@ -65,7 +66,7 @@ export default function AppointmentReport({
     reports: allReports,
   } = useScheduling()
   const { t } = useTranslation()
-  const lang = useServerLanguage()
+  const lang = useLanguage()
 
   const appointment = React.useMemo(() => {
     if (!propAppointment) return null
@@ -158,7 +159,7 @@ export default function AppointmentReport({
           let address: string | undefined
           let distance: number | undefined
           try {
-            const r = await fetch(`/api/photon/reverse?lat=${lat}&lon=${lon}&lang=${lang || 'de'}`)
+            const r = await fetch(`/api/photon/reverse?lat=${lat}&lon=${lon}&lang=${lang}`)
             const d = await r.json()
             const p = d.features?.[0]?.properties
             if (p) {
