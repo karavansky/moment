@@ -43,11 +43,13 @@ export default function ElapsedTimer({ openedAt, closedAt, offsetSeconds = 0, cl
     const seconds = elapsed % 60
     display = `${hours > 0 ? `${format(hours)}:` : ''}${format(minutes)}:${format(seconds)}`
   } else {
-    // Static accumulated time: round up to nearest minute, show as "X Min" or "Xh X Min"
+    // Static accumulated time: round up to nearest minute, show as "X Min" / "1 Hour" / "1 Hour 5 Min"
     const totalMinutes = Math.ceil(elapsed / 60)
     const h = Math.floor(totalMinutes / 60)
     const m = totalMinutes % 60
-    display = h > 0 ? (m > 0 ? `${h}h ${m} Min` : `${h}h`) : `${totalMinutes} Min`
+    if (h > 0 && m > 0) display = `${h} Hour ${m} Min`
+    else if (h > 0)      display = `${h} Hour`
+    else                 display = `${totalMinutes} Min`
   }
 
   return (

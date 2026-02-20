@@ -301,6 +301,8 @@ export default function AppointmentReport({
       )
       setReportSessions(updatedSessions)
       setDirtyNotes(prev => ({ ...prev, [reportId]: false }))
+      const updatedSession = updatedSessions.find(s => s.id === reportId)
+      if (updatedSession) upsertReport(updatedSession)
       if (appointment) updateAppointment({ ...appointment, reports: updatedSessions }, true)
     } catch (err) {
       console.error('[handleSaveNotes] Error:', err)
