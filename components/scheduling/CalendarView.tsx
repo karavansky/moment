@@ -69,18 +69,6 @@ function CalendarView({
   // iPad определяется как isMobile, но если ширина >= 768px, используем десктопный layout
   const isMobileLayout = (isMobile && windowWidth < 768) || isCompact
 
-  console.log(
-    'Rendering CalendarView with isMobileLayout:',
-    isMobileLayout,
-    'isMobile:',
-    isMobile,
-    'isCompact:',
-    isCompact,
-    'isIpad:',
-    isIpad,
-    'width:',
-    windowWidth
-  )
   const MIN_WEEK_HEIGHT = isMobileLayout ? 60 : 104
   const HEADER_HEIGHT = isMobileLayout ? 38 : 52
   const DAY_HEADER_HEIGHT_DESKTOP = 30

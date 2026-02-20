@@ -251,7 +251,7 @@ function DayView({
           <Card.Content className="p-0">
             {/* День */}
             <div className="flex items-center justify-between ">
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 pl-2">
                 {isToday && !isPast && <Calendar className="w-4 h-4 " />}
                 <span
                   className={`
