@@ -10,8 +10,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'lat and lon required' }, { status: 400 })
   }
 
-  // Strip /api/ suffix if present — reverse geocoding is at /reverse on the same host
-  const baseUrl = (process.env.PHOTON_URL || 'https://photon.komoot.io').replace(/\/api\/?$/, '')
+  // For German: use local container if PHOTON_URL is configured (strips /api/ suffix)
+  // For other languages: always use public Komoot API (worldwide coverage)
+  let baseUrl: string
+  if (lang === 'de' && process.env.PHOTON_URL) {
+    baseUrl = process.env.PHOTON_URL.replace(/\/api\/?$/, '')
+  } else {
+    baseUrl = 'https://photon.komoot.io'
+  }
 
   const url = new URL(`${baseUrl}/reverse`)
   url.searchParams.set('lat', lat)

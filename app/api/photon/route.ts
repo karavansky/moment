@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Use official Photon API (Komoot) for planet coverage without high resource usage
+  
   //  const baseUrl = process.env.PHOTON_URL || 'http://photon:2322/api'
   const baseUrl = process.env.PHOTON_URL || 'https://photon.komoot.io/api/'
 
