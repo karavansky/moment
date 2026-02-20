@@ -1,12 +1,11 @@
 import React, { useState, useRef } from 'react'
-import { Modal, Button, Separator, TextArea, TextField, Label, Input } from '@heroui/react'
+import { Modal, Button, Separator, TextArea, TextField, Input } from '@heroui/react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { Appointment, Report, Photo } from '@/types/scheduling'
 import {
   Save,
   Plus,
   X,
-  Upload,
   FileText,
   Image as ImageIcon,
   Loader2,
@@ -16,9 +15,21 @@ import {
 } from 'lucide-react'
 import { formatTime, isSameDate } from '@/lib/calendar-utils'
 import imageCompression from 'browser-image-compression'
-import { generateId } from '@/lib/generate-id'
 import { useTranslation } from '@/components/Providers'
 import ElapsedTimer from './ElapsedTimer'
+
+/** Haversine distance between two coordinates, returns meters */
+function haversineMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371000
+  const dLat = ((lat2 - lat1) * Math.PI) / 180
+  const dLon = ((lon2 - lon1) * Math.PI) / 180
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) ** 2
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)))
+}
 
 interface PhotoUrlContext {
   firmaID: string
@@ -26,18 +37,9 @@ interface PhotoUrlContext {
   reportId: string
 }
 
-/**
- * Строит полный URL фото используя контекст
- * - Если URL уже содержит полный путь (/api/files/buckets/...) - возвращает как есть
- * - Если URL - просто имя файла - строит путь: /api/files/buckets/images/{firmaID}/{appointmentId}/{reportId}/{filename}
- */
 const getPhotoUrl = (url: string, context: PhotoUrlContext): string => {
   if (!url) return ''
-  // Новый формат: уже содержит полный путь
-  if (url.startsWith('/api/files/buckets/')) {
-    return url
-  }
-  // Строим полный путь из контекста
+  if (url.startsWith('/api/files/buckets/')) return url
   const { firmaID, appointmentId, reportId } = context
   return `/api/files/buckets/images/${firmaID}/${appointmentId}/${reportId}/${url}`
 }
@@ -53,8 +55,15 @@ export default function AppointmentReport({
   onClose,
   appointment: propAppointment,
 }: AppointmentReportProps) {
-  const { updateAppointment, user, openAppointment, closeAppointment, appointments } =
-    useScheduling()
+  const {
+    updateAppointment,
+    upsertReport,
+    user,
+    openAppointment,
+    closeAppointment,
+    appointments,
+    reports: allReports,
+  } = useScheduling()
   const { t } = useTranslation()
 
   const appointment = React.useMemo(() => {
@@ -62,13 +71,19 @@ export default function AppointmentReport({
     return appointments.find(a => a.id === propAppointment.id) || propAppointment
   }, [appointments, propAppointment])
 
-  const [reportNote, setReportNote] = useState('')
+  const [reportSessions, setReportSessions] = useState<Report[]>([])
+  const [currentReportId, setCurrentReportId] = useState<string>('')
   const [photos, setPhotos] = useState<Photo[]>([])
+  const [sessionNotes, setSessionNotes] = useState<Record<string, string>>({})
+  const [dirtyNotes, setDirtyNotes] = useState<Record<string, boolean>>({})
+  const [isSavingNotes, setIsSavingNotes] = useState<Record<string, boolean>>({})
+  const [isStarting, setIsStarting] = useState(false)
+  const [isFinishing, setIsFinishing] = useState(false)
+  const [isPausing, setIsPausing] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadStage, setUploadStage] = useState<
     'idle' | 'converting' | 'compressing' | 'uploading'
   >('idle')
-  const [reportId, setReportId] = useState<string>('')
   const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const photosContainerRef = useRef<HTMLDivElement>(null)
@@ -76,36 +91,42 @@ export default function AppointmentReport({
 
   const selectedPhoto = photos.find(p => p.id === selectedPhotoId)
 
-  // Reset state when opening for a new appointment
+  // Load sessions from context when modal opens
   React.useEffect(() => {
     if (isOpen && appointment) {
-      // If there are existing reports, maybe load the last one to edit?
-      // For now, let's assume we are adding a new report or just viewing.
-      // If we want to edit the LAST report:
-      const lastReport =
-        appointment.reports && appointment.reports.length > 0
-          ? appointment.reports[appointment.reports.length - 1]
-          : null
+      const sessions = allReports
+        .filter(r => r.appointmentId === appointment.id)
+        .sort((a, b) => {
+          const aTime = a.openAt ? new Date(a.openAt).getTime() : 0
+          const bTime = b.openAt ? new Date(b.openAt).getTime() : 0
+          return aTime - bTime
+        })
+      setReportSessions(sessions)
 
-      if (lastReport) {
-        setReportNote(lastReport.notes || '')
-        setPhotos(lastReport.photos || [])
-        setReportId(lastReport.id)
-      } else {
-        setReportNote('')
-        setPhotos([])
-        // Генерируем новый reportId для нового отчета
-        setReportId(generateId())
-      }
+      // Find active session (opened but not closed)
+      const active = [...sessions].reverse().find(s => s.openAt && !s.closeAt)
+      setCurrentReportId(active?.id || '')
+      setPhotos(active?.photos || [])
+
+      const notes: Record<string, string> = {}
+      sessions.forEach(s => {
+        notes[s.id] = s.notes || ''
+      })
+      setSessionNotes(notes)
+      setDirtyNotes({})
+      setIsSavingNotes({})
     }
-  }, [isOpen, appointment?.id]) // Используем appointment.id для точного отслеживания смены appointment
+  }, [isOpen, appointment?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Сбрасываем state при закрытии модала
+  // Reset when modal closes
   React.useEffect(() => {
     if (!isOpen) {
-      setReportNote('')
+      setReportSessions([])
+      setCurrentReportId('')
       setPhotos([])
-      setReportId('')
+      setSessionNotes({})
+      setDirtyNotes({})
+      setIsSavingNotes({})
     }
   }, [isOpen])
 
@@ -123,6 +144,171 @@ export default function AppointmentReport({
     }
   }, [photos])
 
+  async function getGeoData(
+    clientLat?: number,
+    clientLon?: number
+  ): Promise<{ lat?: number; lon?: number; address?: string; distance?: number }> {
+    return new Promise(resolve => {
+      if (!navigator.geolocation) return resolve({})
+      navigator.geolocation.getCurrentPosition(
+        async pos => {
+          const lat = pos.coords.latitude
+          const lon = pos.coords.longitude
+          let address: string | undefined
+          let distance: number | undefined
+          try {
+            const r = await fetch(`/api/photon/reverse?lat=${lat}&lon=${lon}&lang=de`)
+            const d = await r.json()
+            const p = d.features?.[0]?.properties
+            if (p) {
+              address = [p.street, p.housenumber, p.postcode, p.city]
+                .filter(Boolean)
+                .join(' ')
+            }
+          } catch {}
+          if (clientLat && clientLon) {
+            distance = haversineMeters(lat, lon, clientLat, clientLon)
+          }
+          resolve({ lat, lon, address, distance })
+        },
+        () => resolve({}),
+        { enableHighAccuracy: true, timeout: 5000 }
+      )
+    })
+  }
+
+  const handleStart = async () => {
+    if (!appointment || !user) return
+    setIsStarting(true)
+    try {
+      const geo = await getGeoData(
+        appointment.client?.latitude,
+        appointment.client?.longitude
+      )
+      const openAt = new Date()
+      const res = await fetch('/api/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          appointmentId: appointment.id,
+          workerId: user.myWorkerID || appointment.workerId,
+          firmaID: user.firmaID,
+          openAt: openAt.toISOString(),
+          openLatitude: geo.lat,
+          openLongitude: geo.lon,
+          openAddress: geo.address,
+          openDistanceToAppointment: geo.distance,
+        }),
+      })
+      if (!res.ok) throw new Error('Failed to create report session')
+      const { report } = await res.json()
+
+      const newSession: Report = {
+        id: report.reportID,
+        firmaID: report.firmaID,
+        workerId: report.workerId,
+        appointmentId: report.appointmentId,
+        notes: '',
+        date: report.date || openAt,
+        photos: [],
+        openAt: report.openAt,
+        openLatitude: report.openLatitude,
+        openLongitude: report.openLongitude,
+        openAddress: report.openAddress,
+        openDistanceToAppointment: report.openDistanceToAppointment,
+      }
+
+      const updatedSessions = [...reportSessions, newSession]
+      setReportSessions(updatedSessions)
+      setCurrentReportId(newSession.id)
+      setPhotos([])
+      setSessionNotes(prev => ({ ...prev, [newSession.id]: '' }))
+      upsertReport(newSession)
+
+      openAppointment(appointment.id, user.myWorkerID!)
+      updateAppointment({ ...appointment, isOpen: true, openedAt: openAt, closedAt: undefined, reports: updatedSessions }, true)
+    } catch (err) {
+      console.error('[handleStart] Error:', err)
+    } finally {
+      setIsStarting(false)
+    }
+  }
+
+  const handleFinish = async () => {
+    if (!appointment || !currentReportId) return
+    setIsFinishing(true)
+    try {
+      const geo = await getGeoData(
+        appointment.client?.latitude,
+        appointment.client?.longitude
+      )
+      const closeAt = new Date()
+      await fetch(`/api/reports/${currentReportId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          closeAt: closeAt.toISOString(),
+          closeLatitude: geo.lat,
+          closeLongitude: geo.lon,
+          closeAddress: geo.address,
+          closeDistanceToAppointment: geo.distance,
+        }),
+      })
+
+      const updatedSessions = reportSessions.map(s =>
+        s.id === currentReportId
+          ? {
+              ...s,
+              closeAt,
+              closeLatitude: geo.lat,
+              closeLongitude: geo.lon,
+              closeAddress: geo.address,
+              closeDistanceToAppointment: geo.distance,
+            }
+          : s
+      )
+      setReportSessions(updatedSessions)
+      setCurrentReportId('')
+      const updatedSession = updatedSessions.find(s => s.id === currentReportId)
+      if (updatedSession) upsertReport(updatedSession)
+
+      closeAppointment(appointment.id)
+      updateAppointment({ ...appointment, isOpen: false, closedAt: closeAt, reports: updatedSessions }, true)
+    } catch (err) {
+      console.error('[handleFinish] Error:', err)
+    } finally {
+      setIsFinishing(false)
+    }
+  }
+
+  const handlePause = () => {
+    if (!appointment) return
+    setIsPausing(true)
+    closeAppointment(appointment.id)
+    setIsPausing(false)
+  }
+
+  const handleSaveNotes = async (reportId: string) => {
+    setIsSavingNotes(prev => ({ ...prev, [reportId]: true }))
+    try {
+      await fetch(`/api/reports/${reportId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: sessionNotes[reportId] }),
+      })
+      const updatedSessions = reportSessions.map(s =>
+        s.id === reportId ? { ...s, notes: sessionNotes[reportId] } : s
+      )
+      setReportSessions(updatedSessions)
+      setDirtyNotes(prev => ({ ...prev, [reportId]: false }))
+      if (appointment) updateAppointment({ ...appointment, reports: updatedSessions }, true)
+    } catch (err) {
+      console.error('[handleSaveNotes] Error:', err)
+    } finally {
+      setIsSavingNotes(prev => ({ ...prev, [reportId]: false }))
+    }
+  }
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return
 
@@ -132,7 +318,6 @@ export default function AppointmentReport({
     try {
       let fileToCompress: File = originalFile
 
-      // Check if file is HEIC/HEIF format (Apple) and convert to JPEG
       const isHeic =
         originalFile.type === 'image/heic' ||
         originalFile.type === 'image/heif' ||
@@ -141,24 +326,16 @@ export default function AppointmentReport({
 
       if (isHeic) {
         setUploadStage('converting')
-        console.log('Converting HEIC to JPEG via server...')
-
-        // Server-side conversion (more reliable than browser-based heic2any)
         const heicFormData = new FormData()
         heicFormData.append('file', originalFile)
-
         const convertResponse = await fetch('/api/convert-heic', {
           method: 'POST',
           body: heicFormData,
         })
-
         const convertData = await convertResponse.json()
-
         if (!convertResponse.ok) {
           throw new Error(convertData.details || convertData.error || 'HEIC conversion failed')
         }
-
-        // Convert base64 back to File
         const byteCharacters = atob(convertData.data)
         const byteNumbers = new Array(byteCharacters.length)
         for (let i = 0; i < byteCharacters.length; i++) {
@@ -166,154 +343,148 @@ export default function AppointmentReport({
         }
         const byteArray = new Uint8Array(byteNumbers)
         const blob = new Blob([byteArray], { type: 'image/jpeg' })
-
-        fileToCompress = new File([blob], convertData.originalName, {
-          type: 'image/jpeg',
-        })
-        console.log(`Converted HEIC to JPEG: ${(fileToCompress.size / 1024 / 1024).toFixed(2)} MB`)
+        fileToCompress = new File([blob], convertData.originalName, { type: 'image/jpeg' })
       }
 
       setUploadStage('compressing')
-      // Compress image before upload
       const compressionOptions = {
-        maxSizeMB: 1, // Max file size in MB
-        maxWidthOrHeight: 1920, // Max dimension (maintains aspect ratio)
-        useWebWorker: true, // Use web worker for better performance
-        fileType: 'image/jpeg', // Convert to JPEG for better compression
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+        fileType: 'image/jpeg',
       }
-
-      console.log(
-        `Original file: ${originalFile.name}, size: ${(originalFile.size / 1024 / 1024).toFixed(2)} MB`
-      )
-
       const compressedFile = await imageCompression(fileToCompress, compressionOptions)
-
-      console.log(
-        `Compressed file: ${compressedFile.name}, size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`
-      )
 
       setUploadStage('uploading')
 
-      if (!user?.firmaID || !appointment?.id || !reportId) {
-        throw new Error('Missing required data: firmaID, appointmentId, or reportId')
+      // Auto-create session if none is active
+      let activeReportId = currentReportId
+      if (!activeReportId) {
+        if (!user?.firmaID || !appointment?.id) throw new Error('Missing required data')
+        const openAt = new Date()
+        const createRes = await fetch('/api/reports', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            appointmentId: appointment.id,
+            workerId: user.myWorkerID || appointment.workerId,
+            firmaID: user.firmaID,
+            openAt: openAt.toISOString(),
+          }),
+        })
+        if (!createRes.ok) throw new Error('Failed to auto-create report session')
+        const { report } = await createRes.json()
+        const newSession: Report = {
+          id: report.reportID,
+          firmaID: report.firmaID,
+          workerId: report.workerId,
+          appointmentId: report.appointmentId,
+          notes: '',
+          date: report.date || openAt,
+          photos: [],
+          openAt: report.openAt,
+        }
+        activeReportId = newSession.id
+        setCurrentReportId(activeReportId)
+        setReportSessions(prev => [...prev, newSession])
+        setSessionNotes(prev => ({ ...prev, [newSession.id]: '' }))
       }
 
+      if (!user?.firmaID || !appointment?.id) throw new Error('Missing required data')
+
       const formData = new FormData()
-      // Keep original filename but ensure .jpeg extension for compressed file
       const fileName = originalFile.name.replace(/\.[^.]+$/, '.jpeg')
       formData.append('file', compressedFile, fileName)
       formData.append('firmaID', user.firmaID)
       formData.append('appointmentId', appointment.id)
-      formData.append('reportId', reportId)
+      formData.append('reportId', activeReportId)
 
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       })
-
       const data = await response.json()
+      if (!response.ok) throw new Error(data.details || data.error || 'Upload failed')
 
-      if (!response.ok) {
-        console.error('Upload response error:', data)
-        throw new Error(data.details || data.error || 'Upload failed')
-      }
-      // data.url is the public URL from the upload route
-      // data.photoId is the generated photo ID
-      const newPhoto: Photo = {
+      // Save photo to DB + move to permanent storage
+      const saveRes = await fetch('/api/reports/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reportId: activeReportId,
+          photo: { id: data.photoId, url: data.url, note: '' },
+        }),
+      })
+      const saveData = await saveRes.json()
+      const savedPhoto: Photo = {
         id: data.photoId,
-        url: data.url,
-        note: '', // Description for the photo
+        url: saveData.photo?.url || data.url,
+        note: '',
       }
 
-      setPhotos(prev => [...prev, newPhoto])
+      setPhotos(prev => [...prev, savedPhoto])
       scrollOnNextUpdate.current = true
+
+      setReportSessions(prev => {
+        const updated = prev.map(s =>
+          s.id === activeReportId
+            ? { ...s, photos: [...(s.photos || []), savedPhoto] }
+            : s
+        )
+        if (appointment) updateAppointment({ ...appointment, reports: updated }, true)
+        return updated
+      })
     } catch (error) {
-      // Enhanced error logging for debugging
       console.error('Error uploading file:', error)
-      console.error('Error type:', typeof error)
-      console.error('Error constructor:', error?.constructor?.name)
-      console.error('Error JSON:', JSON.stringify(error, Object.getOwnPropertyNames(error || {})))
-      if (error instanceof Error) {
-        console.error('Error name:', error.name)
-        console.error('Error message:', error.message)
-        console.error('Error stack:', error.stack)
-      } else if (error && typeof error === 'object') {
-        console.error('Error keys:', Object.keys(error))
-        console.error('Error own props:', Object.getOwnPropertyNames(error))
-      }
       const errorMessage =
         error instanceof Error ? error.message : t('appointment.report.unknownError')
       alert(`${t('appointment.report.uploadError')} ${errorMessage}`)
     } finally {
       setIsUploading(false)
       setUploadStage('idle')
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
   const handleRemovePhoto = (id: string) => {
     setPhotos(prev => prev.filter(p => p.id !== id))
+    setReportSessions(prev => {
+      const updated = prev.map(s =>
+        s.id === currentReportId
+          ? { ...s, photos: (s.photos || []).filter(p => p.id !== id) }
+          : s
+      )
+      if (appointment) updateAppointment({ ...appointment, reports: updated }, true)
+      return updated
+    })
+    fetch(`/api/reports/photos/${id}`, { method: 'DELETE' }).catch(err =>
+      console.error('[handleRemovePhoto] Error:', err)
+    )
   }
 
   const handlePhotoNoteChange = (id: string, note: string) => {
     setPhotos(prev => prev.map(p => (p.id === id ? { ...p, note } : p)))
   }
 
-  const handleSave = async () => {
-    if (!appointment || !user) return
-
-    // Create a new report object
-    const existingReports = appointment.reports || []
-
-    // Base report data (with potentially temp URLs)
-    const tempReportData: Report = {
-      id: reportId,
-      firmaID: user.firmaID,
-      workerId: appointment.workerId,
-      appointmentId: appointment.id,
-      date: new Date(),
-      notes: reportNote,
-      photos: photos,
-    }
-
-    try {
-      // 1. Call API to move files and finalize report
-      const response = await fetch('/api/reports/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          appointmentId: appointment.id,
-          report: tempReportData,
-        }),
-      })
-
-      if (!response.ok) throw new Error('Failed to save report')
-
-      const { report: savedReport } = await response.json()
-      console.log('Saved report:', savedReport)
-
-      // 2. Update local state with the saved report (containing permanent URLs)
-      let updatedReports = [...existingReports]
-      if (existingReports.length > 0) {
-        updatedReports[updatedReports.length - 1] = savedReport
-      } else {
-        updatedReports.push(savedReport)
-      }
-
-      const updatedAppointment: Appointment = {
-        ...appointment,
-        reports: updatedReports,
-      }
-
-      updateAppointment(updatedAppointment)
-      onClose()
-    } catch (error) {
-      console.error('Error saving report:', error)
-      alert(t('appointment.report.saveError'))
-    }
+  const formatSessionDuration = (openAt?: Date, closeAt?: Date) => {
+    if (!openAt) return ''
+    const diffSeconds = Math.floor(
+      ((closeAt ? new Date(closeAt) : new Date()).getTime() - new Date(openAt).getTime()) / 1000
+    )
+    // Round up; for closed sessions guarantee at least 1 min even if timestamps are equal
+    const mins = closeAt
+      ? Math.max(1, Math.ceil(diffSeconds / 60))
+      : Math.ceil(diffSeconds / 60)
+    if (mins < 60) return `${mins} ${t('appointment.report.min')}`
+    const h = Math.floor(mins / 60)
+    const m = mins % 60
+    return m === 0
+      ? `${h} ${t('appointment.report.hour')}`
+      : `${h} ${t('appointment.report.hour')} ${m} ${t('appointment.report.min')}`
   }
+
+  const formatDistance = (meters: number) =>
+    meters < 1000 ? `${meters} m` : `${(meters / 1000).toFixed(1)} km`
 
   if (!appointment) return null
 
@@ -329,62 +500,72 @@ export default function AppointmentReport({
             if (!open) onClose()
           }}
           variant="blur"
+         
         >
-          <Modal.Container className="max-w-2xl">
+          <Modal.Container className="max-w-2xl"  size="lg">
             <Modal.Dialog className="max-h-[90vh] overflow-y-auto">
               <Modal.CloseTrigger />
 
               <Modal.Header>
                 <div className="flex items-center justify-between w-full">
                   <h2 className="text-xl font-bold">{t('appointment.report.title')}</h2>
-                  {appointment.openedAt && (
-                    <ElapsedTimer
-                      openedAt={appointment.openedAt}
-                      closedAt={appointment.closedAt}
-                      className="text-base px-6"
-                    />
-                  )}
+                  {(() => {
+                    const closedSessionsSeconds = reportSessions
+                      .filter(s => s.openAt && s.closeAt)
+                      .reduce((acc, s) => acc + Math.floor(
+                        (new Date(s.closeAt!).getTime() - new Date(s.openAt!).getTime()) / 1000
+                      ), 0)
+                    const activeSession = currentReportId
+                      ? reportSessions.find(s => s.id === currentReportId && s.openAt && !s.closeAt)
+                      : undefined
+                    const timerOpenedAt = activeSession?.openAt ? new Date(activeSession.openAt) : undefined
+                    const showTimer = closedSessionsSeconds > 0 || !!timerOpenedAt
+                    return showTimer ? (
+                      <ElapsedTimer
+                        openedAt={timerOpenedAt}
+                        offsetSeconds={closedSessionsSeconds}
+                        className="text-base px-6"
+                      />
+                    ) : null
+                  })()}
                 </div>
                 {user?.status === 1 && isSameDate(appointment.date, new Date()) ? (
                   <div className="flex items-center gap-2 w-full">
                     <Button
                       size="sm"
                       className="gap-2 bg-green-500! text-white! hover:bg-green-600!"
-                      isDisabled={appointment?.isOpen}
-                      onPress={() => {
-                        if (appointment && user?.myWorkerID) {
-                          openAppointment(appointment.id, user.myWorkerID)
-                        }
-                      }}
+                      isDisabled={appointment?.isOpen || isStarting}
+                      onPress={handleStart}
                     >
-                      <Play className="w-4 h-4" />
+                      {isStarting
+                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : <Play className="w-4 h-4" />
+                      }
                       {t('appointment.edit.start')}
                     </Button>
                     <Button
                       size="sm"
                       className="gap-2 bg-yellow-500! text-white! hover:bg-yellow-600!"
-                      isDisabled={!appointment?.isOpen}
-                      onPress={() => {
-                        if (appointment) {
-                          closeAppointment(appointment.id)
-                        }
-                      }}
+                      isDisabled={!appointment?.isOpen || isPausing}
+                      onPress={handlePause}
                     >
-                      <Pause className="w-4 h-4" />
+                      {isPausing
+                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : <Pause className="w-4 h-4" />
+                      }
                       {t('appointment.edit.pause')}
                     </Button>
                     <Button
                       variant="danger"
                       size="sm"
                       className="gap-2 ml-auto"
-                      isDisabled={!appointment?.isOpen}
-                      onPress={() => {
-                        if (appointment) {
-                          closeAppointment(appointment.id)
-                        }
-                      }}
+                      isDisabled={!appointment?.isOpen || isFinishing}
+                      onPress={handleFinish}
                     >
-                      <Square className="w-4 h-4" />
+                      {isFinishing
+                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : <Square className="w-4 h-4" />
+                      }
                       {t('appointment.edit.finish')}
                     </Button>
                   </div>
@@ -455,15 +636,88 @@ export default function AppointmentReport({
                     <h3 className="text-lg font-semibold">{t('appointment.report.report')}</h3>
                   </div>
 
-                  <TextField className="mb-0">
-                    <TextArea
-                      placeholder={t('appointment.report.notesPlaceholder')}
-                      rows={3}
-                      value={reportNote}
-                      onChange={e => setReportNote(e.target.value)}
-                    />
-                  </TextField>
+                  {/* Report Sessions List */}
+                  <div className="max-h-56 overflow-y-auto space-y-2 pr-1">
+                    {reportSessions.length === 0 && (
+                      <p className="text-sm text-default-400 italic">
+                        {t('appointment.report.noSessions')}
+                      </p>
+                    )}
+                    {[...reportSessions]
+                      .sort((a, b) =>
+                        (b.openAt ? new Date(b.openAt).getTime() : 0) -
+                        (a.openAt ? new Date(a.openAt).getTime() : 0)
+                      )
+                      .map(session => (
+                      <div key={session.id} className="p-3 bg-default-50 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          {/* Time & geo column */}
+                          <div className="shrink-0 text-sm min-w-[130px]">
+                            <p className="font-medium">
+                              {session.openAt && formatTime(new Date(session.openAt))}
+                              {session.closeAt && ` → ${formatTime(new Date(session.closeAt))}`}
+                            </p>
+                            <p className="text-xs text-default-400">
+                              {formatSessionDuration(
+                                session.openAt ? new Date(session.openAt) : undefined,
+                                session.closeAt ? new Date(session.closeAt) : undefined
+                              )}
+                            </p>
+                            {session.openAddress && (
+                              <p className="text-xs text-default-500 mt-0.5">
+                                ▶ {session.openAddress}
+                              </p>
+                            )}
+                            {session.openDistanceToAppointment != null && (
+                              <p className="text-xs text-default-400">
+                                ▶ {formatDistance(session.openDistanceToAppointment)}
+                              </p>
+                            )}
+                            {session.closeAddress && (
+                              <p className="text-xs text-default-500">■ {session.closeAddress}</p>
+                            )}
+                            {session.closeDistanceToAppointment != null && (
+                              <p className="text-xs text-default-400">
+                                ■ {formatDistance(session.closeDistanceToAppointment)}
+                              </p>
+                            )}
+                          </div>
+                          {/* Notes column */}
+                          <div className="flex-1 flex items-start gap-1">
+                            <TextField className="flex-1 mb-0">
+                              <TextArea
+                                rows={2}
+                                placeholder={t('appointment.report.notesPlaceholder')}
+                                value={sessionNotes[session.id] || ''}
+                                onChange={e => {
+                                  setSessionNotes(prev => ({
+                                    ...prev,
+                                    [session.id]: e.target.value,
+                                  }))
+                                  setDirtyNotes(prev => ({ ...prev, [session.id]: true }))
+                                }}
+                              />
+                            </TextField>
+                            {dirtyNotes[session.id] && (
+                              <button
+                                onClick={() => handleSaveNotes(session.id)}
+                                disabled={isSavingNotes[session.id]}
+                                className="mt-1 p-1 text-primary hover:text-primary/80 disabled:opacity-50"
+                              >
+                                {isSavingNotes[session.id] ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <Save className="w-4 h-4" />
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
 
+                  {/* Photos Section */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -510,7 +764,7 @@ export default function AppointmentReport({
                             src={getPhotoUrl(photo.url, {
                               firmaID: user?.firmaID || '',
                               appointmentId: appointment?.id || '',
-                              reportId: reportId,
+                              reportId: currentReportId,
                             })}
                             alt="Report photo"
                             className="w-full h-full object-cover cursor-pointer"
@@ -518,7 +772,7 @@ export default function AppointmentReport({
                           />
                           <button
                             onClick={() => handleRemovePhoto(photo.id)}
-                            className="absolute top-1  right-1 z-20 bg-black/50 text-white p-1 rounded-full"
+                            className="absolute top-1 right-1 z-20 bg-black/50 text-white p-1 rounded-full"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -536,16 +790,6 @@ export default function AppointmentReport({
                   </div>
                 </div>
               </Modal.Body>
-
-              <Modal.Footer>
-                <Button variant="ghost" onPress={onClose}>
-                  {t('appointment.report.cancel')}
-                </Button>
-                <Button variant="primary" onPress={handleSave} className="gap-2">
-                  <Save className="w-4 h-4" />
-                  {t('appointment.report.save')}
-                </Button>
-              </Modal.Footer>
             </Modal.Dialog>
           </Modal.Container>
         </Modal.Backdrop>
@@ -563,14 +807,13 @@ export default function AppointmentReport({
           <Modal.Container size="cover">
             <Modal.Dialog className="h-full flex flex-col bg-black/90 p-0">
               <Modal.CloseTrigger className="z-50" />
-
               {selectedPhoto && (
                 <Modal.Body className="relative flex-1 flex items-center justify-center bg-default-100 rounded-lg overflow-hidden group min-h-0">
                   <img
                     src={getPhotoUrl(selectedPhoto.url, {
                       firmaID: user?.firmaID || '',
                       appointmentId: appointment?.id || '',
-                      reportId: reportId,
+                      reportId: currentReportId,
                     })}
                     alt="Report photo"
                     className="max-w-full max-h-full object-contain rounded-lg"
@@ -585,16 +828,6 @@ export default function AppointmentReport({
                   </div>
                 </Modal.Body>
               )}
-
-              <Modal.Footer>
-                <Button variant="danger" onPress={onClose} size="sm">
-                  {t('appointment.report.cancel')}
-                </Button>
-                <Button variant="primary" onPress={handleSave} className="gap-2">
-                  <Save className="w-4 h-4" />
-                  {t('appointment.report.save')}
-                </Button>
-              </Modal.Footer>
             </Modal.Dialog>
           </Modal.Container>
         </Modal.Backdrop>
@@ -602,28 +835,3 @@ export default function AppointmentReport({
     </>
   )
 }
-
-/*
-
-<Card isFooterBlurred className="w-full h-[200px] col-span-12 sm:col-span-7">
-
-        <Image
-          removeWrapper
-          alt="Background"
-          className="z-0 w-full h-full object-cover"
-          src={getPhotoUrl(photo.url, {
-                              firmaID: user?.firmaID || '',
-                              appointmentId: appointment?.id || '',
-                              reportId: reportId,
-                            })}
-        />
-        <Card.Footer className="absolute bg-black/40 bottom-0 z-10 border-t-1 border-default-600 dark:border-default-100">
-                        <Input
-                          placeholder={t('appointment.report.descriptionPlaceholder')}
-                          value={photo.note}
-                          onChange={(e) => handlePhotoNoteChange(photo.id, e.target.value)}
-                        />
-        </Card.Footer>
-      </Card>
-
-      */

@@ -489,7 +489,15 @@
         "Sabato",
         "Domenica"
       ],
-      "weekdaysShort": ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"],
+      "weekdaysShort": [
+        "Lun",
+        "Mar",
+        "Mer",
+        "Gio",
+        "Ven",
+        "Sab",
+        "Dom"
+      ],
       "months": [
         "Gennaio",
         "Febbraio",
@@ -665,7 +673,9 @@
       "save": "Salva",
       "unknownError": "Errore sconosciuto",
       "uploadError": "Errore durante il caricamento:",
-      "saveError": "Errore durante il salvataggio del report"
+      "saveError": "Errore durante il salvataggio del report",
+      "hour": "ora",
+      "noSessions": "Nessuna sessione"
     }
   },
   "sla": {

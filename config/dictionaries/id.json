@@ -480,8 +480,24 @@
     "noAppointmentsHint": "Mulai dengan membuat janji temu baru",
     "calendar": {
       "noAppointmentsToDisplay": "Tidak ada janji temu untuk ditampilkan",
-      "weekdaysFull": ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"],
-      "weekdaysShort": ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"],
+      "weekdaysFull": [
+        "Senin",
+        "Selasa",
+        "Rabu",
+        "Kamis",
+        "Jumat",
+        "Sabtu",
+        "Minggu"
+      ],
+      "weekdaysShort": [
+        "Sen",
+        "Sel",
+        "Rab",
+        "Kam",
+        "Jum",
+        "Sab",
+        "Min"
+      ],
       "months": [
         "Januari",
         "Februari",
@@ -657,7 +673,9 @@
       "save": "Simpan",
       "unknownError": "Kesalahan tidak diketahui",
       "uploadError": "Kesalahan saat mengunggah:",
-      "saveError": "Kesalahan saat menyimpan laporan"
+      "saveError": "Kesalahan saat menyimpan laporan",
+      "hour": "jam",
+      "noSessions": "Tidak ada sesi"
     }
   },
   "sla": {

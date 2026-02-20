@@ -128,6 +128,16 @@ export interface Report {
   appointment?: Appointment
   notes?: string
   date: Date
+  openAt?: Date
+  closeAt?: Date
+  openLatitude?: number
+  openLongitude?: number
+  openAddress?: string
+  openDistanceToAppointment?: number
+  closeLatitude?: number
+  closeLongitude?: number
+  closeAddress?: string
+  closeDistanceToAppointment?: number
 }
 
 // Пользователь

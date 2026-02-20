@@ -480,8 +480,24 @@
     "noAppointmentsHint": "Comience creando una nueva cita",
     "calendar": {
       "noAppointmentsToDisplay": "No hay citas para mostrar",
-      "weekdaysFull": ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"],
-      "weekdaysShort": ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"],
+      "weekdaysFull": [
+        "Lunes",
+        "Martes",
+        "Miércoles",
+        "Jueves",
+        "Viernes",
+        "Sábado",
+        "Domingo"
+      ],
+      "weekdaysShort": [
+        "Lun",
+        "Mar",
+        "Mié",
+        "Jue",
+        "Vie",
+        "Sáb",
+        "Dom"
+      ],
       "months": [
         "Enero",
         "Febrero",
@@ -657,7 +673,9 @@
       "save": "Guardar",
       "unknownError": "Error desconocido",
       "uploadError": "Error al subir:",
-      "saveError": "Error al guardar el informe"
+      "saveError": "Error al guardar el informe",
+      "hour": "hora",
+      "noSessions": "Sin sesiones"
     }
   },
   "sla": {

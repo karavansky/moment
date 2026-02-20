@@ -1,70 +1,51 @@
-import { NextResponse } from 'next/server';
-import { CopyObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { s3Client } from '@/lib/s3';
-import { auth } from '@/lib/auth';
+import { NextResponse } from 'next/server'
+import { CopyObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
+import { s3Client } from '@/lib/s3'
+import { auth } from '@/lib/auth'
+import { addPhotoToReport } from '@/lib/reports'
 
 export async function POST(request: Request) {
   try {
-    const session = await auth();
+    const session = await auth()
     if (!session) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return new NextResponse('Unauthorized', { status: 401 })
     }
 
-    const { appointmentId, report } = await request.json();
+    const { reportId, photo } = await request.json()
+    // photo: { id: string, url: string, note: string }
 
-    // Process photos: move temp files to permanent storage
-    const processedPhotos = await Promise.all(report.photos.map(async (photo: any) => {
-      // Check if URL indicates a temporary file
-      // URL format: /api/files/buckets/temp/{firmaID}/{appointmentId}/{reportId}/{photoId}.{ext}
-      if (photo.url && photo.url.includes('/buckets/temp/')) {
-        // Extract the key (path after bucket name)
-        // e.g., "firmaID/appointmentId/reportId/photoId.jpeg"
-        const key = photo.url.split('/buckets/temp/')[1];
+    let finalUrl = photo.url
 
-        if (!key) {
-          console.error('Could not extract key from URL:', photo.url);
-          return photo;
-        }
+    if (photo.url?.includes('/buckets/temp/')) {
+      const key = photo.url.split('/buckets/temp/')[1]
 
-        console.log(`Moving file ${key} from temp to images...`);
-
+      if (!key) {
+        console.error('[reports/save] Could not extract key from URL:', photo.url)
+      } else {
+        console.log(`[reports/save] Moving file ${key} from temp to images...`)
         try {
-          // 1. Copy to permanent bucket (preserving the full path structure)
           await s3Client.send(new CopyObjectCommand({
-            Bucket: "images",
+            Bucket: 'images',
             Key: key,
             CopySource: `/temp/${key}`,
-          }));
-
-          // 2. Delete from temp bucket
+          }))
           await s3Client.send(new DeleteObjectCommand({
-            Bucket: "temp",
+            Bucket: 'temp',
             Key: key,
-          }));
-
-          // 3. Update URL (replace temp with images in the path)
-          return {
-            ...photo,
-            url: photo.url.replace('/buckets/temp/', '/buckets/images/')
-          };
+          }))
+          finalUrl = photo.url.replace('/buckets/temp/', '/buckets/images/')
         } catch (err) {
-          console.error(`Failed to move file ${key}:`, err);
-          // If move fails, keep original URL (better than losing data, though it will be deleted by cleaner later)
-          return photo;
+          console.error(`[reports/save] Failed to move file ${key}:`, err)
+          // Keep temp URL if move fails — temp cleaner will remove it later
         }
       }
-      return photo;
-    }));
+    }
 
-    const updatedReport = {
-      ...report,
-      photos: processedPhotos
-    };
+    await addPhotoToReport(reportId, photo.id, { url: finalUrl, note: photo.note || '' })
 
-    return NextResponse.json({ success: true, report: updatedReport });
-
+    return NextResponse.json({ photo: { ...photo, url: finalUrl } })
   } catch (error) {
-    console.error("Error saving report:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    console.error('[reports/save] Error:', error)
+    return new NextResponse('Internal Server Error', { status: 500 })
   }
 }

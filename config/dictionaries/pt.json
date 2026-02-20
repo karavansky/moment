@@ -489,7 +489,15 @@
         "Sábado",
         "Domingo"
       ],
-      "weekdaysShort": ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
+      "weekdaysShort": [
+        "Seg",
+        "Ter",
+        "Qua",
+        "Qui",
+        "Sex",
+        "Sáb",
+        "Dom"
+      ],
       "months": [
         "Janeiro",
         "Fevereiro",
@@ -665,7 +673,9 @@
       "save": "Guardar",
       "unknownError": "Erro desconhecido",
       "uploadError": "Erro ao carregar:",
-      "saveError": "Erro ao guardar o relatório"
+      "saveError": "Erro ao guardar o relatório",
+      "hour": "hora",
+      "noSessions": "Sem sessões"
     }
   },
   "sla": {

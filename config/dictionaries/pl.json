@@ -489,7 +489,15 @@
         "Sobota",
         "Niedziela"
       ],
-      "weekdaysShort": ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"],
+      "weekdaysShort": [
+        "Pn",
+        "Wt",
+        "Śr",
+        "Cz",
+        "Pt",
+        "So",
+        "Nd"
+      ],
       "months": [
         "Styczeń",
         "Luty",
@@ -665,7 +673,9 @@
       "save": "Zapisz",
       "unknownError": "Nieznany błąd",
       "uploadError": "Błąd przesyłania:",
-      "saveError": "Błąd zapisywania raportu"
+      "saveError": "Błąd zapisywania raportu",
+      "hour": "godzina",
+      "noSessions": "Brak sesji"
     }
   },
   "sla": {

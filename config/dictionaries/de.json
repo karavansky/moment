@@ -489,7 +489,15 @@
         "Samstag",
         "Sonntag"
       ],
-      "weekdaysShort": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
+      "weekdaysShort": [
+        "Mo",
+        "Di",
+        "Mi",
+        "Do",
+        "Fr",
+        "Sa",
+        "So"
+      ],
       "months": [
         "Januar",
         "Februar",
@@ -574,7 +582,9 @@
       "save": "Speichern",
       "unknownError": "Unbekannter Fehler",
       "uploadError": "Fehler beim Hochladen:",
-      "saveError": "Fehler beim Speichern des Berichts"
+      "saveError": "Fehler beim Speichern des Berichts",
+      "hour": "Stunde",
+      "noSessions": "Keine Sitzungen"
     }
   },
   "map": {

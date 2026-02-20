@@ -468,9 +468,38 @@
     "noAppointmentsHint": "Start by creating a new appointment",
     "calendar": {
       "noAppointmentsToDisplay": "No appointments to display",
-      "weekdaysFull": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-      "weekdaysShort": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-      "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+      "weekdaysFull": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday"
+      ],
+      "weekdaysShort": [
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat",
+        "Sun"
+      ],
+      "months": [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+      ]
     }
   },
   "appointment": {
@@ -541,7 +570,9 @@
       "save": "Save",
       "unknownError": "Unknown error",
       "uploadError": "Error uploading:",
-      "saveError": "Error saving report"
+      "saveError": "Error saving report",
+      "hour": "hour",
+      "noSessions": "No sessions"
     }
   },
   "map": {

@@ -480,8 +480,24 @@
     "noAppointmentsHint": "Commencez par créer un nouveau rendez-vous",
     "calendar": {
       "noAppointmentsToDisplay": "Aucun rendez-vous à afficher",
-      "weekdaysFull": ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"],
-      "weekdaysShort": ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
+      "weekdaysFull": [
+        "Lundi",
+        "Mardi",
+        "Mercredi",
+        "Jeudi",
+        "Vendredi",
+        "Samedi",
+        "Dimanche"
+      ],
+      "weekdaysShort": [
+        "Lun",
+        "Mar",
+        "Mer",
+        "Jeu",
+        "Ven",
+        "Sam",
+        "Dim"
+      ],
       "months": [
         "Janvier",
         "Février",
@@ -657,7 +673,9 @@
       "save": "Enregistrer",
       "unknownError": "Erreur inconnue",
       "uploadError": "Erreur de téléchargement :",
-      "saveError": "Erreur lors de l'enregistrement du rapport"
+      "saveError": "Erreur lors de l'enregistrement du rapport",
+      "hour": "heure",
+      "noSessions": "Aucune session"
     }
   },
   "sla": {

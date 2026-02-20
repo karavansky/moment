@@ -480,8 +480,24 @@
     "noAppointmentsHint": "Yeni bir randevu oluşturarak başlayın",
     "calendar": {
       "noAppointmentsToDisplay": "Gösterilecek randevu yok",
-      "weekdaysFull": ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"],
-      "weekdaysShort": ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"],
+      "weekdaysFull": [
+        "Pazartesi",
+        "Salı",
+        "Çarşamba",
+        "Perşembe",
+        "Cuma",
+        "Cumartesi",
+        "Pazar"
+      ],
+      "weekdaysShort": [
+        "Pzt",
+        "Sal",
+        "Çar",
+        "Per",
+        "Cum",
+        "Cmt",
+        "Paz"
+      ],
       "months": [
         "Ocak",
         "Şubat",
@@ -657,7 +673,9 @@
       "save": "Kaydet",
       "unknownError": "Bilinmeyen hata",
       "uploadError": "Yükleme hatası:",
-      "saveError": "Rapor kaydetme hatası"
+      "saveError": "Rapor kaydetme hatası",
+      "hour": "saat",
+      "noSessions": "Oturum yok"
     }
   },
   "sla": {

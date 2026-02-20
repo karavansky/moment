@@ -113,6 +113,7 @@ interface SchedulingActions {
   updateService: (service: ServiceTreeItem) => void
   deleteService: (id: string) => void
   refreshData: () => void
+  upsertReport: (report: Report) => void
   openAppointment: (appointmentId: string, workerId: string) => void
   closeAppointment: (appointmentId: string) => void
 }
@@ -394,8 +395,13 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
             const updated = {
               ...existing,
               isOpen: event.isOpen ?? existing.isOpen,
-              openedAt: event.openedAt ? new Date(event.openedAt) : existing.openedAt,
-              closedAt: event.closedAt ? new Date(event.closedAt) : existing.closedAt,
+              // Use !== undefined to distinguish "not in event" from explicit null (clear)
+              openedAt: event.openedAt !== undefined
+                ? (event.openedAt ? new Date(event.openedAt) : undefined)
+                : existing.openedAt,
+              closedAt: event.closedAt !== undefined
+                ? (event.closedAt ? new Date(event.closedAt) : undefined)
+                : existing.closedAt,
             }
 
             // Notification для директора при открытии appointment
@@ -933,6 +939,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
                 id: appointmentId,
                 isOpen: true,
                 openedAt: startDate,
+                closedAt: null,
               }),
             }).catch(error => console.error('[openAppointment] API error:', error))
           }
@@ -944,6 +951,15 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
             ),
           }
         })
+      },
+
+      upsertReport: (report: Report) => {
+        setState(prev => ({
+          ...prev,
+          reports: prev.reports.some(r => r.id === report.id)
+            ? prev.reports.map(r => r.id === report.id ? { ...r, ...report } : r)
+            : [...prev.reports, report],
+        }))
       },
 
       closeAppointment: (appointmentId: string) => {

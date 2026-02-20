@@ -239,7 +239,7 @@ function DayView({
           className={`
             hidden lg:block
             h-full
-            transition-transform duration-100 ease-in-out
+            transition-transform duration-100 ease-in-out p-2
             ${isPressed ? 'scale-[0.95] bg-surface-quaternary' : ''}
             ${isPast ? 'cursor-not-allowed' : 'cursor-pointer hover:shadow-md'}
             ${isToday && !isPast ? 'border-2 border-primary' : ''}
