@@ -108,7 +108,7 @@ interface SchedulingActions {
   deleteClient: (id: string) => Promise<void>
   addWorker: (worker: Worker) => void
   updateWorker: (worker: Worker) => void
-  deleteWorker: (id: string) => void
+  deleteWorker: (id: string) => Promise<void>
   addService: (service: ServiceTreeItem) => void
   updateService: (service: ServiceTreeItem) => void
   deleteService: (id: string) => void
@@ -777,19 +777,19 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         }
       },
 
-      deleteWorker: (id: string) => {
+      deleteWorker: async (id: string): Promise<void> => {
+        if (isLiveModeRef.current) {
+          await apiFetch('/api/scheduling/workers', {
+            method: 'DELETE',
+            body: JSON.stringify({ id }),
+          })
+        }
+
         setState(prev => ({
           ...prev,
           workers: prev.workers.filter(worker => worker.id !== id),
           appointments: prev.appointments.filter(apt => apt.workerId !== id),
         }))
-
-        if (isLiveModeRef.current) {
-          apiFetch('/api/scheduling/workers', {
-            method: 'DELETE',
-            body: JSON.stringify({ id }),
-          }).catch(error => console.error('[deleteWorker] API error:', error))
-        }
       },
 
       addService: (service: ServiceTreeItem) => {
