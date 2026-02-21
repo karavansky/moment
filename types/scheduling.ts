@@ -33,6 +33,7 @@ export interface Groupe {
 // Клиент
 export interface Client {
   id: string
+  // Status: 0 - активный, 1 - неактивный, 2 - Arhive (для мягкого удаления)
   status: number
   firmaID: string
   name: string
