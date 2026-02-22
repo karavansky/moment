@@ -31,7 +31,12 @@ function WorkerDetail({ worker, onClose, isCreateNew = false, className }: Worke
   const [futureAppointments, setFutureAppointments] = useState<Appointment[]>([])
   // workerIds per appointment, edited in the modal
   const [appointmentEdits, setAppointmentEdits] = useState<Record<string, string[]>>({})
-  const { isOpen: isModalOpen, onOpen: openModal, onClose: closeModal, onOpenChange } = useDisclosure()
+  const {
+    isOpen: isModalOpen,
+    onOpen: openModal,
+    onClose: closeModal,
+    onOpenChange,
+  } = useDisclosure()
 
   const overviewRef = useRef<HTMLButtonElement>(null)
   const historyRef = useRef<HTMLButtonElement>(null)
@@ -39,8 +44,10 @@ function WorkerDetail({ worker, onClose, isCreateNew = false, className }: Worke
 
   // Вычисляем прошедшие и будущие встречи работника при открытии
   useEffect(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const now = new Date()
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+    const getDateStr = (d: string | Date) =>
+      typeof d === 'string' ? d.slice(0, 10) : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
     const workerApts = appointments.filter(
       apt =>
@@ -48,8 +55,8 @@ function WorkerDetail({ worker, onClose, isCreateNew = false, className }: Worke
         apt.workerIds?.includes(worker.id) ||
         apt.worker.some(w => w.id === worker.id)
     )
-    const past = workerApts.filter(apt => new Date(apt.date) < today)
-    const future = workerApts.filter(apt => new Date(apt.date) >= today)
+    const past = workerApts.filter(apt => getDateStr(apt.date) < todayStr)
+    const future = workerApts.filter(apt => getDateStr(apt.date) >= todayStr)
 
     setIsExistAppointment(past.length > 0)
     setFutureAppointments(future)
@@ -84,7 +91,13 @@ function WorkerDetail({ worker, onClose, isCreateNew = false, className }: Worke
   }
 
   const handleDeleteWorker = async () => {
-    // Участвовал в прошедших встречах → архивирование
+    // Есть будущие встречи → сначала модал с переназначением (приоритет)
+    if (futureAppointments.length > 0) {
+      handleOpenModal()
+      return
+    }
+
+    // Только прошедшие встречи (нет будущих) → архивирование с подтверждением
     if (isExistAppointment) {
       if (!confirmDelete) {
         setConfirmDelete(true)
@@ -101,12 +114,6 @@ function WorkerDetail({ worker, onClose, isCreateNew = false, className }: Worke
         setIsDeleting(false)
         setConfirmDelete(false)
       }
-      return
-    }
-
-    // Есть будущие встречи → открываем модал с переназначением
-    if (futureAppointments.length > 0) {
-      handleOpenModal()
       return
     }
 
@@ -145,13 +152,19 @@ function WorkerDetail({ worker, onClose, isCreateNew = false, className }: Worke
           workerIds: newWorkerIds,
         })
       }
-      await deleteWorker(worker.id)
-      toast.success(`${workerFullName} deleted and appointments updated`)
+      // Если были прошедшие встречи → архивировать, иначе → удалить
+      if (isExistAppointment) {
+        updateWorker({ ...worker, status: 2 })
+        toast.success(`${workerFullName} archived and appointments updated`)
+      } else {
+        await deleteWorker(worker.id)
+        toast.success(`${workerFullName} deleted and appointments updated`)
+      }
       closeModal()
       onClose()
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error'
-      toast.danger(`Failed to delete ${workerFullName}: ${message}`)
+      toast.danger(`Failed to process ${workerFullName}: ${message}`)
     } finally {
       setIsDeleting(false)
     }
@@ -185,13 +198,16 @@ function WorkerDetail({ worker, onClose, isCreateNew = false, className }: Worke
     startTransition(() => setActiveTab('history'))
   }, [startTransition])
 
-  const buttonLabel = isExistAppointment
-    ? confirmDelete
-      ? 'Confirm archive?'
-      : 'Archive worker'
-    : confirmDelete
-      ? 'Confirm delete?'
-      : 'Delete worker'
+  const buttonLabel =
+    futureAppointments.length > 0
+      ? 'Delete worker'
+      : isExistAppointment
+        ? confirmDelete
+          ? 'Confirm archive?'
+          : 'Archive worker'
+        : confirmDelete
+          ? 'Confirm delete?'
+          : 'Delete worker'
 
   return (
     <div className={`flex flex-col h-full ${className || ''}`}>
@@ -219,25 +235,32 @@ function WorkerDetail({ worker, onClose, isCreateNew = false, className }: Worke
           >
             <History className="w-5 h-5 mr-2" /> History
           </Button>
-          <div className="ml-auto">
-            {worker.status === 2 ? (
-              <Button variant="primary" size="sm" onPress={handleMakeActive}>
-                <UserCheck className="w-4 h-4" />
-                Make active
-              </Button>
-            ) : (
-              <Button variant="danger" size="sm" isDisabled={isDeleting} onPress={handleDeleteWorker}>
-                {isDeleting ? (
-                  <Spinner size="sm" />
-                ) : isExistAppointment ? (
-                  <Archive className="w-4 h-4" />
-                ) : (
-                  <Trash2 className="w-4 h-4" />
-                )}
-                {buttonLabel}
-              </Button>
-            )}
-          </div>
+          {!isCreateNew && (
+            <div className="ml-auto">
+              {worker.status === 2 ? (
+                <Button variant="primary" size="sm" onPress={handleMakeActive}>
+                  <UserCheck className="w-4 h-4" />
+                  Make active
+                </Button>
+              ) : (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  isDisabled={isDeleting}
+                  onPress={handleDeleteWorker}
+                >
+                  {isDeleting ? (
+                    <Spinner size="sm" />
+                  ) : futureAppointments.length === 0 && isExistAppointment ? (
+                    <Archive className="w-4 h-4" />
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
+                  {buttonLabel}
+                </Button>
+              )}
+            </div>
+          )}
         </div>
         <div className="relative w-full">
           <Separator />
@@ -287,7 +310,7 @@ function WorkerDetail({ worker, onClose, isCreateNew = false, className }: Worke
             <Modal.Dialog className="max-h-[90vh] overflow-y-auto">
               <Modal.CloseTrigger />
               <Modal.Header>
-                <span>Delete worker — reassign upcoming appointments</span>
+                <span>{isExistAppointment ? 'Archive' : 'Delete'} worker — reassign upcoming appointments</span>
               </Modal.Header>
               <Modal.Body className="gap-4">
                 <p className="text-sm text-default-500">
@@ -302,7 +325,9 @@ function WorkerDetail({ worker, onClose, isCreateNew = false, className }: Worke
                       <div
                         key={apt.id}
                         className={`rounded-lg border p-3 flex flex-col gap-2 ${
-                          stillHasWorker ? 'border-danger-200 bg-danger-50/30' : 'border-success-200 bg-success-50/30'
+                          stillHasWorker
+                            ? 'border-danger-200 bg-danger-50/30'
+                            : 'border-success-200 bg-success-50/30'
                         }`}
                       >
                         <div className="flex items-center justify-between text-sm">
@@ -313,7 +338,9 @@ function WorkerDetail({ worker, onClose, isCreateNew = false, className }: Worke
                             {apt.services.map(s => s.name).join(', ') || '—'}
                           </span>
                           {stillHasWorker ? (
-                            <span className="text-xs text-danger font-medium">Worker not removed</span>
+                            <span className="text-xs text-danger font-medium">
+                              Worker not removed
+                            </span>
                           ) : (
                             <span className="text-xs text-success font-medium">Ready</span>
                           )}
@@ -340,7 +367,7 @@ function WorkerDetail({ worker, onClose, isCreateNew = false, className }: Worke
                   onPress={handleApplyAndDelete}
                 >
                   {isDeleting ? <Spinner size="sm" /> : <Save className="w-4 h-4" />}
-                  Apply changes &amp; delete worker
+                  Apply changes &amp; {isExistAppointment ? 'archive' : 'delete'} worker
                 </Button>
               </Modal.Footer>
             </Modal.Dialog>

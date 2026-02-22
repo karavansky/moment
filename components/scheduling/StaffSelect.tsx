@@ -94,6 +94,7 @@ function StaffSelect({
 
   // --- RENDER FOR iOS ONLY ---
   if (isReady && isMobile && isIOS) {
+    //console.log('Rendering iOS-specific StaffSelect')
     return (
       <div className="w-full min-w-0">
         <Label className="text-base font-normal flex items-center gap-2">
@@ -152,7 +153,7 @@ function StaffSelect({
       </div>
     )
   }
-
+ // console.log('Rendering non-iOS StaffSelect')
   // --- RENDER FOR DESKTOP & ANDROID ---
   return (
     <div className="space-y-2 ">
@@ -211,6 +212,7 @@ function StaffSelect({
                 <SearchField.ClearButton />
               </SearchField.Group>
             </SearchField>
+            
             <ListBox renderEmptyState={() => <EmptyState>{t('appointment.edit.staff.noResults')}</EmptyState>}>
               {teamsWithWorkers.map(({ team, workers: teamWorkers }, index) => (
                 <React.Fragment key={team.id}>

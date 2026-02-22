@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { Modal, Button, Separator, Label, Switch, TextField, FieldError } from '@heroui/react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { Appointment, Service, Worker } from '@/types/scheduling'
-import { Clock, Save, Trash2, Car } from 'lucide-react'
+import { Clock, Save, Trash2, Car, Plus } from 'lucide-react'
 import { formatTime } from '@/lib/calendar-utils'
 import { parseDate, Time, today, getLocalTimeZone } from '@internationalized/date'
 import DatePicker from '@/components/ui/DatePicker'
@@ -85,7 +85,6 @@ export default function AppointmentModal({
             services: [],
             reports: [],
             firmaID: '',
-
           }
       : appointment
         ? {
@@ -284,6 +283,7 @@ export default function AppointmentModal({
     setErrors({})
     onClose()
   }
+
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
@@ -312,7 +312,11 @@ export default function AppointmentModal({
             <Modal.Header>
               <div className="flex flex-col gap-1">
                 <h2 className="text-xl font-bold">
-                  {readOnly ? t('appointment.edit.viewTitle') : isEditMode ? t('appointment.edit.editTitle') : t('appointment.edit.newTitle')}
+                  {readOnly
+                    ? t('appointment.edit.viewTitle')
+                    : isEditMode
+                      ? t('appointment.edit.editTitle')
+                      : t('appointment.edit.newTitle')}
                 </h2>
                 {appointment && (
                   <p className="text-sm text-default-500">
@@ -324,18 +328,17 @@ export default function AppointmentModal({
 
             <Modal.Body className="gap-4 ">
               {/* Client Selection */}
-              <ClientSelect
-                groupedClients={groupedClients}
-                clients={clients}
-                selectedClientId={formData.clientID}
-                onSelectionChange={clientId => {
-                  setFormData(prev => ({ ...prev, clientID: clientId }))
-                  setErrors(prev => ({ ...prev, clientID: '' }))
-                }}
-                error={errors.clientID}
-                isNew={isNewAppointment || !appointment}
-              />
-
+                <ClientSelect
+                  groupedClients={groupedClients}
+                  clients={clients}
+                  selectedClientId={formData.clientID}
+                  onSelectionChange={clientId => {
+                    setFormData(prev => ({ ...prev, clientID: clientId }))
+                    setErrors(prev => ({ ...prev, clientID: '' }))
+                  }}
+                  error={errors.clientID}
+                  isNew={isNewAppointment || !appointment}
+                />
               <Separator className="my-2" />
               {/* Services Selection */}
               <ServiceSelect
@@ -379,7 +382,9 @@ export default function AppointmentModal({
               {/* Date */}
               <div className="flex items-center justify-between flex-row gap-2 w-full">
                 <TextField isRequired name="date" type="date" isInvalid={isDateInvalid}>
-                  <Label className="text-base font-medium flex items-center gap-2">{t('appointment.edit.date')}</Label>
+                  <Label className="text-base font-medium flex items-center gap-2">
+                    {t('appointment.edit.date')}
+                  </Label>
                   <DatePicker
                     value={parseDate(
                       `${formData.date.getFullYear()}-${String(formData.date.getMonth() + 1).padStart(2, '0')}-${String(formData.date.getDate()).padStart(2, '0')}`
@@ -436,9 +441,7 @@ export default function AppointmentModal({
                       }
                     }}
                   />
-                  <FieldError>
-                    {isDateInvalid ? t('appointment.edit.dateInPast') : null}
-                  </FieldError>
+                  <FieldError>{isDateInvalid ? t('appointment.edit.dateInPast') : null}</FieldError>
                 </TextField>
                 {/* Time picker with Switch overlay trick for iOS */}
                 <div className="relative">
@@ -600,27 +603,33 @@ export default function AppointmentModal({
                   <div className="text-sm">
                     <span className="font-medium">{t('appointment.edit.endTime')} </span>
                     <span className="text-accent font-semibold">{formatTime(endTime)}</span>
-                    <span className="text-xs text-default-500 ml-2">({formData.duration} {t('appointment.edit.min')})</span>
+                    <span className="text-xs text-default-500 ml-2">
+                      ({formData.duration} {t('appointment.edit.min')})
+                    </span>
                   </div>
                 </div>
               )}
-
             </Modal.Body>
             <Modal.Footer>
-                <div className="flex items-center w-full">
-                  {isEditMode && !readOnly && (
-                    <Button variant="danger" onPress={handleDelete} size='sm' className="gap-2 ">
-                      <Trash2 className="w-4 h-4" />
-                      {t('appointment.edit.delete')}
-                    </Button>
-                  )}
-                  {!readOnly && (
-                    <Button variant="primary" onPress={handleSave} size='sm' className="gap-2 ml-auto">
-                      <Save className="w-4 h-4" />
-                      {isEditMode ? t('appointment.edit.save') : t('appointment.edit.create')}
-                    </Button>
-                  )}
-                </div>
+              <div className="flex items-center w-full">
+                {isEditMode && !readOnly && (
+                  <Button variant="danger" onPress={handleDelete} size="sm" className="gap-2 ">
+                    <Trash2 className="w-4 h-4" />
+                    {t('appointment.edit.delete')}
+                  </Button>
+                )}
+                {!readOnly && (
+                  <Button
+                    variant="primary"
+                    onPress={handleSave}
+                    size="sm"
+                    className="gap-2 ml-auto"
+                  >
+                    <Save className="w-4 h-4" />
+                    {isEditMode ? t('appointment.edit.save') : t('appointment.edit.create')}
+                  </Button>
+                )}
+              </div>
             </Modal.Footer>
           </Modal.Dialog>
         </Modal.Container>

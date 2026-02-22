@@ -29,7 +29,12 @@ function ClientDetail({ client, onClose, isCreateNew = false, className }: Clien
   const [isDeleting, setIsDeleting] = useState(false)
   const [isExistAppointment, setIsExistAppointment] = useState(false)
   const [futureAppointments, setFutureAppointments] = useState<Appointment[]>([])
-  const { isOpen: isModalOpen, onOpen: openModal, onClose: closeModal, onOpenChange } = useDisclosure()
+  const {
+    isOpen: isModalOpen,
+    onOpen: openModal,
+    onClose: closeModal,
+    onOpenChange,
+  } = useDisclosure()
 
   const overviewRef = useRef<HTMLButtonElement>(null)
   const historyRef = useRef<HTMLButtonElement>(null)
@@ -37,12 +42,14 @@ function ClientDetail({ client, onClose, isCreateNew = false, className }: Clien
 
   // Вычисляем прошедшие и будущие встречи клиента при открытии
   useEffect(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const now = new Date()
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+    const getDateStr = (d: string | Date) =>
+      typeof d === 'string' ? d.slice(0, 10) : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
     const clientApts = appointments.filter(apt => apt.clientID === client.id)
-    const past = clientApts.filter(apt => new Date(apt.date) < today)
-    const future = clientApts.filter(apt => new Date(apt.date) >= today)
+    const past = clientApts.filter(apt => getDateStr(apt.date) < todayStr)
+    const future = clientApts.filter(apt => getDateStr(apt.date) >= todayStr)
 
     setIsExistAppointment(past.length > 0)
     setFutureAppointments(future)
@@ -181,25 +188,32 @@ function ClientDetail({ client, onClose, isCreateNew = false, className }: Clien
           >
             <History className="w-5 h-5 mr-2" /> {t('clients.detail.history')}
           </Button>
-          <div className="ml-auto">
-            {client.status === 2 ? (
-              <Button variant="primary" size="sm" onPress={handleMakeActive}>
-                <UserCheck className="w-4 h-4" />
-                Make active
-              </Button>
-            ) : (
-              <Button variant="danger" size="sm" isDisabled={isDeleting} onPress={handleDeleteClient}>
-                {isDeleting ? (
-                  <Spinner size="sm" />
-                ) : isExistAppointment ? (
-                  <Archive className="w-4 h-4" />
-                ) : (
-                  <Trash2 className="w-4 h-4" />
-                )}
-                {buttonLabel}
-              </Button>
-            )}
-          </div>
+          {!isCreateNew && (
+            <div className="ml-auto">
+              {client.status === 2 ? (
+                <Button variant="primary" size="sm" onPress={handleMakeActive}>
+                  <UserCheck className="w-4 h-4" />
+                  Make active
+                </Button>
+              ) : (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  isDisabled={isDeleting}
+                  onPress={handleDeleteClient}
+                >
+                  {isDeleting ? (
+                    <Spinner size="sm" />
+                  ) : isExistAppointment ? (
+                    <Archive className="w-4 h-4" />
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
+                  {buttonLabel}
+                </Button>
+              )}
+            </div>
+          )}
         </div>
         <div className="relative w-full">
           <Separator />
