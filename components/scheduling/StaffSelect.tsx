@@ -1,11 +1,13 @@
 'use client'
 
-import React, { useCallback, memo } from 'react'
+import React, { useCallback, memo, useState } from 'react'
 import { Autocomplete, Button, EmptyState, Header, Label, ListBox, SearchField, Separator, Tag, TagGroup, useFilter } from '@heroui/react'
 import { Plus, X, Users } from 'lucide-react'
 import { Team, Worker } from '@/types/scheduling'
 import { usePlatformContext } from '@/contexts/PlatformContext'
 import { useTranslation } from '@/components/Providers'
+import { useAuth } from '@/components/AuthProvider'
+import StaffAdd from './StaffAdd'
 
 interface WorkerOption {
   id: string
@@ -22,6 +24,7 @@ interface StaffSelectProps {
   teamsWithWorkers: TeamsWithWorkers[]
   selectedWorkerIds: string[]
   onSelectionChange: (workerIds: string[]) => void
+  onWorkerCreated?: (worker: Worker) => void
   error?: string
   className?: string
 }
@@ -30,12 +33,40 @@ function StaffSelect({
   teamsWithWorkers,
   selectedWorkerIds,
   onSelectionChange,
+  onWorkerCreated,
   error,
   className,
 }: StaffSelectProps) {
   const { isMobile, isReady, isIOS } = usePlatformContext()
   const { t } = useTranslation()
   const { contains } = useFilter({ sensitivity: 'base' })
+  const { session } = useAuth()
+  const [isAddOpen, setIsAddOpen] = useState(false)
+  const [pendingWorkerOptions, setPendingWorkerOptions] = useState<WorkerOption[]>([])
+
+  const handleAddWorker = useCallback(() => {
+    if (!session?.user.firmaID) return
+    setIsAddOpen(true)
+  }, [session])
+
+  const handleWorkerAdded = useCallback(
+    (worker: Worker) => {
+      // Cache display info locally — teamsWithWorkers may not yet include this worker
+      setPendingWorkerOptions(prev => [
+        ...prev,
+        {
+          id: worker.id,
+          name: `${worker.surname} ${worker.name}`,
+          fullPath: `${worker.surname} ${worker.name}`,
+        },
+      ])
+      // Update selection directly
+      onSelectionChange([...selectedWorkerIds, worker.id])
+      // Also pass full Worker object to parent so formData.workers stays correct
+      onWorkerCreated?.(worker)
+    },
+    [onWorkerCreated, onSelectionChange, selectedWorkerIds]
+  )
 
   // Собираем всех workers в один массив с информацией о команде
   const allWorkers = React.useMemo(() => {
@@ -53,12 +84,13 @@ function StaffSelect({
   }, [teamsWithWorkers])
 
   // Получаем объекты выбранных workers для отображения чипов
+  // pendingWorkerOptions used as fallback for workers not yet in context (async addWorker)
   const selectedWorkerObjects = React.useMemo(
     () =>
       selectedWorkerIds
-        .map(id => allWorkers.find(w => w.id === id))
+        .map(id => allWorkers.find(w => w.id === id) ?? pendingWorkerOptions.find(w => w.id === id))
         .filter(Boolean) as WorkerOption[],
-    [selectedWorkerIds, allWorkers]
+    [selectedWorkerIds, allWorkers, pendingWorkerOptions]
   )
 
   // Удаление одного worker из выбранных
@@ -148,36 +180,56 @@ function StaffSelect({
               {t('appointment.edit.staff.addStaff')}
             </Button>
           </div>
+          <Button variant="primary" size="sm" isIconOnly onPress={handleAddWorker}>
+            <Plus className="w-4 h-4" />
+          </Button>
         </div>
         {error && <p className="text-xs text-danger mt-1">{error}</p>}
+        <StaffAdd
+          isOpen={isAddOpen}
+          onClose={() => setIsAddOpen(false)}
+          onWorkerAdded={handleWorkerAdded}
+        />
       </div>
     )
   }
  // console.log('Rendering non-iOS StaffSelect')
   // --- RENDER FOR DESKTOP & ANDROID ---
   return (
-    <div className="space-y-2 ">
+    <div className="space-y-2">
+      {/* Label row with "+" button — outside Autocomplete to avoid popover z-order issues */}
+      <div className="flex flex-row w-full gap-2">
+        <Label className="text-base font-normal flex items-center gap-2">
+          <Users className="w-6 h-6" />
+          {t('appointment.edit.staff.label')}
+        </Label>
+        <div className="ml-auto">
+          <Button variant="primary" size="sm" isIconOnly onPress={handleAddWorker}>
+            <Plus className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+
       <Autocomplete
         isRequired
         fullWidth
         name="worker"
+        aria-label={t('appointment.edit.staff.label')}
         value={selectedWorkerIds || null}
         onChange={handleDesktopChange}
         placeholder={t('appointment.edit.staff.selectPlaceholder')}
         selectionMode="multiple"
-
       >
-        <Label className="text-sm font-medium flex items-center gap-2">
-          <Users className="w-6 h-6" />
-          {t('appointment.edit.staff.label')}
-        </Label>
         <Autocomplete.Trigger>
           <Autocomplete.Value>
-            {({ defaultChildren, isPlaceholder, state }: any) => {
-              if (isPlaceholder || state.selectedItems.length === 0) {
+            {({ defaultChildren }: any) => {
+              // Рендерим из внешнего состояния (selectedWorkerObjects), а не из
+              // внутреннего state.selectedItems — иначе программно добавленные
+              // работники не отображаются (Autocomplete не обновляет свой
+              // internal state при изменении value-пропа извне)
+              if (selectedWorkerObjects.length === 0) {
                 return defaultChildren
               }
-
               return (
                 <TagGroup
                   size="lg"
@@ -187,14 +239,11 @@ function StaffSelect({
                   }}
                 >
                   <TagGroup.List>
-                    {state.selectedItems.map((item: any) => {
-                      const worker = allWorkers.find(w => w.id === item.key)
-                      return (
-                        <Tag key={item.key} id={item.key} className="font-normal">
-                          {worker?.fullPath || item.textValue}
-                        </Tag>
-                      )
-                    })}
+                    {selectedWorkerObjects.map(({ id, fullPath }) => (
+                      <Tag key={id} id={id} className="font-normal">
+                        {fullPath}
+                      </Tag>
+                    ))}
                   </TagGroup.List>
                 </TagGroup>
               )
@@ -212,31 +261,33 @@ function StaffSelect({
                 <SearchField.ClearButton />
               </SearchField.Group>
             </SearchField>
-            
             <ListBox renderEmptyState={() => <EmptyState>{t('appointment.edit.staff.noResults')}</EmptyState>}>
-              {teamsWithWorkers.map(({ team, workers: teamWorkers }, index) => (
-                <React.Fragment key={team.id}>
-                  <ListBox.Section>
-                    <Header>{team.teamName}</Header>
-                    {teamWorkers.map(worker => (
-                      <ListBox.Item
-                        key={worker.id}
-                        textValue={`${worker.surname} ${worker.name}`}
-                        id={worker.id}
-                      >
-                        {worker.surname} {worker.name}
-                        <ListBox.ItemIndicator />
-                      </ListBox.Item>
-                    ))}
-                  </ListBox.Section>
-                  {index < teamsWithWorkers.length - 1 && <Separator />}
-                </React.Fragment>
-              ))}
+              {teamsWithWorkers.flatMap(({ team, workers: teamWorkers }, index) => [
+                <ListBox.Section key={team.id}>
+                  <Header>{team.teamName}</Header>
+                  {teamWorkers.map(worker => (
+                    <ListBox.Item
+                      key={worker.id}
+                      textValue={`${worker.surname} ${worker.name}`}
+                      id={worker.id}
+                    >
+                      {worker.surname} {worker.name}
+                      <ListBox.ItemIndicator />
+                    </ListBox.Item>
+                  ))}
+                </ListBox.Section>,
+                ...(index < teamsWithWorkers.length - 1 ? [<Separator key={`sep-${team.id}`} />] : []),
+              ])}
             </ListBox>
           </Autocomplete.Filter>
         </Autocomplete.Popover>
       </Autocomplete>
       {error && <p className="text-xs text-danger">{error}</p>}
+      <StaffAdd
+        isOpen={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        onWorkerAdded={handleWorkerAdded}
+      />
     </div>
   )
 }

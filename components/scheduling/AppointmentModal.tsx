@@ -364,14 +364,18 @@ export default function AppointmentModal({
                 teamsWithWorkers={teamsWithWorkers}
                 selectedWorkerIds={formData.workers.map(w => w.id)}
                 onSelectionChange={workerIds => {
-                  if (process.env.NODE_ENV === 'development') {
-                    console.log('Selected worker IDs:', workerIds)
-                  }
-                  // Находим полные объекты Worker по ID
-                  const selectedWorkerObjects = workerIds
-                    .map(id => workers.find(w => w.id === id))
-                    .filter((w): w is Worker => w !== undefined)
-                  setFormData(prev => ({ ...prev, workers: selectedWorkerObjects }))
+                  // Look up in prev.workers first — covers newly added workers not yet in context
+                  setFormData(prev => ({
+                    ...prev,
+                    workers: workerIds
+                      .map(id => prev.workers.find(w => w.id === id) ?? workers.find(w => w.id === id))
+                      .filter((w): w is Worker => w !== undefined),
+                  }))
+                  setErrors(prev => ({ ...prev, workers: '' }))
+                }}
+                onWorkerCreated={worker => {
+                  // Добавляем напрямую — без поиска в контексте (контекст ещё не обновился)
+                  setFormData(prev => ({ ...prev, workers: [...prev.workers, worker] }))
                   setErrors(prev => ({ ...prev, workers: '' }))
                 }}
                 error={errors.workers}

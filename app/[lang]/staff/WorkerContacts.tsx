@@ -172,32 +172,7 @@ export const WorkerContacts = memo(function WorkerContacts({
                   setDate(e.target.value)
                 }}
               />
-              {date && <p className="mt-1 text-sm text-gray-500">Selected: {date}</p>}
-              <select>
-                <optgroup label="Недоступно">
-                  <option>Вариант A</option>
-                  <option>Вариант B</option>
-                </optgroup>
-
-                <optgroup label="Доступно">
-                  <option>Вариант C</option>
-                  <option>Вариант D</option>
-                </optgroup>
-              </select>
-              <div className="relative">
-                <button className="absolute inset-0 opacity-0 btn">Open Dropdown</button>
-                <select>
-                  <optgroup label="Недоступно" disabled>
-                    <option>Вариант A</option>
-                    <option>Вариант B</option>
-                  </optgroup>
-
-                  <optgroup label="Доступно">
-                    <option>Вариант C</option>
-                    <option>Вариант D</option>
-                  </optgroup>
-                </select>
-              </div>
+            
             </div>
           </div>
         </Card.Content>
@@ -227,3 +202,34 @@ export const WorkerContacts = memo(function WorkerContacts({
     </Card>
   )
 })
+
+
+/*
+  {date && <p className="mt-1 text-sm text-gray-500">Selected: {date}</p>}
+              <select>
+                <optgroup label="Недоступно">
+                  <option>Вариант A</option>
+                  <option>Вариант B</option>
+                </optgroup>
+
+                <optgroup label="Доступно">
+                  <option>Вариант C</option>
+                  <option>Вариант D</option>
+                </optgroup>
+              </select>
+              <div className="relative">
+                <button className="absolute inset-0 opacity-0 btn">Open Dropdown</button>
+                <select>
+                  <optgroup label="Недоступно" disabled>
+                    <option>Вариант A</option>
+                    <option>Вариант B</option>
+                  </optgroup>
+
+                  <optgroup label="Доступно">
+                    <option>Вариант C</option>
+                    <option>Вариант D</option>
+                  </optgroup>
+                </select>
+              </div>
+
+*/
