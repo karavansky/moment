@@ -7,6 +7,7 @@ import { createOrganisation } from '@/lib/organisations'
 import { getInviteByToken } from '@/lib/invites'
 import { createWorker } from '@/lib/workers'
 import { createClient } from '@/lib/clients'
+import { generateId } from '@/lib/generate-id'
 
 export async function POST(request: Request) {
   try {
@@ -74,7 +75,7 @@ export async function POST(request: Request) {
 
       // Создаём запись в workers/clients в зависимости от роли
       if (invite.status === 1) {
-        await createWorker({ userID: user.userID, firmaID: invite.firmaID, name, email })
+        await createWorker({ workerID: generateId(), userID: user.userID, firmaID: invite.firmaID, name, email })
       } else if (invite.status === 2) {
         await createClient({ userID: user.userID, firmaID: invite.firmaID, name, email })
       }
