@@ -1,5 +1,4 @@
 import pool from './db'
-import { generateId } from './generateId'
 
 export interface WorkerRecord {
   workerID: string
@@ -26,6 +25,7 @@ export interface WorkerRecord {
 }
 
 export async function createWorker(data: {
+  workerID: string
   userID?: string
   firmaID: string
   name: string
@@ -46,7 +46,7 @@ export async function createWorker(data: {
   latitude?: number
   longitude?: number
 }): Promise<WorkerRecord> {
-  const workerID = generateId(20)
+  const workerID = data.workerID
 
   const query = `
     INSERT INTO workers (

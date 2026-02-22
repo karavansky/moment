@@ -9,10 +9,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { teamName } = await request.json()
-    if (!teamName) return NextResponse.json({ error: 'Team name required' }, { status: 400 })
+    const { teamName, id } = await request.json()
+    if (!teamName || !id) return NextResponse.json({ error: 'Team name and id required' }, { status: 400 })
 
-    const team = await createTeam(session.user.firmaID!, teamName)
+    const team = await createTeam(session.user.firmaID!, teamName, id)
     return NextResponse.json(team)
   } catch (error) {
     console.error('[Scheduling Teams] POST error:', error)

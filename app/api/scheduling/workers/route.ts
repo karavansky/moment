@@ -9,8 +9,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
-    const worker = await createWorker({ ...body, firmaID: session.user.firmaID! })
+    const { id, ...rest } = await request.json()
+    if (!id) return NextResponse.json({ error: 'Worker ID required' }, { status: 400 })
+    const worker = await createWorker({ ...rest, workerID: id, firmaID: session.user.firmaID! })
     return NextResponse.json(worker)
   } catch (error) {
     console.error('[Scheduling Workers] POST error:', error)

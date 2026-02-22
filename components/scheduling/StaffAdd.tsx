@@ -15,8 +15,9 @@ import { useScheduling } from '@/contexts/SchedulingContext'
 import { useAuth } from '@/components/AuthProvider'
 import { useTranslation } from '@/components/Providers'
 import { generateId } from '@/lib/generate-id'
-import { Worker } from '@/types/scheduling'
-import { Mail, UserPlus } from 'lucide-react'
+import { Team, Worker } from '@/types/scheduling'
+import { Mail, Plus, UserPlus } from 'lucide-react'
+import TeamEdit from './TeamEdit'
 
 interface StaffAddProps {
   isOpen: boolean
@@ -25,7 +26,8 @@ interface StaffAddProps {
 }
 
 export default function StaffAdd({ isOpen, onClose, onWorkerAdded }: StaffAddProps) {
-  const { addWorker, teamsWithWorkers } = useScheduling()
+  const { addWorker, teams } = useScheduling()
+  const [isTeamEditOpen, setIsTeamEditOpen] = useState(false)
   const { session } = useAuth()
   const { t } = useTranslation()
 
@@ -78,7 +80,15 @@ export default function StaffAdd({ isOpen, onClose, onWorkerAdded }: StaffAddPro
     [formData, session, addWorker, onWorkerAdded, handleClose]
   )
 
+  const handleTeamAdded = useCallback(
+    (team: Team) => {
+      setFormData(prev => ({ ...prev, teamId: team.id }))
+    },
+    []
+  )
+
   return (
+    <>
     <Modal>
       <Modal.Backdrop
         isOpen={isOpen}
@@ -148,8 +158,18 @@ export default function StaffAdd({ isOpen, onClose, onWorkerAdded }: StaffAddPro
                   <Separator />
 
                   {/* Team */}
-                  <TextField className="w-full" name="teamId" >
-                    <Label>Team</Label>
+                  <TextField className="w-full" name="teamId">
+                    <div className="flex items-center gap-2">
+                      <Label>Team</Label>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        isIconOnly
+                        onPress={() => setIsTeamEditOpen(true)}
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </div>
                     <div className="surface surface--tertiary h-11 md:h-10 flex items-center rounded-xl px-2 w-full">
                       <select
                         name="teamId"
@@ -160,13 +180,11 @@ export default function StaffAdd({ isOpen, onClose, onWorkerAdded }: StaffAddPro
                         <option value="" disabled>
                           Team auswählen...
                         </option>
-                        {teamsWithWorkers
-                          .filter(({ team }) => team.id !== '__ungrouped__')
-                          .map(({ team }) => (
-                            <option key={team.id} value={team.id}>
-                              {team.teamName}
-                            </option>
-                          ))}
+                        {teams.map(team => (
+                          <option key={team.id} value={team.id}>
+                            {team.teamName}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </TextField>
@@ -189,5 +207,11 @@ export default function StaffAdd({ isOpen, onClose, onWorkerAdded }: StaffAddPro
         </Modal.Container>
       </Modal.Backdrop>
     </Modal>
+    <TeamEdit
+      isOpen={isTeamEditOpen}
+      onClose={() => setIsTeamEditOpen(false)}
+      onTeamAdded={handleTeamAdded}
+    />
+    </>
   )
 }

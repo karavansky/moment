@@ -24,7 +24,7 @@ import {
 } from '@/types/scheduling'
 import getAllSampleObjects from '@/lib/scheduling-mock-data'
 import { useNotifications } from '@/contexts/NotificationContext'
-import { generateId } from '@/lib/generateId'
+import { generateId } from '@/lib/generate-id'
 import { useAuth } from '@/components/AuthProvider'
 import { toLocalDateString, parseLocalDate } from '@/lib/calendar-utils'
 import { useSchedulingEvents, SchedulingEvent } from '@/hooks/useSchedulingEvents'
@@ -106,6 +106,7 @@ interface SchedulingActions {
   addClient: (client: Client) => void
   updateClient: (client: Client) => void
   deleteClient: (id: string) => Promise<void>
+  addTeam: (team: Team) => void
   addWorker: (worker: Worker) => void
   updateWorker: (worker: Worker) => void
   deleteWorker: (id: string) => Promise<void>
@@ -695,6 +696,20 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         }))
       },
 
+      addTeam: (team: Team) => {
+        setState(prev => ({ ...prev, teams: [...prev.teams, team] }))
+
+        if (isLiveModeRef.current) {
+          apiFetch('/api/scheduling/teams', {
+            method: 'POST',
+            body: JSON.stringify({ id: team.id, teamName: team.teamName }),
+          }).catch(error => {
+            console.error('[addTeam] API error:', error)
+            setState(prev => ({ ...prev, teams: prev.teams.filter(t => t.id !== team.id) }))
+          })
+        }
+      },
+
       addWorker: (worker: Worker) => {
         setState(prev => ({
           ...prev,
@@ -705,6 +720,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
           apiFetch('/api/scheduling/workers', {
             method: 'POST',
             body: JSON.stringify({
+              id: worker.id,
               name: worker.name,
               surname: worker.surname,
               email: worker.email,
@@ -723,22 +739,13 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
               latitude: worker.latitude,
               longitude: worker.longitude,
             }),
+          }).catch(error => {
+            console.error('[addWorker] API error:', error)
+            setState(prev => ({
+              ...prev,
+              workers: prev.workers.filter(w => w.id !== worker.id),
+            }))
           })
-            .then(result => {
-              setState(prev => ({
-                ...prev,
-                workers: prev.workers.map(w =>
-                  w.id === worker.id ? { ...worker, id: result.workerID } : w
-                ),
-              }))
-            })
-            .catch(error => {
-              console.error('[addWorker] API error:', error)
-              setState(prev => ({
-                ...prev,
-                workers: prev.workers.filter(w => w.id !== worker.id),
-              }))
-            })
         }
       },
 

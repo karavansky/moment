@@ -1,5 +1,4 @@
 import pool from './db'
-import { generateId } from './generateId'
 
 export interface TeamRecord {
   teamID: string
@@ -8,8 +7,8 @@ export interface TeamRecord {
   createdAt: Date
 }
 
-export async function createTeam(firmaID: string, teamName: string): Promise<TeamRecord> {
-  const teamID = generateId(20)
+export async function createTeam(firmaID: string, teamName: string, teamID: string): Promise<TeamRecord> {
+  const id = teamID
 
   const query = `
     INSERT INTO teams ("teamID", "firmaID", "teamName")
@@ -18,7 +17,7 @@ export async function createTeam(firmaID: string, teamName: string): Promise<Tea
   `
 
   try {
-    const result = await pool.query(query, [teamID, firmaID, teamName])
+    const result = await pool.query(query, [id, firmaID, teamName])
     return result.rows[0]
   } catch (error) {
     console.error('[createTeam] Error:', error)

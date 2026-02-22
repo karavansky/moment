@@ -2,7 +2,7 @@
 
 import React, { useCallback, memo, useState } from 'react'
 import { Autocomplete, Button, EmptyState, Header, Label, ListBox, SearchField, Separator, Tag, TagGroup, useFilter } from '@heroui/react'
-import { Plus, X, Users } from 'lucide-react'
+import { Check, Plus, X, Users } from 'lucide-react'
 import { Team, Worker } from '@/types/scheduling'
 import { usePlatformContext } from '@/contexts/PlatformContext'
 import { useTranslation } from '@/components/Providers'
@@ -126,7 +126,6 @@ function StaffSelect({
 
   // --- RENDER FOR iOS ONLY ---
   if (isReady && isMobile && isIOS) {
-    //console.log('Rendering iOS-specific StaffSelect')
     return (
       <div className="w-full min-w-0">
         <Label className="text-base font-normal flex items-center gap-2">
@@ -193,7 +192,7 @@ function StaffSelect({
       </div>
     )
   }
- // console.log('Rendering non-iOS StaffSelect')
+
   // --- RENDER FOR DESKTOP & ANDROID ---
   return (
     <div className="space-y-2">
@@ -272,7 +271,9 @@ function StaffSelect({
                       id={worker.id}
                     >
                       {worker.surname} {worker.name}
-                      <ListBox.ItemIndicator />
+                      {selectedWorkerIds.includes(worker.id)
+                        ? <Check className="w-4 h-4 shrink-0" />
+                        : <ListBox.ItemIndicator />}
                     </ListBox.Item>
                   ))}
                 </ListBox.Section>,
