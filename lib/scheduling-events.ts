@@ -10,6 +10,61 @@ let reconnectTimeout: NodeJS.Timeout | null = null
 // firmaID → Set<callback>
 const subscriptions = new Map<string, Set<EventCallback>>()
 
+// Stats
+let totalEventsProcessed = 0
+let reconnectCount = 0
+const eventTimestamps: number[] = [] // rolling window for eventsPerMinute
+const latencySamples: number[] = []  // rolling window for avgLatency (last 100)
+
+// Event loop lag: measured via setImmediate — shows how backed up the event loop is
+let eventLoopLagMs = 0
+function measureEventLoopLag() {
+  const start = Date.now()
+  setImmediate(() => {
+    eventLoopLagMs = Date.now() - start
+    setTimeout(measureEventLoopLag, 1000)
+  })
+}
+measureEventLoopLag()
+
+export interface SseStats {
+  pgConnected: boolean
+  activeChannels: number
+  totalSubscribers: number
+  eventsPerMinute: number
+  avgLatencyMs: number
+  totalEventsProcessed: number
+  reconnectCount: number
+  eventLoopLagMs: number
+}
+
+export function getStats(): SseStats {
+  const now = Date.now()
+  const oneMinuteAgo = now - 60_000
+  // Prune old timestamps
+  while (eventTimestamps.length > 0 && eventTimestamps[0] < oneMinuteAgo) {
+    eventTimestamps.shift()
+  }
+  let totalSubscribers = 0
+  for (const cbs of subscriptions.values()) {
+    totalSubscribers += cbs.size
+  }
+  const avgLatencyMs =
+    latencySamples.length > 0
+      ? Math.round(latencySamples.reduce((a, b) => a + b, 0) / latencySamples.length)
+      : 0
+  return {
+    pgConnected: pgClient !== null,
+    activeChannels: subscriptions.size,
+    totalSubscribers,
+    eventsPerMinute: eventTimestamps.length,
+    avgLatencyMs,
+    totalEventsProcessed,
+    reconnectCount,
+    eventLoopLagMs,
+  }
+}
+
 function getChannelName(firmaID: string): string {
   // PostgreSQL channel names: lowercase, no special chars
   return `scheduling_${firmaID.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`
@@ -58,6 +113,7 @@ async function ensureConnection(): Promise<Client> {
 
     client.on('notification', (msg) => {
       if (!msg.payload) return
+      const start = Date.now()
 
       try {
         const payload = JSON.parse(msg.payload)
@@ -75,6 +131,12 @@ async function ensureConnection(): Promise<Client> {
             }
           }
         }
+
+        // Track stats
+        totalEventsProcessed++
+        eventTimestamps.push(Date.now())
+        latencySamples.push(Date.now() - start)
+        if (latencySamples.length > 100) latencySamples.shift()
       } catch (err) {
         console.error('[scheduling-events] Failed to parse notification:', err)
       }
@@ -105,6 +167,7 @@ function scheduleReconnect() {
   if (reconnectTimeout) return
   if (subscriptions.size === 0) return // No active subscriptions, don't reconnect
 
+  reconnectCount++
   reconnectTimeout = setTimeout(async () => {
     reconnectTimeout = null
     try {

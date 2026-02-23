@@ -10,13 +10,15 @@ import { Button, Separator } from '@heroui/react'
 import Dictionary from './Dictionary'
 import AdminTicketsList from './AdminTicketsList'
 import UsersView from './UsersView'
+import Statistic from './Statistic'
 
 export default function DashboardView() {
   const { clients, groups, isLoading, firmaID } = useScheduling()
   const lang = useLanguage()
-  const [activeTab, setActiveTab] = useState<'tickets' | 'seaweed' | 'dict' | 'users'>('tickets')
+  const [activeTab, setActiveTab] = useState<'stats' | 'tickets' | 'seaweed' | 'dict' | 'users'>('stats')
   const [isPending, startTransition] = useTransition()
 
+  const statsRef = useRef<HTMLButtonElement>(null)
   const ticketsRef = useRef<HTMLButtonElement>(null)
   const seaweedRef = useRef<HTMLButtonElement>(null)
   const dictRef = useRef<HTMLButtonElement>(null)
@@ -26,6 +28,14 @@ export default function DashboardView() {
   useEffect(() => {
     const updateIndicator = () => {
       switch (activeTab) {
+        case 'stats':
+          if (statsRef.current) {
+            setIndicatorStyle({
+              width: statsRef.current.offsetWidth,
+              left: statsRef.current.offsetLeft,
+            })
+          }
+          break
         case 'tickets':
           if (ticketsRef.current) {
             setIndicatorStyle({
@@ -65,6 +75,12 @@ export default function DashboardView() {
     return () => window.removeEventListener('resize', updateIndicator)
   }, [activeTab])
 
+  const onPressStats = useCallback(() => {
+    startTransition(() => {
+      setActiveTab('stats')
+    })
+  }, [startTransition])
+
   const onPressTickets = useCallback(() => {
     startTransition(() => {
       setActiveTab('tickets')
@@ -96,6 +112,13 @@ export default function DashboardView() {
       </div>
       <div className="flex flex-col relative mb-4 shrink-0">
         <div className="flex flex-row gap-2 mb-2">
+          <Button
+            ref={statsRef}
+            variant={activeTab === 'stats' ? 'tertiary' : 'ghost'}
+            onPress={onPressStats}
+          >
+            Statistics
+          </Button>
           <Button
             ref={ticketsRef}
             variant={activeTab === 'tickets' ? 'tertiary' : 'ghost'}
@@ -142,6 +165,19 @@ export default function DashboardView() {
         <AnimatePresence mode="wait">
           {(() => {
             switch (activeTab) {
+              case 'stats':
+                return (
+                  <motion.div
+                    key="stats"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="h-full overflow-y-auto"
+                  >
+                    <Statistic />
+                  </motion.div>
+                )
               case 'tickets':
                 return (
                   <motion.div
