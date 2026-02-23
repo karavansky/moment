@@ -114,6 +114,11 @@ interface SchedulingActions {
   updateService: (service: ServiceTreeItem) => void
   deleteService: (id: string) => void
   refreshData: () => void
+  refreshWorkers: () => Promise<void>
+  refreshClients: () => Promise<void>
+  refreshTeams: () => Promise<void>
+  refreshGroups: () => Promise<void>
+  refreshServices: () => Promise<void>
   upsertReport: (report: Report) => void
   openAppointment: (appointmentId: string, workerId: string) => void
   closeAppointment: (appointmentId: string) => void
@@ -300,6 +305,56 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   }, [])
 
+  const refreshWorkers = useCallback(async () => {
+    try {
+      const data = await apiFetch('/api/scheduling/workers')
+      setState(prev => ({ ...prev, workers: data.workers || [] }))
+      console.log('[SSE] Workers refreshed:', (data.workers || []).length)
+    } catch (error) {
+      console.error('[SSE] Failed to refresh workers:', error)
+    }
+  }, [])
+
+  const refreshClients = useCallback(async () => {
+    try {
+      const data = await apiFetch('/api/scheduling/clients')
+      setState(prev => ({ ...prev, clients: data.clients || [] }))
+      console.log('[SSE] Clients refreshed:', (data.clients || []).length)
+    } catch (error) {
+      console.error('[SSE] Failed to refresh clients:', error)
+    }
+  }, [])
+
+  const refreshTeams = useCallback(async () => {
+    try {
+      const data = await apiFetch('/api/scheduling/teams')
+      setState(prev => ({ ...prev, teams: data.teams || [] }))
+      console.log('[SSE] Teams refreshed:', (data.teams || []).length)
+    } catch (error) {
+      console.error('[SSE] Failed to refresh teams:', error)
+    }
+  }, [])
+
+  const refreshGroups = useCallback(async () => {
+    try {
+      const data = await apiFetch('/api/scheduling/groupes')
+      setState(prev => ({ ...prev, groups: data.groupes || [] }))
+      console.log('[SSE] Groups refreshed:', (data.groupes || []).length)
+    } catch (error) {
+      console.error('[SSE] Failed to refresh groups:', error)
+    }
+  }, [])
+
+  const refreshServices = useCallback(async () => {
+    try {
+      const data = await apiFetch('/api/scheduling/services')
+      setState(prev => ({ ...prev, services: data.services || [] }))
+      console.log('[SSE] Services refreshed:', (data.services || []).length)
+    } catch (error) {
+      console.error('[SSE] Failed to refresh services:', error)
+    }
+  }, [])
+
   // Инициализация данных — зависит от auth
   useEffect(() => {
     if (authStatus === 'loading') return
@@ -314,6 +369,28 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
   // SSE: подписка на real-time события
   const handleSchedulingEvent = useCallback(
     (event: SchedulingEvent) => {
+      // Обработка событий workers/clients/teams/groups/services
+      if (event.type === 'worker_created' || event.type === 'worker_updated' || event.type === 'worker_deleted') {
+        refreshWorkers()
+        return
+      }
+      if (event.type === 'client_created' || event.type === 'client_updated' || event.type === 'client_deleted') {
+        refreshClients()
+        return
+      }
+      if (event.type === 'team_created' || event.type === 'team_updated' || event.type === 'team_deleted') {
+        refreshTeams()
+        return
+      }
+      if (event.type === 'groupe_created' || event.type === 'groupe_updated' || event.type === 'groupe_deleted') {
+        refreshGroups()
+        return
+      }
+      if (event.type === 'service_created' || event.type === 'service_updated' || event.type === 'service_deleted') {
+        refreshServices()
+        return
+      }
+
       if (!event.appointmentID) return
 
       // Для worker/client: событие релевантно если:
@@ -444,7 +521,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         })
       }
     },
-    [addNotification, refreshAppointments]
+    [addNotification, refreshAppointments, refreshWorkers, refreshClients, refreshTeams, refreshGroups, refreshServices]
   )
 
   useSchedulingEvents(isLiveMode, handleSchedulingEvent)
@@ -896,6 +973,12 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         }
       },
 
+      refreshWorkers,
+      refreshClients,
+      refreshTeams,
+      refreshGroups,
+      refreshServices,
+
       openAppointment: (appointmentId: string, workerId: string) => {
         setState(prev => {
           const appointment = prev.appointments.find(apt => apt.id === appointmentId)
@@ -1002,7 +1085,8 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         })
       },
     }),
-    [loadLiveData, loadMockData, addNotification, session]
+    [loadLiveData, loadMockData, addNotification, session,
+      refreshWorkers, refreshClients, refreshTeams, refreshGroups, refreshServices]
   )
 
   // Конвертация дерева услуг в формат для select с optgroup

@@ -1,6 +1,32 @@
 import { NextResponse } from 'next/server'
-import { getSchedulingSession } from '../auth-check'
-import { createService, updateService, deleteService } from '@/lib/services'
+import { getSchedulingSession, getAnySchedulingSession } from '../auth-check'
+import { createService, updateService, deleteService, getServicesByFirmaID } from '@/lib/services'
+
+export async function GET() {
+  try {
+    const session = await getAnySchedulingSession()
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const firmaID = session.user.firmaID!
+    const servicesRaw = await getServicesByFirmaID(firmaID)
+    const services = servicesRaw.map(s => ({
+      id: s.serviceID,
+      firmaID: s.firmaID,
+      name: s.name,
+      description: s.description,
+      duration: s.duration,
+      price: s.price ? Number(s.price) : undefined,
+      parentId: s.parentId,
+      isGroup: s.isGroup,
+      order: s.order,
+    }))
+
+    return NextResponse.json({ services })
+  } catch (error) {
+    console.error('[Scheduling Services] GET error:', error)
+    return NextResponse.json({ error: 'Failed to load services' }, { status: 500 })
+  }
+}
 
 export async function POST(request: Request) {
   try {

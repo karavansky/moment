@@ -78,28 +78,32 @@ export async function GET() {
       firmaID: g.firmaID,
     }))
 
-    const workers = workersRaw.map(w => ({
-      id: w.workerID,
-      userID: w.userID,
-      firmaID: w.firmaID,
-      name: w.name,
-      surname: w.surname || '',
-      email: w.email || '',
-      phone: w.phone,
-      phone2: w.phone2,
-      teamId: w.teamId || '',
-      isAdress: w.isAdress,
-      status: w.status,
-      country: w.country,
-      street: w.street,
-      postalCode: w.postalCode,
-      city: w.city,
-      houseNumber: w.houseNumber,
-      apartment: w.apartment,
-      district: w.district,
-      latitude: w.latitude,
-      longitude: w.longitude,
-    }))
+    const workers = workersRaw.map(w => {
+      const team = w.teamId ? teams.find(t => t.id === w.teamId) : undefined
+      return {
+        id: w.workerID,
+        userID: w.userID,
+        firmaID: w.firmaID,
+        name: w.name,
+        surname: w.surname || '',
+        email: w.email || '',
+        phone: w.phone,
+        phone2: w.phone2,
+        teamId: w.teamId || '',
+        team: team ? { id: team.id, teamName: team.teamName, firmaID: team.firmaID } : undefined,
+        isAdress: w.isAdress,
+        status: w.status,
+        country: w.country,
+        street: w.street,
+        postalCode: w.postalCode,
+        city: w.city,
+        houseNumber: w.houseNumber,
+        apartment: w.apartment,
+        district: w.district,
+        latitude: w.latitude,
+        longitude: w.longitude,
+      }
+    })
 
     const clients = clientsRaw.map(c => {
       const groupe = c.groupeID ? groupes.find(g => g.id === c.groupeID) : undefined

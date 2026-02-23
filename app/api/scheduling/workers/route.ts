@@ -1,6 +1,53 @@
 import { NextResponse } from 'next/server'
-import { getSchedulingSession } from '../auth-check'
-import { createWorker, updateWorker, deleteWorker } from '@/lib/workers'
+import { getSchedulingSession, getAnySchedulingSession } from '../auth-check'
+import { createWorker, updateWorker, deleteWorker, getWorkersByFirmaID } from '@/lib/workers'
+import { getTeamsByFirmaID } from '@/lib/teams'
+
+export async function GET() {
+  try {
+    const session = await getAnySchedulingSession()
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const firmaID = session.user.firmaID!
+    const [workersRaw, teamsRaw] = await Promise.all([
+      getWorkersByFirmaID(firmaID),
+      getTeamsByFirmaID(firmaID),
+    ])
+
+    const teams = teamsRaw.map(t => ({ id: t.teamID, teamName: t.teamName, firmaID: t.firmaID }))
+    const workers = workersRaw.map(w => {
+      const team = w.teamId ? teams.find(t => t.id === w.teamId) : undefined
+      return {
+        id: w.workerID,
+        userID: w.userID,
+        firmaID: w.firmaID,
+        name: w.name,
+        surname: w.surname || '',
+        email: w.email || '',
+        phone: w.phone,
+        phone2: w.phone2,
+        teamId: w.teamId || '',
+        team: team ? { id: team.id, teamName: team.teamName, firmaID: team.firmaID } : undefined,
+        isAdress: w.isAdress,
+        status: w.status,
+        country: w.country,
+        street: w.street,
+        postalCode: w.postalCode,
+        city: w.city,
+        houseNumber: w.houseNumber,
+        apartment: w.apartment,
+        district: w.district,
+        latitude: w.latitude,
+        longitude: w.longitude,
+      }
+    })
+
+    return NextResponse.json({ workers })
+  } catch (error) {
+    console.error('[Scheduling Workers] GET error:', error)
+    return NextResponse.json({ error: 'Failed to load workers' }, { status: 500 })
+  }
+}
 
 export async function POST(request: Request) {
   try {

@@ -123,16 +123,13 @@ const WorkersTable = function WorkersTable(props: WorkersTableProps) {
     }
   }
 
-  const list = React.useMemo(() => {
-    return props.list
-  }, [props.list])
-
   const [isMounted, setIsMounted] = React.useState(false)
   const [statusFilter, setStatusFilter] = React.useState<Selection>('all')
 
   React.useEffect(() => {
     setIsMounted(true)
-  }, [])
+    console.log('WorkersTable mounted with', props.list, 'items')
+  }, [props.list])
 
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>(
     props.sortDescriptor || {
@@ -149,7 +146,8 @@ const WorkersTable = function WorkersTable(props: WorkersTableProps) {
     () => props.teams.map(team => ({ name: team.teamName, uid: team.id })),
     [props.teams]
   )
-  type TypeList = (typeof list)[0]
+  
+  type TypeList = (typeof props.list)[0]
 
   const headerColumns = React.useMemo(() => {
     if (visibleColumns === 'all') return columns
@@ -160,7 +158,7 @@ const WorkersTable = function WorkersTable(props: WorkersTableProps) {
   const hasSearchFilter = Boolean(filterValue)
 
   const filteredItems = React.useMemo(() => {
-    let filteredUsers = [...list]
+    let filteredUsers = [...props.list]
 
     if (hasSearchFilter) {
       filteredUsers = filteredUsers.filter(
@@ -193,7 +191,7 @@ const WorkersTable = function WorkersTable(props: WorkersTableProps) {
     }
 
     return filteredUsers
-  }, [list, filterValue, statusFilter, teamFilter, teamItems, hasSearchFilter])
+  }, [props.list, filterValue, statusFilter, teamFilter, teamItems, hasSearchFilter])
   /*
   const sorted = React.useMemo(() => {
     if (!list.length) return [] as typeof list

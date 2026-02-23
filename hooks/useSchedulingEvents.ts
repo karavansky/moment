@@ -3,7 +3,14 @@
 import { useEffect, useRef } from 'react'
 
 export interface SchedulingEvent {
-  type: 'appointment_created' | 'appointment_updated' | 'appointment_deleted' | 'connected'
+  type:
+    | 'appointment_created' | 'appointment_updated' | 'appointment_deleted'
+    | 'worker_created' | 'worker_updated' | 'worker_deleted'
+    | 'client_created' | 'client_updated' | 'client_deleted'
+    | 'team_created' | 'team_updated' | 'team_deleted'
+    | 'groupe_created' | 'groupe_updated' | 'groupe_deleted'
+    | 'service_created' | 'service_updated' | 'service_deleted'
+    | 'connected'
   appointmentID?: string
   workerIds?: string[]
   clientID?: string

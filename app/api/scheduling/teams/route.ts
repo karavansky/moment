@@ -1,6 +1,22 @@
 import { NextResponse } from 'next/server'
-import { getSchedulingSession } from '../auth-check'
-import { createTeam, updateTeam, deleteTeam } from '@/lib/teams'
+import { getSchedulingSession, getAnySchedulingSession } from '../auth-check'
+import { createTeam, updateTeam, deleteTeam, getTeamsByFirmaID } from '@/lib/teams'
+
+export async function GET() {
+  try {
+    const session = await getAnySchedulingSession()
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const firmaID = session.user.firmaID!
+    const teamsRaw = await getTeamsByFirmaID(firmaID)
+    const teams = teamsRaw.map(t => ({ id: t.teamID, teamName: t.teamName, firmaID: t.firmaID }))
+
+    return NextResponse.json({ teams })
+  } catch (error) {
+    console.error('[Scheduling Teams] GET error:', error)
+    return NextResponse.json({ error: 'Failed to load teams' }, { status: 500 })
+  }
+}
 
 export async function POST(request: Request) {
   try {

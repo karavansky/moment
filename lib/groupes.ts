@@ -1,6 +1,17 @@
 import pool from './db'
 import { generateId } from './generateId'
 
+function getChannel(firmaID: string): string {
+  return `scheduling_${firmaID.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`
+}
+
+function notifyGroupeChange(firmaID: string, type: 'groupe_created' | 'groupe_updated' | 'groupe_deleted') {
+  pool.query(`SELECT pg_notify($1, $2)`, [
+    getChannel(firmaID),
+    JSON.stringify({ type, firmaID }),
+  ]).catch(err => console.error(`[groupes] pg_notify ${type} error:`, err))
+}
+
 export interface GroupeRecord {
   groupeID: string
   firmaID: string
@@ -19,7 +30,9 @@ export async function createGroupe(firmaID: string, groupeName: string): Promise
 
   try {
     const result = await pool.query(query, [groupeID, firmaID, groupeName])
-    return result.rows[0]
+    const created = result.rows[0]
+    notifyGroupeChange(firmaID, 'groupe_created')
+    return created
   } catch (error) {
     console.error('[createGroupe] Error:', error)
     throw error
@@ -47,7 +60,9 @@ export async function updateGroupe(groupeID: string, firmaID: string, groupeName
 
   try {
     const result = await pool.query(query, [groupeName, groupeID, firmaID])
-    return result.rows.length > 0 ? result.rows[0] : null
+    const updated = result.rows.length > 0 ? result.rows[0] : null
+    if (updated) notifyGroupeChange(firmaID, 'groupe_updated')
+    return updated
   } catch (error) {
     console.error('[updateGroupe] Error:', error)
     throw error
@@ -59,7 +74,9 @@ export async function deleteGroupe(groupeID: string, firmaID: string): Promise<b
 
   try {
     const result = await pool.query(query, [groupeID, firmaID])
-    return (result.rowCount ?? 0) > 0
+    const deleted = (result.rowCount ?? 0) > 0
+    if (deleted) notifyGroupeChange(firmaID, 'groupe_deleted')
+    return deleted
   } catch (error) {
     console.error('[deleteGroupe] Error:', error)
     throw error

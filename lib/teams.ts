@@ -1,5 +1,16 @@
 import pool from './db'
 
+function getChannel(firmaID: string): string {
+  return `scheduling_${firmaID.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`
+}
+
+function notifyTeamChange(firmaID: string, type: 'team_created' | 'team_updated' | 'team_deleted') {
+  pool.query(`SELECT pg_notify($1, $2)`, [
+    getChannel(firmaID),
+    JSON.stringify({ type, firmaID }),
+  ]).catch(err => console.error(`[teams] pg_notify ${type} error:`, err))
+}
+
 export interface TeamRecord {
   teamID: string
   firmaID: string
@@ -18,7 +29,9 @@ export async function createTeam(firmaID: string, teamName: string, teamID: stri
 
   try {
     const result = await pool.query(query, [id, firmaID, teamName])
-    return result.rows[0]
+    const created = result.rows[0]
+    notifyTeamChange(firmaID, 'team_created')
+    return created
   } catch (error) {
     console.error('[createTeam] Error:', error)
     throw error
@@ -46,7 +59,9 @@ export async function updateTeam(teamID: string, firmaID: string, teamName: stri
 
   try {
     const result = await pool.query(query, [teamName, teamID, firmaID])
-    return result.rows.length > 0 ? result.rows[0] : null
+    const updated = result.rows.length > 0 ? result.rows[0] : null
+    if (updated) notifyTeamChange(firmaID, 'team_updated')
+    return updated
   } catch (error) {
     console.error('[updateTeam] Error:', error)
     throw error
@@ -58,7 +73,9 @@ export async function deleteTeam(teamID: string, firmaID: string): Promise<boole
 
   try {
     const result = await pool.query(query, [teamID, firmaID])
-    return (result.rowCount ?? 0) > 0
+    const deleted = (result.rowCount ?? 0) > 0
+    if (deleted) notifyTeamChange(firmaID, 'team_deleted')
+    return deleted
   } catch (error) {
     console.error('[deleteTeam] Error:', error)
     throw error

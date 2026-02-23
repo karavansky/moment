@@ -1,6 +1,17 @@
 import pool from './db'
 import { generateId } from './generateId'
 
+function getChannel(firmaID: string): string {
+  return `scheduling_${firmaID.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`
+}
+
+function notifyClientChange(firmaID: string, type: 'client_created' | 'client_updated' | 'client_deleted') {
+  pool.query(`SELECT pg_notify($1, $2)`, [
+    getChannel(firmaID),
+    JSON.stringify({ type, firmaID }),
+  ]).catch(err => console.error(`[clients] pg_notify ${type} error:`, err))
+}
+
 export interface ClientRecord {
   clientID: string
   userID: string | null
@@ -68,7 +79,9 @@ export async function createClient(data: {
 
   try {
     const result = await pool.query(query, values)
-    return result.rows[0]
+    const created = result.rows[0]
+    notifyClientChange(data.firmaID, 'client_created')
+    return created
   } catch (error) {
     console.error('[createClient] Error:', error)
     throw error
@@ -159,7 +172,9 @@ export async function updateClient(
 
   try {
     const result = await pool.query(query, values)
-    return result.rows.length > 0 ? result.rows[0] : null
+    const updated = result.rows.length > 0 ? result.rows[0] : null
+    if (updated) notifyClientChange(firmaID, 'client_updated')
+    return updated
   } catch (error) {
     console.error('[updateClient] Error:', error)
     throw error
@@ -171,7 +186,9 @@ export async function deleteClient(clientID: string, firmaID: string): Promise<b
 
   try {
     const result = await pool.query(query, [clientID, firmaID])
-    return (result.rowCount ?? 0) > 0
+    const deleted = (result.rowCount ?? 0) > 0
+    if (deleted) notifyClientChange(firmaID, 'client_deleted')
+    return deleted
   } catch (error) {
     console.error('[deleteClient] Error:', error)
     throw error

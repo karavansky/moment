@@ -1,6 +1,22 @@
 import { NextResponse } from 'next/server'
-import { getSchedulingSession } from '../auth-check'
-import { createGroupe, updateGroupe, deleteGroupe } from '@/lib/groupes'
+import { getSchedulingSession, getAnySchedulingSession } from '../auth-check'
+import { createGroupe, updateGroupe, deleteGroupe, getGroupesByFirmaID } from '@/lib/groupes'
+
+export async function GET() {
+  try {
+    const session = await getAnySchedulingSession()
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const firmaID = session.user.firmaID!
+    const groupesRaw = await getGroupesByFirmaID(firmaID)
+    const groupes = groupesRaw.map(g => ({ id: g.groupeID, groupeName: g.groupeName, firmaID: g.firmaID }))
+
+    return NextResponse.json({ groupes })
+  } catch (error) {
+    console.error('[Scheduling Groupes] GET error:', error)
+    return NextResponse.json({ error: 'Failed to load groupes' }, { status: 500 })
+  }
+}
 
 export async function POST(request: Request) {
   try {

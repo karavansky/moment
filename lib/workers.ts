@@ -1,5 +1,16 @@
 import pool from './db'
 
+function getChannel(firmaID: string): string {
+  return `scheduling_${firmaID.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`
+}
+
+function notifyWorkerChange(firmaID: string, type: 'worker_created' | 'worker_updated' | 'worker_deleted') {
+  pool.query(`SELECT pg_notify($1, $2)`, [
+    getChannel(firmaID),
+    JSON.stringify({ type, firmaID }),
+  ]).catch(err => console.error(`[workers] pg_notify ${type} error:`, err))
+}
+
 export interface WorkerRecord {
   workerID: string
   userID: string | null
@@ -70,7 +81,9 @@ export async function createWorker(data: {
 
   try {
     const result = await pool.query(query, values)
-    return result.rows[0]
+    const created = result.rows[0]
+    notifyWorkerChange(data.firmaID, 'worker_created')
+    return created
   } catch (error) {
     console.error('[createWorker] Error:', error)
     throw error
@@ -163,7 +176,9 @@ export async function updateWorker(
 
   try {
     const result = await pool.query(query, values)
-    return result.rows.length > 0 ? result.rows[0] : null
+    const updated = result.rows.length > 0 ? result.rows[0] : null
+    if (updated) notifyWorkerChange(firmaID, 'worker_updated')
+    return updated
   } catch (error) {
     console.error('[updateWorker] Error:', error)
     throw error
@@ -175,7 +190,9 @@ export async function deleteWorker(workerID: string, firmaID: string): Promise<b
 
   try {
     const result = await pool.query(query, [workerID, firmaID])
-    return (result.rowCount ?? 0) > 0
+    const deleted = (result.rowCount ?? 0) > 0
+    if (deleted) notifyWorkerChange(firmaID, 'worker_deleted')
+    return deleted
   } catch (error) {
     console.error('[deleteWorker] Error:', error)
     throw error

@@ -1,6 +1,17 @@
 import pool from './db'
 import { generateId } from './generateId'
 
+function getChannel(firmaID: string): string {
+  return `scheduling_${firmaID.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`
+}
+
+function notifyServiceChange(firmaID: string, type: 'service_created' | 'service_updated' | 'service_deleted') {
+  pool.query(`SELECT pg_notify($1, $2)`, [
+    getChannel(firmaID),
+    JSON.stringify({ type, firmaID }),
+  ]).catch(err => console.error(`[services] pg_notify ${type} error:`, err))
+}
+
 export interface ServiceRecord {
   serviceID: string
   firmaID: string
@@ -48,7 +59,9 @@ export async function createService(
 
   try {
     const result = await pool.query(query, values)
-    return result.rows[0]
+    const created = result.rows[0]
+    notifyServiceChange(firmaID, 'service_created')
+    return created
   } catch (error) {
     console.error('[createService] Error:', error)
     throw error
@@ -107,7 +120,9 @@ export async function updateService(
 
   try {
     const result = await pool.query(query, values)
-    return result.rows.length > 0 ? result.rows[0] : null
+    const updated = result.rows.length > 0 ? result.rows[0] : null
+    if (updated) notifyServiceChange(firmaID, 'service_updated')
+    return updated
   } catch (error) {
     console.error('[updateService] Error:', error)
     throw error
@@ -119,7 +134,9 @@ export async function deleteService(serviceID: string, firmaID: string): Promise
 
   try {
     const result = await pool.query(query, [serviceID, firmaID])
-    return (result.rowCount ?? 0) > 0
+    const deleted = (result.rowCount ?? 0) > 0
+    if (deleted) notifyServiceChange(firmaID, 'service_deleted')
+    return deleted
   } catch (error) {
     console.error('[deleteService] Error:', error)
     throw error
