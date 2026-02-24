@@ -674,6 +674,8 @@
       "unknownError": "Errore sconosciuto",
       "uploadError": "Errore durante il caricamento:",
       "saveError": "Errore durante il salvataggio del report",
+      "startError": "Impossibile avviare la sessione",
+      "finishError": "Impossibile chiudere la sessione",
       "hour": "ora",
       "noSessions": "Nessuna sessione"
     }

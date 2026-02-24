@@ -674,6 +674,8 @@
       "unknownError": "Nieznany błąd",
       "uploadError": "Błąd przesyłania:",
       "saveError": "Błąd zapisywania raportu",
+      "startError": "Nie udało się rozpocząć sesji",
+      "finishError": "Nie udało się zakończyć sesji",
       "hour": "godzina",
       "noSessions": "Brak sesji"
     }

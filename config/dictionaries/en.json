@@ -571,6 +571,8 @@
       "unknownError": "Unknown error",
       "uploadError": "Error uploading:",
       "saveError": "Error saving report",
+      "startError": "Failed to start session",
+      "finishError": "Failed to close session",
       "hour": "hour",
       "noSessions": "No sessions"
     }

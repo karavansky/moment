@@ -114,7 +114,7 @@ export function useAuth() {
       status: 'unauthenticated' as const,
       signIn: async (_provider: 'google' | 'apple', _callbackUrl?: string) => {},
       signInWithCredentials: async (_email: string, _password: string, _callbackUrl?: string) => ({ error: 'Not available' }),
-      signOut: async () => {},
+      signOut: async (_callbackUrl?: string) => {},
     }
   }
   return context

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { Modal, Button, Separator, TextArea, TextField, Input } from '@heroui/react'
+import { Modal, Button, Separator, TextArea, TextField, Input, toast } from '@heroui/react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { Appointment, Report, Photo } from '@/types/scheduling'
 import {
@@ -231,6 +231,7 @@ export default function AppointmentReport({
       updateAppointment({ ...appointment, isOpen: true, openedAt: serverOpenAt, closedAt: undefined, reports: updatedSessions }, true)
     } catch (err) {
       console.error('[handleStart] Error:', err)
+      toast.danger(t('appointment.report.startError'))
     } finally {
       setIsStarting(false)
     }
@@ -311,6 +312,7 @@ export default function AppointmentReport({
       updateAppointment({ ...appointment, isOpen: false, closedAt: confirmedCloseAt, reports: updatedSessions }, true)
     } catch (err) {
       console.error('[handleFinish] Error:', err)
+      toast.danger(t('appointment.report.finishError'))
     } finally {
       setIsFinishing(false)
     }
@@ -384,6 +386,7 @@ export default function AppointmentReport({
       if (appointment) updateAppointment({ ...appointment, reports: updatedSessions }, true)
     } catch (err) {
       console.error('[handleSaveNotes] Error:', err)
+      toast.danger(t('appointment.report.saveError'))
     } finally {
       setIsSavingNotes(prev => ({ ...prev, [reportId]: false }))
     }
@@ -518,7 +521,7 @@ export default function AppointmentReport({
       console.error('Error uploading file:', error)
       const errorMessage =
         error instanceof Error ? error.message : t('appointment.report.unknownError')
-      alert(`${t('appointment.report.uploadError')} ${errorMessage}`)
+      toast.danger(`${t('appointment.report.uploadError')} ${errorMessage}`)
     } finally {
       setIsUploading(false)
       setUploadStage('idle')

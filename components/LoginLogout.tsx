@@ -59,7 +59,7 @@ export function LoginLogout() {
           router.push(`/${lang}/s3-storage`)
           break
         case 'logout':
-          signOut()
+            signOut(`/${lang}/auth/signin`)
           break
         default:
           break
@@ -78,7 +78,7 @@ export function LoginLogout() {
           router.push(`/${lang}/settings`)
           break
         case 'logout':
-          signOut()
+          signOut(`/${lang}/auth/signin`  )
           break
         default:
           break

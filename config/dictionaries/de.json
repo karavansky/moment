@@ -583,6 +583,8 @@
       "unknownError": "Unbekannter Fehler",
       "uploadError": "Fehler beim Hochladen:",
       "saveError": "Fehler beim Speichern des Berichts",
+      "startError": "Sitzung konnte nicht gestartet werden",
+      "finishError": "Sitzung konnte nicht beendet werden",
       "hour": "Stunde",
       "noSessions": "Keine Sitzungen"
     }

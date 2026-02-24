@@ -18,6 +18,7 @@ export default function SignInClient({ lang }: SignInClientProps) {
   }
 
   const handleCredentialsSignIn = async (email: string, password: string) => {
+    console.log('Attempting credentials sign-in with email:', email, 'and language:', lang)
     return signInWithCredentials(email, password, `/${lang}`)
   }
 

@@ -674,6 +674,8 @@
       "unknownError": "不明なエラー",
       "uploadError": "アップロードエラー：",
       "saveError": "レポートの保存エラー",
+      "startError": "セッションの開始に失敗しました",
+      "finishError": "セッションの終了に失敗しました",
       "hour": "時間",
       "noSessions": "セッションなし"
     }

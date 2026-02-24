@@ -674,6 +674,8 @@
       "unknownError": "Erro desconhecido",
       "uploadError": "Erro ao carregar:",
       "saveError": "Erro ao guardar o relatório",
+      "startError": "Falha ao iniciar a sessão",
+      "finishError": "Falha ao fechar a sessão",
       "hour": "hora",
       "noSessions": "Sem sessões"
     }

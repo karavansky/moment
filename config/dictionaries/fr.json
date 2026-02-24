@@ -674,6 +674,8 @@
       "unknownError": "Erreur inconnue",
       "uploadError": "Erreur de téléchargement :",
       "saveError": "Erreur lors de l'enregistrement du rapport",
+      "startError": "Impossible de démarrer la séance",
+      "finishError": "Impossible de fermer la séance",
       "hour": "heure",
       "noSessions": "Aucune session"
     }

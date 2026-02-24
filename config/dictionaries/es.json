@@ -674,6 +674,8 @@
       "unknownError": "Error desconocido",
       "uploadError": "Error al subir:",
       "saveError": "Error al guardar el informe",
+      "startError": "Error al iniciar la sesión",
+      "finishError": "Error al cerrar la sesión",
       "hour": "hora",
       "noSessions": "Sin sesiones"
     }

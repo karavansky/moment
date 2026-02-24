@@ -674,6 +674,8 @@
       "unknownError": "Bilinmeyen hata",
       "uploadError": "Yükleme hatası:",
       "saveError": "Rapor kaydetme hatası",
+      "startError": "Oturum başlatılamadı",
+      "finishError": "Oturum kapatılamadı",
       "hour": "saat",
       "noSessions": "Oturum yok"
     }

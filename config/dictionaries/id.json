@@ -674,6 +674,8 @@
       "unknownError": "Kesalahan tidak diketahui",
       "uploadError": "Kesalahan saat mengunggah:",
       "saveError": "Kesalahan saat menyimpan laporan",
+      "startError": "Gagal memulai sesi",
+      "finishError": "Gagal menutup sesi",
       "hour": "jam",
       "noSessions": "Tidak ada sesi"
     }
