@@ -625,6 +625,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         setState(prev => ({
           ...prev,
           appointments: prev.appointments.filter(apt => apt.id !== id),
+          reports: prev.reports.filter(r => r.appointmentId !== id),
         }))
 
         if (isLiveModeRef.current) {

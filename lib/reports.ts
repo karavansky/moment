@@ -1,5 +1,6 @@
 import pool from './db'
 import { generateId } from './generateId'
+import { deleteS3File } from './s3'
 
 export interface ReportRecord {
   reportID: string
@@ -153,7 +154,15 @@ export async function addPhotoToReport(
 }
 
 export async function removePhotoFromReport(photoID: string): Promise<void> {
+  const result = await pool.query(
+    `SELECT "url" FROM report_photos WHERE "photoID" = $1`,
+    [photoID]
+  )
+  const url: string | undefined = result.rows[0]?.url
   await pool.query(`DELETE FROM report_photos WHERE "photoID" = $1`, [photoID])
+  if (url) {
+    await deleteS3File(url)
+  }
 }
 
 export async function getReportsByFirmaID(firmaID: string): Promise<ReportWithPhotos[]> {

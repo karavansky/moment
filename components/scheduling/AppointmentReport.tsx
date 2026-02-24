@@ -19,6 +19,7 @@ import imageCompression from 'browser-image-compression'
 import { useTranslation } from '@/components/Providers'
 import { useLanguage } from '@/hooks/useLanguage'
 import ElapsedTimer from './ElapsedTimer'
+import { Alert } from '../Alert'
 
 /** Haversine distance between two coordinates, returns meters */
 function haversineMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -63,6 +64,8 @@ export default function AppointmentReport({
     user,
     openAppointment,
     closeAppointment,
+        deleteAppointment,
+
     appointments,
     reports: allReports,
   } = useScheduling()
@@ -873,6 +876,17 @@ export default function AppointmentReport({
                   </div>
                 </div>
               </Modal.Body>
+              <Modal.Footer>
+                {user?.status === 0 && (
+                  <Alert variant="danger" title={t('appointment.edit.delete')} description={t('appointment.edit.confirmDelete')} onConfirm={() => {
+                      if (appointment) {
+                        deleteAppointment(appointment.id)
+                        onClose()
+                      }
+                    }} />
+
+                )}
+              </Modal.Footer>
             </Modal.Dialog>
           </Modal.Container>
         </Modal.Backdrop>

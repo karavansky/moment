@@ -38,6 +38,7 @@ export function LoginLogout() {
   }
 
   const handleCredentialsSignIn = async (email: string, password: string) => {
+    console.log('[LoginLogout] handleCredentialsSignIn called with lang:', lang)
     return signInWithCredentials(email, password, `/${lang}/tickets`)
   }
   const handleAdmin = useCallback(

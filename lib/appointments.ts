@@ -1,5 +1,6 @@
 import pool from './db'
 import { generateId } from './generateId'
+import { deleteS3File } from './s3'
 import { sendPushToWorkers, sendPushToDirectors } from './push-notifications'
 
 function getChannel(firmaID: string): string {
@@ -452,6 +453,15 @@ export async function updateAppointment(
 
 export async function deleteAppointment(appointmentID: string, firmaID: string): Promise<boolean> {
   try {
+    // Fetch photo URLs before delete for S3 cleanup (cascade will remove DB records)
+    const photosResult = await pool.query(
+      `SELECT rp."url" FROM report_photos rp
+       JOIN reports r ON rp."reportID" = r."reportID"
+       WHERE r."appointmentId" = $1`,
+      [appointmentID]
+    )
+    const photoUrls: string[] = photosResult.rows.map((r: any) => r.url).filter(Boolean)
+
     // Fetch workerIds and clientID before delete for notification
     const existing = await pool.query(
       `SELECT a."appointmentID", a."clientID",
@@ -482,6 +492,11 @@ export async function deleteAppointment(appointmentID: string, firmaID: string):
         workerIds,
         clientID: row.clientID,
       })
+
+      // Delete report photos from S3 (fire-and-forget, errors are logged inside)
+      for (const url of photoUrls) {
+        deleteS3File(url)
+      }
     }
 
     return deleted
