@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useMemo, useCall
 import { useSession, signIn as nextAuthSignIn } from 'next-auth/react'
 import { usePathname, useRouter } from 'next/navigation'
 import type { Session } from 'next-auth'
+import { supportedLocales, defaultLocale } from '@/config/locales'
 
 interface SignInWithCredentialsResult {
   error?: string
@@ -79,9 +80,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(async () => {
     try {
-      const segments = pathnameRef.current?.split('/').filter(Boolean) || []
-      const locale = segments[0] || 'en'
-      // Redirect to localized signout page
+      // window.location.pathname is always current at call time — avoids stale pathnameRef
+      const segments = window.location.pathname.split('/').filter(Boolean)
+      const locale = supportedLocales.includes(segments[0] as (typeof supportedLocales)[number])
+        ? segments[0]
+        : defaultLocale
       routerRef.current.push(`/${locale}/auth/signout`)
     } catch (error) {
       console.error('Sign out error:', error)
