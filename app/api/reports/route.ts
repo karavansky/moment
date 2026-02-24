@@ -10,20 +10,21 @@ export async function POST(request: Request) {
 
   try {
     const {
+      reportID,
       appointmentId,
       workerId,
       firmaID,
-      openAt,
       openLatitude,
       openLongitude,
       openAddress,
       openDistanceToAppointment,
     } = await request.json()
 
+    // openAt is set by the DB server via NOW() — not accepted from client
     const report = await createReportSession(firmaID, {
+      reportID,
       workerId,
       appointmentId,
-      openAt: new Date(openAt),
       openLatitude,
       openLongitude,
       openAddress,

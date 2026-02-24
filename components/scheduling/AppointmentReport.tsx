@@ -13,6 +13,7 @@ import {
   Pause,
   Square,
 } from 'lucide-react'
+import { generateId } from '@/lib/generate-id'
 import { formatTime, isSameDate } from '@/lib/calendar-utils'
 import imageCompression from 'browser-image-compression'
 import { useTranslation } from '@/components/Providers'
@@ -148,7 +149,8 @@ export default function AppointmentReport({
 
   async function getGeoData(
     clientLat?: number,
-    clientLon?: number
+    clientLon?: number,
+    posOptions?: PositionOptions
   ): Promise<{ lat?: number; lon?: number; address?: string; distance?: number }> {
     return new Promise(resolve => {
       if (!navigator.geolocation) return resolve({})
@@ -174,7 +176,7 @@ export default function AppointmentReport({
           resolve({ lat, lon, address, distance })
         },
         () => resolve({}),
-        { enableHighAccuracy: true, timeout: 5000 }
+        posOptions ?? { enableHighAccuracy: true, timeout: 5000 }
       )
     })
   }
@@ -182,105 +184,179 @@ export default function AppointmentReport({
   const handleStart = async () => {
     if (!appointment || !user) return
     setIsStarting(true)
+
+    // Generate ID client-side — no need to wait for server to know the reportID
+    const reportIdToUpdate = generateId()
+    const clientLat = appointment.client?.latitude
+    const clientLon = appointment.client?.longitude
+    // confirmedSession is built after step 1 with the server-determined openAt
+    let confirmedSession: Report | undefined
+
     try {
-      const geo = await getGeoData(
-        appointment.client?.latitude,
-        appointment.client?.longitude
-      )
-      const openAt = new Date()
+      // Step 1: create report — openAt is set by DB server via NOW()
       const res = await fetch('/api/reports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          reportID: reportIdToUpdate,
           appointmentId: appointment.id,
           workerId: user.myWorkerID || appointment.workerId,
           firmaID: user.firmaID,
-          openAt: openAt.toISOString(),
-          openLatitude: geo.lat,
-          openLongitude: geo.lon,
-          openAddress: geo.address,
-          openDistanceToAppointment: geo.distance,
         }),
       })
       if (!res.ok) throw new Error('Failed to create report session')
       const { report } = await res.json()
 
-      const newSession: Report = {
-        id: report.reportID,
-        firmaID: report.firmaID,
-        workerId: report.workerId,
-        appointmentId: report.appointmentId,
+      // Use server-determined openAt so timer reflects server clock
+      const serverOpenAt = new Date(report.openAt)
+      confirmedSession = {
+        id: reportIdToUpdate,
+        firmaID: user.firmaID,
+        workerId: user.myWorkerID || appointment.workerId,
+        appointmentId: appointment.id,
         notes: '',
-        date: report.date || openAt,
+        date: serverOpenAt,
         photos: [],
-        openAt: report.openAt,
-        openLatitude: report.openLatitude,
-        openLongitude: report.openLongitude,
-        openAddress: report.openAddress,
-        openDistanceToAppointment: report.openDistanceToAppointment,
+        openAt: serverOpenAt,
       }
 
-      const updatedSessions = [...reportSessions, newSession]
+      const updatedSessions = [...reportSessions, confirmedSession]
       setReportSessions(updatedSessions)
-      setCurrentReportId(newSession.id)
+      setCurrentReportId(reportIdToUpdate)
       setPhotos([])
-      setSessionNotes(prev => ({ ...prev, [newSession.id]: '' }))
-      upsertReport(newSession)
+      setSessionNotes(prev => ({ ...prev, [reportIdToUpdate]: '' }))
+      upsertReport(confirmedSession)
 
       openAppointment(appointment.id, user.myWorkerID!)
-      updateAppointment({ ...appointment, isOpen: true, openedAt: openAt, closedAt: undefined, reports: updatedSessions }, true)
+      updateAppointment({ ...appointment, isOpen: true, openedAt: serverOpenAt, closedAt: undefined, reports: updatedSessions }, true)
     } catch (err) {
       console.error('[handleStart] Error:', err)
     } finally {
       setIsStarting(false)
     }
+
+    if (!confirmedSession) return // step 1 failed — skip geo
+
+    // Step 2: fire-and-forget geo update — runs in background, doesn't block UI
+    getGeoData(clientLat, clientLon, {
+      enableHighAccuracy: true,
+      timeout: 30000,
+      maximumAge: 30000,
+    }).then(geo => {
+      if (!geo.lat && !geo.lon && !geo.address && geo.distance == null) return
+
+      fetch(`/api/reports/${reportIdToUpdate}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          openLatitude: geo.lat,
+          openLongitude: geo.lon,
+          openAddress: geo.address,
+          openDistanceToAppointment: geo.distance,
+        }),
+      }).catch(err => console.warn('[handleStart] geo patch failed:', err))
+
+      const geoUpdatedSession = {
+        ...confirmedSession,
+        openLatitude: geo.lat,
+        openLongitude: geo.lon,
+        openAddress: geo.address,
+        openDistanceToAppointment: geo.distance,
+      }
+
+      // Always update global context so next modal open reads fresh geo without API call
+      upsertReport(geoUpdatedSession)
+
+      // Update local sessions list if modal is still open (prev may be [] if modal was closed — safe, map returns [] unchanged)
+      setReportSessions(prev =>
+        prev.map(s => (s.id === reportIdToUpdate ? geoUpdatedSession : s))
+      )
+    })
   }
 
   const handleFinish = async () => {
     if (!appointment || !currentReportId) return
     setIsFinishing(true)
+
+    // Capture snapshots before any state resets
+    const reportIdToUpdate = currentReportId
+    const sessionSnapshot = reportSessions.find(s => s.id === reportIdToUpdate)
+    const clientLat = appointment.client?.latitude
+    const clientLon = appointment.client?.longitude
+    // confirmedCloseAt is set after step 1 with the server-determined closeAt
+    let confirmedCloseAt: Date | undefined
+
     try {
-      const geo = await getGeoData(
-        appointment.client?.latitude,
-        appointment.client?.longitude
-      )
-      const closeAt = new Date()
-      await fetch(`/api/reports/${currentReportId}`, {
+      // Step 1: close session — closeAt is set by DB server via NOW()
+      const res = await fetch(`/api/reports/${reportIdToUpdate}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          closeAt: closeAt.toISOString(),
-          closeLatitude: geo.lat,
-          closeLongitude: geo.lon,
-          closeAddress: geo.address,
-          closeDistanceToAppointment: geo.distance,
-        }),
+        body: JSON.stringify({ close: true }),
       })
+      if (!res.ok) throw new Error('Failed to close report session')
+      const { report } = await res.json()
+
+      // Use server-determined closeAt to prevent client clock manipulation
+      confirmedCloseAt = new Date(report.closeAt)
 
       const updatedSessions = reportSessions.map(s =>
-        s.id === currentReportId
-          ? {
-              ...s,
-              closeAt,
-              closeLatitude: geo.lat,
-              closeLongitude: geo.lon,
-              closeAddress: geo.address,
-              closeDistanceToAppointment: geo.distance,
-            }
-          : s
+        s.id === reportIdToUpdate ? { ...s, closeAt: confirmedCloseAt } : s
       )
       setReportSessions(updatedSessions)
       setCurrentReportId('')
-      const updatedSession = updatedSessions.find(s => s.id === currentReportId)
+      const updatedSession = updatedSessions.find(s => s.id === reportIdToUpdate)
       if (updatedSession) upsertReport(updatedSession)
 
       closeAppointment(appointment.id)
-      updateAppointment({ ...appointment, isOpen: false, closedAt: closeAt, reports: updatedSessions }, true)
+      updateAppointment({ ...appointment, isOpen: false, closedAt: confirmedCloseAt, reports: updatedSessions }, true)
     } catch (err) {
       console.error('[handleFinish] Error:', err)
     } finally {
       setIsFinishing(false)
     }
+
+    if (!confirmedCloseAt) return // step 1 failed — skip geo
+
+    // Step 2: fire-and-forget geo update — runs in background, doesn't block UI
+    // maximumAge: 30 s accepts a cached position if the browser already has one
+    // timeout: 30 s — enough for a fresh GPS fix on mobile
+    getGeoData(clientLat, clientLon, {
+      enableHighAccuracy: true,
+      timeout: 30000,
+      maximumAge: 30000,
+    }).then(geo => {
+      if (!geo.lat && !geo.lon && !geo.address && geo.distance == null) return
+
+      fetch(`/api/reports/${reportIdToUpdate}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          closeLatitude: geo.lat,
+          closeLongitude: geo.lon,
+          closeAddress: geo.address,
+          closeDistanceToAppointment: geo.distance,
+        }),
+      }).catch(err => console.warn('[handleFinish] geo patch failed:', err))
+
+      if (!sessionSnapshot) return
+
+      const geoUpdatedSession = {
+        ...sessionSnapshot,
+        closeAt: confirmedCloseAt,
+        closeLatitude: geo.lat,
+        closeLongitude: geo.lon,
+        closeAddress: geo.address,
+        closeDistanceToAppointment: geo.distance,
+      }
+
+      // Always update global context so next modal open reads fresh geo without API call
+      upsertReport(geoUpdatedSession)
+
+      // Update local sessions list if modal is still open (prev may be [] if modal was closed — safe, map returns [] unchanged)
+      setReportSessions(prev =>
+        prev.map(s => (s.id === reportIdToUpdate ? geoUpdatedSession : s))
+      )
+    })
   }
 
   const handlePause = () => {

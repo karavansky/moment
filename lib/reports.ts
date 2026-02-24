@@ -75,23 +75,24 @@ export async function createReport(
 export async function createReportSession(
   firmaID: string,
   data: {
+    reportID?: string
     workerId: string
     appointmentId: string
-    openAt: Date
     openLatitude?: number
     openLongitude?: number
     openAddress?: string
     openDistanceToAppointment?: number
   }
 ): Promise<ReportRecord> {
-  const reportID = generateId(20)
+  const reportID = data.reportID ?? generateId(20)
+  // openAt is set by the DB server via NOW() to prevent client clock manipulation
   const query = `
     INSERT INTO reports ("reportID", "firmaID", "workerId", "appointmentId", "openAt",
       "openLatitude", "openLongitude", "openAddress", "openDistanceToAppointment")
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+    VALUES ($1,$2,$3,$4, NOW(), $5,$6,$7,$8)
     RETURNING *`
   const result = await pool.query(query, [
-    reportID, firmaID, data.workerId, data.appointmentId, data.openAt,
+    reportID, firmaID, data.workerId, data.appointmentId,
     data.openLatitude ?? null, data.openLongitude ?? null,
     data.openAddress ?? null, data.openDistanceToAppointment ?? null,
   ])
@@ -102,8 +103,12 @@ export async function updateReport(
   reportID: string,
   firmaID: string,
   data: {
-    closeAt?: Date
+    closeSession?: boolean
     notes?: string
+    openLatitude?: number
+    openLongitude?: number
+    openAddress?: string
+    openDistanceToAppointment?: number
     closeLatitude?: number
     closeLongitude?: number
     closeAddress?: string
@@ -114,8 +119,13 @@ export async function updateReport(
   const values: any[] = []
   let idx = 1
 
-  if (data.closeAt !== undefined) { setClauses.push(`"closeAt" = $${idx++}`); values.push(data.closeAt) }
+  // closeAt is set by the DB server via NOW() to prevent client clock manipulation
+  if (data.closeSession) { setClauses.push('"closeAt" = NOW()') }
   if (data.notes !== undefined) { setClauses.push(`"notes" = $${idx++}`); values.push(data.notes) }
+  if (data.openLatitude !== undefined) { setClauses.push(`"openLatitude" = $${idx++}`); values.push(data.openLatitude) }
+  if (data.openLongitude !== undefined) { setClauses.push(`"openLongitude" = $${idx++}`); values.push(data.openLongitude) }
+  if (data.openAddress !== undefined) { setClauses.push(`"openAddress" = $${idx++}`); values.push(data.openAddress) }
+  if (data.openDistanceToAppointment !== undefined) { setClauses.push(`"openDistanceToAppointment" = $${idx++}`); values.push(data.openDistanceToAppointment) }
   if (data.closeLatitude !== undefined) { setClauses.push(`"closeLatitude" = $${idx++}`); values.push(data.closeLatitude) }
   if (data.closeLongitude !== undefined) { setClauses.push(`"closeLongitude" = $${idx++}`); values.push(data.closeLongitude) }
   if (data.closeAddress !== undefined) { setClauses.push(`"closeAddress" = $${idx++}`); values.push(data.closeAddress) }

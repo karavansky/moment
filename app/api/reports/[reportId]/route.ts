@@ -14,9 +14,14 @@ export async function PATCH(request: Request, { params }: Params) {
     const { reportId } = await params
     const data = await request.json()
 
+    // closeAt is set by DB server via NOW() when close:true — not accepted from client
     const report = await updateReport(reportId, session.user.firmaID!, {
-      closeAt: data.closeAt ? new Date(data.closeAt) : undefined,
+      closeSession: data.close === true,
       notes: data.notes,
+      openLatitude: data.openLatitude,
+      openLongitude: data.openLongitude,
+      openAddress: data.openAddress,
+      openDistanceToAppointment: data.openDistanceToAppointment,
       closeLatitude: data.closeLatitude,
       closeLongitude: data.closeLongitude,
       closeAddress: data.closeAddress,
