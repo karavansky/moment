@@ -1,5 +1,15 @@
 {
-    "general": {
-        "previewFeatures": true
+  "mcpServers": {
+    "postgres": {
+      "command": "/home/hronop/node/moment/toolbox",
+      "args": ["--prebuilt", "postgres", "--stdio"],
+      "env": {
+        "POSTGRES_HOST": "localhost",
+        "POSTGRES_PORT": "5432",
+        "POSTGRES_DATABASE": "moment",
+        "POSTGRES_USER": "hronop",
+        "POSTGRES_PASSWORD": "Sk02081978"
+      }
     }
+  }
 }

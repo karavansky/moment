@@ -25,7 +25,7 @@ const SUSPICIOUS_PATHS = [
 // Rate limiting configuration
 const RATE_LIMIT = {
   windowMs: 60 * 1000, // 1 минута
-  maxRequests: 100, // максимум запросов за окно
+  maxRequests: 600, // максимум запросов за окно (увеличено для предотвращения 429)
 }
 
 function getLocale(request: NextRequest): string {
