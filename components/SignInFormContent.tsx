@@ -49,19 +49,19 @@ export function SignInFormContent({ onSignIn, onSignInWithCredentials, t, lang, 
   return (
     <>
       <div className="text-center mb-4">
-        <div className="flex justify-center mb-6">
+        <div className="flex flex-row md:flex-col items-center justify-center gap-4 mb-4 md:mb-6">
           <Image
             src="/web-app-manifest-192x192.png"
             alt="Moment LBS"
             width={80}
             height={80}
-            className="rounded-xl"
+            className="rounded-xl w-16 h-16 md:w-20 md:h-20 shrink-0"
           />
+          <h1 className="font-display text-3xl md:text-4xl font-bold text-earth-900 dark:text-gray-100 md:mb-2 text-left md:text-center">
+            {t('auth.welcome')}
+          </h1>
         </div>
-        <h1 className="font-display text-3xl md:text-4xl font-bold text-earth-900 dark:text-gray-100 mb-2">
-          {t('auth.welcome')}
-        </h1>
-        <p className="text-earth-700 dark:text-gray-300 mt-8">{t('auth.signInToAccess')}</p>
+        <p className="text-earth-700 dark:text-gray-300 mt-4 md:mt-8">{t('auth.signInToAccess')}</p>
       </div>
 
       {showCredentials && onSignInWithCredentials && (

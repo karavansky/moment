@@ -16,7 +16,7 @@ interface AuthContextType {
   status: 'loading' | 'authenticated' | 'unauthenticated'
   signIn: (provider: 'google' | 'apple', callbackUrl?: string) => Promise<void>
   signInWithCredentials: (email: string, password: string, callbackUrl?: string) => Promise<SignInWithCredentialsResult>
-  signOut: () => Promise<void>
+  signOut: (callbackUrl?: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -78,13 +78,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const signOut = useCallback(async () => {
+  const signOut = useCallback(async (callbackUrl?: string) => {
     try {
-      // window.location.pathname is always current at call time — avoids stale pathnameRef
-      const segments = window.location.pathname.split('/').filter(Boolean)
-      const locale = supportedLocales.includes(segments[0] as (typeof supportedLocales)[number])
-        ? segments[0]
-        : defaultLocale
+      let locale: string = defaultLocale
+
+      if (callbackUrl) {
+         // Extract locale from callbackUrl (e.g. /de/auth/signin -> de)
+         const cbSegments = callbackUrl.split('/').filter(Boolean)
+         if (cbSegments.length > 0 && supportedLocales.includes(cbSegments[0] as (typeof supportedLocales)[number])) {
+           locale = cbSegments[0] as (typeof supportedLocales)[number]
+         }
+      } else {
+        // Fallback to window.location.pathname
+        const segments = window.location.pathname.split('/').filter(Boolean)
+        if (segments.length > 0 && supportedLocales.includes(segments[0] as (typeof supportedLocales)[number])) {
+           locale = segments[0] as (typeof supportedLocales)[number]
+        }
+      }
+      
       routerRef.current.push(`/${locale}/auth/signout`)
     } catch (error) {
       console.error('Sign out error:', error)
