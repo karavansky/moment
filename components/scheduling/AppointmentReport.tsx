@@ -633,9 +633,9 @@ export default function AppointmentReport({
           }}
           variant="blur"
         >
-          <Modal.Container className="max-w-2xl" size="lg">
+          <Modal.Container className="max-w-2xl" size="lg" placement="center">
             <Modal.Dialog className="max-h-[90vh] overflow-y-auto">
-              <Modal.CloseTrigger />
+              <Modal.CloseTrigger className="w-8 h-8 rounded-full" />
 
               <Modal.Header>
                 <div className="flex items-center justify-between w-full">
@@ -664,7 +664,7 @@ export default function AppointmentReport({
                       <ElapsedTimer
                         openedAt={timerOpenedAt}
                         offsetSeconds={closedSessionsSeconds}
-                        className="text-base px-6"
+                        className="text-base pr-8"
                       />
                     ) : null
                   })()}
