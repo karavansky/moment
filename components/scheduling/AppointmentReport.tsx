@@ -119,7 +119,13 @@ export default function AppointmentReport({
         ? [...sessions].reverse().find(s => s.openAt && !s.closeAt)
         : undefined
       setCurrentReportId(active?.id || '')
-      setPhotos(active?.photos || [])
+      // When there's an active session, show its photos; otherwise show all photos from all sessions
+      if (active) {
+        setPhotos(active.photos || [])
+      } else {
+        const allPhotos = sessions.flatMap(s => s.photos || [])
+        setPhotos(allPhotos)
+      }
 
       // Auto-close orphaned sessions: opened but never closed while appointment is already closed
       if (!appointment.isOpen) {
@@ -501,6 +507,7 @@ export default function AppointmentReport({
         setCurrentReportId(activeReportId)
         setReportSessions(prev => [...prev, newSession])
         setSessionNotes(prev => ({ ...prev, [newSession.id]: '' }))
+        upsertReport(newSession)
       }
 
       if (!user?.firmaID || !appointment?.id) throw new Error('Missing required data')
@@ -542,12 +549,12 @@ export default function AppointmentReport({
         const updated = prev.map(s =>
           s.id === activeReportId ? { ...s, photos: [...(s.photos || []), savedPhoto] } : s
         )
-        // Sync to context so data persists across modal open/close
-        const updatedSession = updated.find(s => s.id === activeReportId)
-        if (updatedSession) upsertReport(updatedSession)
-        if (appointment) {
-          queueMicrotask(() => updateAppointment({ ...appointment, reports: updated }, true))
-        }
+        // Sync to context outside of setState to avoid "Cannot update a component while rendering" error
+        queueMicrotask(() => {
+          const updatedSession = updated.find(s => s.id === activeReportId)
+          if (updatedSession) upsertReport(updatedSession)
+          if (appointment) updateAppointment({ ...appointment, reports: updated }, true)
+        })
         return updated
       })
     } catch (error) {
@@ -568,12 +575,12 @@ export default function AppointmentReport({
       const updated = prev.map(s =>
         s.id === currentReportId ? { ...s, photos: (s.photos || []).filter(p => p.id !== id) } : s
       )
-      // Sync to context so data persists across modal open/close
-      const updatedSession = updated.find(s => s.id === currentReportId)
-      if (updatedSession) upsertReport(updatedSession)
-      if (appointment) {
-        queueMicrotask(() => updateAppointment({ ...appointment, reports: updated }, true))
-      }
+      // Sync to context outside of setState to avoid "Cannot update a component while rendering" error
+      queueMicrotask(() => {
+        const updatedSession = updated.find(s => s.id === currentReportId)
+        if (updatedSession) upsertReport(updatedSession)
+        if (appointment) updateAppointment({ ...appointment, reports: updated }, true)
+      })
       return updated
     })
     fetch(`/api/reports/photos/${id}`, { method: 'DELETE' }).catch(err =>
