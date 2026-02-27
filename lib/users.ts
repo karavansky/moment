@@ -1,7 +1,7 @@
 import pool from './db'
-import { generateId } from './generateId'
+import { generateId } from './generate-id'
 
-export interface User {
+export interface User { 
   userID: string
   name: string
   email: string
@@ -24,7 +24,7 @@ export async function createUser(
   token: string,
   provider: string
 ): Promise<User> {
-  const userID = generateId(20)
+  const userID = generateId()
   const date = new Date()
 
   const query = `
@@ -57,7 +57,7 @@ export async function createUserWithPassword(
   firmaID: string,
   status: number = 0
 ): Promise<User> {
-  const userID = generateId(20)
+  const userID = generateId()
   const date = new Date()
 
   const query = `

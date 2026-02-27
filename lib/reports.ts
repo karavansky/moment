@@ -1,5 +1,5 @@
 import pool from './db'
-import { generateId } from './generateId'
+import { generateId } from './generate-id'
 import { deleteS3File } from './s3'
 
 export interface ReportRecord {
@@ -35,7 +35,7 @@ export async function createReport(
     photos?: { url: string; note?: string }[]
   }
 ): Promise<ReportRecord> {
-  const reportID = generateId(20)
+  const reportID = generateId()
   const client = await pool.connect()
 
   try {
@@ -54,7 +54,7 @@ export async function createReport(
     // Insert photos
     if (data.photos && data.photos.length > 0) {
       for (const photo of data.photos) {
-        const photoID = generateId(20)
+        const photoID = generateId()
         await client.query(
           `INSERT INTO report_photos ("photoID", "reportID", "url", "note") VALUES ($1, $2, $3, $4)`,
           [photoID, reportID, photo.url, photo.note || '']
@@ -85,7 +85,7 @@ export async function createReportSession(
     openDistanceToAppointment?: number
   }
 ): Promise<ReportRecord> {
-  const reportID = data.reportID ?? generateId(20)
+  const reportID = data.reportID ?? generateId()
   // openAt is set by the DB server via NOW() to prevent client clock manipulation
   const query = `
     INSERT INTO reports ("reportID", "firmaID", "workerId", "appointmentId", "openAt",

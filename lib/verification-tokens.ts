@@ -1,5 +1,5 @@
 import pool from './db'
-import { generateId } from './generateId'
+import { generateId } from './generate-id'
 
 export type TokenType = 'email_verify' | 'password_reset'
 
@@ -22,7 +22,7 @@ export async function createVerificationToken(
   userID: string,
   type: TokenType
 ): Promise<string> {
-  const tokenID = generateId(20)
+  const tokenID = generateId()
   const token = generateId(64)
   const expiresAt = new Date(Date.now() + TOKEN_EXPIRY[type])
 

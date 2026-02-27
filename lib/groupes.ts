@@ -1,5 +1,5 @@
 import pool from './db'
-import { generateId } from './generateId'
+import { generateId } from './generate-id'
 
 function getChannel(firmaID: string): string {
   return `scheduling_${firmaID.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`
@@ -20,7 +20,7 @@ export interface GroupeRecord {
 }
 
 export async function createGroupe(firmaID: string, groupeName: string): Promise<GroupeRecord> {
-  const groupeID = generateId(20)
+  const groupeID = generateId()
 
   const query = `
     INSERT INTO groupes ("groupeID", "firmaID", "groupeName")

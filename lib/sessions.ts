@@ -1,5 +1,5 @@
 import pool from './db'
-import { generateId } from './generateId'
+import { generateId } from './generate-id'
 
 export interface Session {
   sessionID: string
@@ -17,7 +17,7 @@ export async function createSession(
   userAgent?: string,
   ip?: string
 ): Promise<Session> {
-  const sessionID = generateId(20)
+  const sessionID = generateId()
   const expiresAt = new Date(Date.now() + SESSION_MAX_AGE_MS)
 
   const query = `

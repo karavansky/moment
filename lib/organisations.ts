@@ -1,5 +1,5 @@
 import pool from './db'
-import { generateId } from './generateId'
+import { generateId } from './generate-id'
 
 export interface Organisation {
   firmaID: string
@@ -8,7 +8,7 @@ export interface Organisation {
 }
 
 export async function createOrganisation(name: string): Promise<Organisation> {
-  const firmaID = generateId(21)
+  const firmaID = generateId()
 
   const query = `
     INSERT INTO organisations ("firmaID", "name")

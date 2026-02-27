@@ -1,5 +1,5 @@
 import pool from './db'
-import { generateId } from './generateId'
+import { generateId } from './generate-id'
 import { deleteS3File } from './s3'
 import { sendPushToWorkers, sendPushToDirectors } from './push-notifications'
 
@@ -185,7 +185,7 @@ export async function createAppointment(
     serviceIds?: string[]
   }
 ): Promise<AppointmentRecord> {
-  const appointmentID = generateId(20)
+  const appointmentID = generateId()
   const client = await pool.connect()
   const primaryWorkerId = data.workerIds[0] || ''
 

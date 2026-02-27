@@ -1,5 +1,5 @@
 import pool from './db'
-import { generateId } from './generateId'
+import { generateId } from './generate-id'
 
 function getChannel(firmaID: string): string {
   return `scheduling_${firmaID.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`
@@ -55,7 +55,7 @@ export async function createClient(data: {
   latitude?: number
   longitude?: number
 }): Promise<ClientRecord> {
-  const clientID = generateId(20)
+  const clientID = generateId()
 
   const query = `
     INSERT INTO clients (

@@ -1,5 +1,5 @@
 import pool from './db'
-import { generateId } from './generateId'
+import { generateId } from './generate-id'
 
 export interface Message {
   messageID: string
@@ -21,7 +21,7 @@ export async function createMessage(
   message: string,
   isAdmin: boolean = false
 ): Promise<Message> {
-  const messageID = generateId(20)
+  const messageID = generateId()
   const date = new Date()
 
   const query = `

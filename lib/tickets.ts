@@ -1,5 +1,5 @@
 import pool from './db'
-import { generateId } from './generateId'
+import { generateId } from './generate-id'
 
 export interface Ticket {
   ticketID: string
@@ -19,7 +19,7 @@ export async function createTicket(
   category: number,
   pripority: number
 ): Promise<Ticket> {
-  const ticketID = generateId(20)
+  const ticketID = generateId()
   const date = new Date()
 
   const query = `

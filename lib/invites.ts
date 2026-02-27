@@ -1,5 +1,5 @@
 import pool from './db'
-import { generateId } from './generateId'
+import { generateId } from './generate-id'
 
 export interface Invite {
   inviteID: string
@@ -19,7 +19,7 @@ export async function createInvite(
   createdBy: string,
   status: number
 ): Promise<Invite> {
-  const inviteID = generateId(20)
+  const inviteID = generateId()
   const token = generateId(64)
 
   const query = `
