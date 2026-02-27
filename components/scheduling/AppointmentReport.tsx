@@ -114,10 +114,26 @@ export default function AppointmentReport({
         })
       setReportSessions(sessions)
 
-      // Find active session (opened but not closed)
-      const active = [...sessions].reverse().find(s => s.openAt && !s.closeAt)
+      // Find active session (opened but not closed) — only when appointment itself is open
+      const active = appointment.isOpen
+        ? [...sessions].reverse().find(s => s.openAt && !s.closeAt)
+        : undefined
       setCurrentReportId(active?.id || '')
       setPhotos(active?.photos || [])
+
+      // Auto-close orphaned sessions: opened but never closed while appointment is already closed
+      if (!appointment.isOpen) {
+        const orphaned = sessions.filter(s => s.openAt && !s.closeAt)
+        orphaned.forEach(s => {
+          fetch(`/api/reports/${s.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ close: true }),
+          }).catch(err =>
+            console.warn('[AppointmentReport] Failed to auto-close orphaned session:', err)
+          )
+        })
+      }
 
       const notes: Record<string, string> = {}
       sessions.forEach(s => {
