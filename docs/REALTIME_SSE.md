@@ -8,23 +8,29 @@
 ### Поддерживаемые события
 
 **Appointments:**
+
 - `appointment_created` — создание нового appointment
 - `appointment_updated` — изменение любого поля (включая open/close, смену состава работников)
 - `appointment_deleted` — удаление appointment
 
 **Workers:**
+
 - `worker_created` / `worker_updated` / `worker_deleted`
 
 **Clients:**
+
 - `client_created` / `client_updated` / `client_deleted`
 
 **Teams:**
+
 - `team_created` / `team_updated` / `team_deleted`
 
 **Groupes (категории клиентов):**
+
 - `groupe_created` / `groupe_updated` / `groupe_deleted`
 
 **Services:**
+
 - `service_created` / `service_updated` / `service_deleted`
 
 ---
@@ -130,7 +136,8 @@ CREATE TABLE appointment_workers (
 ```typescript
 // POST — создание (только директор)
 const appointment = await createAppointment(session.user.firmaID!, {
-  ...body, userID: session.user.id,
+  ...body,
+  userID: session.user.id,
 })
 
 // PUT — обновление (все роли; worker — только isOpen/openedAt/closedAt)
@@ -141,6 +148,7 @@ const deleted = await deleteAppointment(id, session.user.firmaID!)
 ```
 
 То же самое для остальных сущностей:
+
 - `app/api/scheduling/workers/route.ts` → `createWorker` / `updateWorker` / `deleteWorker`
 - `app/api/scheduling/clients/route.ts` → `createClient` / `updateClient` / `deleteClient`
 - `app/api/scheduling/teams/route.ts` → `createTeam` / `updateTeam` / `deleteTeam`
@@ -161,7 +169,7 @@ function notifyAppointmentChange(
   type: 'appointment_created' | 'appointment_updated' | 'appointment_deleted',
   data: {
     appointmentID: string
-    workerIds: string[]    // ← массив всех работников appointment
+    workerIds: string[] // ← массив всех работников appointment
     clientID: string
     isOpen?: boolean
     openedAt?: Date | null
@@ -176,6 +184,7 @@ function notifyAppointmentChange(
 ```
 
 Вызывается после каждой операции:
+
 - `createAppointment()` → `notifyAppointmentChange(firmaID, 'appointment_created', { workerIds, ... })`
 - `updateAppointment()` → `notifyAppointmentChange(firmaID, 'appointment_updated', { workerIds, ... })`
 - `deleteAppointment()` → предварительно считывает `workerIds` из БД, затем `notifyAppointmentChange(firmaID, 'appointment_deleted', { workerIds, ... })`
@@ -190,16 +199,14 @@ function notifyWorkerChange(
   firmaID: string,
   type: 'worker_created' | 'worker_updated' | 'worker_deleted'
 ) {
-  pool.query(`SELECT pg_notify($1, $2)`, [
-    getChannel(firmaID),
-    JSON.stringify({ type, firmaID }),
-  ])
+  pool.query(`SELECT pg_notify($1, $2)`, [getChannel(firmaID), JSON.stringify({ type, firmaID })])
 }
 
 // Аналогично в lib/clients.ts, lib/teams.ts, lib/groupes.ts, lib/services.ts
 ```
 
 Вызывается в каждой функции после успешной операции:
+
 ```typescript
 // createWorker
 const created = result.rows[0]
@@ -226,7 +233,7 @@ return deleted
 **Файл:** `lib/scheduling-events.ts`
 
 ```typescript
-client.on('notification', (msg) => {
+client.on('notification', msg => {
   const payload = JSON.parse(msg.payload)
   const firmaID = payload.firmaID
 
@@ -234,7 +241,7 @@ client.on('notification', (msg) => {
     const callbacks = subscriptions.get(firmaID)
     if (callbacks) {
       for (const cb of callbacks) {
-        cb(payload)  // → вызывает все SSE-стримы для этого firmaID
+        cb(payload) // → вызывает все SSE-стримы для этого firmaID
       }
     }
   }
@@ -242,6 +249,7 @@ client.on('notification', (msg) => {
 ```
 
 **Зачем отдельный Client, а не pool?**
+
 - `LISTEN` требует постоянного открытого соединения
 - Pool возвращает connection после запроса — `LISTEN` прервётся
 - Один Client на все каналы — минимум ресурсов
@@ -256,7 +264,7 @@ client.on('notification', (msg) => {
 
 ```typescript
 export async function GET(request: Request) {
-  const session = await getAnySchedulingSession()  // все аутентифицированные роли
+  const session = await getAnySchedulingSession() // все аутентифицированные роли
   const firmaID = session.user.firmaID!
 
   const stream = new ReadableStream({
@@ -269,7 +277,7 @@ export async function GET(request: Request) {
       }, 30000)
 
       // Каждое pg_notify событие → SSE стрим
-      const unsubscribe = await subscribe(firmaID, (payload) => {
+      const unsubscribe = await subscribe(firmaID, payload => {
         controller.enqueue(`data: ${JSON.stringify(payload)}\n\n`)
       })
 
@@ -300,17 +308,29 @@ export async function GET(request: Request) {
 ```typescript
 export interface SchedulingEvent {
   type:
-    | 'appointment_created' | 'appointment_updated' | 'appointment_deleted'
-    | 'worker_created' | 'worker_updated' | 'worker_deleted'
-    | 'client_created' | 'client_updated' | 'client_deleted'
-    | 'team_created' | 'team_updated' | 'team_deleted'
-    | 'groupe_created' | 'groupe_updated' | 'groupe_deleted'
-    | 'service_created' | 'service_updated' | 'service_deleted'
+    | 'appointment_created'
+    | 'appointment_updated'
+    | 'appointment_deleted'
+    | 'worker_created'
+    | 'worker_updated'
+    | 'worker_deleted'
+    | 'client_created'
+    | 'client_updated'
+    | 'client_deleted'
+    | 'team_created'
+    | 'team_updated'
+    | 'team_deleted'
+    | 'groupe_created'
+    | 'groupe_updated'
+    | 'groupe_deleted'
+    | 'service_created'
+    | 'service_updated'
+    | 'service_deleted'
     | 'connected'
   appointmentID?: string
-  workerIds?: string[]     // только для appointment_*
-  clientID?: string        // только для appointment_*
-  isOpen?: boolean         // только для appointment_updated
+  workerIds?: string[] // только для appointment_*
+  clientID?: string // только для appointment_*
+  isOpen?: boolean // только для appointment_updated
   openedAt?: string | null
   closedAt?: string | null
   firmaID?: string
@@ -326,10 +346,10 @@ export function useSchedulingEvents(
     if (!isLiveMode) return
 
     const eventSource = new EventSource('/api/scheduling/events')
-    eventSource.onmessage = (e) => {
+    eventSource.onmessage = e => {
       const data: SchedulingEvent = JSON.parse(e.data)
       if (data.type === 'connected') return
-      onEventRef.current(data)  // → handleSchedulingEvent
+      onEventRef.current(data) // → handleSchedulingEvent
     }
     return () => eventSource.close()
   }, [isLiveMode])
@@ -373,9 +393,7 @@ const handleSchedulingEvent = useCallback((event: SchedulingEvent) => {
 
 ```typescript
 const user = stateRef.current?.user
-const existsLocally = stateRef.current?.appointments.some(
-  apt => apt.id === event.appointmentID
-)
+const existsLocally = stateRef.current?.appointments.some(apt => apt.id === event.appointmentID)
 const eventWorkerIds = event.workerIds || []
 
 // Worker: событие релевантно если workerIds включает меня ИЛИ appointment уже в моём state
@@ -387,6 +405,7 @@ if (user?.myClientID && event.clientID !== user.myClientID && !existsLocally) re
 **Почему два условия (includes ИЛИ existsLocally)?**
 
 При смене состава работников (убрали Worker_A, добавили Worker_C):
+
 - `eventWorkerIds` = `['Worker_B', 'Worker_C']` — Worker_A не в массиве
 - Без `existsLocally` Worker_A проигнорирует событие → appointment навсегда застрянет в его dienstplan
 - С `existsLocally = true` — Worker_A обработает событие → `refreshAppointments()` → API не вернёт этот appointment → он исчезнет
@@ -419,12 +438,28 @@ if (event.type === 'appointment_updated') {
     }
 
     // Быстрое inline-обновление (только isOpen/openedAt/closedAt)
+    const updated = {
+      ...existing,
+      isOpen: event.isOpen ?? existing.isOpen,
+      openedAt: ...,
+      closedAt: ...,
+    }
+
+    // Notification для директора при ОТКРЫТИИ appointment
+    if (event.isOpen && !existing.isOpen) {
+      addNotification({ type: 'info', title: 'Starting Appointment!', ... })
+    }
+
+    // Notification для директора при ЗАКРЫТИИ appointment
+    if (!event.isOpen && existing.isOpen) {
+      addNotification({ type: 'success', title: 'Appointment Finished!', ... })
+      refreshReports()  // ← загрузить отчёт для директора
+    }
+
     return {
       ...prev,
       appointments: prev.appointments.map(apt =>
-        apt.id === event.appointmentID
-          ? { ...apt, isOpen: event.isOpen ?? apt.isOpen, ... }
-          : apt
+        apt.id === event.appointmentID ? updated : apt
       ),
     }
   })
@@ -432,9 +467,12 @@ if (event.type === 'appointment_updated') {
 ```
 
 Три стратегии обновления:
+
 1. **Не существует локально** → `refreshAppointments()` (новый для этого пользователя)
 2. **workerIds/clientID изменился** → `refreshAppointments()` (смена состава)
 3. **Только isOpen/openedAt/closedAt** → inline-обновление без сетевого запроса
+   - При **открытии** (`isOpen: true`) — notification директору "Starting Appointment!"
+   - При **закрытии** (`isOpen: false`) — notification директору "Appointment Finished!" + `refreshReports()`
 
 ---
 
@@ -480,13 +518,20 @@ const refreshServices = useCallback(async () => {
   const data = await apiFetch('/api/scheduling/services')
   setState(prev => ({ ...prev, services: data.services || [] }))
 }, [])
+
+const refreshReports = useCallback(async () => {
+  const data = await apiFetch('/api/scheduling/reports')
+  setState(prev => ({ ...prev, reports: data.reports || [] }))
+}, [])
 ```
 
 В отличие от `loadLiveData()`, refresh-функции:
+
 - Загружают **только одну коллекцию** (не все данные сразу)
 - **Не сбрасывают** selectedWorker, selectedClient, selectedDate, selectedAppointment, isLoading
 
 Все функции экспортируются через контекст и доступны любому компоненту:
+
 ```typescript
 const { refreshWorkers, refreshClients, refreshTeams } = useScheduling()
 ```
@@ -498,6 +543,7 @@ const { refreshWorkers, refreshClients, refreshTeams } = useScheduling()
 Каждый эндпоинт возвращает маппированные данные в том же формате, что и главный `GET /api/scheduling`.
 
 **`GET /api/scheduling/workers`** — возвращает `{ workers }` с вложенным объектом `team`:
+
 ```typescript
 const [workersRaw, teamsRaw] = await Promise.all([
   getWorkersByFirmaID(firmaID),
@@ -510,6 +556,7 @@ const workers = workersRaw.map(w => {
 ```
 
 **`GET /api/scheduling/clients`** — возвращает `{ clients }` с вложенным объектом `groupe`:
+
 ```typescript
 const [clientsRaw, groupesRaw] = await Promise.all([...])
 const clients = clientsRaw.map(c => {
@@ -523,6 +570,18 @@ const clients = clientsRaw.map(c => {
 **`GET /api/scheduling/groupes`** — возвращает `{ groupes }`
 
 **`GET /api/scheduling/services`** — возвращает `{ services }`
+
+**`GET /api/scheduling/reports`** — возвращает `{ reports }` с вложенным массивом `photos`:
+
+```typescript
+const reportsRaw = await getReportsByFirmaID(firmaID)
+const reports = reportsRaw.map(r => ({
+  id: r.reportID, firmaID: r.firmaID, workerId: r.workerId,
+  appointmentId: r.appointmentId, notes: r.notes, date: r.date,
+  openAt: r.openAt, closeAt: r.closeAt, ...,
+  photos: (r.photos || []).map(p => ({ id: p.photoID, url: p.url, note: p.note }))
+}))
+```
 
 Все эндпоинты используют `getAnySchedulingSession()` — доступны для всех ролей (директор, работник, клиент).
 
@@ -597,47 +656,77 @@ Worker_C: includes('Worker_C') = true, existsLocally = false
   → !existing → refreshAppointments() → ПОЯВЛЯЕТСЯ ✓
 ```
 
+### Работник завершает встречу (Finish)
+
+```
+Worker: нажимает "Finish" в AppointmentReport.tsx
+  → PATCH /api/reports/{reportId} { close: true }
+    → closeAt = NOW() (серверное время)
+  → closeAppointment(appointmentId)  [contexts/SchedulingContext.tsx]
+    → PUT /api/scheduling/appointments { id, isOpen: false, closedAt }
+      → updateAppointment() [lib/appointments.ts]
+        → pg_notify('scheduling_{firmaID}', '{
+            "type":"appointment_updated",
+            "isOpen":false,
+            "closedAt":"2026-02-27T...",
+            "workerIds":["w1"],
+            ...}')
+        → sendPushToDirectors: "Appointment Finished" (push notification)
+
+Директор получает SSE:
+  → handleSchedulingEvent: type === 'appointment_updated'
+  → isOpenChanged = true, !event.isOpen && existing.isOpen = true
+  → inline update: isOpen=false, closedAt=...
+  → addNotification: "Appointment Finished!" (in-app) ✓
+  → refreshReports()
+    → GET /api/scheduling/reports
+    → setState({ reports: [...с новым отчётом...] })
+  → Директор видит отчёт без перезагрузки ✓
+```
+
 ---
 
 ## Файлы
 
 ### Ядро SSE-инфраструктуры (общее для всех событий)
 
-| Файл | Назначение |
-|------|------------|
-| `lib/scheduling-events.ts` | LISTEN Singleton — dedicated PG Client, подписки по firmaID |
-| `app/api/scheduling/events/route.ts` | SSE Endpoint — ReadableStream + keepalive 30s |
-| `hooks/useSchedulingEvents.ts` | EventSource hook — авто-переподключение, типы событий |
+| Файл                                 | Назначение                                                  |
+| ------------------------------------ | ----------------------------------------------------------- |
+| `lib/scheduling-events.ts`           | LISTEN Singleton — dedicated PG Client, подписки по firmaID |
+| `app/api/scheduling/events/route.ts` | SSE Endpoint — ReadableStream + keepalive 30s               |
+| `hooks/useSchedulingEvents.ts`       | EventSource hook — авто-переподключение, типы событий       |
 
 ### Appointments
 
-| Файл | Назначение |
-|------|------------|
-| `lib/appointments.ts` | CRUD + `notifyAppointmentChange()` с `workerIds[]` |
-| `app/api/scheduling/appointments/route.ts` | GET (role-based фильтрация) + POST/PUT/DELETE |
-| `app/api/scheduling/_helpers.ts` | `mapAppointmentToFrontend()` — маппинг `workers_data[]` → `worker[]` |
+| Файл                                       | Назначение                                                                                       |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| `lib/appointments.ts`                      | CRUD + `notifyAppointmentChange()` с `workerIds[]` + `sendAppointmentPush()` (start/finish push) |
+| `app/api/scheduling/appointments/route.ts` | GET (role-based фильтрация) + POST/PUT/DELETE                                                    |
+| `app/api/scheduling/_helpers.ts`           | `mapAppointmentToFrontend()` — маппинг `workers_data[]` → `worker[]`                             |
 
-### Workers / Clients / Teams / Groupes / Services
+### Workers / Clients / Teams / Groupes / Services / Reports
 
-| Файл | Назначение |
-|------|------------|
-| `lib/workers.ts` | CRUD + `notifyWorkerChange()` |
-| `lib/clients.ts` | CRUD + `notifyClientChange()` |
-| `lib/teams.ts` | CRUD + `notifyTeamChange()` |
-| `lib/groupes.ts` | CRUD + `notifyGroupeChange()` |
-| `lib/services.ts` | CRUD + `notifyServiceChange()` |
-| `app/api/scheduling/workers/route.ts` | GET (workers + teams join) + POST/PUT/DELETE |
-| `app/api/scheduling/clients/route.ts` | GET (clients + groupes join) + POST/PUT/DELETE |
-| `app/api/scheduling/teams/route.ts` | GET + POST/PUT/DELETE |
-| `app/api/scheduling/groupes/route.ts` | GET + POST/PUT/DELETE |
-| `app/api/scheduling/services/route.ts` | GET + POST/PUT/DELETE |
+| Файл                                   | Назначение                                     |
+| -------------------------------------- | ---------------------------------------------- |
+| `lib/workers.ts`                       | CRUD + `notifyWorkerChange()`                  |
+| `lib/clients.ts`                       | CRUD + `notifyClientChange()`                  |
+| `lib/teams.ts`                         | CRUD + `notifyTeamChange()`                    |
+| `lib/groupes.ts`                       | CRUD + `notifyGroupeChange()`                  |
+| `lib/services.ts`                      | CRUD + `notifyServiceChange()`                 |
+| `lib/reports.ts`                       | CRUD + `getReportsByFirmaID()`                 |
+| `app/api/scheduling/workers/route.ts`  | GET (workers + teams join) + POST/PUT/DELETE   |
+| `app/api/scheduling/clients/route.ts`  | GET (clients + groupes join) + POST/PUT/DELETE |
+| `app/api/scheduling/teams/route.ts`    | GET + POST/PUT/DELETE                          |
+| `app/api/scheduling/groupes/route.ts`  | GET + POST/PUT/DELETE                          |
+| `app/api/scheduling/services/route.ts` | GET + POST/PUT/DELETE                          |
+| `app/api/scheduling/reports/route.ts`  | GET (reports + photos) + POST                  |
 
 ### Context
 
-| Файл | Назначение |
-|------|------------|
-| `contexts/SchedulingContext.tsx` | `refreshAppointments/Workers/Clients/Teams/Groups/Services()` |
-| `contexts/SchedulingContext.tsx` | `handleSchedulingEvent()` — маршрутизация по типу события |
+| Файл                             | Назначение                                                               |
+| -------------------------------- | ------------------------------------------------------------------------ |
+| `contexts/SchedulingContext.tsx` | `refreshAppointments/Workers/Clients/Teams/Groups/Services/Reports()`    |
+| `contexts/SchedulingContext.tsx` | `handleSchedulingEvent()` — маршрутизация + notifications (start/finish) |
 
 ---
 

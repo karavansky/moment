@@ -355,6 +355,16 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   }, [])
 
+  const refreshReports = useCallback(async () => {
+    try {
+      const data = await apiFetch('/api/scheduling/reports')
+      setState(prev => ({ ...prev, reports: data.reports || [] }))
+      console.log('[SSE] Reports refreshed:', (data.reports || []).length)
+    } catch (error) {
+      console.error('[SSE] Failed to refresh reports:', error)
+    }
+  }, [])
+
   // Инициализация данных — зависит от auth
   useEffect(() => {
     if (authStatus === 'loading') return
@@ -370,23 +380,43 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
   const handleSchedulingEvent = useCallback(
     (event: SchedulingEvent) => {
       // Обработка событий workers/clients/teams/groups/services
-      if (event.type === 'worker_created' || event.type === 'worker_updated' || event.type === 'worker_deleted') {
+      if (
+        event.type === 'worker_created' ||
+        event.type === 'worker_updated' ||
+        event.type === 'worker_deleted'
+      ) {
         refreshWorkers()
         return
       }
-      if (event.type === 'client_created' || event.type === 'client_updated' || event.type === 'client_deleted') {
+      if (
+        event.type === 'client_created' ||
+        event.type === 'client_updated' ||
+        event.type === 'client_deleted'
+      ) {
         refreshClients()
         return
       }
-      if (event.type === 'team_created' || event.type === 'team_updated' || event.type === 'team_deleted') {
+      if (
+        event.type === 'team_created' ||
+        event.type === 'team_updated' ||
+        event.type === 'team_deleted'
+      ) {
         refreshTeams()
         return
       }
-      if (event.type === 'groupe_created' || event.type === 'groupe_updated' || event.type === 'groupe_deleted') {
+      if (
+        event.type === 'groupe_created' ||
+        event.type === 'groupe_updated' ||
+        event.type === 'groupe_deleted'
+      ) {
         refreshGroups()
         return
       }
-      if (event.type === 'service_created' || event.type === 'service_updated' || event.type === 'service_deleted') {
+      if (
+        event.type === 'service_created' ||
+        event.type === 'service_updated' ||
+        event.type === 'service_deleted'
+      ) {
         refreshServices()
         return
       }
@@ -474,12 +504,18 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
               ...existing,
               isOpen: event.isOpen ?? existing.isOpen,
               // Use !== undefined to distinguish "not in event" from explicit null (clear)
-              openedAt: event.openedAt !== undefined
-                ? (event.openedAt ? new Date(event.openedAt) : undefined)
-                : existing.openedAt,
-              closedAt: event.closedAt !== undefined
-                ? (event.closedAt ? new Date(event.closedAt) : undefined)
-                : existing.closedAt,
+              openedAt:
+                event.openedAt !== undefined
+                  ? event.openedAt
+                    ? new Date(event.openedAt)
+                    : undefined
+                  : existing.openedAt,
+              closedAt:
+                event.closedAt !== undefined
+                  ? event.closedAt
+                    ? new Date(event.closedAt)
+                    : undefined
+                  : existing.closedAt,
             }
 
             // Notification для директора при открытии appointment
@@ -507,6 +543,29 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
               }
             }
 
+            // Notification для директора при закрытии appointment
+            if (!event.isOpen && existing.isOpen) {
+              const client = existing.client
+              const workerNames = existing.worker?.map(w => `${w.name} ${w.surname}`).join(', ')
+              if (workerNames && client) {
+                queueMicrotask(() => {
+                  const notification: Notif = {
+                    userID: 'system',
+                    type: 'success',
+                    title: 'Appointment Finished!',
+                    message: `${workerNames} finished an appointment with ${client.name} ${client.surname} ${client.street} ${client.houseNumber}, ${client.city}.`,
+                    id: generateId(),
+                    date: new Date(),
+                    isRead: false,
+                  }
+                  addNotification(notification)
+                })
+              }
+
+              // Refresh reports so director can see the report data without reloading
+              refreshReports()
+            }
+
             return {
               ...prev,
               appointments: prev.appointments.map(apt =>
@@ -521,7 +580,16 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         })
       }
     },
-    [addNotification, refreshAppointments, refreshWorkers, refreshClients, refreshTeams, refreshGroups, refreshServices]
+    [
+      addNotification,
+      refreshAppointments,
+      refreshReports,
+      refreshWorkers,
+      refreshClients,
+      refreshTeams,
+      refreshGroups,
+      refreshServices,
+    ]
   )
 
   useSchedulingEvents(isLiveMode, handleSchedulingEvent)
@@ -1048,7 +1116,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         setState(prev => ({
           ...prev,
           reports: prev.reports.some(r => r.id === report.id)
-            ? prev.reports.map(r => r.id === report.id ? { ...r, ...report } : r)
+            ? prev.reports.map(r => (r.id === report.id ? { ...r, ...report } : r))
             : [...prev.reports, report],
         }))
       },
@@ -1086,8 +1154,17 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         })
       },
     }),
-    [loadLiveData, loadMockData, addNotification, session,
-      refreshWorkers, refreshClients, refreshTeams, refreshGroups, refreshServices]
+    [
+      loadLiveData,
+      loadMockData,
+      addNotification,
+      session,
+      refreshWorkers,
+      refreshClients,
+      refreshTeams,
+      refreshGroups,
+      refreshServices,
+    ]
   )
 
   // Конвертация дерева услуг в формат для select с optgroup

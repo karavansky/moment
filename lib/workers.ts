@@ -4,11 +4,13 @@ function getChannel(firmaID: string): string {
   return `scheduling_${firmaID.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`
 }
 
-function notifyWorkerChange(firmaID: string, type: 'worker_created' | 'worker_updated' | 'worker_deleted') {
-  pool.query(`SELECT pg_notify($1, $2)`, [
-    getChannel(firmaID),
-    JSON.stringify({ type, firmaID }),
-  ]).catch(err => console.error(`[workers] pg_notify ${type} error:`, err))
+function notifyWorkerChange(
+  firmaID: string,
+  type: 'worker_created' | 'worker_updated' | 'worker_deleted'
+) {
+  pool
+    .query(`SELECT pg_notify($1, $2)`, [getChannel(firmaID), JSON.stringify({ type, firmaID })])
+    .catch(err => console.error(`[workers] pg_notify ${type} error:`, err))
 }
 
 export interface WorkerRecord {
@@ -71,12 +73,26 @@ export async function createWorker(data: {
   `
 
   const values = [
-    workerID, data.userID || null, data.firmaID, data.name, data.surname || null,
-    data.email || null, data.phone || null, data.phone2 || null,
-    data.teamId || null, data.isAdress || false, data.status ?? 0,
-    data.country || null, data.street || null, data.postalCode || null,
-    data.city || null, data.houseNumber || null, data.apartment || null,
-    data.district || null, data.latitude || null, data.longitude || null,
+    workerID,
+    data.userID || null,
+    data.firmaID,
+    data.name,
+    data.surname || null,
+    data.email || null,
+    data.phone || null,
+    data.phone2 || null,
+    data.teamId || null,
+    data.isAdress ?? false,
+    data.status ?? 0,
+    data.country || null,
+    data.street || null,
+    data.postalCode || null,
+    data.city || null,
+    data.houseNumber || null,
+    data.apartment || null,
+    data.district || null,
+    data.latitude || null,
+    data.longitude || null,
   ]
 
   try {
@@ -108,7 +124,10 @@ export async function getWorkersByFirmaID(firmaID: string): Promise<WorkerRecord
   }
 }
 
-export async function getWorkerByUserID(userID: string, firmaID: string): Promise<WorkerRecord | null> {
+export async function getWorkerByUserID(
+  userID: string,
+  firmaID: string
+): Promise<WorkerRecord | null> {
   const query = `SELECT * FROM workers WHERE "userID" = $1 AND "firmaID" = $2 LIMIT 1`
 
   try {
@@ -147,23 +166,74 @@ export async function updateWorker(
   const values: any[] = []
   let idx = 1
 
-  if (data.name !== undefined) { setClauses.push(`"name" = $${idx++}`); values.push(data.name) }
-  if (data.surname !== undefined) { setClauses.push(`"surname" = $${idx++}`); values.push(data.surname) }
-  if (data.email !== undefined) { setClauses.push(`"email" = $${idx++}`); values.push(data.email) }
-  if (data.phone !== undefined) { setClauses.push(`"phone" = $${idx++}`); values.push(data.phone) }
-  if (data.phone2 !== undefined) { setClauses.push(`"phone2" = $${idx++}`); values.push(data.phone2) }
-  if (data.teamId !== undefined) { setClauses.push(`"teamId" = $${idx++}`); values.push(data.teamId) }
-  if (data.isAdress !== undefined) { setClauses.push(`"isAdress" = $${idx++}`); values.push(data.isAdress) }
-  if (data.status !== undefined) { setClauses.push(`"status" = $${idx++}`); values.push(data.status) }
-  if (data.country !== undefined) { setClauses.push(`"country" = $${idx++}`); values.push(data.country) }
-  if (data.street !== undefined) { setClauses.push(`"street" = $${idx++}`); values.push(data.street) }
-  if (data.postalCode !== undefined) { setClauses.push(`"postalCode" = $${idx++}`); values.push(data.postalCode) }
-  if (data.city !== undefined) { setClauses.push(`"city" = $${idx++}`); values.push(data.city) }
-  if (data.houseNumber !== undefined) { setClauses.push(`"houseNumber" = $${idx++}`); values.push(data.houseNumber) }
-  if (data.apartment !== undefined) { setClauses.push(`"apartment" = $${idx++}`); values.push(data.apartment) }
-  if (data.district !== undefined) { setClauses.push(`"district" = $${idx++}`); values.push(data.district) }
-  if (data.latitude !== undefined) { setClauses.push(`"latitude" = $${idx++}`); values.push(data.latitude) }
-  if (data.longitude !== undefined) { setClauses.push(`"longitude" = $${idx++}`); values.push(data.longitude) }
+  if (data.name !== undefined) {
+    setClauses.push(`"name" = $${idx++}`)
+    values.push(data.name)
+  }
+  if (data.surname !== undefined) {
+    setClauses.push(`"surname" = $${idx++}`)
+    values.push(data.surname)
+  }
+  if (data.email !== undefined) {
+    setClauses.push(`"email" = $${idx++}`)
+    values.push(data.email)
+  }
+  if (data.phone !== undefined) {
+    setClauses.push(`"phone" = $${idx++}`)
+    values.push(data.phone)
+  }
+  if (data.phone2 !== undefined) {
+    setClauses.push(`"phone2" = $${idx++}`)
+    values.push(data.phone2)
+  }
+  if (data.teamId !== undefined) {
+    setClauses.push(`"teamId" = $${idx++}`)
+    values.push(data.teamId || null)
+  }
+  if (data.isAdress !== undefined) {
+    setClauses.push(`"isAdress" = $${idx++}`)
+    values.push(data.isAdress)
+  }
+  if (data.status !== undefined) {
+    setClauses.push(`"status" = $${idx++}`)
+    values.push(data.status)
+  }
+  if (data.country !== undefined) {
+    setClauses.push(`"country" = $${idx++}`)
+    values.push(data.country)
+  }
+  if (data.street !== undefined) {
+    setClauses.push(`"street" = $${idx++}`)
+    values.push(data.street)
+  }
+  if (data.postalCode !== undefined) {
+    setClauses.push(`"postalCode" = $${idx++}`)
+    values.push(data.postalCode)
+  }
+  if (data.city !== undefined) {
+    setClauses.push(`"city" = $${idx++}`)
+    values.push(data.city)
+  }
+  if (data.houseNumber !== undefined) {
+    setClauses.push(`"houseNumber" = $${idx++}`)
+    values.push(data.houseNumber)
+  }
+  if (data.apartment !== undefined) {
+    setClauses.push(`"apartment" = $${idx++}`)
+    values.push(data.apartment)
+  }
+  if (data.district !== undefined) {
+    setClauses.push(`"district" = $${idx++}`)
+    values.push(data.district)
+  }
+  if (data.latitude !== undefined) {
+    setClauses.push(`"latitude" = $${idx++}`)
+    values.push(data.latitude)
+  }
+  if (data.longitude !== undefined) {
+    setClauses.push(`"longitude" = $${idx++}`)
+    values.push(data.longitude)
+  }
 
   if (setClauses.length === 0) return null
 

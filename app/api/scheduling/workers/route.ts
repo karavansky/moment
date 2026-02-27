@@ -26,7 +26,7 @@ export async function GET() {
         email: w.email || '',
         phone: w.phone,
         phone2: w.phone2,
-        teamId: w.teamId || '',
+        teamId: w.teamId || null,
         team: team ? { id: team.id, teamName: team.teamName, firmaID: team.firmaID } : undefined,
         isAdress: w.isAdress,
         status: w.status,

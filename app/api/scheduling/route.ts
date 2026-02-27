@@ -21,17 +21,25 @@ export async function GET() {
     const userName = session.user.name || ''
     const userStatus = session.user.status
 
-    console.log('[Scheduling API] GET for firmaID:', firmaID, 'userId:', userId, 'status:', userStatus)
+    console.log(
+      '[Scheduling API] GET for firmaID:',
+      firmaID,
+      'userId:',
+      userId,
+      'status:',
+      userStatus
+    )
 
-    const [workersRaw, clientsRaw, teamsRaw, groupesRaw, servicesRaw, appointmentsRaw, reportsRaw] = await Promise.all([
-      getWorkersByFirmaID(firmaID),
-      getClientsByFirmaID(firmaID),
-      getTeamsByFirmaID(firmaID),
-      getGroupesByFirmaID(firmaID),
-      getServicesByFirmaID(firmaID),
-      getAppointmentsByFirmaID(firmaID),
-      getReportsByFirmaID(firmaID),
-    ])
+    const [workersRaw, clientsRaw, teamsRaw, groupesRaw, servicesRaw, appointmentsRaw, reportsRaw] =
+      await Promise.all([
+        getWorkersByFirmaID(firmaID),
+        getClientsByFirmaID(firmaID),
+        getTeamsByFirmaID(firmaID),
+        getGroupesByFirmaID(firmaID),
+        getServicesByFirmaID(firmaID),
+        getAppointmentsByFirmaID(firmaID),
+        getReportsByFirmaID(firmaID),
+      ])
 
     // Фильтрация appointments по роли
     let filteredAppointmentsRaw = appointmentsRaw
@@ -43,7 +51,9 @@ export async function GET() {
       const myWorker = await getWorkerByUserID(userId, firmaID)
       if (myWorker) {
         myWorkerID = myWorker.workerID
-        filteredAppointmentsRaw = appointmentsRaw.filter(a => (a.workerIds || []).includes(myWorker.workerID))
+        filteredAppointmentsRaw = appointmentsRaw.filter(a =>
+          (a.workerIds || []).includes(myWorker.workerID)
+        )
       } else {
         filteredAppointmentsRaw = []
       }
@@ -89,7 +99,7 @@ export async function GET() {
         email: w.email || '',
         phone: w.phone,
         phone2: w.phone2,
-        teamId: w.teamId || '',
+        teamId: w.teamId || null,
         team: team ? { id: team.id, teamName: team.teamName, firmaID: team.firmaID } : undefined,
         isAdress: w.isAdress,
         status: w.status,
@@ -125,7 +135,9 @@ export async function GET() {
         district: c.district,
         latitude: c.latitude || 0,
         longitude: c.longitude || 0,
-        groupe: groupe ? { id: groupe.id, groupeName: groupe.groupeName, firmaID: groupe.firmaID } : undefined,
+        groupe: groupe
+          ? { id: groupe.id, groupeName: groupe.groupeName, firmaID: groupe.firmaID }
+          : undefined,
       }
     })
 

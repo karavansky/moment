@@ -10,30 +10,38 @@ function getChannel(firmaID: string): string {
 function notifyAppointmentChange(
   firmaID: string,
   type: 'appointment_created' | 'appointment_updated' | 'appointment_deleted',
-  data: { appointmentID: string; workerIds: string[]; clientID: string; isOpen?: boolean; openedAt?: Date | null; closedAt?: Date | null }
+  data: {
+    appointmentID: string
+    workerIds: string[]
+    clientID: string
+    isOpen?: boolean
+    openedAt?: Date | null
+    closedAt?: Date | null
+  }
 ) {
   const channel = getChannel(firmaID)
-  pool.query(`SELECT pg_notify($1, $2)`, [
-    channel,
-    JSON.stringify({
-      type,
-      appointmentID: data.appointmentID,
-      workerIds: data.workerIds,
-      clientID: data.clientID,
-      isOpen: data.isOpen,
-      openedAt: data.openedAt,
-      closedAt: data.closedAt,
-      firmaID,
-    }),
-  ]).catch(err => console.error(`[appointments] pg_notify ${type} error:`, err))
+  pool
+    .query(`SELECT pg_notify($1, $2)`, [
+      channel,
+      JSON.stringify({
+        type,
+        appointmentID: data.appointmentID,
+        workerIds: data.workerIds,
+        clientID: data.clientID,
+        isOpen: data.isOpen,
+        openedAt: data.openedAt,
+        closedAt: data.closedAt,
+        firmaID,
+      }),
+    ])
+    .catch(err => console.error(`[appointments] pg_notify ${type} error:`, err))
 }
 
 async function getClientName(clientID: string): Promise<string> {
   try {
-    const result = await pool.query(
-      `SELECT "name", "surname" FROM clients WHERE "clientID" = $1`,
-      [clientID]
-    )
+    const result = await pool.query(`SELECT "name", "surname" FROM clients WHERE "clientID" = $1`, [
+      clientID,
+    ])
     if (result.rows[0]) {
       return `${result.rows[0].name} ${result.rows[0].surname || ''}`.trim()
     }
@@ -84,13 +92,21 @@ function sendAppointmentPush(
 
       if (type === 'appointment_updated') {
         // isOpen transition → push to directors
-        if (data.isOpen) {
+        if (data.isOpen === true) {
           const workerNames = await getWorkerNames(data.workerIds)
           await sendPushToDirectors(firmaID, {
             title: 'Appointment Started',
             body: `${workerNames} started an appointment with ${clientName}.`,
             url: `/map/${data.appointmentID}`,
             tag: `appointment-open-${data.appointmentID}`,
+          })
+        } else if (data.isOpen === false) {
+          const workerNames = await getWorkerNames(data.workerIds)
+          await sendPushToDirectors(firmaID, {
+            title: 'Appointment Finished',
+            body: `${workerNames} finished an appointment with ${clientName}.`,
+            url: `/dienstplan`,
+            tag: `appointment-close-${data.appointmentID}`,
           })
         }
 
@@ -187,18 +203,26 @@ export async function createAppointment(
     `
 
     const values = [
-      appointmentID, firmaID, data.userID, data.clientID, primaryWorkerId,
-      data.date, data.isFixedTime || false, data.startTime, data.endTime,
-      data.duration, data.fahrzeit || 0, data.latitude || null, data.longitude || null,
+      appointmentID,
+      firmaID,
+      data.userID,
+      data.clientID,
+      primaryWorkerId,
+      data.date,
+      data.isFixedTime || false,
+      data.startTime,
+      data.endTime,
+      data.duration,
+      data.fahrzeit || 0,
+      data.latitude || null,
+      data.longitude || null,
     ]
 
     const result = await client.query(query, values)
 
     // Insert appointment_workers (many-to-many)
     if (data.workerIds.length > 0) {
-      const workerValues = data.workerIds
-        .map((_, i) => `($1, $${i + 2})`)
-        .join(', ')
+      const workerValues = data.workerIds.map((_, i) => `($1, $${i + 2})`).join(', ')
       await client.query(
         `INSERT INTO appointment_workers ("appointmentID", "workerID") VALUES ${workerValues}`,
         [appointmentID, ...data.workerIds]
@@ -207,9 +231,7 @@ export async function createAppointment(
 
     // Insert appointment_services
     if (data.serviceIds && data.serviceIds.length > 0) {
-      const serviceValues = data.serviceIds
-        .map((_, i) => `($1, $${i + 2})`)
-        .join(', ')
+      const serviceValues = data.serviceIds.map((_, i) => `($1, $${i + 2})`).join(', ')
       await client.query(
         `INSERT INTO appointment_services ("appointmentID", "serviceID") VALUES ${serviceValues}`,
         [appointmentID, ...data.serviceIds]
@@ -333,18 +355,54 @@ export async function updateAppointment(
     const values: any[] = []
     let idx = 1
 
-    if (data.date !== undefined) { setClauses.push(`"date" = $${idx++}`); values.push(data.date) }
-    if (data.isFixedTime !== undefined) { setClauses.push(`"isFixedTime" = $${idx++}`); values.push(data.isFixedTime) }
-    if (data.startTime !== undefined) { setClauses.push(`"startTime" = $${idx++}`); values.push(data.startTime) }
-    if (data.endTime !== undefined) { setClauses.push(`"endTime" = $${idx++}`); values.push(data.endTime) }
-    if (data.duration !== undefined) { setClauses.push(`"duration" = $${idx++}`); values.push(data.duration) }
-    if (data.fahrzeit !== undefined) { setClauses.push(`"fahrzeit" = $${idx++}`); values.push(data.fahrzeit) }
-    if (data.clientID !== undefined) { setClauses.push(`"clientID" = $${idx++}`); values.push(data.clientID) }
-    if (data.isOpen !== undefined) { setClauses.push(`"isOpen" = $${idx++}`); values.push(data.isOpen) }
-    if (data.openedAt !== undefined) { setClauses.push(`"openedAt" = $${idx++}`); values.push(data.openedAt) }
-    if (data.closedAt !== undefined) { setClauses.push(`"closedAt" = $${idx++}`); values.push(data.closedAt) }
-    if (data.latitude !== undefined) { setClauses.push(`"latitude" = $${idx++}`); values.push(data.latitude) }
-    if (data.longitude !== undefined) { setClauses.push(`"longitude" = $${idx++}`); values.push(data.longitude) }
+    if (data.date !== undefined) {
+      setClauses.push(`"date" = $${idx++}`)
+      values.push(data.date)
+    }
+    if (data.isFixedTime !== undefined) {
+      setClauses.push(`"isFixedTime" = $${idx++}`)
+      values.push(data.isFixedTime)
+    }
+    if (data.startTime !== undefined) {
+      setClauses.push(`"startTime" = $${idx++}`)
+      values.push(data.startTime)
+    }
+    if (data.endTime !== undefined) {
+      setClauses.push(`"endTime" = $${idx++}`)
+      values.push(data.endTime)
+    }
+    if (data.duration !== undefined) {
+      setClauses.push(`"duration" = $${idx++}`)
+      values.push(data.duration)
+    }
+    if (data.fahrzeit !== undefined) {
+      setClauses.push(`"fahrzeit" = $${idx++}`)
+      values.push(data.fahrzeit)
+    }
+    if (data.clientID !== undefined) {
+      setClauses.push(`"clientID" = $${idx++}`)
+      values.push(data.clientID)
+    }
+    if (data.isOpen !== undefined) {
+      setClauses.push(`"isOpen" = $${idx++}`)
+      values.push(data.isOpen)
+    }
+    if (data.openedAt !== undefined) {
+      setClauses.push(`"openedAt" = $${idx++}`)
+      values.push(data.openedAt)
+    }
+    if (data.closedAt !== undefined) {
+      setClauses.push(`"closedAt" = $${idx++}`)
+      values.push(data.closedAt)
+    }
+    if (data.latitude !== undefined) {
+      setClauses.push(`"latitude" = $${idx++}`)
+      values.push(data.latitude)
+    }
+    if (data.longitude !== undefined) {
+      setClauses.push(`"longitude" = $${idx++}`)
+      values.push(data.longitude)
+    }
     // Обновляем workerId (legacy) первым из массива
     if (data.workerIds !== undefined && data.workerIds.length > 0) {
       setClauses.push(`"workerId" = $${idx++}`)
@@ -382,14 +440,11 @@ export async function updateAppointment(
 
     // Update appointment_workers if provided
     if (data.workerIds !== undefined) {
-      await dbClient.query(
-        `DELETE FROM appointment_workers WHERE "appointmentID" = $1`,
-        [appointmentID]
-      )
+      await dbClient.query(`DELETE FROM appointment_workers WHERE "appointmentID" = $1`, [
+        appointmentID,
+      ])
       if (data.workerIds.length > 0) {
-        const workerValues = data.workerIds
-          .map((_, i) => `($1, $${i + 2})`)
-          .join(', ')
+        const workerValues = data.workerIds.map((_, i) => `($1, $${i + 2})`).join(', ')
         await dbClient.query(
           `INSERT INTO appointment_workers ("appointmentID", "workerID") VALUES ${workerValues}`,
           [appointmentID, ...data.workerIds]
@@ -399,14 +454,11 @@ export async function updateAppointment(
 
     // Update services if provided
     if (data.serviceIds !== undefined) {
-      await dbClient.query(
-        `DELETE FROM appointment_services WHERE "appointmentID" = $1`,
-        [appointmentID]
-      )
+      await dbClient.query(`DELETE FROM appointment_services WHERE "appointmentID" = $1`, [
+        appointmentID,
+      ])
       if (data.serviceIds.length > 0) {
-        const serviceValues = data.serviceIds
-          .map((_, i) => `($1, $${i + 2})`)
-          .join(', ')
+        const serviceValues = data.serviceIds.map((_, i) => `($1, $${i + 2})`).join(', ')
         await dbClient.query(
           `INSERT INTO appointment_services ("appointmentID", "serviceID") VALUES ${serviceValues}`,
           [appointmentID, ...data.serviceIds]

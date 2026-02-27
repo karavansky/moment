@@ -68,14 +68,14 @@ export interface Worker {
   firmaID: string
   name: string
   surname: string
-  email : string
+  email: string
   phone?: string
   phone2?: string
-  teamId: string
+  teamId: string | null
   team?: Team
   appointments?: Appointment[]
   reports?: Report[]
-  isAdress : boolean
+  isAdress: boolean
   status: number
   country?: string
   street?: string

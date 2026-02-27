@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react'
+import dynamic from 'next/dynamic'
 import { Modal, Button, Separator, TextArea, TextField, Input, toast } from '@heroui/react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { Appointment, Report, Photo } from '@/types/scheduling'
@@ -12,7 +13,10 @@ import {
   Play,
   Pause,
   Square,
+  MapPin,
 } from 'lucide-react'
+
+const MapView = dynamic(() => import('./MapView'), { ssr: false })
 import { generateId } from '@/lib/generate-id'
 import { formatTime, isSameDate } from '@/lib/calendar-utils'
 import imageCompression from 'browser-image-compression'
@@ -28,9 +32,7 @@ function haversineMeters(lat1: number, lon1: number, lat2: number, lon2: number)
   const dLon = ((lon2 - lon1) * Math.PI) / 180
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) ** 2
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2
   return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)))
 }
 
@@ -64,7 +66,7 @@ export default function AppointmentReport({
     user,
     openAppointment,
     closeAppointment,
-        deleteAppointment,
+    deleteAppointment,
 
     appointments,
     reports: allReports,
@@ -91,6 +93,9 @@ export default function AppointmentReport({
     'idle' | 'converting' | 'compressing' | 'uploading'
   >('idle')
   const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null)
+  const [mapModal, setMapModal] = useState<{ lat: number; lng: number; address?: string } | null>(
+    null
+  )
   const fileInputRef = useRef<HTMLInputElement>(null)
   const photosContainerRef = useRef<HTMLDivElement>(null)
   const scrollOnNextUpdate = useRef(false)
@@ -168,9 +173,7 @@ export default function AppointmentReport({
             const d = await r.json()
             const p = d.features?.[0]?.properties
             if (p) {
-              address = [p.street, p.housenumber, p.postcode, p.city]
-                .filter(Boolean)
-                .join(' ')
+              address = [p.street, p.housenumber, p.postcode, p.city].filter(Boolean).join(' ')
             }
           } catch {}
           if (clientLat && clientLon) {
@@ -231,7 +234,16 @@ export default function AppointmentReport({
       upsertReport(confirmedSession)
 
       openAppointment(appointment.id, user.myWorkerID!)
-      updateAppointment({ ...appointment, isOpen: true, openedAt: serverOpenAt, closedAt: undefined, reports: updatedSessions }, true)
+      updateAppointment(
+        {
+          ...appointment,
+          isOpen: true,
+          openedAt: serverOpenAt,
+          closedAt: undefined,
+          reports: updatedSessions,
+        },
+        true
+      )
     } catch (err) {
       console.error('[handleStart] Error:', err)
       toast.danger(t('appointment.report.startError'))
@@ -272,9 +284,7 @@ export default function AppointmentReport({
       upsertReport(geoUpdatedSession)
 
       // Update local sessions list if modal is still open (prev may be [] if modal was closed — safe, map returns [] unchanged)
-      setReportSessions(prev =>
-        prev.map(s => (s.id === reportIdToUpdate ? geoUpdatedSession : s))
-      )
+      setReportSessions(prev => prev.map(s => (s.id === reportIdToUpdate ? geoUpdatedSession : s)))
     })
   }
 
@@ -312,7 +322,10 @@ export default function AppointmentReport({
       if (updatedSession) upsertReport(updatedSession)
 
       closeAppointment(appointment.id)
-      updateAppointment({ ...appointment, isOpen: false, closedAt: confirmedCloseAt, reports: updatedSessions }, true)
+      updateAppointment(
+        { ...appointment, isOpen: false, closedAt: confirmedCloseAt, reports: updatedSessions },
+        true
+      )
     } catch (err) {
       console.error('[handleFinish] Error:', err)
       toast.danger(t('appointment.report.finishError'))
@@ -358,9 +371,7 @@ export default function AppointmentReport({
       upsertReport(geoUpdatedSession)
 
       // Update local sessions list if modal is still open (prev may be [] if modal was closed — safe, map returns [] unchanged)
-      setReportSessions(prev =>
-        prev.map(s => (s.id === reportIdToUpdate ? geoUpdatedSession : s))
-      )
+      setReportSessions(prev => prev.map(s => (s.id === reportIdToUpdate ? geoUpdatedSession : s)))
     })
   }
 
@@ -513,9 +524,7 @@ export default function AppointmentReport({
 
       setReportSessions(prev => {
         const updated = prev.map(s =>
-          s.id === activeReportId
-            ? { ...s, photos: [...(s.photos || []), savedPhoto] }
-            : s
+          s.id === activeReportId ? { ...s, photos: [...(s.photos || []), savedPhoto] } : s
         )
         if (appointment) updateAppointment({ ...appointment, reports: updated }, true)
         return updated
@@ -536,9 +545,7 @@ export default function AppointmentReport({
     setPhotos(prev => prev.filter(p => p.id !== id))
     setReportSessions(prev => {
       const updated = prev.map(s =>
-        s.id === currentReportId
-          ? { ...s, photos: (s.photos || []).filter(p => p.id !== id) }
-          : s
+        s.id === currentReportId ? { ...s, photos: (s.photos || []).filter(p => p.id !== id) } : s
       )
       if (appointment) updateAppointment({ ...appointment, reports: updated }, true)
       return updated
@@ -558,9 +565,7 @@ export default function AppointmentReport({
       ((closeAt ? new Date(closeAt) : new Date()).getTime() - new Date(openAt).getTime()) / 1000
     )
     // Round up; for closed sessions guarantee at least 1 min even if timestamps are equal
-    const mins = closeAt
-      ? Math.max(1, Math.ceil(diffSeconds / 60))
-      : Math.ceil(diffSeconds / 60)
+    const mins = closeAt ? Math.max(1, Math.ceil(diffSeconds / 60)) : Math.ceil(diffSeconds / 60)
     if (mins < 60) return `${mins} ${t('appointment.report.min')}`
     const h = Math.floor(mins / 60)
     const m = mins % 60
@@ -586,9 +591,8 @@ export default function AppointmentReport({
             if (!open) onClose()
           }}
           variant="blur"
-         
         >
-          <Modal.Container className="max-w-2xl"  size="lg">
+          <Modal.Container className="max-w-2xl" size="lg">
             <Modal.Dialog className="max-h-[90vh] overflow-y-auto">
               <Modal.CloseTrigger />
 
@@ -598,13 +602,20 @@ export default function AppointmentReport({
                   {(() => {
                     const closedSessionsSeconds = reportSessions
                       .filter(s => s.openAt && s.closeAt)
-                      .reduce((acc, s) => acc + Math.floor(
-                        (new Date(s.closeAt!).getTime() - new Date(s.openAt!).getTime()) / 1000
-                      ), 0)
+                      .reduce(
+                        (acc, s) =>
+                          acc +
+                          Math.floor(
+                            (new Date(s.closeAt!).getTime() - new Date(s.openAt!).getTime()) / 1000
+                          ),
+                        0
+                      )
                     const activeSession = currentReportId
                       ? reportSessions.find(s => s.id === currentReportId && s.openAt && !s.closeAt)
                       : undefined
-                    const timerOpenedAt = activeSession?.openAt ? new Date(activeSession.openAt) : undefined
+                    const timerOpenedAt = activeSession?.openAt
+                      ? new Date(activeSession.openAt)
+                      : undefined
                     const showTimer = closedSessionsSeconds > 0 || !!timerOpenedAt
                     return showTimer ? (
                       <ElapsedTimer
@@ -623,10 +634,11 @@ export default function AppointmentReport({
                       isDisabled={appointment?.isOpen || isStarting}
                       onPress={handleStart}
                     >
-                      {isStarting
-                        ? <Loader2 className="w-4 h-4 animate-spin" />
-                        : <Play className="w-4 h-4" />
-                      }
+                      {isStarting ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Play className="w-4 h-4" />
+                      )}
                       {t('appointment.edit.start')}
                     </Button>
                     <Button
@@ -635,10 +647,11 @@ export default function AppointmentReport({
                       isDisabled={!appointment?.isOpen || isPausing}
                       onPress={handlePause}
                     >
-                      {isPausing
-                        ? <Loader2 className="w-4 h-4 animate-spin" />
-                        : <Pause className="w-4 h-4" />
-                      }
+                      {isPausing ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Pause className="w-4 h-4" />
+                      )}
                       {t('appointment.edit.pause')}
                     </Button>
                     <Button
@@ -648,10 +661,11 @@ export default function AppointmentReport({
                       isDisabled={!appointment?.isOpen || isFinishing}
                       onPress={handleFinish}
                     >
-                      {isFinishing
-                        ? <Loader2 className="w-4 h-4 animate-spin" />
-                        : <Square className="w-4 h-4" />
-                      }
+                      {isFinishing ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Square className="w-4 h-4" />
+                      )}
                       {t('appointment.edit.finish')}
                     </Button>
                   </div>
@@ -730,77 +744,110 @@ export default function AppointmentReport({
                       </p>
                     )}
                     {[...reportSessions]
-                      .sort((a, b) =>
-                        (b.openAt ? new Date(b.openAt).getTime() : 0) -
-                        (a.openAt ? new Date(a.openAt).getTime() : 0)
+                      .sort(
+                        (a, b) =>
+                          (b.openAt ? new Date(b.openAt).getTime() : 0) -
+                          (a.openAt ? new Date(a.openAt).getTime() : 0)
                       )
-                      .map(session => (
-                      <div key={session.id} className="p-3 bg-default-50 rounded-lg">
-                        <div className="flex items-start gap-3">
-                          {/* Time & geo column */}
-                          <div className="shrink-0 text-sm min-w-[130px]">
-                            <p className="font-medium">
-                              {session.openAt && formatTime(new Date(session.openAt))}
-                              {session.closeAt && ` → ${formatTime(new Date(session.closeAt))}`}
-                            </p>
-                            <p className="text-xs text-default-400">
-                              {formatSessionDuration(
-                                session.openAt ? new Date(session.openAt) : undefined,
-                                session.closeAt ? new Date(session.closeAt) : undefined
+                      .map((session, index) => (
+                        <div key={session.id}>
+                          <div className="p-1 bg-default-50 rounded-lg space-y-1">
+                            {/* Row 1: Time range + open geo */}
+                            <div className="flex items-baseline justify-between gap-2 text-sm">
+                              <p className="font-medium shrink-0">
+                                {session.openAt && formatTime(new Date(session.openAt))}
+                                {session.closeAt && ` → ${formatTime(new Date(session.closeAt))}`}
+                              </p>
+                              {(session.openAddress ||
+                                session.openDistanceToAppointment != null) && (
+                                <button
+                                  type="button"
+                                  className="text-xs text-default-500 text-right truncate hover:text-primary cursor-pointer inline-flex items-center gap-0.5 transition-colors"
+                                  onClick={() => {
+                                    if (
+                                      session.openLatitude != null &&
+                                      session.openLongitude != null
+                                    ) {
+                                      setMapModal({
+                                        lat: session.openLatitude,
+                                        lng: session.openLongitude,
+                                        address: session.openAddress || undefined,
+                                      })
+                                    }
+                                  }}
+                                >
+                                  <MapPin className="w-3 h-3 shrink-0" />▶ {session.openAddress}
+                                  {session.openDistanceToAppointment != null &&
+                                    ` ${formatDistance(session.openDistanceToAppointment)}`}
+                                </button>
                               )}
-                            </p>
-                            {session.openAddress && (
-                              <p className="text-xs text-default-500 mt-0.5">
-                                ▶ {session.openAddress}
-                              </p>
-                            )}
-                            {session.openDistanceToAppointment != null && (
-                              <p className="text-xs text-default-400">
-                                ▶ {formatDistance(session.openDistanceToAppointment)}
-                              </p>
-                            )}
-                            {session.closeAddress && (
-                              <p className="text-xs text-default-500">■ {session.closeAddress}</p>
-                            )}
-                            {session.closeDistanceToAppointment != null && (
-                              <p className="text-xs text-default-400">
-                                ■ {formatDistance(session.closeDistanceToAppointment)}
-                              </p>
-                            )}
-                          </div>
-                          {/* Notes column */}
-                          <div className="flex-1 flex items-start gap-1">
-                            <TextField className="flex-1 mb-0">
-                              <TextArea
-                                rows={2}
-                                placeholder={t('appointment.report.notesPlaceholder')}
-                                value={sessionNotes[session.id] || ''}
-                                onChange={e => {
-                                  setSessionNotes(prev => ({
-                                    ...prev,
-                                    [session.id]: e.target.value,
-                                  }))
-                                  setDirtyNotes(prev => ({ ...prev, [session.id]: true }))
-                                }}
-                              />
-                            </TextField>
-                            {dirtyNotes[session.id] && (
-                              <button
-                                onClick={() => handleSaveNotes(session.id)}
-                                disabled={isSavingNotes[session.id]}
-                                className="mt-1 p-1 text-primary hover:text-primary/80 disabled:opacity-50"
-                              >
-                                {isSavingNotes[session.id] ? (
-                                  <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                  <Save className="w-4 h-4" />
+                            </div>
+                            {/* Row 2: Duration + close geo */}
+                            <div className="flex items-baseline justify-between gap-2 text-sm">
+                              <p className="text-xs text-default-400 shrink-0">
+                                {formatSessionDuration(
+                                  session.openAt ? new Date(session.openAt) : undefined,
+                                  session.closeAt ? new Date(session.closeAt) : undefined
                                 )}
-                              </button>
-                            )}
+                              </p>
+                              {(session.closeAddress ||
+                                session.closeDistanceToAppointment != null) && (
+                                <button
+                                  type="button"
+                                  className="text-xs text-default-500 text-right truncate hover:text-primary cursor-pointer inline-flex items-center gap-0.5 transition-colors"
+                                  onClick={() => {
+                                    if (
+                                      session.closeLatitude != null &&
+                                      session.closeLongitude != null
+                                    ) {
+                                      setMapModal({
+                                        lat: session.closeLatitude,
+                                        lng: session.closeLongitude,
+                                        address: session.closeAddress || undefined,
+                                      })
+                                    }
+                                  }}
+                                >
+                                  <MapPin className="w-3 h-3 shrink-0" />■ {session.closeAddress}
+                                  {session.closeDistanceToAppointment != null &&
+                                    ` ${formatDistance(session.closeDistanceToAppointment)}`}
+                                </button>
+                              )}
+                            </div>
+                            {/* Row 3: Notes (full width) */}
+                            <div className="flex items-start gap-1 pt-1">
+                              <TextField className="flex-1 mb-0">
+                                <TextArea
+                                  rows={2}
+                                  placeholder={t('appointment.report.notesPlaceholder')}
+                                  value={sessionNotes[session.id] || ''}
+                                  onChange={e => {
+                                    setSessionNotes(prev => ({
+                                      ...prev,
+                                      [session.id]: e.target.value,
+                                    }))
+                                    setDirtyNotes(prev => ({ ...prev, [session.id]: true }))
+                                  }}
+                                />
+                              </TextField>
+                              {dirtyNotes[session.id] && (
+                                <button
+                                  onClick={() => handleSaveNotes(session.id)}
+                                  disabled={isSavingNotes[session.id]}
+                                  className="mt-1 p-1 text-primary hover:text-primary/80 disabled:opacity-50"
+                                >
+                                  {isSavingNotes[session.id] ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <Save className="w-4 h-4" />
+                                  )}
+                                </button>
+                              )}
+                            </div>
                           </div>
+                          {index < reportSessions.length - 1 && <Separator className="my-1" />}
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
 
                   {/* Photos Section */}
@@ -878,13 +925,17 @@ export default function AppointmentReport({
               </Modal.Body>
               <Modal.Footer>
                 {user?.status === 0 && (
-                  <Alert variant="danger" title={t('appointment.edit.delete')} description={t('appointment.edit.confirmDelete')} onConfirm={() => {
+                  <Alert
+                    variant="danger"
+                    title={t('appointment.edit.delete')}
+                    description={t('appointment.edit.confirmDelete')}
+                    onConfirm={() => {
                       if (appointment) {
                         deleteAppointment(appointment.id)
                         onClose()
                       }
-                    }} />
-
+                    }}
+                  />
                 )}
               </Modal.Footer>
             </Modal.Dialog>
@@ -925,6 +976,35 @@ export default function AppointmentReport({
                   </div>
                 </Modal.Body>
               )}
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
+
+      {/* Map Modal — Container must be INSIDE Backdrop */}
+      <Modal>
+        <Modal.Backdrop
+          isOpen={!!mapModal}
+          onOpenChange={open => {
+            if (!open) setMapModal(null)
+          }}
+          style={{ zIndex: 100 }}
+        >
+          <Modal.Container className="sm:max-w-lg">
+            <Modal.Dialog>
+              <Modal.CloseTrigger />
+              <Modal.Header>
+                <h2 className="text-lg font-semibold truncate">
+                  {mapModal?.address || 'Location'}
+                </h2>
+              </Modal.Header>
+              <Modal.Body className="p-0">
+                {mapModal && (
+                  <div className="h-[400px]">
+                    <MapView lat={mapModal.lat} lng={mapModal.lng} address={mapModal.address} />
+                  </div>
+                )}
+              </Modal.Body>
             </Modal.Dialog>
           </Modal.Container>
         </Modal.Backdrop>
