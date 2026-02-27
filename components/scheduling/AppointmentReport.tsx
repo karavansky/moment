@@ -730,7 +730,7 @@ export default function AppointmentReport({
                 <Separator />
 
                 {/* Report Section */}
-                <div className="space-y-4">
+                <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <FileText className="w-5 h-5 text-primary" />
                     <h3 className="text-lg font-semibold">{t('appointment.report.report')}</h3>

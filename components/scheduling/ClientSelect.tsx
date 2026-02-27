@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useMemo, useCallback, memo } from 'react'
-import { Button, ComboBox, Header, Input, Label, ListBox, Separator } from '@heroui/react'
+import React, { useState, useMemo, useCallback, memo } from 'react'
+import dynamic from 'next/dynamic'
+import { Button, Modal, ComboBox, Header, Input, Label, ListBox, Separator } from '@heroui/react'
 import { UserStar, MapPin, Plus } from 'lucide-react'
 import { Client, Groupe } from '@/types/scheduling'
 import { usePlatformContext } from '@/contexts/PlatformContext'
@@ -9,6 +10,8 @@ import { LogoMoment } from '@/components/icons'
 import { useTranslation } from '@/components/Providers'
 import { generateId } from '@/lib/generate-id'
 import { useAuth } from '@/components/AuthProvider'
+
+const MapView = dynamic(() => import('./MapView'), { ssr: false })
 
 interface GroupedClients {
   group: Groupe
@@ -37,6 +40,9 @@ function ClientSelect({
   const { isMobile, isReady } = usePlatformContext()
   const { t } = useTranslation()
   const [isNewSelected, setIsNewSelected] = React.useState(false)
+  const [mapModal, setMapModal] = useState<{ lat: number; lng: number; address: string } | null>(
+    null
+  )
   const { session, status: authStatus } = useAuth()
 
   // Мемоизация выбранного клиента
@@ -139,9 +145,21 @@ function ClientSelect({
 
         {/* Selected Client Info */}
         {selectedClient && (
-          <div className="bg-default-50 rounded-lg">
+          <button
+            type="button"
+            className="bg-default-50 rounded-lg w-full text-left hover:bg-default-100 cursor-pointer transition-colors"
+            onClick={() => {
+              if (selectedClient.latitude && selectedClient.longitude) {
+                setMapModal({
+                  lat: selectedClient.latitude,
+                  lng: selectedClient.longitude,
+                  address: `${selectedClient.street} ${selectedClient.houseNumber}, ${selectedClient.postalCode} ${selectedClient.city}`,
+                })
+              }
+            }}
+          >
             <div className="flex items-start gap-2 text-sm">
-              <LogoMoment className="w-4 h-4 mt-0.5 text-default-500" />
+              <MapPin className="w-4 h-4 mt-0.5 text-default-500 shrink-0" />
               <div>
                 <p className="text-xs text-default-500">
                   {selectedClient.street} {selectedClient.houseNumber}
@@ -150,7 +168,7 @@ function ClientSelect({
                 </p>
               </div>
             </div>
-          </div>
+          </button>
         )}
       </div>
     )
@@ -166,10 +184,10 @@ function ClientSelect({
         selectedKey={selectedClientId}
         onSelectionChange={handleDesktopChange}
       >
-          <Label className="text-base font-normal flex items-center gap-2">
-            <UserStar className="w-6 h-6" />
-            {t('appointment.edit.client.label')}
-          </Label>
+        <Label className="text-base font-normal flex items-center gap-2">
+          <UserStar className="w-6 h-6" />
+          {t('appointment.edit.client.label')}
+        </Label>
         <ComboBox.InputGroup>
           <Input placeholder={t('appointment.edit.client.searchPlaceholder')} />
           <ComboBox.Trigger />
@@ -199,9 +217,21 @@ function ClientSelect({
 
       {/* Selected Client Info */}
       {selectedClient && (
-        <div className=" bg-default-50 rounded-lg">
+        <button
+          type="button"
+          className="bg-default-50 rounded-lg w-full text-left hover:bg-default-100 cursor-pointer transition-colors"
+          onClick={() => {
+            if (selectedClient.latitude && selectedClient.longitude) {
+              setMapModal({
+                lat: selectedClient.latitude,
+                lng: selectedClient.longitude,
+                address: `${selectedClient.street} ${selectedClient.houseNumber}, ${selectedClient.postalCode} ${selectedClient.city}`,
+              })
+            }
+          }}
+        >
           <div className="flex items-start gap-2 text-sm">
-            <LogoMoment className="w-4 h-4 mt-0.5 text-default-500" />
+            <MapPin className="w-4 h-4 mt-0.5 text-default-500 shrink-0" />
             <div>
               <p className="text-xs text-default-500">
                 {selectedClient.street} {selectedClient.houseNumber}
@@ -210,8 +240,37 @@ function ClientSelect({
               </p>
             </div>
           </div>
-        </div>
+        </button>
       )}
+
+      {/* Map Modal */}
+      <Modal>
+        <Modal.Backdrop
+          isOpen={!!mapModal}
+          onOpenChange={open => {
+            if (!open) setMapModal(null)
+          }}
+          style={{ zIndex: 100 }}
+        >
+          <Modal.Container className="sm:max-w-lg">
+            <Modal.Dialog>
+              <Modal.CloseTrigger />
+              <Modal.Header>
+                <h2 className="text-lg font-semibold truncate">
+                  {mapModal?.address || 'Location'}
+                </h2>
+              </Modal.Header>
+              <Modal.Body className="p-0">
+                {mapModal && (
+                  <div className="h-[400px]">
+                    <MapView lat={mapModal.lat} lng={mapModal.lng} address={mapModal.address} />
+                  </div>
+                )}
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
     </div>
   )
 }
