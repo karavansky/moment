@@ -526,7 +526,12 @@ export default function AppointmentReport({
         const updated = prev.map(s =>
           s.id === activeReportId ? { ...s, photos: [...(s.photos || []), savedPhoto] } : s
         )
-        if (appointment) updateAppointment({ ...appointment, reports: updated }, true)
+        // Sync to context so data persists across modal open/close
+        const updatedSession = updated.find(s => s.id === activeReportId)
+        if (updatedSession) upsertReport(updatedSession)
+        if (appointment) {
+          queueMicrotask(() => updateAppointment({ ...appointment, reports: updated }, true))
+        }
         return updated
       })
     } catch (error) {
@@ -547,7 +552,12 @@ export default function AppointmentReport({
       const updated = prev.map(s =>
         s.id === currentReportId ? { ...s, photos: (s.photos || []).filter(p => p.id !== id) } : s
       )
-      if (appointment) updateAppointment({ ...appointment, reports: updated }, true)
+      // Sync to context so data persists across modal open/close
+      const updatedSession = updated.find(s => s.id === currentReportId)
+      if (updatedSession) upsertReport(updatedSession)
+      if (appointment) {
+        queueMicrotask(() => updateAppointment({ ...appointment, reports: updated }, true))
+      }
       return updated
     })
     fetch(`/api/reports/photos/${id}`, { method: 'DELETE' }).catch(err =>
