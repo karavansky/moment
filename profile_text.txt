@@ -1,0 +1,194 @@
+   
+Kontakt
+karavansky@gmail.com
+www.linkedin.com/in/karavansky
+(LinkedIn)
+Top-Kenntnisse
+CI/CD pipelines
+Visual Basic .NET (VB.NET)
+Next.js
+Languages
+Ukrainisch  (Native or Bilingual)
+Russisch  (Native or Bilingual)
+Englisch  (Limited Working)
+Deutsch  (Limited Working)Serge Karavansky
+Full-Stack Entwickler / Developer
+Bonn, Nordrhein-Westfalen, Deutschland
+Zusammenfassung
+Seit 2019 habe ich mehr als sechs native iOS-Apps entwickelt. Ich
+war an der Entwicklung innovativer Geschäftslösungen beteiligt,
+die Prozesse effizienter gestalten, sowie an benutzerzentrierten
+Anwendungen, die den Alltag vereinfachen.
+Meine eigene iOS-App „Quail Breeder“ (quailbreeder.net) ermöglicht
+die Steuerung und Kontrolle von Prozessen auf einer Wachtelfarm.
+Die App wurde gemäß den App-Review-Guidelines im App Store
+geprüft und am 5. April 2021 erfolgreich veröffentlicht. Sie ist über
+ein kostenpflichtiges Abonnementmodell nutzbar.
+Zudem verfüge ich über fundierte Erfahrung im Aufbau von
+Microservice-Architekturen.
+Meine Stärken
+Sicheres Umsetzen von Client- und Servercode mit umfassender
+Erfahrung in einem Bereich und soliden Kenntnissen im anderen.
+Selbstständige Entwicklung von MVPs (Minimum Viable Products)
+mit minimalem Support.
+Dual-Expertise: Expertenwissen in Client- (iOS) und
+Serverentwicklung.
+Kompetenzen & Tools:
+Native iOS-Entwicklung:
+Xcode, Swift, 
+Frameworks: UIKit, SwiftUI, Core Data, SwiftData, Combine, 
+Frontend
+HTML5, CSS3, SCSS, Tailwind CSS
+JavaScript (ES6+) / TypeScript
+  Page 1 of 6
+   
+Frameworks: React, Next.js
+Responsive Design, Cross-Browser-Compatibility
+UI/UX-Grundverständnis
+Backend
+Node.js (Express.js, NextJS o.ä.)
+Vapor(Swift)
+RESTful APIs, GraphQL
+Authentifizierung & Autorisierung (JWT, OAuth2)
+Datenbanken
+Relationale DBs: PostgreSQL, MSSQL
+NoSQL: Firebase, Redis
+Datenbankmodellierung und -optimierung
+DevOps / Deployment
+Nginx
+Docker & Containerisierung
+CI/CD: GitLab CI, GitHub Actions
+Cloud-Plattformen: AWS, Google Cloud
+Linux-Serveradministration
+Architektur & Patterns
+MVVM, MVC, Clean Architecture, REST, Microservices
+Agile Arbeitsweise:
+Lösungsorientiert, hohe Eigenmotivation, Erfahrung mit Git, GitHub
+Issues, Jira
+Berufserfahrung
+infas Institut für angewandte Sozialwissenschaft GmbH
+1 Jahr 2 Monate
+Full Stack Developer
+März 2025 - Present  (1 Jahr)
+Bonn, Nordrhein-Westfalen, Deutschland
+Junior Projektmanager in der Abteilung Datenbank und Softwareentwicklung
+Full Stack Ingenieur
+Januar 2025 - Februar 2025  (2 Monate)
+  Page 2 of 6
+   
+Bonn, Nordrhein-Westfalen, Deutschland
+Kath. Kirchengemeindeverband Bad Godesberg
+IT consultant (freiwillig)
+Mai 2022 - Januar 2025  (2 Jahre 9 Monate)
+Bonn, Nordrhein-Westfalen, Deutschland
+Beratung und Schulung für Senioren bei technischen Fragen rund um
+Laptops, Computer und Smartphones.
+Ukrainische Streitkräfte 
+iOS-Entwickler
+Februar 2022 - Juli 2022  (6 Monate)
+Kyiv Metropolitan Area
+Entwicklung und Implementierung eines Anlagebuchhaltungssystems gemäß
+NATO-Standards (iOS, SWIFT, VAPOR, AWS)
+Privatunternehmer
+Unternehmensberater - Entwickler
+Dezember 2010 - Februar 2022  (11 Jahre 3 Monate)
+Kiew, Ukraine
+- Developed iOS/Android applications with Swift
+IPM Intensiv Pflegewelt GmbH
+iOS-Entwickler
+Mai 2019 - Januar 2020  (9 Monate)
+München, Bayern, Deutschland
+Analyse bestehender Geschäftsprozesse und Entwicklung von Empfehlungen
+zu deren Optimierung
+Erstellung einer Hardware-Software-Integration, basierend auf einer Cloud-
+Datenbank mit einer selbst entwickelten mobilen Anwendung zur Zeitplanung
+des Personals und dem Management von Einsatzplänen
+Implementierung und Testbetrieb der komplexen Anwendung sowie Schulung
+der Benutzer
+Arbeitsergebnisse:
+reduzierte Unternehmenskosten
+Steigerung der Qualität der Dienstleistungen
+Mädchenschule "Lady"
+IT Leiter, Application Management
+September 2015 - Juni 2017  (1 Jahr 10 Monate)
+Kyiv Metropolitan Area
+  Page 3 of 6
+   
+Optimierung der IT-Infrastruktur (Netzwerke, Wifi) 
+Einführung des Learning Management Systems “Google – Classroom”
+Weiterbildung der Lehrkräfte zum Thema "Benutzung von ICloud bei Google" 
+Einkauf von 300 Chromebooks und Bereitstellung der Hardware für das Institut
+(Google Workspace Administrator)
+Country SPA  Center
+Projektmanager, IT Infrastruktur/Support
+August 2010 - Dezember 2015  (5 Jahre 5 Monate)
+Kyiv Metropolitan Area
+Durchführung der Optimierung von IT-Infrastruktur
+Wi-Fi Abstimmung Mesh Network
+Ukrainskaja Perepelka
+Sebständig - Geflügelfarm
+August 2010 - Februar 2014  (3 Jahre 7 Monate)
+Kyiv Metropolitan Area
+Organisation des vollständigen Produktionskreislaufs zur Tierhaltung von ca.
+3000 Wachteln
+Organisation der Futterherstellung für Vögel
+Programmierung und Einführung eines Kontroll- und Prozess-
+Steuerungssystems für die Arbeitsvorgänge auf der Farm
+VEDEKON
+Generaldirektor, MIT-INHABER
+August 2001 - Juli 2010  (9 Jahre)
+Kyiv Metropolitan Area
+Produktion von Fixed Wireless Terminals unter nationaler Lizenz 
+Koordination und  Systemintegration der Tochtergesellschaften des
+Mutterkonzerns als IT Outsourcingpartner
+Ergebnisse der Arbeit:
+Zusammenstellung von Expertenteams für Umsetzungsprojekte 
+Erwerb einer Lizenz №4938-24.11.05 für die Benutzung von Sendefrequenz
+2,1GHz
+Aufbau von 27 Basisstationen in 26 Regionen der Ukraine.  Erfüllung der
+Lizenzbedingungen zur Datenübertragung
+Design und Implementierung eines Netzmanagementsystems – Integration
+des Broadband Wireless Access mit dem Kunden-Service-system CRM 
+Onboarding von ca 1000 Privatkunden und 120 Unternehmenskunden
+  Page 4 of 6
+   
+Fernsehsender "Tonis"
+IT-Führungsmanager
+August 2003 - November 2005  (2 Jahre 4 Monate)
+Kyiv Metropolitan Area
+Design und Implementierung eines Systems für die Zusammenstellung von
+Rundfunkprogrammen. Integration in das CRM der Vertriebsabteilung
+Einführung des CRM in der Vertriebsabteilung
+Einführung von Thin Clients für die Abteilung “Newsroom” 
+Einführung und Wartung des Finanzbuchhaltungs-Systems
+Einführung eines Fuhrpark-Management für die Fernsehgesellschaft
+Aufbau einer Supportabteilung nach ITIL Prozess. Rekrutierung und
+Ausbildung des Teams
+Immobilienagentur "Planeta Obolon" 
+IT-Projektleiter
+Oktober 1999 - Juni 2001  (1 Jahr 9 Monate)
+Kyiv Metropolitan Area
+Aufbau einer neuen Kommunikationsinfrastruktur einschließlich  Optimierung
+der Geschäftsprozesse. 
+Einführung eines CRM Systems zur automatisierten Bearbeitung von Kauf-
+und Mietanfragen der Bestandsobjekte
+Betrieb eines einheitlichen Pager-Systems (Funkmeldeempfänger)  
+Konzepterarbeitung eines Web-Service “Domik.net”
+Hotel "Spartak"
+IT-Manager
+Juli 1996 - Juni 1999  (3 Jahre)
+Kyiv Metropolitan Area
+Optimierung der IT-Infrastruktur mit signifikanten Kosteneinsparungen
+Automatisierung der Zahlungsvorgänge
+Basis
+Hauptingenieur – Projektprogrammierer
+Juni 1994 - Mai 1996  (2 Jahre)
+Kyiv Metropolitan Area
+Entwicklung und Support der Buchhaltungmodule “Sachanlagen” und
+“Materialwirtschaft”
+Ausbildung
+  Page 5 of 6
+   
+Internationaler Solomon Universität
+Informationstechnologien  · (1995 - 2000)
+  Page 6 of 6
