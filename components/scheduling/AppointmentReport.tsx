@@ -114,9 +114,9 @@ export default function AppointmentReport({
         })
       setReportSessions(sessions)
 
-      // Find active session (opened but not closed) — only when appointment itself is open
+      // Find active work session (type=0, opened but not closed) — only when appointment itself is open
       const active = appointment.isOpen
-        ? [...sessions].reverse().find(s => s.openAt && !s.closeAt)
+        ? [...sessions].reverse().find(s => s.type === 0 && s.openAt && !s.closeAt)
         : undefined
       setCurrentReportId(active?.id || '')
       // When there's an active session, show its photos; otherwise show all photos from all sessions
@@ -127,9 +127,10 @@ export default function AppointmentReport({
         setPhotos(allPhotos)
       }
 
-      // Auto-close orphaned sessions: opened but never closed while appointment is already closed
+      // Auto-close orphaned work sessions (type=0 only): opened but never closed while appointment is already closed
+      // Proxy sessions (type=1) don't need closing — they are just photo containers
       if (!appointment.isOpen) {
-        const orphaned = sessions.filter(s => s.openAt && !s.closeAt)
+        const orphaned = sessions.filter(s => s.type === 0 && s.openAt && !s.closeAt)
         orphaned.forEach(s => {
           fetch(`/api/reports/${s.id}`, {
             method: 'PATCH',
@@ -227,6 +228,7 @@ export default function AppointmentReport({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           reportID: reportIdToUpdate,
+          type: 0, // work session
           appointmentId: appointment.id,
           workerId: user.myWorkerID || appointment.workerId,
           firmaID: user.firmaID,
@@ -240,6 +242,7 @@ export default function AppointmentReport({
       confirmedSession = {
         id: reportIdToUpdate,
         firmaID: user.firmaID,
+        type: 0,
         workerId: user.myWorkerID || appointment.workerId,
         appointmentId: appointment.id,
         notes: '',
@@ -248,7 +251,7 @@ export default function AppointmentReport({
         openAt: serverOpenAt,
       }
 
-      const updatedSessions = [...reportSessions, confirmedSession]
+      const updatedSessions: Report[] = [...reportSessions, confirmedSession]
       setReportSessions(updatedSessions)
       setCurrentReportId(reportIdToUpdate)
       setPhotos([])
@@ -485,17 +488,18 @@ export default function AppointmentReport({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            type: 1, // proxy session — photo container
             appointmentId: appointment.id,
             workerId: user.myWorkerID || appointment.workerId,
             firmaID: user.firmaID,
-            openAt: openAt.toISOString(),
           }),
         })
-        if (!createRes.ok) throw new Error('Failed to auto-create report session')
+        if (!createRes.ok) throw new Error('Failed to auto-create proxy report session')
         const { report } = await createRes.json()
         const newSession: Report = {
           id: report.reportID,
           firmaID: report.firmaID,
+          type: 1,
           workerId: report.workerId,
           appointmentId: report.appointmentId,
           notes: '',
@@ -572,12 +576,16 @@ export default function AppointmentReport({
   const handleRemovePhoto = (id: string) => {
     setPhotos(prev => prev.filter(p => p.id !== id))
     setReportSessions(prev => {
+      // Find which session owns this photo — don't rely on currentReportId
+      // because it may be '' when all sessions are closed
+      const ownerSessionId =
+        currentReportId || prev.find(s => (s.photos || []).some(p => p.id === id))?.id
       const updated = prev.map(s =>
-        s.id === currentReportId ? { ...s, photos: (s.photos || []).filter(p => p.id !== id) } : s
+        s.id === ownerSessionId ? { ...s, photos: (s.photos || []).filter(p => p.id !== id) } : s
       )
       // Sync to context outside of setState to avoid "Cannot update a component while rendering" error
       queueMicrotask(() => {
-        const updatedSession = updated.find(s => s.id === currentReportId)
+        const updatedSession = updated.find(s => s.id === ownerSessionId)
         if (updatedSession) upsertReport(updatedSession)
         if (appointment) updateAppointment({ ...appointment, reports: updated }, true)
       })
@@ -634,7 +642,7 @@ export default function AppointmentReport({
                   <h2 className="text-xl font-bold">{t('appointment.report.title')}</h2>
                   {(() => {
                     const closedSessionsSeconds = reportSessions
-                      .filter(s => s.openAt && s.closeAt)
+                      .filter(s => s.type === 0 && s.openAt && s.closeAt)
                       .reduce(
                         (acc, s) =>
                           acc +
@@ -769,20 +777,21 @@ export default function AppointmentReport({
                     <h3 className="text-lg font-semibold">{t('appointment.report.report')}</h3>
                   </div>
 
-                  {/* Report Sessions List */}
+                  {/* Report Sessions List — only work sessions (type=0), not proxy photo containers */}
                   <div className="max-h-56 overflow-y-auto space-y-2 pr-1">
-                    {reportSessions.length === 0 && (
+                    {reportSessions.filter(s => s.type === 0).length === 0 && (
                       <p className="text-sm text-default-400 italic">
                         {t('appointment.report.noSessions')}
                       </p>
                     )}
                     {[...reportSessions]
+                      .filter(s => s.type === 0)
                       .sort(
                         (a, b) =>
                           (b.openAt ? new Date(b.openAt).getTime() : 0) -
                           (a.openAt ? new Date(a.openAt).getTime() : 0)
                       )
-                      .map((session, index) => (
+                      .map((session, index, arr) => (
                         <div key={session.id}>
                           <div className="p-1 bg-default-50 rounded-lg space-y-1">
                             {/* Row 1: Time range + open geo */}
@@ -878,7 +887,7 @@ export default function AppointmentReport({
                               )}
                             </div>
                           </div>
-                          {index < reportSessions.length - 1 && <Separator className="my-1" />}
+                          {index < arr.length - 1 && <Separator className="my-1" />}
                         </div>
                       ))}
                   </div>

@@ -11,6 +11,7 @@ export async function POST(request: Request) {
   try {
     const {
       reportID,
+      type,
       appointmentId,
       workerId,
       firmaID,
@@ -23,6 +24,7 @@ export async function POST(request: Request) {
     // openAt is set by the DB server via NOW() — not accepted from client
     const report = await createReportSession(firmaID, {
       reportID,
+      type,
       workerId,
       appointmentId,
       openLatitude,

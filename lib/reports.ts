@@ -5,6 +5,7 @@ import { deleteS3File } from './s3'
 export interface ReportRecord {
   reportID: string
   firmaID: string
+  type: number // 0 = work session, 1 = proxy (photo container)
   workerId: string
   appointmentId: string
   notes: string | null
@@ -48,7 +49,11 @@ export async function createReport(
     `
 
     const result = await client.query(query, [
-      reportID, firmaID, data.workerId, data.appointmentId, data.notes || null,
+      reportID,
+      firmaID,
+      data.workerId,
+      data.appointmentId,
+      data.notes || null,
     ])
 
     // Insert photos
@@ -77,6 +82,7 @@ export async function createReportSession(
   firmaID: string,
   data: {
     reportID?: string
+    type?: number // 0 = work session (default), 1 = proxy (photo container)
     workerId: string
     appointmentId: string
     openLatitude?: number
@@ -86,16 +92,23 @@ export async function createReportSession(
   }
 ): Promise<ReportRecord> {
   const reportID = data.reportID ?? generateId()
+  const reportType = data.type ?? 0
   // openAt is set by the DB server via NOW() to prevent client clock manipulation
   const query = `
-    INSERT INTO reports ("reportID", "firmaID", "workerId", "appointmentId", "openAt",
+    INSERT INTO reports ("reportID", "firmaID", "type", "workerId", "appointmentId", "openAt",
       "openLatitude", "openLongitude", "openAddress", "openDistanceToAppointment")
-    VALUES ($1,$2,$3,$4, NOW(), $5,$6,$7,$8)
+    VALUES ($1,$2,$3,$4,$5, NOW(), $6,$7,$8,$9)
     RETURNING *`
   const result = await pool.query(query, [
-    reportID, firmaID, data.workerId, data.appointmentId,
-    data.openLatitude ?? null, data.openLongitude ?? null,
-    data.openAddress ?? null, data.openDistanceToAppointment ?? null,
+    reportID,
+    firmaID,
+    reportType,
+    data.workerId,
+    data.appointmentId,
+    data.openLatitude ?? null,
+    data.openLongitude ?? null,
+    data.openAddress ?? null,
+    data.openDistanceToAppointment ?? null,
   ])
   return result.rows[0]
 }
@@ -121,16 +134,45 @@ export async function updateReport(
   let idx = 1
 
   // closeAt is set by the DB server via NOW() to prevent client clock manipulation
-  if (data.closeSession) { setClauses.push('"closeAt" = NOW()') }
-  if (data.notes !== undefined) { setClauses.push(`"notes" = $${idx++}`); values.push(data.notes) }
-  if (data.openLatitude !== undefined) { setClauses.push(`"openLatitude" = $${idx++}`); values.push(data.openLatitude) }
-  if (data.openLongitude !== undefined) { setClauses.push(`"openLongitude" = $${idx++}`); values.push(data.openLongitude) }
-  if (data.openAddress !== undefined) { setClauses.push(`"openAddress" = $${idx++}`); values.push(data.openAddress) }
-  if (data.openDistanceToAppointment !== undefined) { setClauses.push(`"openDistanceToAppointment" = $${idx++}`); values.push(data.openDistanceToAppointment) }
-  if (data.closeLatitude !== undefined) { setClauses.push(`"closeLatitude" = $${idx++}`); values.push(data.closeLatitude) }
-  if (data.closeLongitude !== undefined) { setClauses.push(`"closeLongitude" = $${idx++}`); values.push(data.closeLongitude) }
-  if (data.closeAddress !== undefined) { setClauses.push(`"closeAddress" = $${idx++}`); values.push(data.closeAddress) }
-  if (data.closeDistanceToAppointment !== undefined) { setClauses.push(`"closeDistanceToAppointment" = $${idx++}`); values.push(data.closeDistanceToAppointment) }
+  if (data.closeSession) {
+    setClauses.push('"closeAt" = NOW()')
+  }
+  if (data.notes !== undefined) {
+    setClauses.push(`"notes" = $${idx++}`)
+    values.push(data.notes)
+  }
+  if (data.openLatitude !== undefined) {
+    setClauses.push(`"openLatitude" = $${idx++}`)
+    values.push(data.openLatitude)
+  }
+  if (data.openLongitude !== undefined) {
+    setClauses.push(`"openLongitude" = $${idx++}`)
+    values.push(data.openLongitude)
+  }
+  if (data.openAddress !== undefined) {
+    setClauses.push(`"openAddress" = $${idx++}`)
+    values.push(data.openAddress)
+  }
+  if (data.openDistanceToAppointment !== undefined) {
+    setClauses.push(`"openDistanceToAppointment" = $${idx++}`)
+    values.push(data.openDistanceToAppointment)
+  }
+  if (data.closeLatitude !== undefined) {
+    setClauses.push(`"closeLatitude" = $${idx++}`)
+    values.push(data.closeLatitude)
+  }
+  if (data.closeLongitude !== undefined) {
+    setClauses.push(`"closeLongitude" = $${idx++}`)
+    values.push(data.closeLongitude)
+  }
+  if (data.closeAddress !== undefined) {
+    setClauses.push(`"closeAddress" = $${idx++}`)
+    values.push(data.closeAddress)
+  }
+  if (data.closeDistanceToAppointment !== undefined) {
+    setClauses.push(`"closeDistanceToAppointment" = $${idx++}`)
+    values.push(data.closeDistanceToAppointment)
+  }
 
   if (setClauses.length === 0) return null
 
@@ -154,10 +196,7 @@ export async function addPhotoToReport(
 }
 
 export async function removePhotoFromReport(photoID: string): Promise<void> {
-  const result = await pool.query(
-    `SELECT "url" FROM report_photos WHERE "photoID" = $1`,
-    [photoID]
-  )
+  const result = await pool.query(`SELECT "url" FROM report_photos WHERE "photoID" = $1`, [photoID])
   const url: string | undefined = result.rows[0]?.url
   await pool.query(`DELETE FROM report_photos WHERE "photoID" = $1`, [photoID])
   if (url) {

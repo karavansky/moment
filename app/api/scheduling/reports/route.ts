@@ -20,6 +20,7 @@ export async function GET() {
     const reports = reportsRaw.map(r => ({
       id: r.reportID,
       firmaID: r.firmaID,
+      type: r.type,
       workerId: r.workerId,
       appointmentId: r.appointmentId,
       notes: r.notes,

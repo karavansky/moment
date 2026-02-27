@@ -784,7 +784,7 @@ export const getAllSampleObjects = () => {
     isOpen: false,
     services: [],
     firmaID,
-}
+  }
 
   const appointment_12: Appointment = {
     id: '7NzZLFtDTPDBoRLHBPLT5',
@@ -979,6 +979,7 @@ export const getAllSampleObjects = () => {
   const report1: Report = {
     id: 'XyZaBcDeFgHiJkLmNoPq1',
     firmaID: firmaID,
+    type: 0,
     worker: worker_1,
     photos: photosSample1,
     appointmentId: appointment_1.id,
@@ -990,6 +991,7 @@ export const getAllSampleObjects = () => {
   const report2: Report = {
     id: 'YzAbCdEfGhIjKlMnOpQr2',
     firmaID: firmaID,
+    type: 0,
     worker: worker_5,
     photos: photosSample2,
     appointmentId: appointment_5.id,

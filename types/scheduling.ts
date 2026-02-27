@@ -119,9 +119,11 @@ export interface Photo {
   url: string
 }
 // Отчет о выполненной работе
+// type: 0 = work session (Start → Finish), 1 = proxy session (photo upload container)
 export interface Report {
   id: string
   firmaID: string
+  type: number
   photos: Photo[] // Массив фотографий
   workerId: string
   appointmentId: string
