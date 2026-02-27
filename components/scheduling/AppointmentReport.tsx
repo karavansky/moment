@@ -652,7 +652,9 @@ export default function AppointmentReport({
                         0
                       )
                     const activeSession = currentReportId
-                      ? reportSessions.find(s => s.id === currentReportId && s.openAt && !s.closeAt)
+                      ? reportSessions.find(
+                          s => s.id === currentReportId && s.type === 0 && s.openAt && !s.closeAt
+                        )
                       : undefined
                     const timerOpenedAt = activeSession?.openAt
                       ? new Date(activeSession.openAt)
