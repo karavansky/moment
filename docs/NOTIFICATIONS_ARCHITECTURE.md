@@ -23,27 +23,54 @@
 Поток данных для глобального уведомления выглядит так:
 `PostgreSQL (pg_notify) -> Node.js Backend -> SSE Connection -> useSchedulingEvents.ts -> SchedulingContext.tsx -> NotificationContext.tsx -> NotificationObserver.tsx -> HeroUI Toast`
 
-### Места, генерирующие системные Toasts (через `addNotification`):
+### Места, генерирующие системные Toasts (через `addNotification` в React UI):
 
-1. **Новое назначение (Appointment Created)**
-   - **Где:** `SchedulingContext.tsx`
-   - **Условие:** Если пришло SSE-событие `appointment_created` и текущий авторизованный работник (`myWorkerID`) находится в списке `workerIds` этого назначения.
-   - **Кнопка:** "View" (ведет на `/dienstplan`).
-2. **Отмена назначения (Appointment Deleted)**
-   - **Где:** `SchedulingContext.tsx`
-   - **Условие:** Событие `appointment_deleted` + назначение было привязано к текущему работнику.
-   - **Цвет:** Warning (Без кнопки перехода).
-3. **Старт визита (Starting Appointment!)**
-   - **Где:** `SchedulingContext.tsx`
-   - **Условие:** Работник отмечает визит как `isOpen = true` (нажатие Start на мобилке). Событие прилетает по SSE Директору (или диспетчеру).
-   - **Кнопка:** "See on map" (ведет на карту к геометке клиента).
-4. **Окончание визита (Appointment Finished!)**
-   - **Где:** `SchedulingContext.tsx`
-   - **Условие:** Работник завершает визит `isOpen = false`. SSE сообщает об этом диспетчеру.
-   - **Действие:** Toast зеленого цвета.
-5. **Демонстрационный режим (Demo Worker)**
-   - **Где:** `DemoNotificationWorker.tsx`
-   - **Условие:** Запускается, если нет авторизованного юзера (не-Live mode). Генерирует фейковые уведомления раз в минуту в маркетинговых целях.
+_Работают только когда приложение открыто в браузере_
+
+1.  **Начало встречи (`appointment_updated` -> `event.isOpen === true && !existing.isOpen`):**
+    - **Кому:** Отправляется локально текущему пользователю в браузере (директору, если он смотрит дашборд).
+    - **Данные:** `workerNames started an appointment with clientName clientAddress`.
+    - **Action:** Кнопка "See on map" (Ссылка `/map/{appointmentID}`).
+2.  **Завершение встречи (`appointment_updated` -> `!event.isOpen && existing.isOpen`):**
+    - **Кому:** Локально текущему пользователю в браузере.
+    - **Данные:** `workerNames finished an appointment with clientName clientAddress`.
+    - **Action:** Отсутствует (только Dismiss).
+
+---
+
+### Места, генерирующие системные Push-Уведомления (на телефон через backend):
+
+_Работают всегда, даже если PWA закрыто (выполняются в `lib/appointments.ts`)_
+
+1.  **Создание новой встречи (`appointment_created`):**
+    - **Кому:** Только назначенным работникам (Workers).
+    - **Текст:** `You have been assigned to an appointment with {clientName}`.
+    - **URL:** `/dienstplan`.
+
+2.  **Изменение времени/даты встречи (`appointment_updated` -> `timeChanged: true`):**
+    - **Кому:** Только назначенным работникам (Workers).
+    - **Текст:** `Your appointment with {clientName} has been rescheduled.`
+    - **URL:** `/dienstplan`.
+
+3.  **Начало встречи (`appointment_updated` -> Переход `isOpen: false -> true`):**
+    - **Кому:** Всем директорам (Directors) данной фирмы.
+    - **Текст:** `{workerNames} started an appointment with {clientName}.`
+    - **URL:** `/map/{appointmentID}`.
+
+4.  **Завершение встречи (`appointment_updated` -> Переход `isOpen: true -> false`):**
+    - **Кому:** Всем директорам (Directors) данной фирмы.
+    - **Текст:** `{workerNames} finished an appointment with {clientName}.`
+    - **URL:** `/dienstplan`.
+
+5.  **Добавление/удаление работника из встречи (`appointment_updated` -> Изменение `workerIds`):**
+    - **Кому:** Конкретным работникам (кого добавили или убрали).
+    - **Текст:** `You have been assigned/removed from an appointment...`
+    - **URL:** `/dienstplan`.
+
+6.  **Удаление встречи (`appointment_deleted`):**
+    - **Кому:** Только назначенным работникам.
+    - **Текст:** `Your appointment... has been cancelled.`
+    - **URL:** `/dienstplan`.
 
 ---
 

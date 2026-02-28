@@ -74,6 +74,8 @@ function sendAppointmentPush(
     clientID: string
     isOpen?: boolean
     previousWorkerIds?: string[]
+    previousIsOpen?: boolean
+    timeChanged?: boolean
   }
 ) {
   // Fire-and-forget: don't block API response
@@ -92,7 +94,7 @@ function sendAppointmentPush(
 
       if (type === 'appointment_updated') {
         // isOpen transition → push to directors
-        if (data.isOpen === true) {
+        if (data.isOpen === true && data.previousIsOpen !== true) {
           const workerNames = await getWorkerNames(data.workerIds)
           await sendPushToDirectors(firmaID, {
             title: 'Appointment Started',
@@ -100,13 +102,21 @@ function sendAppointmentPush(
             url: `/map/${data.appointmentID}`,
             tag: `appointment-open-${data.appointmentID}`,
           })
-        } else if (data.isOpen === false) {
+        } else if (data.isOpen === false && data.previousIsOpen === true) {
           const workerNames = await getWorkerNames(data.workerIds)
           await sendPushToDirectors(firmaID, {
             title: 'Appointment Finished',
             body: `${workerNames} finished an appointment with ${clientName}.`,
             url: `/dienstplan`,
             tag: `appointment-close-${data.appointmentID}`,
+          })
+        } else if (data.timeChanged) {
+          // Time or date changed -> push to workers
+          await sendPushToWorkers(data.workerIds, {
+            title: 'Appointment Time Changed',
+            body: `Your appointment with ${clientName} has been rescheduled.`,
+            url: '/dienstplan',
+            tag: `appointment-rescheduled-${data.appointmentID}`,
           })
         }
 
@@ -351,6 +361,33 @@ export async function updateAppointment(
   try {
     await dbClient.query('BEGIN')
 
+    // Fetch existing appointment to diff changes BEFORE doing updates
+    const existingRes = await dbClient.query(
+      `SELECT "isOpen", "date", "startTime" FROM appointments WHERE "appointmentID" = $1 AND "firmaID" = $2`,
+      [appointmentID, firmaID]
+    )
+    const existingAppointment = existingRes.rows[0]
+
+    let previousIsOpen: boolean | undefined
+    let timeChanged = false
+
+    if (existingAppointment) {
+      previousIsOpen = existingAppointment.isOpen
+
+      // Compare UTC timestamps to avoid shallow string diffs or timezone issues
+      const isDateChanged =
+        data.date !== undefined &&
+        new Date(data.date).getTime() !== new Date(existingAppointment.date).getTime()
+
+      const isTimeChanged =
+        data.startTime !== undefined &&
+        new Date(data.startTime).getTime() !== new Date(existingAppointment.startTime).getTime()
+
+      if (isDateChanged || isTimeChanged) {
+        timeChanged = true
+      }
+    }
+
     const setClauses: string[] = []
     const values: any[] = []
     let idx = 1
@@ -490,6 +527,8 @@ export async function updateAppointment(
         clientID: result.clientID,
         isOpen: result.isOpen,
         previousWorkerIds,
+        previousIsOpen,
+        timeChanged,
       })
     }
 
