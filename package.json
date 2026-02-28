@@ -1,6 +1,6 @@
 {
   "name": "moment",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "scripts": {
     "dev": "PORT=3007 NEXT_TELEMETRY_DISABLED=1 next dev",

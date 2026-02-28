@@ -3,13 +3,13 @@
 import { useEffect, useRef } from 'react'
 import { useNotifications } from '@/contexts/NotificationContext'
 import { toast } from '@heroui/react'
-import { useRouter } from 'next/navigation';
-import { useLanguage } from '@/hooks/useLanguage';
+import { useRouter } from 'next/navigation'
+import { useLanguage } from '@/hooks/useLanguage'
 
 export const NotificationObserver = () => {
   const { notifications, markNotificationAsRead, requestCloseDropdown } = useNotifications()
-  const router = useRouter();
-  const lang = useLanguage();
+  const router = useRouter()
+  const lang = useLanguage()
   const mountIdRef = useRef(Math.random().toString(36).slice(2, 8))
 
   useEffect(() => {
@@ -80,21 +80,29 @@ export const NotificationObserver = () => {
 
             // Use actionProps from notification or default Dismiss button
             // toastKey будет присвоен после вызова toast(), но onPress вызовется позже
-            let toastKey: string | undefined;
+            let toastKey: string | undefined
+            // Destructure href from actionProps completely so it is omitted from the object injected into HeroUI
+            const { href: originalHref, ...restActionProps } = notif.actionProps || {}
 
             const actionProps = notif.actionProps
               ? {
-                  ...notif.actionProps,
-                  // Убираем href чтобы HeroUI не делал параллельную навигацию без lang prefix
-                  href: undefined,
+                  ...restActionProps,
                   onPress: () => {
-                    if (toastKey) toast.close(toastKey)
-                    if (notif.actionProps?.href) {
-                      // Добавляем lang prefix если href начинается с / и не содержит lang
-                      const href = notif.actionProps.href.startsWith(`/${lang}/`)
-                        ? notif.actionProps.href
-                        : `/${lang}${notif.actionProps.href}`
-                      console.log(`🔵 [NotificationObserver] Navigating to: ${href} (original: ${notif.actionProps.href}), lang=${lang}, current pathname: ${window.location.pathname}`)
+                    // Lazy closure resolving to avoid race conditions if the UI triggers this immediately
+                    const attemptClose = () => {
+                      if (toastKey) toast.close(toastKey)
+                      else setTimeout(() => toastKey && toast.close(toastKey), 100)
+                    }
+                    attemptClose()
+
+                    if (originalHref) {
+                      // Add lang prefix if href starts with / and doesn't contain lang
+                      const href = originalHref.startsWith(`/${lang}/`)
+                        ? originalHref
+                        : `/${lang}${originalHref}`
+                      console.log(
+                        `🔵 [NotificationObserver] Navigating to: ${href} (original: ${originalHref}), lang=${lang}`
+                      )
                       router.push(href)
                     }
                     markNotificationAsRead(notif.id)
@@ -104,6 +112,7 @@ export const NotificationObserver = () => {
                   children: 'Dismiss',
                   onPress: () => {
                     if (toastKey) toast.close(toastKey)
+                    else setTimeout(() => toastKey && toast.close(toastKey), 100)
                     markNotificationAsRead(notif.id)
                   },
                   variant: 'tertiary' as const,
