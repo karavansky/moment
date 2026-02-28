@@ -17,7 +17,7 @@
     "test:db": "node scripts/test-db-connection.js"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.987.0",
+    "@aws-sdk/client-s3": "^3.1000.0",
     "@heroui/badge": "^2.2.18",
     "@heroui/date-picker": "^2.3.31",
     "@heroui/pagination": "^2.2.26",
@@ -31,8 +31,8 @@
     "@heroui/tooltip": "^2.2.27",
     "@marsidev/react-turnstile": "^1.4.2",
     "@next/third-parties": "^16.1.6",
-    "@tailwindcss/postcss": "^4.2.0",
-    "@tanstack/react-virtual": "^3.13.18",
+    "@tailwindcss/postcss": "^4.2.1",
+    "@tanstack/react-virtual": "^3.13.19",
     "@types/imap": "^0.8.43",
     "@types/leaflet": "^1.9.21",
     "@types/mailparser": "^3.4.6",
@@ -40,10 +40,10 @@
     "@types/react-window": "^2.0.0",
     "bcryptjs": "^3.0.3",
     "browser-image-compression": "^2.0.2",
-    "country-flag-icons": "^1.6.13",
+    "country-flag-icons": "^1.6.15",
     "dotenv": "^17.2.4",
     "framer-motion": "^12.34.0",
-    "graphql": "^16.12.0",
+    "graphql": "^16.13.0",
     "graphql-yoga": "^5.18.0",
     "imap": "^0.8.17",
     "leaflet": "^1.9.4",
@@ -55,11 +55,11 @@
     "next-themes": "^0.4.6",
     "nodemailer": "^8.0.1",
     "pdf-parse": "^2.4.5",
-    "pg": "^8.17.2",
+    "pg": "^8.19.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-hook-form": "^7.71.1",
+    "react-hook-form": "^7.71.2",
     "react-leaflet": "^5.0.0",
     "react-window": "^2.2.7",
     "web-push": "^3.6.7"
@@ -74,8 +74,9 @@
       }
     },
     "fast-xml-parser": "^5.3.4",
-    "minimatch": "^10.2.1",
-    "glob": "^11.0.0"
+    "minimatch": "^10.2.3",
+    "glob": "^11.0.0",
+    "ajv": "^6.14.0"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
