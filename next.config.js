@@ -12,6 +12,10 @@ const nextConfig = {
     removeConsole: process.env.NODE_ENV === 'production',
   },
 
+  env: {
+    APP_VERSION: process.env.npm_package_version || require('./package.json').version,
+  },
+
   experimental: {
     optimizeCss: true,
     optimizePackageImports: ['framer-motion', '@heroui/react'],

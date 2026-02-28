@@ -32,6 +32,7 @@ const variantIcons: Record<string, React.ReactNode> = {
 import { DemoNotificationWorker } from './DemoNotificationWorker'
 import { ServiceWorkerRegistrar } from './ServiceWorkerRegistrar'
 import { GeolocationTracker } from './GeolocationTracker'
+import { useAppVersion } from '@/hooks/useAppVersion'
 
 export interface ProvidersProps {
   children: React.ReactNode
@@ -93,6 +94,12 @@ export const useTranslation = () => {
 function HeroUIThemeWrapper({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   return <HeroUIProvider navigate={router.push}>{children}</HeroUIProvider>
+}
+
+// Separate component so useAppVersion runs inside all necessary context providers (like ToastProvider)
+function AppVersionCheck() {
+  useAppVersion()
+  return null
 }
 
 export function Providers({
@@ -160,9 +167,12 @@ export function Providers({
                           ) : null}{' '}
                         </Toast.Content>
                         {content.actionProps ? (
-                          <Toast.ActionButton {...{...content.actionProps, size:"sm"}} className="self-center"/>
+                          <Toast.ActionButton
+                            {...{ ...content.actionProps, size: 'sm' }}
+                            className="self-center"
+                          />
                         ) : null}
-                        <Toast.CloseButton  className="absolute top-1 right-1 border-none p-1 bg-transparent opacity-100 [&>svg]:size-4" />
+                        <Toast.CloseButton className="absolute top-1 right-1 border-none p-1 bg-transparent opacity-100 [&>svg]:size-4" />
                       </Toast>
                     )
                   }}
@@ -175,6 +185,7 @@ export function Providers({
                         <GeolocationTracker />
                         <NotificationObserver />
                         <DemoNotificationWorker />
+                        <AppVersionCheck />
                         <div className="min-h-screen flex flex-col">{children}</div>
                       </SchedulingProvider>
                     </NotificationProvider>
