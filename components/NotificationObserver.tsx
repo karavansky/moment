@@ -11,7 +11,7 @@ export const NotificationObserver = () => {
   const router = useRouter()
   const lang = useLanguage()
   const mountIdRef = useRef(Math.random().toString(36).slice(2, 8))
-
+  //test update
   useEffect(() => {
     console.log(`🔵 [NotificationObserver] MOUNTED [${mountIdRef.current}]`)
     return () => {
