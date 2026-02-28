@@ -2,12 +2,30 @@
 import webpush from 'web-push'
 import pool from './db'
 
-// Configure VAPID keys
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT || 'mailto:admin@moment-lbs.app',
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-)
+// Lazy init flag
+let vapidConfigured = false
+
+function initWebPush() {
+  if (vapidConfigured) return
+  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+  const privateKey = process.env.VAPID_PRIVATE_KEY
+
+  if (!publicKey || !privateKey) {
+    console.warn('[push-notifications] Missing VAPID keys. Web Push will fail if triggered.')
+    return
+  }
+
+  try {
+    webpush.setVapidDetails(
+      process.env.VAPID_SUBJECT || 'mailto:admin@moment-lbs.app',
+      publicKey,
+      privateKey
+    )
+    vapidConfigured = true
+  } catch (err) {
+    console.error('[push-notifications] Failed to configure VAPID details:', err)
+  }
+}
 
 interface PushSubscriptionRecord {
   id: number
@@ -41,19 +59,13 @@ export async function saveSubscription(
 }
 
 export async function removeSubscription(endpoint: string): Promise<void> {
-  await pool.query(
-    `DELETE FROM push_subscriptions WHERE "endpoint" = $1`,
-    [endpoint]
-  )
+  await pool.query(`DELETE FROM push_subscriptions WHERE "endpoint" = $1`, [endpoint])
 }
 
 // ---------- Sending ----------
 
 async function getSubscriptionsByUserID(userID: string): Promise<PushSubscriptionRecord[]> {
-  const result = await pool.query(
-    `SELECT * FROM push_subscriptions WHERE "userID" = $1`,
-    [userID]
-  )
+  const result = await pool.query(`SELECT * FROM push_subscriptions WHERE "userID" = $1`, [userID])
   return result.rows
 }
 
@@ -68,23 +80,26 @@ export async function sendPushToUser(userID: string, payload: PushPayload): Prom
   )
   if (userResult.rows[0]?.pushNotificationsEnabled === false) return
 
+  initWebPush()
+
   const jsonPayload = JSON.stringify(payload)
 
   const results = await Promise.allSettled(
     subs.map(sub =>
-      webpush.sendNotification(
-        {
-          endpoint: sub.endpoint,
-          keys: { p256dh: sub.p256dh, auth: sub.auth },
-        },
-        jsonPayload
-      ).then(() => {
-        // Update lastUsedAt on success
-        pool.query(
-          `UPDATE push_subscriptions SET "lastUsedAt" = NOW() WHERE "id" = $1`,
-          [sub.id]
-        ).catch(() => {})
-      })
+      webpush
+        .sendNotification(
+          {
+            endpoint: sub.endpoint,
+            keys: { p256dh: sub.p256dh, auth: sub.auth },
+          },
+          jsonPayload
+        )
+        .then(() => {
+          // Update lastUsedAt on success
+          pool
+            .query(`UPDATE push_subscriptions SET "lastUsedAt" = NOW() WHERE "id" = $1`, [sub.id])
+            .catch(() => {})
+        })
     )
   )
 
@@ -118,9 +133,7 @@ export async function sendPushToWorkers(workerIds: string[], payload: PushPayloa
   )
 
   const userIds = result.rows.map((r: any) => r.userID as string)
-  await Promise.allSettled(
-    userIds.map(uid => sendPushToUser(uid, payload))
-  )
+  await Promise.allSettled(userIds.map(uid => sendPushToUser(uid, payload)))
 }
 
 /**
@@ -132,7 +145,5 @@ export async function sendPushToDirectors(firmaID: string, payload: PushPayload)
     [firmaID]
   )
 
-  await Promise.allSettled(
-    result.rows.map((r: any) => sendPushToUser(r.userID, payload))
-  )
+  await Promise.allSettled(result.rows.map((r: any) => sendPushToUser(r.userID, payload)))
 }

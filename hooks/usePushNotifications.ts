@@ -24,12 +24,14 @@ export function usePushNotifications() {
 
   useEffect(() => {
     // Detect platform (iPadOS 13+ reports as "Macintosh" in userAgent)
-    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent)
-      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    const ios =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
     setIsIOS(ios)
 
-    const standalone = window.matchMedia('(display-mode: standalone)').matches
-      || (navigator as any).standalone === true
+    const standalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (navigator as any).standalone === true
     setIsStandalone(standalone)
 
     // Check push support
@@ -50,11 +52,19 @@ export function usePushNotifications() {
     setPermission(currentPermission)
 
     // Check existing subscription, auto-resubscribe if permission granted but subscription lost
-    navigator.serviceWorker.ready.then(async (reg) => {
+    navigator.serviceWorker.ready.then(async reg => {
       const sub = await reg.pushManager.getSubscription()
       if (sub) {
         setIsSubscribed(true)
         setIsReady(true)
+
+        // Silently sync existing subscription with backend so the endpoint is assigned to the current user
+        fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscription: sub.toJSON() }),
+        }).catch(err => console.error('[usePushNotifications] Sync error:', err))
+
         return
       }
 
@@ -128,6 +138,23 @@ export function usePushNotifications() {
     }
   }, [])
 
+  const syncSubscription = useCallback(async () => {
+    try {
+      const registration = await navigator.serviceWorker.ready
+      const sub = await registration.pushManager.getSubscription()
+      if (sub) {
+        console.log('[usePushNotifications] Manually syncing subscription to backend')
+        await fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscription: sub.toJSON() }),
+        })
+      }
+    } catch (err) {
+      console.error('[usePushNotifications] Sync manual error:', err)
+    }
+  }, [])
+
   const unsubscribe = useCallback(async (): Promise<void> => {
     try {
       const registration = await navigator.serviceWorker.ready
@@ -148,5 +175,15 @@ export function usePushNotifications() {
 
   const needsPWAInstall = isIOS && !isStandalone
 
-  return { permission, isSubscribed, isReady, isStandalone, isIOS, needsPWAInstall, subscribe, unsubscribe }
+  return {
+    permission,
+    isSubscribed,
+    isReady,
+    isStandalone,
+    isIOS,
+    needsPWAInstall,
+    subscribe,
+    unsubscribe,
+    syncSubscription,
+  }
 }

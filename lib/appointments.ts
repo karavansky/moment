@@ -159,6 +159,11 @@ function sendAppointmentPush(
       }
     } catch (err) {
       console.error(`[appointments] Push notification error for ${type}:`, err)
+      const fs = require('fs')
+      fs.appendFileSync(
+        '.push-debug.log',
+        `[${new Date().toISOString()}] Push error for ${type}: ${err instanceof Error ? err.stack : String(err)}\n`
+      )
     }
   })()
 }

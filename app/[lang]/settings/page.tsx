@@ -62,6 +62,13 @@ export default function SettingsPage() {
     }
   }, [geo.permission, geo.isReady, geo.isTracking])
 
+  // Explicitly sync Push Subscription ownership with the backend when the user visits settings
+  useEffect(() => {
+    if (push.isReady && push.isSubscribed && push.syncSubscription) {
+      push.syncSubscription()
+    }
+  }, [push.isReady, push.isSubscribed, push.syncSubscription])
+
   const updateSetting = async (key: keyof UserSettings, value: boolean) => {
     setSaving(true)
     try {
