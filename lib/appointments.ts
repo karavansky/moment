@@ -111,6 +111,7 @@ function sendAppointmentPush(
             tag: `appointment-close-${data.appointmentID}`,
           })
         } else if (data.timeChanged) {
+          console.log(`[push-debug] Triggering push to workers (${data.workerIds}) for timeChanged`)
           // Time or date changed -> push to workers
           await sendPushToWorkers(data.workerIds, {
             title: 'Appointment Time Changed',
@@ -118,6 +119,10 @@ function sendAppointmentPush(
             url: '/dienstplan',
             tag: `appointment-rescheduled-${data.appointmentID}`,
           })
+        } else {
+          console.log(
+            `[push-debug] No push condition met. isOpen: ${data.isOpen}, prevIsOpen: ${data.previousIsOpen}, timeChanged: ${data.timeChanged}`
+          )
         }
 
         // Worker additions/removals
@@ -374,18 +379,47 @@ export async function updateAppointment(
     if (existingAppointment) {
       previousIsOpen = existingAppointment.isOpen
 
-      // Compare UTC timestamps to avoid shallow string diffs or timezone issues
-      const isDateChanged =
-        data.date !== undefined &&
-        new Date(data.date).getTime() !== new Date(existingAppointment.date).getTime()
+      // PG creates Date objects in Local Time matching the wall-clock text from the DB.
+      // So we must use .getFullYear() / .getHours() etc. to get the actual calendar representation.
+      const ed = existingAppointment.date
+      const existingDateStr = ed
+        ? `${ed.getFullYear()}-${String(ed.getMonth() + 1).padStart(2, '0')}-${String(ed.getDate()).padStart(2, '0')}`
+        : ''
 
-      const isTimeChanged =
-        data.startTime !== undefined &&
-        new Date(data.startTime).getTime() !== new Date(existingAppointment.startTime).getTime()
+      const newDateStr =
+        data.date && typeof data.date === 'string'
+          ? data.date.split('T')[0]
+          : data.date
+            ? new Date(data.date).toISOString().split('T')[0]
+            : existingDateStr
+
+      const isDateChanged = newDateStr !== existingDateStr
+
+      // Format "HH:mm" directly from both to prevent time-shifting
+      const est = existingAppointment.startTime
+      const existingTimeStr = est
+        ? `${String(est.getHours()).padStart(2, '0')}:${String(est.getMinutes()).padStart(2, '0')}`
+        : ''
+
+      // data.startTime from UI comes as ISO string (UTC). But wait!
+      // If UI sends '2026-02-28T10:00:00.000Z', what is '10:00'? Is it local or UTC?
+      // UI created it via .setHours() from local time, so the string representation might be UTC shifted!
+      // Example: local 10:00 AM -> UI sends '09:00:00.000Z'.
+      // If UI sends '09:00:00.000Z', how do we compare to DB wall-clock?
+      // new Date('2026-02-28T09:00:00.000Z').getHours() gives us Local Time 10!
+      const newTimeStr = data.startTime
+        ? `${String(new Date(data.startTime).getHours()).padStart(2, '0')}:${String(new Date(data.startTime).getMinutes()).padStart(2, '0')}`
+        : existingTimeStr
+
+      const isTimeChanged = newTimeStr !== existingTimeStr
+
+      console.log(`[push-debug] date: ${newDateStr} vs ${existingDateStr} -> ${isDateChanged}`)
+      console.log(`[push-debug] startTime: ${newTimeStr} vs ${existingTimeStr} -> ${isTimeChanged}`)
 
       if (isDateChanged || isTimeChanged) {
         timeChanged = true
       }
+      console.log(`[push-debug] timeChanged evaluated to: ${timeChanged}`)
     }
 
     const setClauses: string[] = []
