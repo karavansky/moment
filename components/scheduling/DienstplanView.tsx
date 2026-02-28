@@ -28,8 +28,6 @@ function DienstplanView() {
     selectedAppointment,
     setSelectedAppointment,
     setSelectedDate,
-    refreshAppointments,
-    refreshWorkers,
     user,
   } = useScheduling()
   const [viewMode, setViewMode] = useState<ViewMode>('month')
@@ -40,14 +38,7 @@ function DienstplanView() {
   const weekRef = useRef<HTMLButtonElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 })
 
-  const today = useVisibilityRefresh(
-    useCallback(() => {
-      console.log('App returned to foreground, resyncing data...')
-      refreshAppointments()
-      // If workers lists can also change frequently, we resync them too
-      refreshWorkers()
-    }, [refreshAppointments, refreshWorkers])
-  )
+  const today = useVisibilityRefresh()
 
   // Названия месяцев из словаря локализации
   const monthNames = t('dienstplan.calendar.months') as unknown as string[]

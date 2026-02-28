@@ -593,7 +593,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     ]
   )
 
-  useSchedulingEvents(isLiveMode, handleSchedulingEvent)
+  useSchedulingEvents(isLiveMode, handleSchedulingEvent, loadLiveData)
 
   // Действия для управления состоянием
   const actions: SchedulingActions = useMemo(

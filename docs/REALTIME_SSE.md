@@ -800,31 +800,41 @@ WHERE aw."workerID" = 'worker_id';
 
 Когда приложение возвращается в активный режим (foreground), `EventSource` переподключается и начинает слушать _новые_ события, но пропущенные старые события навсегда теряются. Кроме того, внутреннее состояние React компонентов (например, зафиксированная дата `new Date()`) может устареть, если во время сна наступили новые сутки.
 
-### Решение: Double-Check через `useVisibilityRefresh`
+### Решение: Глобальный реконнект и `useVisibilityRefresh`
 
-Для решения этой проблемы был разработан кастомный хук `useVisibilityRefresh`. Он использует `Page Visibility API` (`document.visibilityState`):
+Мы выяснили, что нативная функция авто-реконнекта у `EventSource` работает нестабильно на смартфонах/планшетах при выходе из долгого спящего режима. Браузер может просто не проснуться для фоновых задач.
 
-```typescript
-// hooks/useVisibilityRefresh.ts
-```
+Поэтому мы реализовали **двухуровневую глобальную защиту**:
 
-При каждом возврате приложения в `visible` состояние хук делает две вещи:
+#### 1. Мягкая перерисовка календаря
 
-1. **Мягкая перерисовка календаря**: Проверяет текущую дату. Если за время сна наступил следующий день, он обновляет стейт `today`. Это вызывает ре-рендер `DienstplanView`, и "сегодняшняя" дата (например, красный кружок на календаре) мгновенно перепрыгивает на актуальный день без потери локального стейта (без `window.location.reload()`).
-2. **Resync данных (Double-Check)**: Вызывает переданный callback, в котором мы триггерим `refreshAppointments()` и `refreshWorkers()` из `SchedulingContext`. Это выполняет тихий фоновый REST API запрос. Все пропущенные за ночь события подтягиваются сервером, UI актуализируется, а SSE продолжает слушать новые изменения с этого момента.
+Компонент `DienstplanView` и другие используют хук `useVisibilityRefresh()`.
+Этот хук слушает `visibilitychange` и при разблокировке экрана проверяет, не наступили ли новые сутки (чтобы сместить маркер "сегодня" на сетке без `location.reload()`).
 
-**Пример использования в `DienstplanView`:**
+#### 2. Глобальный Resync данных (Double-Check)
+
+В базовом подключении SSE (`hooks/useSchedulingEvents`) мы завели свой `visibilitychange` лисенер.
+Как только приложение возвращается из фона (`document.visibilityState === 'visible'`), хук **принудительно закрывает старое, потенциально мертвое соединение и переподключает SSE**.
+
+После успешного переподключения (событие `connected`) хук дергает коллбек `onReconnect`. Этот коллбек ловится в глобальном провайдере `SchedulingContext.tsx`, который в фоне вызывает функцию `loadLiveData()`.
 
 ```tsx
-const { refreshAppointments, refreshWorkers } = useScheduling()
+// hooks/useSchedulingEvents.ts
+const handleVisibilityChange = () => {
+  if (document.visibilityState === 'visible') {
+    connect() // Force new connection
+  }
+}
 
-const today = useVisibilityRefresh(
-  useCallback(() => {
-    console.log('App returned to foreground, resyncing data...')
-    refreshAppointments()
-    refreshWorkers()
-  }, [refreshAppointments, refreshWorkers])
-)
+// ... внутри connect() ...
+if (data.type === 'connected' && hasConnectedOnce && onReconnectRef.current) {
+  onReconnectRef.current() // Trigger global data sync
+}
 ```
 
-Такой паттерн гарантирует **идеальную консистентность данных** без ущерба для UX.
+```tsx
+// contexts/SchedulingContext.tsx
+useSchedulingEvents(isLiveMode, handleSchedulingEvent, loadLiveData)
+```
+
+Такой паттерн с разовым глобальным GET-запросом (`loadLiveData()`) после переподключения к сокету гарантирует, что **абсолютно все данные** (appointments, team members, workers, reports) во всем PWA синхронизируются мгновенно, даже если устройство проспало без интернета несколько дней. И всё это происходит незаметно для пользователя.
