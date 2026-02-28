@@ -14,6 +14,7 @@ import { useLanguage } from '@/hooks/useLanguage'
 import { useTranslation } from '@/components/Providers'
 import FooterDienst from './FooterDienst'
 import TodayDienst from './TodayDienst'
+import { useVisibilityRefresh } from '@/hooks/useVisibilityRefresh'
 
 type ViewMode = 'month' | 'week'
 
@@ -27,6 +28,8 @@ function DienstplanView() {
     selectedAppointment,
     setSelectedAppointment,
     setSelectedDate,
+    refreshAppointments,
+    refreshWorkers,
     user,
   } = useScheduling()
   const [viewMode, setViewMode] = useState<ViewMode>('month')
@@ -36,6 +39,15 @@ function DienstplanView() {
   const monthRef = useRef<HTMLButtonElement>(null)
   const weekRef = useRef<HTMLButtonElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 })
+
+  const today = useVisibilityRefresh(
+    useCallback(() => {
+      console.log('App returned to foreground, resyncing data...')
+      refreshAppointments()
+      // If workers lists can also change frequently, we resync them too
+      refreshWorkers()
+    }, [refreshAppointments, refreshWorkers])
+  )
 
   // Названия месяцев из словаря локализации
   const monthNames = t('dienstplan.calendar.months') as unknown as string[]
@@ -129,9 +141,6 @@ function DienstplanView() {
     },
     [setSelectedDate]
   )
-
-  // Мемоизируем today для стабильности
-  const today = useMemo(() => new Date(), [])
 
   // Обработчик клика на appointment - для не сегодняшних дней
   const handlePressOnAppointment = useCallback(

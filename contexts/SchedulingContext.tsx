@@ -114,6 +114,7 @@ interface SchedulingActions {
   updateService: (service: ServiceTreeItem) => void
   deleteService: (id: string) => void
   refreshData: () => void
+  refreshAppointments: () => Promise<void>
   refreshWorkers: () => Promise<void>
   refreshClients: () => Promise<void>
   refreshTeams: () => Promise<void>
@@ -597,6 +598,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
   // Действия для управления состоянием
   const actions: SchedulingActions = useMemo(
     () => ({
+      refreshAppointments,
       setSelectedWorker: worker => {
         setState(prev => ({ ...prev, selectedWorker: worker }))
       },

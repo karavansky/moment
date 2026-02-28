@@ -787,3 +787,44 @@ SELECT a.* FROM appointments a
 JOIN appointment_workers aw ON a."appointmentID" = aw."appointmentID"
 WHERE aw."workerID" = 'worker_id';
 ```
+
+---
+
+## Решение проблемы "Спящего фонового режима" (PWA Soft Reload)
+
+### Проблема разорванного SSE
+
+Когда PWA (или вкладка браузера) сворачивается на мобильном устройстве (например, iPad) или переходит в спящий режим для экономии батареи, операционная система принудительно разрывает все активные сетевые соединения, включая `EventSource` (SSE).
+
+Пока устройство "спит", сервер продолжает отправлять `pg_notify` события об изменениях (например, когда кто-то другой создает новый _appointment_). Но спящий клиент их **не получает**.
+
+Когда приложение возвращается в активный режим (foreground), `EventSource` переподключается и начинает слушать _новые_ события, но пропущенные старые события навсегда теряются. Кроме того, внутреннее состояние React компонентов (например, зафиксированная дата `new Date()`) может устареть, если во время сна наступили новые сутки.
+
+### Решение: Double-Check через `useVisibilityRefresh`
+
+Для решения этой проблемы был разработан кастомный хук `useVisibilityRefresh`. Он использует `Page Visibility API` (`document.visibilityState`):
+
+```typescript
+// hooks/useVisibilityRefresh.ts
+```
+
+При каждом возврате приложения в `visible` состояние хук делает две вещи:
+
+1. **Мягкая перерисовка календаря**: Проверяет текущую дату. Если за время сна наступил следующий день, он обновляет стейт `today`. Это вызывает ре-рендер `DienstplanView`, и "сегодняшняя" дата (например, красный кружок на календаре) мгновенно перепрыгивает на актуальный день без потери локального стейта (без `window.location.reload()`).
+2. **Resync данных (Double-Check)**: Вызывает переданный callback, в котором мы триггерим `refreshAppointments()` и `refreshWorkers()` из `SchedulingContext`. Это выполняет тихий фоновый REST API запрос. Все пропущенные за ночь события подтягиваются сервером, UI актуализируется, а SSE продолжает слушать новые изменения с этого момента.
+
+**Пример использования в `DienstplanView`:**
+
+```tsx
+const { refreshAppointments, refreshWorkers } = useScheduling()
+
+const today = useVisibilityRefresh(
+  useCallback(() => {
+    console.log('App returned to foreground, resyncing data...')
+    refreshAppointments()
+    refreshWorkers()
+  }, [refreshAppointments, refreshWorkers])
+)
+```
+
+Такой паттерн гарантирует **идеальную консистентность данных** без ущерба для UX.
