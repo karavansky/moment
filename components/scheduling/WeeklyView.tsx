@@ -189,7 +189,7 @@ const DayColumn = React.memo(
       >
         <Card className={`pt-1  h-full   `}>
           <Card.Content className="p-0 h-full flex flex-col">
-            <div className="mb-1 pb-1 border-b  border-gray-200 dark:border-gray-800  text-center">
+            <div className="mb-0 pb-0 border-b  border-gray-200 dark:border-gray-800  text-center">
               <div
                 className={`
             text-lg font-bold
@@ -199,6 +199,7 @@ const DayColumn = React.memo(
                 {day.toLocaleDateString(lang, { weekday: 'long' })}, {day.getDate()}.{' '}
                 {day.toLocaleDateString(lang, { month: 'long' })}
               </div>
+              Foo
             </div>
 
             <ScrollShadow ref={scrollRef} className="flex-1 min-h-0" hideScrollBar={false} size={4}>
