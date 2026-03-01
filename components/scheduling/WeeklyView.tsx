@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { Card, ScrollShadow, Button } from '@heroui/react'
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useScheduling } from '@/contexts/SchedulingContext'
+import { LogoMoment } from '@/components/icons'
 import { isSameDate, getOnlyDate, formatTime } from '@/lib/calendar-utils'
 import AppointmentCard from './AppointmentCard'
 import { useLanguage } from '@/hooks/useLanguage'
@@ -112,19 +113,31 @@ const DayColumn = React.memo(
     useEffect(() => {
       if (scrollRef.current) {
         const HOUR_HEIGHT = 48 // 48px (min-h-12)
-        let targetMinutes = 6 * 60 // 6:00 AM default
+        let scrollToPixels = 0
 
-        if (appointments.length > 0) {
-          const earliestStart = Math.min(
-            ...appointments.map(app => {
-              const date = new Date(app.startTime)
-              return date.getHours() * 60 + date.getMinutes()
-            })
-          )
-          targetMinutes = Math.max(0, earliestStart - 30)
+        if (isToday) {
+          // If it's today, scroll to the current time and try to center it
+          // the visual container height is roughly 14 * 48 = 672px
+          const viewportHeight = scrollRef.current.clientHeight || 500
+          // Get current hour and minute
+          const nowMinute = now.getHours() * 60 + now.getMinutes()
+          const currentY = (nowMinute / 60) * HOUR_HEIGHT
+          // Center the line
+          scrollToPixels = Math.max(0, currentY - viewportHeight / 2)
+        } else {
+          // If not today, scroll to the first appointment, or 6 AM
+          let targetMinutes = 6 * 60 // 6:00 AM default
+          if (appointments.length > 0) {
+            const earliestStart = Math.min(
+              ...appointments.map(app => {
+                const date = new Date(app.startTime)
+                return date.getHours() * 60 + date.getMinutes()
+              })
+            )
+            targetMinutes = Math.max(0, earliestStart - 30)
+          }
+          scrollToPixels = (targetMinutes / 60) * HOUR_HEIGHT
         }
-
-        const scrollToPixels = (targetMinutes / 60) * HOUR_HEIGHT
 
         setTimeout(() => {
           if (scrollRef.current) {
@@ -201,43 +214,54 @@ const DayColumn = React.memo(
             <div className="mb-0 pb-0 border-b  border-gray-200 dark:border-gray-800  text-center">
               <div
                 className={`
-            text-lg font-bold
-            ${isToday ? 'text-danger' : isCurrentDay ? 'text-primary' : 'text-foreground'}
-          `}
+                  text-lg font-bold
+                  ${isToday ? 'text-danger' : isCurrentDay ? 'text-primary' : 'text-foreground'}
+                `}
               >
                 {day.toLocaleDateString(lang, { weekday: 'long' })}, {day.getDate()}.{' '}
                 {day.toLocaleDateString(lang, { month: 'long' })}
               </div>
 
               {allDayApps.length > 0 && (
-                <div className="flex flex-col gap-1 p-1 bg-default-50 border-t border-divider shadow-inner max-h-[150px] overflow-y-auto">
-                  {allDayApps.map((app, idx) => (
-                    <div
-                      key={app.id}
-                      onClick={e => {
-                        e.stopPropagation()
-                        onAppointmentClick(app.id)
-                      }}
-                      className="w-full shrink-0 cursor-pointer group"
-                      draggable
-                      onDragStart={e => {
-                        e.dataTransfer.setData(
-                          'text/plain',
-                          JSON.stringify({ appointmentId: app.id })
-                        )
-                        e.dataTransfer.effectAllowed = 'move'
-                      }}
-                    >
-                      <div className="h-full min-h-[40px] p-1.5 rounded-lg bg-primary/20 border-l-4 border-primary text-primary-800 dark:text-primary-200 flex flex-col justify-start overflow-hidden group-hover:bg-primary/30 transition-colors">
-                        <div className="font-semibold text-xs truncate">
-                          {app.client
-                            ? `${app.client.surname} ${app.client.name}`
-                            : 'Unknown Client'}
+                <div className="flex-1 p-1 min-w-0 border-b border-divider bg-default-50 max-h-[150px] overflow-y-auto">
+                  <div className="flex flex-wrap gap-1 w-full">
+                    {allDayApps.map((app, idx) => (
+                      <div
+                        key={app.id}
+                        onClick={e => {
+                          e.stopPropagation()
+                          onAppointmentClick(app.id)
+                        }}
+                        className="flex-1 min-w-[120px] max-w-full relative cursor-pointer group"
+                        style={{ minHeight: '40px' }}
+                        draggable
+                        onDragStart={e => {
+                          e.dataTransfer.setData(
+                            'text/plain',
+                            JSON.stringify({ appointmentId: app.id })
+                          )
+                          e.dataTransfer.effectAllowed = 'move'
+                        }}
+                      >
+                        <div className="text-left h-full min-h-[40px] p-1.5 rounded-lg bg-primary/20 border-l-4 border-primary text-primary-800 dark:text-primary-200 flex flex-col justify-start overflow-hidden group-hover:bg-primary/30 transition-colors">
+                          <div className="font-semibold text-xs leading-tight line-clamp-2 break-words">
+                            {app.client
+                              ? `${app.client.surname} ${app.client.name}`
+                              : 'Unknown Client'}
+                          </div>
+                          {app.client && (app.client.street || app.client.city) && (
+                            <div className="flex items-start gap-1 mt-1 text-[10px] opacity-80 leading-tight">
+                              <LogoMoment size={12} className="shrink-0 mt-[1px] text-primary" />
+                              <span className="line-clamp-2">
+                                {app.client.street} {app.client.houseNumber}
+                                {app.client.city ? `, ${app.client.city}` : ''}
+                              </span>
+                            </div>
+                          )}
                         </div>
-                        <div className="text-[10px] opacity-80 mt-0.5">Без времени</div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
