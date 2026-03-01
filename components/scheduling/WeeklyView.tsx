@@ -83,21 +83,30 @@ const DayColumn = React.memo(
       return () => clearInterval(interval)
     }, [])
 
-    // Group appointments by hour
-    const appointmentsByHour = useMemo(() => {
+    // Group appointments by hour and separate all-day ones
+    const { hourlyGroups, allDayApps } = useMemo(() => {
       const groups: Record<number, Appointment[]> = {}
+      const allDay: Appointment[] = []
+
       appointments.forEach(app => {
         const date = new Date(app.startTime)
         const h = date.getHours()
-        if (!groups[h]) groups[h] = []
-        groups[h].push(app)
+        const m = date.getMinutes()
+
+        // 00:00 is considered an all-day / anytime appointment
+        if (h === 0 && m === 0) {
+          allDay.push(app)
+        } else {
+          if (!groups[h]) groups[h] = []
+          groups[h].push(app)
+        }
       })
       // Sort by time
       Object.keys(groups).forEach(key => {
         const k = Number(key)
         groups[k].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
       })
-      return groups
+      return { hourlyGroups: groups, allDayApps: allDay }
     }, [appointments])
 
     useEffect(() => {
@@ -199,14 +208,45 @@ const DayColumn = React.memo(
                 {day.toLocaleDateString(lang, { weekday: 'long' })}, {day.getDate()}.{' '}
                 {day.toLocaleDateString(lang, { month: 'long' })}
               </div>
-              Foo
+
+              {allDayApps.length > 0 && (
+                <div className="flex flex-col gap-1 p-1 bg-default-50 border-t border-divider shadow-inner max-h-[150px] overflow-y-auto">
+                  {allDayApps.map((app, idx) => (
+                    <div
+                      key={app.id}
+                      onClick={e => {
+                        e.stopPropagation()
+                        onAppointmentClick(app.id)
+                      }}
+                      className="w-full shrink-0 cursor-pointer group"
+                      draggable
+                      onDragStart={e => {
+                        e.dataTransfer.setData(
+                          'text/plain',
+                          JSON.stringify({ appointmentId: app.id })
+                        )
+                        e.dataTransfer.effectAllowed = 'move'
+                      }}
+                    >
+                      <div className="h-full min-h-[40px] p-1.5 rounded-lg bg-primary/20 border-l-4 border-primary text-primary-800 dark:text-primary-200 flex flex-col justify-start overflow-hidden group-hover:bg-primary/30 transition-colors">
+                        <div className="font-semibold text-xs truncate">
+                          {app.client
+                            ? `${app.client.surname} ${app.client.name}`
+                            : 'Unknown Client'}
+                        </div>
+                        <div className="text-[10px] opacity-80 mt-0.5">Без времени</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <ScrollShadow ref={scrollRef} className="flex-1 min-h-0" hideScrollBar={false} size={4}>
               <div className="flex flex-col relative ">
                 {Array.from({ length: 24 }).map((_, hour) => {
-                  const hourApps = appointmentsByHour[hour] || []
-//                  const isCurrentHour = isToday && hour === now.getHours()
+                  const hourApps = hourlyGroups[hour] || []
+                  //                  const isCurrentHour = isToday && hour === now.getHours()
                   const isCurrentHour = isToday && hour === currentHour
 
                   const currentMinute = now.getMinutes()
