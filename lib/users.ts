@@ -1,7 +1,7 @@
 import pool from './db'
 import { generateId } from './generate-id'
 
-export interface User { 
+export interface User {
   userID: string
   name: string
   email: string
@@ -13,6 +13,10 @@ export interface User {
   isAdmin: boolean
   firmaID: string | null
   status: number
+  pwaVersion?: string | null
+  osVersion?: string | null
+  batteryLevel?: number | null
+  batteryStatus?: string | null
 }
 
 /**
@@ -68,7 +72,13 @@ export async function createUserWithPassword(
 
   const values = [userID, name, email, passwordHash, date, firmaID, status]
 
-  console.log('[createUserWithPassword] Creating credentials user:', { userID, name, email, firmaID, status })
+  console.log('[createUserWithPassword] Creating credentials user:', {
+    userID,
+    name,
+    email,
+    firmaID,
+    status,
+  })
 
   try {
     const result = await pool.query(query, values)
@@ -90,7 +100,10 @@ export async function getUserByEmail(email: string): Promise<User | null> {
 
   try {
     const result = await pool.query(query, [email])
-    console.log('[getUserByEmail] Query result:', result.rows.length > 0 ? 'User found' : 'User not found')
+    console.log(
+      '[getUserByEmail] Query result:',
+      result.rows.length > 0 ? 'User found' : 'User not found'
+    )
     return result.rows.length > 0 ? result.rows[0] : null
   } catch (error) {
     console.error('[getUserByEmail] Error getting user by email:', error)
@@ -127,6 +140,20 @@ export async function updateUserToken(userID: string, token: string): Promise<vo
   } catch (error) {
     console.error('[updateUserToken] Error updating user token:', error)
     throw error
+  }
+}
+
+/**
+ * Обновляет время последнего логина
+ */
+export async function updateLastLogin(userID: string): Promise<void> {
+  const query = 'UPDATE users SET "lastLoginAt" = CURRENT_TIMESTAMP WHERE "userID" = $1'
+
+  try {
+    await pool.query(query, [userID])
+  } catch (error) {
+    console.error('[updateLastLogin] Error updating last login:', error)
+    // Non-fatal, do not throw
   }
 }
 
@@ -234,5 +261,63 @@ export async function deleteUser(userID: string): Promise<boolean> {
   } catch (error) {
     console.error('[deleteUser] Error:', error)
     throw error
+  }
+}
+
+/**
+ * Оновляет данные телеметрии девайса от PWA Workers
+ */
+export async function updateDeviceSyncStatus(
+  userID: string,
+  data: {
+    pwaVersion?: string
+    osVersion?: string
+    batteryLevel?: number
+    batteryStatus?: string
+    geolocationEnabled?: boolean
+    pushNotificationsEnabled?: boolean
+  }
+): Promise<void> {
+  const setClauses: string[] = []
+  const values: any[] = []
+  let paramIndex = 1
+
+  if (data.pwaVersion !== undefined) {
+    setClauses.push(`"pwaVersion" = $${paramIndex++}`)
+    values.push(data.pwaVersion)
+  }
+  if (data.osVersion !== undefined) {
+    setClauses.push(`"osVersion" = $${paramIndex++}`)
+    values.push(data.osVersion)
+  }
+  if (data.batteryLevel !== undefined) {
+    setClauses.push(`"batteryLevel" = $${paramIndex++}`)
+    values.push(data.batteryLevel)
+  }
+  if (data.batteryStatus !== undefined) {
+    setClauses.push(`"batteryStatus" = $${paramIndex++}`)
+    values.push(data.batteryStatus)
+  }
+  if (data.geolocationEnabled !== undefined) {
+    setClauses.push(`"geolocationEnabled" = $${paramIndex++}`)
+    values.push(data.geolocationEnabled)
+  }
+  if (data.pushNotificationsEnabled !== undefined) {
+    setClauses.push(`"pushNotificationsEnabled" = $${paramIndex++}`)
+    values.push(data.pushNotificationsEnabled)
+  }
+
+  // Always update lastLoginAt to show they are active
+  setClauses.push(`"lastLoginAt" = CURRENT_TIMESTAMP`)
+
+  if (setClauses.length === 0) return
+
+  values.push(userID)
+  const query = `UPDATE users SET ${setClauses.join(', ')} WHERE "userID" = $${paramIndex}`
+
+  try {
+    await pool.query(query, values)
+  } catch (error) {
+    console.error('[updateDeviceSyncStatus] Error:', error)
   }
 }

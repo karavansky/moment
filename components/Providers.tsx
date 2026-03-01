@@ -20,6 +20,7 @@ import {
 } from '@heroui/react'
 import type { ToastContentValue } from '@heroui/react'
 import { NotificationObserver } from './NotificationObserver'
+import DeviceSyncObserver from './DeviceSyncObserver'
 import { Info, CheckCircle, AlertTriangle, XCircle } from 'lucide-react'
 
 const variantIcons: Record<string, React.ReactNode> = {
@@ -184,6 +185,7 @@ export function Providers({
                         <ServiceWorkerRegistrar />
                         <GeolocationTracker />
                         <NotificationObserver />
+                        <DeviceSyncObserver />
                         <DemoNotificationWorker />
                         <AppVersionCheck />
                         <div className="min-h-screen flex flex-col">{children}</div>

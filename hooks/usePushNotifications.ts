@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useSession } from 'next-auth/react'
 
 type PushPermissionState = 'prompt' | 'granted' | 'denied' | 'unsupported'
 
@@ -21,6 +22,7 @@ export function usePushNotifications() {
   const [isReady, setIsReady] = useState(false)
   const [isStandalone, setIsStandalone] = useState(false)
   const [isIOS, setIsIOS] = useState(false)
+  const { status: authStatus } = useSession()
 
   useEffect(() => {
     // Detect platform (iPadOS 13+ reports as "Macintosh" in userAgent)
@@ -58,18 +60,21 @@ export function usePushNotifications() {
         setIsSubscribed(true)
         setIsReady(true)
 
-        // Silently sync existing subscription with backend so the endpoint is assigned to the current user
-        fetch('/api/push/subscribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ subscription: sub.toJSON() }),
-        }).catch(err => console.error('[usePushNotifications] Sync error:', err))
+        // Only sync with backend if fully authenticated, otherwise the server will reject it with 401
+        if (authStatus === 'authenticated') {
+          // Silently sync existing subscription with backend so the endpoint is assigned to the current user
+          fetch('/api/push/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subscription: sub.toJSON() }),
+          }).catch(err => console.error('[usePushNotifications] Sync error:', err))
+        }
 
         return
       }
 
       // Permission granted but no subscription — auto-resubscribe
-      if (currentPermission === 'granted') {
+      if (currentPermission === 'granted' && authStatus === 'authenticated') {
         const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
         if (!vapidPublicKey) return
 
@@ -94,7 +99,7 @@ export function usePushNotifications() {
 
       setIsReady(true)
     })
-  }, [])
+  }, [authStatus])
 
   const subscribe = useCallback(async (): Promise<boolean> => {
     try {

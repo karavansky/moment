@@ -6,6 +6,7 @@ import { useLanguage } from '@/hooks/useLanguage'
 import { Worker } from '@/types/scheduling'
 import { WorkerAdress } from './WorkerAdress'
 import { WorkerContacts } from './WorkerContacts'
+import { WorkerTechStatus } from './WorkerTechStatus'
 
 interface WorkerOverviewProps {
   worker: Worker
@@ -20,9 +21,10 @@ function WorkerOverview({ worker, isCreateNew = false, className }: WorkerOvervi
 
   return (
     <div className={`flex flex-col gap-4 h-full overflow-y-auto ${className || ''}`}>
-      <div className="flex flex-col md:grid md:grid-cols-2 gap-4">
-        <div className="w-full">
+      <div className="flex flex-col xl:flex-row gap-4">
+        <div className="w-full flex mt-0 flex-col gap-4">
           <WorkerContacts worker={worker} isCreateNew={isCreateNew} />
+          <WorkerTechStatus worker={worker} isCreateNew={isCreateNew} />
         </div>
         <div className="w-full">
           <WorkerAdress key={worker.id} worker={worker} isCreateNew={isCreateNew} />

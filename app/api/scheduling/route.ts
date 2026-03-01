@@ -112,6 +112,14 @@ export async function GET() {
         district: w.district,
         latitude: w.latitude,
         longitude: w.longitude,
+        lastLoginAt: w.lastLoginAt ? new Date(w.lastLoginAt).toISOString() : null,
+        pushNotificationsEnabled: w.pushNotificationsEnabled ?? null,
+        geolocationEnabled: w.geolocationEnabled ?? null,
+        hasPushSubscription: w.hasPushSubscription ?? null,
+        pwaVersion: w.pwaVersion ?? null,
+        osVersion: w.osVersion ?? null,
+        batteryLevel: w.batteryLevel ?? null,
+        batteryStatus: w.batteryStatus ?? null,
       }
     })
 

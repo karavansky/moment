@@ -99,6 +99,14 @@ export interface Worker {
   district?: string
   latitude?: number
   longitude?: number
+  lastLoginAt?: string | null
+  pushNotificationsEnabled?: boolean | null
+  geolocationEnabled?: boolean | null
+  hasPushSubscription?: boolean | null
+  pwaVersion?: string | null
+  osVersion?: string | null
+  batteryLevel?: number | null
+  batteryStatus?: string | null
 }
 
 // Назначение (встреча/визит)

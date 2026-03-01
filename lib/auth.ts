@@ -3,7 +3,7 @@ import Google from 'next-auth/providers/google'
 import Apple from 'next-auth/providers/apple'
 import Credentials from 'next-auth/providers/credentials'
 import { headers } from 'next/headers'
-import { createUser, getUserByEmail, updateUserToken } from './users'
+import { createUser, getUserByEmail, updateUserToken, updateLastLogin } from './users'
 import { sendNewUserNotification } from './email'
 import { verifyPassword } from './password'
 import { createSession, getSession, deleteSession } from './sessions'
@@ -80,7 +80,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, account, user }) {
       // При первом входе добавляем информацию в токен и создаем/обновляем пользователя
       if (account && user) {
-        console.log('[JWT Callback] User signing in:', { email: user.email, name: user.name, provider: account.provider })
+        console.log('[JWT Callback] User signing in:', {
+          email: user.email,
+          name: user.name,
+          provider: account.provider,
+        })
 
         token.accessToken = account.access_token
         token.provider = account.provider
@@ -107,7 +111,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               const existingUser = await getUserByEmail(user.email)
 
               if (existingUser) {
-                console.log('[JWT Callback] User exists, updating token. UserID:', existingUser.userID)
+                console.log(
+                  '[JWT Callback] User exists, updating token. UserID:',
+                  existingUser.userID
+                )
                 if (account.access_token) {
                   await updateUserToken(existingUser.userID, account.access_token)
                 }
@@ -149,7 +156,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 }
               }
             } else {
-              console.warn('[JWT Callback] Missing user.email or user.name:', { email: user.email, name: user.name })
+              console.warn('[JWT Callback] Missing user.email or user.name:', {
+                email: user.email,
+                name: user.name,
+              })
             }
           } catch (error) {
             console.error('[JWT Callback] Error saving user to database:', error)
@@ -163,15 +173,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             let userAgent: string | undefined
             try {
               const headersList = await headers()
-              ip = headersList.get('x-forwarded-for')?.split(',')[0]?.trim()
-                || headersList.get('x-real-ip')
-                || undefined
+              ip =
+                headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+                headersList.get('x-real-ip') ||
+                undefined
               userAgent = headersList.get('user-agent') || undefined
             } catch {
               // headers() may not be available in some contexts
             }
             const session = await createSession(token.userId as string, userAgent, ip)
             token.sessionId = session.sessionID
+            // Update last login timestamp for staff view UI
+            await updateLastLogin(token.userId as string)
           }
         } catch (error) {
           console.error('[JWT Callback] Error creating DB session:', error)

@@ -35,6 +35,14 @@ export interface WorkerRecord {
   latitude: number | null
   longitude: number | null
   createdAt: Date
+  lastLoginAt?: Date | null
+  pushNotificationsEnabled?: boolean | null
+  geolocationEnabled?: boolean | null
+  hasPushSubscription?: boolean | null
+  pwaVersion?: string | null
+  osVersion?: string | null
+  batteryLevel?: number | null
+  batteryStatus?: string | null
 }
 
 export async function createWorker(data: {
@@ -108,9 +116,18 @@ export async function createWorker(data: {
 
 export async function getWorkersByFirmaID(firmaID: string): Promise<WorkerRecord[]> {
   const query = `
-    SELECT w.*, t."teamName"
+    SELECT w.*, t."teamName",
+           u."date" AS "lastLoginAt",
+           u."pushNotificationsEnabled",
+           u."geolocationEnabled",
+           u."pwaVersion",
+           u."osVersion",
+           u."batteryLevel",
+           u."batteryStatus",
+           EXISTS(SELECT 1 FROM push_subscriptions ps WHERE ps."userID" = w."userID") AS "hasPushSubscription"
     FROM workers w
     LEFT JOIN teams t ON w."teamId" = t."teamID"
+    LEFT JOIN users u ON w."userID" = u."userID"
     WHERE w."firmaID" = $1
     ORDER BY w."name"
   `

@@ -14,10 +14,29 @@ export default function SignOutPage() {
     // Auto-signout after component mounts
     const performSignOut = async () => {
       setIsSigningOut(true)
-      // SignOut and redirect to signin page
+
+      // 1. Unsubscribe from pushes on THIS device before destroying session
+      try {
+        if ('serviceWorker' in navigator && 'PushManager' in window) {
+          const reg = await navigator.serviceWorker.ready
+          const sub = await reg.pushManager.getSubscription()
+          if (sub) {
+            await fetch('/api/push/unsubscribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ endpoint: sub.endpoint }),
+            })
+            console.log('[SignOut] Successfully purged local push token')
+          }
+        }
+      } catch (err) {
+        console.error('[SignOut] Failed to purge push token:', err)
+      }
+
+      // 2. SignOut and redirect to signin page
       await signOut({
         callbackUrl: `/${lang}/auth/signin`,
-        redirect: true
+        redirect: true,
       })
     }
 
@@ -46,9 +65,28 @@ export default function SignOutPage() {
           <button
             onClick={async () => {
               setIsSigningOut(true)
+
+              // 1. Unsubscribe
+              try {
+                if ('serviceWorker' in navigator && 'PushManager' in window) {
+                  const reg = await navigator.serviceWorker.ready
+                  const sub = await reg.pushManager.getSubscription()
+                  if (sub) {
+                    await fetch('/api/push/unsubscribe', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ endpoint: sub.endpoint }),
+                    })
+                  }
+                }
+              } catch (err) {
+                console.error('[SignOut] Failed to purge push token:', err)
+              }
+
+              // 2. SignOut
               await signOut({
                 callbackUrl: `/${lang}/auth/signin`,
-                redirect: true
+                redirect: true,
               })
             }}
             className="w-full bg-earth-600 hover:bg-earth-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200"
