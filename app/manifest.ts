@@ -4,14 +4,15 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Moment Location Based Services',
     short_name: 'MomentLBS',
-    description: 'Professional time tracking and location-based service for home care, field staff, and transport logistics.',
+    description:
+      'Professional time tracking and location-based service for home care, field staff, and transport logistics.',
     start_url: '/',
     icons: [
       {
         src: '/web-app-manifest-192x192.png',
         sizes: '192x192',
         type: 'image/png',
-        purpose: 'maskable',
+        purpose: 'any',
       },
       {
         src: '/web-app-manifest-512x512.png',

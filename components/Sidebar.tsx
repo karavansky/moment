@@ -65,10 +65,7 @@ const reportsItems: MenuItem[] = [
 ]
 
 const settingsItems: MenuItem[] = [
-  { icon: UserCog, label: 'sidebar.settings.personal', href: '/settings/personal' },
-  { icon: Building2, label: 'sidebar.settings.organisation', href: '/settings/organisation' },
-  { icon: ShieldCheck, label: 'sidebar.settings.users', href: '/settings/users' },
-  { icon: Bell, label: 'sidebar.settings.notifications', href: '/notifications' },
+  { icon: UserCog, label: 'sidebar.settings.personal', href: '/settings' },
 ]
 
 const menuSections: MenuSection[] = [

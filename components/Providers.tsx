@@ -22,6 +22,8 @@ import type { ToastContentValue } from '@heroui/react'
 import { NotificationObserver } from './NotificationObserver'
 import DeviceSyncObserver from './DeviceSyncObserver'
 import { Info, CheckCircle, AlertTriangle, XCircle } from 'lucide-react'
+import { PWAInstallPrompt } from './PWAInstallPrompt'
+import { PWAInstallProvider } from '@/contexts/PWAInstallContext'
 
 const variantIcons: Record<string, React.ReactNode> = {
   default: <Info className="w-6 h-6" strokeWidth={2} color="#338ef7" />,
@@ -188,7 +190,10 @@ export function Providers({
                         <DeviceSyncObserver />
                         <DemoNotificationWorker />
                         <AppVersionCheck />
-                        <div className="min-h-screen flex flex-col">{children}</div>
+                        <PWAInstallProvider>
+                          <PWAInstallPrompt />
+                          <div className="min-h-screen flex flex-col">{children}</div>
+                        </PWAInstallProvider>
                       </SchedulingProvider>
                     </NotificationProvider>
                   </DictionaryContext.Provider>

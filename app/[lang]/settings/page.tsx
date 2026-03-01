@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { Switch, Spinner } from '@heroui/react'
-import { Bell, MapPin, ShieldAlert, Share, Plus } from 'lucide-react'
+import { Bell, MapPin, ShieldAlert, Share, Plus, Download } from 'lucide-react'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { useAuth } from '@/components/AuthProvider'
+import { usePWAInstall } from '@/contexts/PWAInstallContext'
 
 interface UserSettings {
   pushNotificationsEnabled: boolean
@@ -16,6 +17,7 @@ export default function SettingsPage() {
   const { session, status: authStatus } = useAuth()
   const push = usePushNotifications()
   const geo = useGeolocation()
+  const { isInstallable, installPWA } = usePWAInstall()
 
   const [settings, setSettings] = useState<UserSettings | null>(null)
   const [loading, setLoading] = useState(true)
@@ -234,6 +236,36 @@ export default function SettingsPage() {
           </div>
         )}
       </section>
+
+      {/* PWA App Installation Section */}
+      {isInstallable && (
+        <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Download className="w-5 h-5 text-indigo-500" />
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                App Installation
+              </h2>
+            </div>
+          </div>
+          <div className="flex items-center justify-between py-1">
+            <div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                Install Moment LBS
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-[200px] sm:max-w-xs">
+                Add Moment to your home screen or dock for faster access and offline capabilities.
+              </p>
+            </div>
+            <button
+              onClick={installPWA}
+              className="text-xs font-medium text-white bg-indigo-500 hover:bg-indigo-600 px-3 py-1.5 rounded-lg transition-colors shadow-sm"
+            >
+              Install App
+            </button>
+          </div>
+        </section>
+      )}
     </div>
   )
 }
