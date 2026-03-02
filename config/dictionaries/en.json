@@ -92,6 +92,12 @@
       }
     }
   },
+  "PWAInstall": {
+    "settings": "App Installation",
+    "title": "Install Moment LBS",
+    "desc": "Add Moment to your home screen or dock for faster access, offline capabilities, and a native app experience.",
+    "button": "Install App"
+  },
   "home": {
     "topmoto": "Data Analysis and Decision Support Tool for Quail Farming",
     "botmoto": "Evaluate feed efficiency, housing conditions, and stocking density to pinpoint superior performance and maximize yield per cycle.",
@@ -570,15 +576,7 @@
         "Saturday",
         "Sunday"
       ],
-      "weekdaysShort": [
-        "Mon",
-        "Tue",
-        "Wed",
-        "Thu",
-        "Fri",
-        "Sat",
-        "Sun"
-      ],
+      "weekdaysShort": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
       "months": [
         "January",
         "February",

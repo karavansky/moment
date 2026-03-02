@@ -92,6 +92,12 @@
       }
     }
   },
+    "PWAInstall": {
+    "settings": "Instalacja aplikacji",
+    "title": "Zainstaluj Moment LBS",
+    "desc": "Dodaj Moment do ekranu głównego lub doku, aby uzyskać szybszy dostęp, możliwość pracy offline i doświadczenie natywnej aplikacji.",
+    "button": "Zainstaluj aplikację"
+  },
   "home": {
     "topmoto": "Narzędzie do Analizy Danych i Wspomagania Decyzji w Hodowli Przepiórek",
     "botmoto": "Oceń efektywność paszy, warunki utrzymania i zagęszczenie, aby wskazać lepsze wyniki i zmaksymalizować wydajność na cykl.",

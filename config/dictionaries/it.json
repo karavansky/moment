@@ -92,6 +92,12 @@
       }
     }
   },
+    "PWAInstall": {
+    "settings": "Installazione app",
+    "title": "Installa Moment LBS",
+    "desc": "Aggiungi Moment alla schermata home o al dock per un accesso più rapido, funzionalità offline e un'esperienza app nativa.",
+    "button": "Installa app"
+  },
   "home": {
     "topmoto": "Strumento di Analisi Dati e Supporto Decisionale per l'Allevamento di Quaglie",
     "botmoto": "valuta l'efficienza del mangime, le condizioni di stabulazione e la densità di allevamento per individuare le performance superiori e massimizzare la resa per ciclo.",

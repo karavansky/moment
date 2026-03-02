@@ -92,6 +92,12 @@
       }
     }
   },
+    "PWAInstall": {
+    "settings": "Installation de l'application",
+    "title": "Installer Moment LBS",
+    "desc": "Ajoutez Moment à votre écran d'accueil ou à votre dock pour un accès plus rapide, des capacités hors ligne et une expérience d'application native.",
+    "button": "Installer l'application"
+  },
   "home": {
     "topmoto": "Outil d'analyse de données et d'aide à la décision pour l'élevage de cailles",
     "botmoto": "Évaluez l'efficacité alimentaire, les conditions de logement et la densité de peuplement pour identifier les performances supérieures et maximiser le rendement par cycle.",

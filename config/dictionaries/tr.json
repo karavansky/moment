@@ -92,6 +92,12 @@
       }
     }
   },
+    "PWAInstall": {
+    "settings": "Uygulama Kurulumu",
+    "title": "Moment LBS'yi Yükleyin",
+    "desc": "Daha hızlı erişim, çevrimdışı yetenekler ve yerel uygulama deneyimi için Moment'i ana ekranınıza veya dock'unuza ekleyin.",
+    "button": "Uygulamayı Yükle"
+  },
   "home": {
     "topmoto": "Bıldırcın Çiftçiliği İçin Veri Analizi ve Karar Destek Aracı",
     "botmoto": "Üstün performansı belirlemek ve döngü başına verimi en üst düzeye çıkarmak için yem verimliliğini, barınma koşullarını ve stok yoğunluğunu değerlendirin.",

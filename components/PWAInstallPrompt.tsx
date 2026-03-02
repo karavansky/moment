@@ -4,8 +4,11 @@ import { Card, Button } from '@heroui/react'
 import { Download, X } from 'lucide-react'
 import { usePWAInstall } from '@/contexts/PWAInstallContext'
 import { LogoMoment } from './icons'
+import { useTranslation } from '@/components/Providers'
+
 export function PWAInstallPrompt() {
   const { isInstallable, isDismissed, installPWA, dismissPrompt } = usePWAInstall()
+  const { t } = useTranslation()
 
   // Only show the banner if installable and not manually dismissed
   if (!isInstallable || isDismissed) return null
@@ -31,11 +34,10 @@ export function PWAInstallPrompt() {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-sm font-semibold leading-tight text-foreground">
-                Install Moment LBS
+                {t('PWAInstall.title')}
               </h3>
               <p className="text-xs text-default-500 mt-1 line-clamp-2 leading-relaxed">
-                Add Moment to your home screen or dock for faster access, offline capabilities, and
-                a native app experience.
+                {t('PWAInstall.desc')}
               </p>
             </div>
           </div>
@@ -45,7 +47,7 @@ export function PWAInstallPrompt() {
             className="w-full font-medium shadow-sm bg-primary text-primary-foreground flex gap-2"
           >
             <Download className="w-4 h-4" />
-            Install App
+            {t('PWAInstall.button')}
           </Button>
         </div>
       </Card>

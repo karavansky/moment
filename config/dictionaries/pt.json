@@ -92,6 +92,12 @@
       }
     }
   },
+    "PWAInstall": {
+    "settings": "Instalação do aplicativo",
+    "title": "Instalar Moment LBS",
+    "desc": "Adicione o Moment à sua tela inicial ou dock para acesso mais rápido, recursos offline e uma experiência de aplicativo nativo.",
+    "button": "Instalar aplicativo"
+  },
   "home": {
     "topmoto": "Ferramenta de Análise de Dados e Suporte à Decisão para a Criação de Codornizes",
     "botmoto": "Avalie a eficiência da ração, as condições de alojamento e a densidade populacional para identificar o desempenho superior e maximizar o rendimento por ciclo.",

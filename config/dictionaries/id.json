@@ -92,6 +92,12 @@
       }
     }
   },
+    "PWAInstall": {
+    "settings": "Instalasi Aplikasi",
+    "title": "Instal Moment LBS",
+    "desc": "Tambahkan Moment ke layar beranda atau dock Anda untuk akses lebih cepat, kemampuan offline, dan pengalaman aplikasi native.",
+    "button": "Instal Aplikasi"
+  },
   "home": {
     "topmoto": "Alat Analisis Data dan Dukungan Keputusan untuk Pembibitan Puyuh",
     "botmoto": "Evaluasi efisiensi pakan, kondisi perumahan, dan kepadatan populasi untuk mengidentifikasi kinerja unggul dan memaksimalkan hasil per siklus.",

@@ -2,7 +2,7 @@
   "landing": {
     "hero": {
       "badge": "Keine Installation • PWA-fähig",
-      "title": "Außendienstmanagement, vereinfacht.",
+      "title": "Einsätze. Einfach.",
       "subtitle": "Der einfachste Weg, Ihre mobile Belegschaft zu verwalten. Perfekt für Reinigung, Altenpflege und alle Außendienste. Kein App Store, keine Komplexität.",
       "ctaStart": "Kostenlose Testphase starten",
       "ctaHow": "So funktioniert's"
@@ -91,6 +91,12 @@
         }
       }
     }
+  },
+  "PWAInstall": {
+    "settings": "App Installation",
+    "title": "Moment LBS installieren",
+    "desc": "Fügen Sie Moment zu Ihrem Startbildschirm oder Dock hinzu für schnelleren Zugriff, Offline-Funktionen und ein natives App-Erlebnis.",
+    "button": "App installieren"
   },
   "home": {
     "topmoto": "Datenanalyse und Steuerung für die Wachtelzucht",

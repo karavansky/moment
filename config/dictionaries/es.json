@@ -1,5 +1,5 @@
 {
-   "landing": {
+  "landing": {
     "hero": {
       "badge": "Sin instalación • PWA lista",
       "title": "Gestión de Servicios de Campo, simplificada.",
@@ -91,6 +91,12 @@
         }
       }
     }
+  },
+  "PWAInstall": {
+    "settings": "Instalación de la aplicación",
+    "title": "Instalar Moment LBS",
+    "desc": "Agregue Moment a su pantalla de inicio o dock para un acceso más rápido, capacidades sin conexión y una experiencia de aplicación nativa.",
+    "button": "Instalar aplicación"
   },
   "home": {
     "topmoto": "Herramienta de Análisis de Datos y Soporte para la Toma de Decisiones en la Cría de Codornices",
@@ -573,24 +579,8 @@
     "noAppointmentsHint": "Comience creando una nueva cita",
     "calendar": {
       "noAppointmentsToDisplay": "No hay citas para mostrar",
-      "weekdaysFull": [
-        "Lunes",
-        "Martes",
-        "Miércoles",
-        "Jueves",
-        "Viernes",
-        "Sábado",
-        "Domingo"
-      ],
-      "weekdaysShort": [
-        "Lun",
-        "Mar",
-        "Mié",
-        "Jue",
-        "Vie",
-        "Sáb",
-        "Dom"
-      ],
+      "weekdaysFull": ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"],
+      "weekdaysShort": ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"],
       "months": [
         "Enero",
         "Febrero",

@@ -7,6 +7,7 @@ import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { useAuth } from '@/components/AuthProvider'
 import { usePWAInstall } from '@/contexts/PWAInstallContext'
+import { useTranslation } from '@/components/Providers'
 
 interface UserSettings {
   pushNotificationsEnabled: boolean
@@ -23,6 +24,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [policyError, setPolicyError] = useState(false)
+  const { t } = useTranslation()
 
   // Fetch settings from server
   useEffect(() => {
@@ -244,24 +246,24 @@ export default function SettingsPage() {
             <div className="flex items-center gap-3">
               <Download className="w-5 h-5 text-indigo-500" />
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                App Installation
+                {t('PWAInstall.settings')}
               </h2>
             </div>
           </div>
           <div className="flex items-center justify-between py-1">
             <div>
               <p className="text-sm font-medium text-gray-900 dark:text-white">
-                Install Moment LBS
+                {t('PWAInstall.title')}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-[200px] sm:max-w-xs">
-                Add Moment to your home screen or dock for faster access and offline capabilities.
+                {t('PWAInstall.desc')}
               </p>
             </div>
             <button
               onClick={installPWA}
               className="text-xs font-medium text-white bg-indigo-500 hover:bg-indigo-600 px-3 py-1.5 rounded-lg transition-colors shadow-sm"
             >
-              Install App
+              {t('PWAInstall.button')}
             </button>
           </div>
         </section>
