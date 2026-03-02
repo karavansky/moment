@@ -45,7 +45,7 @@
         "name": "Gratuit de base",
         "price": "0€",
         "unit": "/toujours",
-        "feat1": "Jusqu'à 5 travailleurs de terrain",
+        "feat1": "Jusqu'à 20 travailleurs de terrain",
         "feat2": "Planification en direct et application PWA",
         "feat3": "Points de contrôle de localisation GPS",
         "cta": "Commencer gratuitement"
