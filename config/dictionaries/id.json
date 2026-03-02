@@ -1,4 +1,97 @@
 {
+    "landing": {
+    "hero": {
+      "badge": "Tanpa Instalasi • Siap PWA",
+      "title": "Manajemen Layanan Lapangan, yang disederhanakan.",
+      "subtitle": "Cara termudah untuk mengelola tenaga kerja mobile Anda. Sempurna untuk kebersihan, perawatan lansia, dan layanan lapangan apa pun. Tanpa App Store, tanpa kerumitan.",
+      "ctaStart": "Mulai Uji Coba Gratis",
+      "ctaHow": "Lihat Cara Kerjanya"
+    },
+    "benefits": {
+      "title": "Dibangun untuk Industri Anda",
+      "subtitle": "Fokus pada bisnis Anda, bukan beban teknis. Staf Anda cukup membuka tautan dan mulai bekerja.",
+      "pwa": {
+        "title": "Pengaturan Instan (PWA)",
+        "desc": "Lewati App Store. Karyawan menginstal aplikasi secara instan melalui tautan browser di perangkat iOS atau Android apa pun. Nol keterampilan TI diperlukan."
+      },
+      "scheduling": {
+        "title": "Penjadwalan Langsung",
+        "desc": "Pembaruan waktu nyata dalam milidetik. Saat Anda menetapkan tugas, tim Anda melihatnya secara instan tanpa menyegarkan halaman."
+      },
+      "tracking": {
+        "title": "Pelacakan Utamakan Privasi",
+        "desc": "Pelacakan GPS sesuai EU berfokus pada keselamatan dan optimalisasi rute. Aktif hanya selama jam kerja untuk menghormati privasi karyawan."
+      }
+    },
+    "features": {
+      "title": "Pelacakan kinerja berbasis data",
+      "qr": {
+        "title": "Ulasan Klien QR",
+        "desc": "Kumpulkan umpan balik instan. Pekerja menunjukkan kode QR setelah selesai, dan klien menilai layanan dalam satu klik. Dasbor KPI pribadi Anda."
+      },
+      "routes": {
+        "title": "Logistik Cerdas",
+        "desc": "Telemetri kinerja tinggi untuk berbagai ukuran armada. Baik Anda memiliki 10 atau 400 kendaraan, selalu tahu di mana mereka berada dan optimalkan rute mereka."
+      },
+      "reports": {
+        "title": "Penggajian Satu Klik",
+        "desc": "Ekspor shift pekerja terverifikasi dan titik pemeriksaan GPS langsung ke Excel. Cepat, akurat, dan siap untuk akuntan Anda."
+      }
+    },
+    "pricing": {
+      "title": "Harga Sederhana dan Transparan",
+      "subtitle": "Mulai gratis dan skalakan seiring pertumbuhan bisnis Anda.",
+      "free": {
+        "name": "Gratis Inti",
+        "price": "€0",
+        "unit": "/selamanya",
+        "feat1": "Hingga 5 pekerja lapangan",
+        "feat2": "Penjadwalan langsung & Aplikasi PWA",
+        "feat3": "Titik pemeriksaan lokasi GPS",
+        "cta": "Mulai Gratis"
+      },
+      "pro": {
+        "name": "Bisnis Pro",
+        "price": "€1",
+        "unit": "/pengguna /bulan",
+        "feat1": "Penyimpanan Foto Cloud untuk Laporan",
+        "feat2": "Ekspor Excel Lanjutan",
+        "feat3": "Penentuan Rute Cerdas & pelacakan ala Uber",
+        "cta": "Tingkatkan ke Pro"
+      }
+    },
+    "faq": {
+      "title": "Pertanyaan yang Sering Diajukan",
+      "subtitle": "Semua yang perlu Anda ketahui tentang Moment LBS dan bagaimana hal itu membantu bisnis Anda tumbuh.",
+      "categories": {
+        "setup": "Pengaturan & PWA",
+        "privacy": "Privasi & Hukum",
+        "performance": "Kinerja & KPI"
+      },
+      "items": {
+        "pwa_what": {
+          "q": "Apakah karyawan saya perlu menginstal sesuatu dari App Store?",
+          "a": "Tidak. Moment LBS adalah PWA (Progressive Web App). Anda cukup mengirim tautan ke staf Anda. Mereka membukanya di browser seluler mereka dan dapat menambahkannya ke layar beranda dengan satu ketukan. Ini berfungsi seperti aplikasi biasa tetapi membutuhkan ruang penyimpanan nol dan tanpa pembaruan."
+        },
+        "privacy_legal": {
+          "q": "Apakah pelacakan GPS legal untuk karyawan saya?",
+          "a": "Ya, menurut peraturan UE dan putusan pengadilan tinggi, pemberi kerja berhak melacak lokasi untuk pencatatan waktu yang akurat dan keselamatan. Moment LBS adalah 'Privacy-First': pelacakan hanya berfungsi selama sesi kerja aktif, memastikan kehidupan pribadi staf Anda tetap pribadi."
+        },
+        "offline": {
+          "q": "Apa yang terjadi jika tidak ada koneksi internet?",
+          "a": "Moment LBS menangani konektivitas yang buruk dengan baik. Koordinat GPS dan laporan disimpan secara lokal di perangkat dan secara otomatis disinkronkan dengan server kinerja tinggi kami segera setelah koneksi pulih."
+        },
+        "kpi_qr": {
+          "q": "Bagaimana cara kerja sistem penilaian kode QR?",
+          "a": "Setelah pekerjaan selesai, pekerja Anda menampilkan kode QR unik di layar mereka. Klien memindainya dengan ponsel mereka (tanpa perlu aplikasi) dan meninggalkan peringkat atau ulasan. Data ini langsung dikirim ke dasbor Anda sebagai KPI Kinerja."
+        },
+        "export": {
+          "q": "Dapatkah saya menggunakan data untuk penggajian?",
+          "a": "Tentu saja. Anda dapat mengekspor laporan terperinci ke Excel, termasuk waktu mulai/selesai, durasi total, dan titik pemeriksaan yang diverifikasi GPS. Ini membuat perhitungan penggajian cepat dan transparan."
+        }
+      }
+    }
+  },
   "home": {
     "topmoto": "Alat Analisis Data dan Dukungan Keputusan untuk Pembibitan Puyuh",
     "botmoto": "Evaluasi efisiensi pakan, kondisi perumahan, dan kepadatan populasi untuk mengidentifikasi kinerja unggul dan memaksimalkan hasil per siklus.",

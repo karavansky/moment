@@ -1,4 +1,97 @@
 {
+    "landing": {
+    "hero": {
+      "badge": "Aucune installation • Prêt pour PWA",
+      "title": "Gestion des services sur le terrain, simplifiée.",
+      "subtitle": "Le moyen le plus simple de gérer votre personnel mobile. Parfait pour le nettoyage, les soins aux personnes âgées et tous les services sur le terrain. Pas d'App Store, pas de complexité.",
+      "ctaStart": "Essai gratuit",
+      "ctaHow": "Voir comment ça fonctionne"
+    },
+    "benefits": {
+      "title": "Conçu pour votre industrie",
+      "subtitle": "Concentrez-vous sur votre entreprise, pas sur la charge technique. Vos employés ouvrent simplement un lien et commencent à travailler.",
+      "pwa": {
+        "title": "Configuration instantanée (PWA)",
+        "desc": "Ignorez l'App Store. Les employés installent l'application instantanément via un lien navigateur sur n'importe quel appareil iOS ou Android. Aucune compétence informatique requise."
+      },
+      "scheduling": {
+        "title": "Planification en direct",
+        "desc": "Mises à jour en temps réel en millisecondes. Lorsque vous assignez une tâche, votre équipe la voit instantanément sans actualiser la page."
+      },
+      "tracking": {
+        "title": "Géolocalisation respectueuse de la vie privée",
+        "desc": "Géolocalisation GPS conforme à l'UE axée sur la sécurité et l'optimisation des itinéraires. Active uniquement pendant les heures de travail pour respecter la vie privée des employés."
+      }
+    },
+    "features": {
+      "title": "Suivi des performances basé sur les données",
+      "qr": {
+        "title": "Avis clients par QR code",
+        "desc": "Recueillez des commentaires instantanés. Les travailleurs montrent un code QR à la fin de la prestation, et les clients évaluent le service en un clic. Votre tableau de bord KPI personnel."
+      },
+      "routes": {
+        "title": "Logistique intelligente",
+        "desc": "Télémétrie haute performance pour toute taille de flotte. Que vous ayez 10 ou 400 véhicules, sachez toujours où ils sont et optimisez leurs itinéraires."
+      },
+      "reports": {
+        "title": "Paie en un clic",
+        "desc": "Exportez les quarts de travail vérifiés des employés et les points de contrôle GPS directement vers Excel. Rapide, précis et prêt pour votre comptable."
+      }
+    },
+    "pricing": {
+      "title": "Tarifs simples et transparents",
+      "subtitle": "Commencez gratuitement et évoluez à mesure que votre entreprise grandit.",
+      "free": {
+        "name": "Gratuit de base",
+        "price": "0€",
+        "unit": "/toujours",
+        "feat1": "Jusqu'à 5 travailleurs de terrain",
+        "feat2": "Planification en direct et application PWA",
+        "feat3": "Points de contrôle de localisation GPS",
+        "cta": "Commencer gratuitement"
+      },
+      "pro": {
+        "name": "Business Pro",
+        "price": "1€",
+        "unit": "/utilisateur /mois",
+        "feat1": "Stockage de photos dans le cloud pour les rapports",
+        "feat2": "Export Excel avancé",
+        "feat3": "Routage intelligent et suivi style Uber",
+        "cta": "Passer à Pro"
+      }
+    },
+    "faq": {
+      "title": "Questions fréquemment posées",
+      "subtitle": "Tout ce que vous devez savoir sur Moment LBS et comment il aide votre entreprise à se développer.",
+      "categories": {
+        "setup": "Configuration et PWA",
+        "privacy": "Confidentialité et aspects juridiques",
+        "performance": "Performance et KPI"
+      },
+      "items": {
+        "pwa_what": {
+          "q": "Mes employés doivent-ils installer quelque chose depuis l'App Store ?",
+          "a": "Non. Moment LBS est une PWA (Application Web Progressive). Vous envoyez simplement un lien à votre personnel. Ils l'ouvrent dans leur navigateur mobile et peuvent l'ajouter à leur écran d'accueil en un clic. Cela fonctionne comme une application normale mais ne nécessite aucun espace de stockage ni mise à jour."
+        },
+        "privacy_legal": {
+          "q": "La géolocalisation GPS est-elle légale pour mes employés ?",
+          "a": "Oui, selon les réglementations de l'UE et les décisions de justice, les employeurs ont le droit de suivre la localisation pour un pointage précis et la sécurité. Moment LBS est 'Privacy-First' : le suivi ne fonctionne que pendant les sessions de travail actives, garantissant que la vie privée de votre personnel reste privée."
+        },
+        "offline": {
+          "q": "Que se passe-t-il s'il n'y a pas de connexion internet ?",
+          "a": "Moment LBS gère gracieusement la mauvaise connectivité. Les coordonnées GPS et les rapports sont stockés localement sur l'appareil et automatiquement synchronisés avec notre serveur haute performance dès que la connexion est rétablie."
+        },
+        "kpi_qr": {
+          "q": "Comment fonctionne le système d'évaluation par code QR ?",
+          "a": "À la fin de la tâche, votre employé affiche un code QR unique sur son écran. Le client le scanne avec son téléphone (pas d'application nécessaire) et laisse une note ou un commentaire. Ces données sont instantanément envoyées à votre tableau de bord en tant que KPI de performance."
+        },
+        "export": {
+          "q": "Puis-je utiliser les données pour la paie ?",
+          "a": "Absolument. Vous pouvez exporter des rapports détaillés vers Excel, y compris les heures de début/fin, la durée totale et les points de contrôle vérifiés par GPS. Cela rend le calcul des salaires rapide et transparent."
+        }
+      }
+    }
+  },
   "home": {
     "topmoto": "Outil d'analyse de données et d'aide à la décision pour l'élevage de cailles",
     "botmoto": "Évaluez l'efficacité alimentaire, les conditions de logement et la densité de peuplement pour identifier les performances supérieures et maximiser le rendement par cycle.",

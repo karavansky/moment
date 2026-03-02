@@ -24,6 +24,7 @@ import { useTranslation } from '@/components/Providers'
 import { useLanguage } from '@/hooks/useLanguage'
 import ElapsedTimer from './ElapsedTimer'
 import { Alert } from '../Alert'
+import { QRCodeCanvas } from 'qrcode.react'
 
 /** Haversine distance between two coordinates, returns meters */
 function haversineMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -99,6 +100,8 @@ export default function AppointmentReport({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const photosContainerRef = useRef<HTMLDivElement>(null)
   const scrollOnNextUpdate = useRef(false)
+
+  const [showQR, setShowQR] = useState(false)
 
   const selectedPhoto = photos.find(p => p.id === selectedPhotoId)
 
@@ -964,6 +967,50 @@ export default function AppointmentReport({
                         </div>
                       ))}
                     </div>
+                  </div>
+
+                  {/* QR Review Section */}
+                  <Separator className="my-2" />
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-semibold">
+                          {t('appointment.report.clientReview') || 'Client Review'}
+                        </h3>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-primary"
+                        onPress={() => setShowQR(!showQR)}
+                      >
+                        {showQR
+                          ? t('appointment.report.hideQR') || 'Hide QR'
+                          : t('appointment.report.showQR') || 'Show QR'}
+                      </Button>
+                    </div>
+
+                    {showQR && (
+                      <div className="bg-default-50 p-4 rounded-lg flex flex-col items-center justify-center gap-4 animate-appearance-in">
+                        <p className="text-sm text-center text-default-600">
+                          {t('appointment.report.scanQRText') ||
+                            'Client can scan this code to leave a review for the finished work.'}
+                        </p>
+                        <div className="bg-white p-3 shadow-sm rounded-xl">
+                          <QRCodeCanvas
+                            value={`${window.location.origin}/${lang}/review/${appointment.id}`}
+                            size={180}
+                            bgColor={'#ffffff'}
+                            fgColor={'#000000'}
+                            level={'Q'}
+                            includeMargin={false}
+                          />
+                        </div>
+                        <p className="text-xs text-default-400 font-mono text-center">
+                          ID: {appointment.id}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </Modal.Body>

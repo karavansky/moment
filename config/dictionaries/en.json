@@ -1,4 +1,97 @@
 {
+  "landing": {
+    "hero": {
+      "badge": "Zero Installation • PWA Ready",
+      "title": "Field Service Management, simplified.",
+      "subtitle": "The easiest way to manage your mobile workforce. Perfect for cleaning, elderly care, and any field services. No App Store, no complexity.",
+      "ctaStart": "Start Free Trial",
+      "ctaHow": "See How It Works"
+    },
+    "benefits": {
+      "title": "Built for Your Industry",
+      "subtitle": "Focus on your business, not the technical burden. Your staff just opens a link and starts working.",
+      "pwa": {
+        "title": "Instant Setup (PWA)",
+        "desc": "Skip the App Store. Employees install the app instantly via a browser link on any iOS or Android device. Zero IT-skills required."
+      },
+      "scheduling": {
+        "title": "Live Scheduling",
+        "desc": "Real-time updates in milliseconds. When you assign a task, your team sees it instantly without refreshing the page."
+      },
+      "tracking": {
+        "title": "Privacy-First Tracking",
+        "desc": "EU-compliant GPS tracking focused on safety and route optimization. Active only during work hours to respect employee privacy."
+      }
+    },
+    "features": {
+      "title": "Data-driven performance tracking",
+      "qr": {
+        "title": "QR Client Reviews",
+        "desc": "Collect instant feedback. Workers show a QR code upon completion, and clients rate the service in one click. Your personal KPI dashboard."
+      },
+      "routes": {
+        "title": "Smart Logistics",
+        "desc": "High-performance telemetry for any fleet size. Whether you have 10 or 400 vehicles, always know where they are and optimize their paths."
+      },
+      "reports": {
+        "title": "One-Click Payroll",
+        "desc": "Export verified worker shifts and GPS checkpoints directly to Excel. Fast, accurate, and ready for your accountant."
+      }
+    },
+    "pricing": {
+      "title": "Simple, Transparent Pricing",
+      "subtitle": "Start for free and scale as your business grows.",
+      "free": {
+        "name": "Core Free",
+        "price": "€0",
+        "unit": "/forever",
+        "feat1": "Up to 20 field workers",
+        "feat2": "Live scheduling & PWA App",
+        "feat3": "GPS Location checkpoints",
+        "cta": "Start Free"
+      },
+      "pro": {
+        "name": "Business Pro",
+        "price": "€1",
+        "unit": "/user /month",
+        "feat1": "Cloud Photo Storage for Reports",
+        "feat2": "Advanced Excel Export",
+        "feat3": "Smart Routing & Uber-style tracking",
+        "cta": "Upgrade to Pro"
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Everything you need to know about Moment LBS and how it helps your business grow.",
+      "categories": {
+        "setup": "Setup & PWA",
+        "privacy": "Privacy & Legal",
+        "performance": "Performance & KPI"
+      },
+      "items": {
+        "pwa_what": {
+          "q": "Do my employees need to install anything from the App Store?",
+          "a": "No. Moment LBS is a PWA (Progressive Web App). You simply send a link to your staff. They open it in their mobile browser and can add it to their home screen with one tap. It works like a regular app but requires zero storage space and no updates."
+        },
+        "privacy_legal": {
+          "q": "Is GPS tracking legal for my employees?",
+          "a": "Yes, according to EU regulations and high court rulings, employers have the right to track location for accurate timekeeping and safety. Moment LBS is 'Privacy-First': tracking only functions during active work sessions, ensuring your staff's private life stays private."
+        },
+        "offline": {
+          "q": "What happens if there is no internet connection?",
+          "a": "Moment LBS handles poor connectivity gracefully. GPS coordinates and reports are stored locally on the device and automatically synchronized with our high-performance server as soon as the connection is restored."
+        },
+        "kpi_qr": {
+          "q": "How does the QR-code rating system work?",
+          "a": "Upon job completion, your worker displays a unique QR code on their screen. The client scans it with their phone (no app needed) and leaves a rating or review. This data is instantly sent to your dashboard as a Performance KPI."
+        },
+        "export": {
+          "q": "Can I use the data for payroll?",
+          "a": "Absolutely. You can export detailed reports to Excel, including start/end times, total duration, and GPS-verified checkpoints. This makes payroll calculation fast and transparent."
+        }
+      }
+    }
+  },
   "home": {
     "topmoto": "Data Analysis and Decision Support Tool for Quail Farming",
     "botmoto": "Evaluate feed efficiency, housing conditions, and stocking density to pinpoint superior performance and maximize yield per cycle.",

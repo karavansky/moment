@@ -1,9 +1,8 @@
-import DienstplanPage from './dienstplan/page'
 import { createPageMetadata } from '@/lib/seo/metadata'
 import { getDictionary, hasLocale } from '@/config/dictionaries'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-
+import HomePage from './home/page'
 export async function generateMetadata({
   params,
 }: {
@@ -27,6 +26,6 @@ export async function generateMetadata({
   )
 }
 
-export default function Home() {
-  return <DienstplanPage />
+export default function Home({ params }: { params: Promise<{ lang: string }> }) {
+  return <HomePage params={params} />
 }

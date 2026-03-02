@@ -1,4 +1,97 @@
 {
+    "landing": {
+    "hero": {
+      "badge": "Bez instalacji • Gotowe na PWA",
+      "title": "Zarządzanie pracownikami terenowymi, uproszczone.",
+      "subtitle": "Najłatwiejszy sposób zarządzania mobilną siłą roboczą. Idealny do sprzątania, opieki nad osobami starszymi i wszelkich usług terenowych. Bez App Store, bez komplikacji.",
+      "ctaStart": "Rozpocznij darmowy okres próbny",
+      "ctaHow": "Zobacz jak to działa"
+    },
+    "benefits": {
+      "title": "Stworzony dla Twojej branży",
+      "subtitle": "Skup się na swoim biznesie, a nie na obciążeniach technicznych. Twoi pracownicy po prostu otwierają link i zaczynają pracować.",
+      "pwa": {
+        "title": "Błyskawiczna konfiguracja (PWA)",
+        "desc": "Pomiń App Store. Pracownicy instalują aplikację natychmiast przez link w przeglądarce na dowolnym urządzeniu iOS lub Android. Zero wymaganych umiejętności IT."
+      },
+      "scheduling": {
+        "title": "Planowanie na żywo",
+        "desc": "Aktualizacje w czasie rzeczywistym w milisekundach. Gdy przypiszesz zadanie, Twój zespół widzi je natychmiast bez odświeżania strony."
+      },
+      "tracking": {
+        "title": "Śledzenie z poszanowaniem prywatności",
+        "desc": "Zgodne z UE śledzenie GPS skoncentrowane na bezpieczeństwie i optymalizacji tras. Aktywne tylko w godzinach pracy, aby szanować prywatność pracowników."
+      }
+    },
+    "features": {
+      "title": "Śledzenie wydajności oparte na danych",
+      "qr": {
+        "title": "Opinie klientów przez kod QR",
+        "desc": "Zbieraj natychmiastowe opinie. Pracownicy pokazują kod QR po zakończeniu, a klienci oceniają usługę jednym kliknięciem. Twój osobisty pulpit KPI."
+      },
+      "routes": {
+        "title": "Inteligentna logistyka",
+        "desc": "Wysokowydajna telemetria dla każdej wielkości floty. Niezależnie od tego, czy masz 10 czy 400 pojazdów, zawsze wiesz, gdzie są i optymalizujesz ich trasy."
+      },
+      "reports": {
+        "title": "Lista płac jednym kliknięciem",
+        "desc": "Eksportuj zweryfikowane zmiany pracowników i punkty kontrolne GPS bezpośrednio do Excela. Szybko, dokładnie i gotowe dla Twojego księgowego."
+      }
+    },
+    "pricing": {
+      "title": "Proste, przejrzyste ceny",
+      "subtitle": "Zacznij za darmo i skaluj w miarę rozwoju firmy.",
+      "free": {
+        "name": "Podstawowy darmowy",
+        "price": "0€",
+        "unit": "/na zawsze",
+        "feat1": "Do 5 pracowników terenowych",
+        "feat2": "Planowanie na żywo i aplikacja PWA",
+        "feat3": "Punkty kontrolne lokalizacji GPS",
+        "cta": "Zacznij za darmo"
+      },
+      "pro": {
+        "name": "Biznes Pro",
+        "price": "1€",
+        "unit": "/użytkownik /miesiąc",
+        "feat1": "Przechowywanie zdjęć w chmurze dla raportów",
+        "feat2": "Zaawansowany eksport do Excela",
+        "feat3": "Inteligentne wyznaczanie tras i śledzenie w stylu Uber",
+        "cta": "Przejdź na Pro"
+      }
+    },
+    "faq": {
+      "title": "Często zadawane pytania",
+      "subtitle": "Wszystko, co musisz wiedzieć o Moment LBS i jak pomaga Twojej firmie się rozwijać.",
+      "categories": {
+        "setup": "Konfiguracja i PWA",
+        "privacy": "Prywatność i kwestie prawne",
+        "performance": "Wydajność i KPI"
+      },
+      "items": {
+        "pwa_what": {
+          "q": "Czy moi pracownicy muszą instalować coś z App Store?",
+          "a": "Nie. Moment LBS to PWA (Progresywna Aplikacja Webowa). Po prostu wysyłasz link do swojego personelu. Otwierają go w przeglądarce mobilnej i mogą dodać do ekranu głównego jednym dotknięciem. Działa jak zwykła aplikacja, ale nie wymaga miejsca na dysku i aktualizacji."
+        },
+        "privacy_legal": {
+          "q": "Czy śledzenie GPS dla moich pracowników jest legalne?",
+          "a": "Tak, zgodnie z przepisami UE i orzeczeniami sądów, pracodawcy mają prawo śledzić lokalizację w celu dokładnego rejestrowania czasu pracy i bezpieczeństwa. Moment LBS jest 'Privacy-First': śledzenie działa tylko podczas aktywnych sesji roboczych, zapewniając, że życie prywatne Twojego personelu pozostaje prywatne."
+        },
+        "offline": {
+          "q": "Co się stanie, jeśli nie ma połączenia z internetem?",
+          "a": "Moment LBS radzi sobie dobrze ze słabą łącznością. Współrzędne GPS i raporty są przechowywane lokalnie na urządzeniu i automatycznie synchronizowane z naszym wydajnym serwerem, gdy tylko połączenie zostanie przywrócone."
+        },
+        "kpi_qr": {
+          "q": "Jak działa system oceny za pomocą kodu QR?",
+          "a": "Po zakończeniu zadania pracownik wyświetla unikalny kod QR na swoim ekranie. Klient skanuje go telefonem (bez potrzeby instalowania aplikacji) i zostawia ocenę lub opinię. Te dane są natychmiast wysyłane do Twojego pulpitu jako KPI wydajności."
+        },
+        "export": {
+          "q": "Czy mogę wykorzystać dane do listy płac?",
+          "a": "Oczywiście. Możesz eksportować szczegółowe raporty do Excela, w tym godziny rozpoczęcia/zakończenia, całkowity czas trwania i punkty kontrolne zweryfikowane przez GPS. To sprawia, że obliczanie listy płac jest szybkie i przejrzyste."
+        }
+      }
+    }
+  },
   "home": {
     "topmoto": "Narzędzie do Analizy Danych i Wspomagania Decyzji w Hodowli Przepiórek",
     "botmoto": "Oceń efektywność paszy, warunki utrzymania i zagęszczenie, aby wskazać lepsze wyniki i zmaksymalizować wydajność na cykl.",

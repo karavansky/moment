@@ -1,4 +1,97 @@
 {
+    "landing": {
+    "hero": {
+      "badge": "Kurulum Gerekmez • PWA Hazır",
+      "title": "Saha Hizmetleri Yönetimi, basitleştirildi.",
+      "subtitle": "Mobil iş gücünüzü yönetmenin en kolay yolu. Temizlik, yaşlı bakımı ve her türlü saha hizmeti için mükemmel. App Store yok, karmaşıklık yok.",
+      "ctaStart": "Ücretsiz Denemeye Başla",
+      "ctaHow": "Nasıl Çalıştığını Görün"
+    },
+    "benefits": {
+      "title": "Sektörünüz İçin Tasarlanmıştır",
+      "subtitle": "Teknik yük değil, işinize odaklanın. Personeliniz sadece bir bağlantı açar ve çalışmaya başlar.",
+      "pwa": {
+        "title": "Anında Kurulum (PWA)",
+        "desc": "App Store'u atlayın. Çalışanlar uygulamayı herhangi bir iOS veya Android cihazda bir tarayıcı bağlantısı aracılığıyla anında kurar. Sıfır BT becerisi gerekli."
+      },
+      "scheduling": {
+        "title": "Canlı Çizelgeleme",
+        "desc": "Milisaniyeler içinde gerçek zamanlı güncellemeler. Bir görev atadığınızda, ekibiniz sayfayı yenilemeden anında görür."
+      },
+      "tracking": {
+        "title": "Gizlilik Öncelikli Takip",
+        "desc": "Güvenlik ve rota optimizasyonuna odaklanan AB uyumlu GPS takibi. Çalışan gizliliğine saygı göstermek için yalnızca çalışma saatleri içinde aktiftir."
+      }
+    },
+    "features": {
+      "title": "Veri odaklı performans takibi",
+      "qr": {
+        "title": "QR Müşteri İncelemeleri",
+        "desc": "Anlık geri bildirim toplayın. Çalışanlar tamamlandığında bir QR kodu gösterir ve müşteriler hizmeti tek tıkla değerlendirir. Kişisel KPI panonuz."
+      },
+      "routes": {
+        "title": "Akıllı Lojistik",
+        "desc": "Her filo boyutu için yüksek performanslı telemetri. İster 10 ister 400 aracınız olsun, nerede olduklarını her zaman bilin ve yollarını optimize edin."
+      },
+      "reports": {
+        "title": "Tek Tıkla Bordro",
+        "desc": "Doğrulanmış çalışan vardiyalarını ve GPS kontrol noktalarını doğrudan Excel'e aktarın. Hızlı, doğru ve muhasebeciniz için hazır."
+      }
+    },
+    "pricing": {
+      "title": "Basit, Şeffaf Fiyatlandırma",
+      "subtitle": "Ücretsiz başlayın ve işiniz büyüdükçe ölçeklendirin.",
+      "free": {
+        "name": "Temel Ücretsiz",
+        "price": "€0",
+        "unit": "/sonsuza kadar",
+        "feat1": "5 saha çalışanına kadar",
+        "feat2": "Canlı çizelgeleme ve PWA Uygulaması",
+        "feat3": "GPS Konum kontrol noktaları",
+        "cta": "Ücretsiz Başla"
+      },
+      "pro": {
+        "name": "İşletme Pro",
+        "price": "€1",
+        "unit": "/kullanıcı /ay",
+        "feat1": "Raporlar için Bulut Fotoğraf Depolama",
+        "feat2": "Gelişmiş Excel Dışa Aktarma",
+        "feat3": "Akıllı Rotalama ve Uber tarzı takip",
+        "cta": "Pro'ya Yükselt"
+      }
+    },
+    "faq": {
+      "title": "Sıkça Sorulan Sorular",
+      "subtitle": "Moment LBS hakkında bilmeniz gereken her şey ve işinizin büyümesine nasıl yardımcı olduğu.",
+      "categories": {
+        "setup": "Kurulum ve PWA",
+        "privacy": "Gizlilik ve Yasal",
+        "performance": "Performans ve KPI"
+      },
+      "items": {
+        "pwa_what": {
+          "q": "Çalışanlarımın App Store'dan bir şey yüklemesi gerekiyor mu?",
+          "a": "Hayır. Moment LBS bir PWA'dır (Progresif Web Uygulaması). Personelinize sadece bir bağlantı gönderirsiniz. Mobil tarayıcılarında açarlar ve tek bir dokunuşla ana ekranlarına ekleyebilirler. Normal bir uygulama gibi çalışır ancak sıfır depolama alanı gerektirir ve güncelleme gerektirmez."
+        },
+        "privacy_legal": {
+          "q": "Çalışanlarım için GPS takibi yasal mı?",
+          "a": "Evet, AB düzenlemeleri ve yüksek mahkeme kararlarına göre, işverenler doğru zaman tutma ve güvenlik için konum takibi yapma hakkına sahiptir. Moment LBS 'Gizlilik Önceliklidir': takip yalnızca aktif çalışma oturumları sırasında çalışır ve personelinizin özel hayatının gizli kalmasını sağlar."
+        },
+        "offline": {
+          "q": "İnternet bağlantısı yoksa ne olur?",
+          "a": "Moment LBS, zayıf bağlantıyı iyi bir şekilde yönetir. GPS koordinatları ve raporlar cihazda yerel olarak depolanır ve bağlantı yeniden kurulur kurulmaz yüksek performanslı sunucumuzla otomatik olarak senkronize edilir."
+        },
+        "kpi_qr": {
+          "q": "QR kod derecelendirme sistemi nasıl çalışır?",
+          "a": "İş tamamlandığında, çalışanınız ekranında benzersiz bir QR kodu görüntüler. Müşteri, telefonuyla (uygulama gerekmez) tarar ve bir derecelendirme veya inceleme bırakır. Bu veri, bir Performans KPI'sı olarak anında panonuza gönderilir."
+        },
+        "export": {
+          "q": "Verileri bordro için kullanabilir miyim?",
+          "a": "Kesinlikle. Başlangıç/bitiş saatleri, toplam süre ve GPS ile doğrulanmış kontrol noktaları dahil olmak üzere ayrıntılı raporları Excel'e aktarabilirsiniz. Bu, bordro hesaplamasını hızlı ve şeffaf hale getirir."
+        }
+      }
+    }
+  },
   "home": {
     "topmoto": "Bıldırcın Çiftçiliği İçin Veri Analizi ve Karar Destek Aracı",
     "botmoto": "Üstün performansı belirlemek ve döngü başına verimi en üst düzeye çıkarmak için yem verimliliğini, barınma koşullarını ve stok yoğunluğunu değerlendirin.",

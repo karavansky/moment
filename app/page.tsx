@@ -1,4 +1,4 @@
-import DienstplanPage from './[lang]/dienstplan/page'
+import HomePage from './[lang]/home/page'
 import { getDictionary } from '@/config/dictionaries'
 import { Providers } from '@/components/Providers'
 import { LayoutClient } from '@/components/LayoutClient'
@@ -207,7 +207,7 @@ export default async function RootPage() {
           <div className="flex h-dvh overflow-hidden">
             <LayoutClient>
               <main className="flex-1 overflow-auto pt-16">
-                <DienstplanPage />
+                <HomePage params={Promise.resolve({ lang: detectedLang })} />
               </main>
             </LayoutClient>
           </div>
