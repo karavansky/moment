@@ -18,7 +18,8 @@ services:
       - ./docker-data/dms/config/:/tmp/docker-mailserver/
       - /etc/localtime:/etc/localtime:ro
       # Измените это монтирование:
-      - ./docker-data/ssl:/etc/letsencrypt:ro # Let's Encrypt директория
+      #- ./docker-data/ssl:/etc/letsencrypt:ro # Let's Encrypt директория
+      - /etc/letsencrypt:/etc/letsencrypt:ro
       # Дополнительно для хранения полученных сертификатов:
     #      - ./docker-data/certbot/www:/var/www/certbot:rw
 
@@ -52,8 +53,6 @@ services:
     environment:
       - HOSTNAME=0.0.0.0
       - SEAWEED_FILER_URL=http://seaweedfs:8888
-      # Принудительно используем IPv4 для Node.js, чтобы избежать ошибок подключения
-      - NODE_OPTIONS=--dns-result-order=ipv4first
     depends_on:
       - postgres
 
@@ -64,7 +63,7 @@ services:
     ports:
       - '2322:2322'
     environment:
-      - REGION=germany # Замените на нужный регион (например, 'russia', 'france' или 'planet')
+      - REGION=europe # Замените на нужный регион (например, 'russia', 'france' или 'planet')
       - UPDATE_STRATEGY=SEQUENTIAL
       - LANGUAGES=en,de,es,fr,id,ja,pt,tr,uk,it,pl,ru
     volumes:
@@ -80,7 +79,8 @@ services:
       - '127.0.0.1:9333:9333'
     volumes:
       - ./docker-data/seaweedfs:/data
-    command: 'server -dir=/data -s3 -filer -ip.bind=0.0.0.0'
+      - ./s3-config.json:/etc/seaweedfs/s3.json:ro
+    command: 'server -dir=/data -s3 -filer -s3.config=/etc/seaweedfs/s3.json'
 
   postgres:
     image: postgres:alpine

@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker exec:*)",
+      "Bash(ls:*)",
+      "Bash(npx tsc:*)",
+      "WebFetch(domain:v3.heroui.com)",
+      "Bash(find:*)",
+      "Bash(ps:*)",
+      "Bash(docker ps:*)",
+      "Bash(npm install:*)",
+      "Bash(node -e:*)",
+      "Bash(grep:*)",
+      "Bash(python3:*)",
+      "Bash(/home/hronop/node/moment/app/api/reports/save/route.ts:*)",
+      "Bash(node /home/hronop/node/moment/.agents/skills/heroui-react/scripts/get_component_docs.mjs:*)"
+    ]
+  }
+}
