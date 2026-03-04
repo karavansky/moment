@@ -492,3 +492,68 @@ grep -A5 "private-seaweed" /etc/nginx/sites-available/default
 # Проверить SeaweedFS напрямую
 curl -s http://127.0.0.1:8888/buckets/  # Должен вернуть JSON-листинг
 ```
+
+---
+
+# Описание API Маршрутов
+
+В этом документе перечислены все эндпоинты, которые теперь обрабатываются Swift Vapor-сервером, а также роуты, оставленные на Next.js.
+
+## Vapor API (Swift)
+
+Все эти роуты проксируются Nginx на `http://127.0.0.1:8080`.
+
+| Маршрут | Метод(ы) | Описание |
+|---------|----------|----------|
+| `/api/health` | GET | Проверка состояния сервиса и подключения к БД |
+| `/api/version` | GET | Возвращает версию бэкенда |
+| `/api/photon` | GET | Прокси к geocoding API Photon/Komoot |
+| `/api/photon/reverse` | GET | Прокси к reverse geocoding API Photon/Komoot |
+| `/api/files/*` | GET, POST, DELETE | Работа с публичными файлами (S3 / SeaweedFS) |
+| `/api/seaweed-proxy/*` | - | Внутренний прокси для SeaweedFS |
+| -------------- | -------- | -------------------------------------------------------------------------- |
+| `/api/scheduling` | GET | Главный роут расписания (возвращает appointments, workers, clients и т.д.) |
+| `/api/scheduling/appointments` | POST | Создание записи |
+| `/api/scheduling/appointments/:id` | PUT, DELETE | Обновление и удаление записи |
+| `/api/scheduling/workers` | GET, POST | Получение и создание сотрудников |
+| `/api/scheduling/workers/:id` | PUT, DELETE | Отредактировать / удалить сотрудника |
+| `/api/scheduling/clients` | GET, POST | Получение и создание клиентов |
+| `/api/scheduling/clients/:id`| PUT, DELETE | Отредактировать / удалить клиента |
+| `/api/scheduling/teams` | GET, POST, PUT, DELETE | CRUD для таблиц Teams |
+| `/api/scheduling/groupes` | GET, POST, PUT, DELETE| CRUD для таблиц Groupes |
+| `/api/scheduling/services`| GET, POST, PUT, DELETE| CRUD для услуг (Services) |
+| `/api/scheduling/reports` | GET, POST | CRUD отчетов со страницы расписания |
+| -------------- | -------- | -------------------------------------------------------------------------- |
+| `/api/reports` | GET, POST | Получение и вставка отчетов |
+| `/api/reports/:id` | PUT, DELETE | Обновление и удаление отчетов |
+| `/api/reports/save` | POST | Сохранение драфта отчета и перенос фото из temp |
+| `/api/reports/photos/:id` | PUT, DELETE | Обновление/удаление фото к отчету |
+| -------------- | -------- | -------------------------------------------------------------------------- |
+| `/api/tickets/my` | GET, POST | Тикеты текущего пользователя |
+| `/api/tickets/:id/messages` | GET, POST | Чат/Сообщения внутри тикета |
+| `/api/settings` | GET, PATCH | Настройки профиля пользователя |
+| `/api/location` | POST | Обновление гео-координат (worker / appointment location) |
+| `/api/invites` | POST, GET | Создание инвайтов (директор) / Проверка инвайтов |
+| `/api/push/subscribe` | POST | Подписка устройства на Push-уведомления (сохранение endpoint) |
+| `/api/push/unsubscribe` | POST | Отписка от Push |
+| `/api/push/vapid-key` | GET | Публичный ключ для Web Push |
+| `/api/staff/sync-device` | POST | Синхронизация статуса устройства (заряд, версия ОС) |
+| -------------- | -------- | -------------------------------------------------------------------------- |
+| `/api/admin/users` | GET, POST | CRUD полных прав на пользователей (Director only) |
+| `/api/admin/users/:id` | PUT, DELETE | Изменение/удаление пользователей |
+| `/api/admin/users/sessions` | GET | Просмотр активных сессий пользователей |
+
+
+## Next.js API (Node.js)
+
+Эти роуты остаются в Next.js (обрабатываются на `http://localhost:3002`).
+
+| Маршрут | Метод(ы) | Причина |
+|---------|----------|---------|
+| `/api/auth/*` | GET, POST | NextAuth.js интеграция: управление сессиями, авторизация (OAuth, JWT, CSRF). |
+| `/api/convert-heic` | POST | Использует Node.js `child_process.exec()` для серверной конвертации изображений. |
+| `/api/staff/verify-push` | POST | Использует библиотеку `web-push` (Node.js) для отправки реальных Push-событий. |
+| `/api/scheduling/events` | GET (SSE) | Server-Sent Events с PostgreSQL `LISTEN/NOTIFY`. |
+| `/api/admin/sse-stats` | GET (SSE) | Метрики памяти `process.memoryUsage()`, uptime процесса Node.js. |
+| `/api/support/tickets` | POST | Создает тикет и отправляет Email-подтверждение через `nodemailer`/SMTP. |
+| `/api/[...path]` | WebSocket | Логика проксирования к отдельному WebSocket серверу на :3003. |
