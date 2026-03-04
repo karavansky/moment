@@ -25,12 +25,15 @@ struct PushController: RouteCollection {
         let user = try req.auth.require(AuthenticatedUser.self)
         
         struct Keys: Content { var p256dh: String; var auth: String }
-        struct Body: Content { var endpoint: String; var keys: Keys }
+        struct SubscriptionData: Content { var endpoint: String; var keys: Keys }
+        struct Body: Content { var subscription: SubscriptionData }
         let body = try req.content.decode(Body.self)
+
+        let subData = body.subscription
 
         // Check for existing subscription for this endpoint
         if let existing = try await PushSubscription.query(on: req.db)
-            .filter(\.$endpoint == body.endpoint)
+            .filter(\.$endpoint == subData.endpoint)
             .first() {
             
             // Update user if different
@@ -43,9 +46,9 @@ struct PushController: RouteCollection {
             let sub = PushSubscription()
             sub.id = generateId()
             sub.userID = user.userId
-            sub.endpoint = body.endpoint
-            sub.p256dh = body.keys.p256dh
-            sub.auth = body.keys.auth
+            sub.endpoint = subData.endpoint
+            sub.p256dh = subData.keys.p256dh
+            sub.auth = subData.keys.auth
             try await sub.save(on: req.db)
         }
 
