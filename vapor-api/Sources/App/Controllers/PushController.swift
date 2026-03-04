@@ -6,8 +6,11 @@ struct PushController: RouteCollection {
     func boot(routes: any RoutesBuilder) throws {
         let push = routes.grouped("push")
         push.get("vapid-key", use: getVapidKey)
-        push.post("subscribe", use: subscribe)
-        push.post("unsubscribe", use: unsubscribe)
+        
+        // Protected routes requiring authentication
+        let protected = push.grouped(JWTAuthMiddleware())
+        protected.post("subscribe", use: subscribe)
+        protected.post("unsubscribe", use: unsubscribe)
     }
 
     // GET /api/push/vapid-key
