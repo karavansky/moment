@@ -1,0 +1,14 @@
+# Swift build artifacts
+.build/
+# IDE
+.swiftpm/
+*.xcodeproj/
+*.xcworkspace/
+# macOS
+.DS_Store
+# Docker
+Dockerfile
+.dockerignore
+# Docs
+README.md
+LICENSE

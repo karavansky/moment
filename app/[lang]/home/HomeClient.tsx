@@ -3,14 +3,7 @@
 import { useTranslation } from '@/components/Providers'
 import { useLanguage } from '@/hooks/useLanguage'
 import { Button, Card } from '@heroui/react'
-import {
-  CheckCircle2,
-  Map,
-  Star,
-  Smartphone,
-  CalendarDays,
-  ArrowRight,
-} from 'lucide-react'
+import { CheckCircle2, Map, Star, Smartphone, CalendarDays, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { FAQ } from './FAQ'
 
@@ -20,49 +13,19 @@ export default function HomeClient() {
 
   return (
     <div className="min-h-screen bg-default-50 font-sans selection:bg-primary/30">
-      {/* Navbar Minimal */}
-      <nav className="sticky top-0 z-50 w-full backdrop-blur-md bg-background/70 border-b border-default-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-primary to-primary-600 flex items-center justify-center shadow-lg shadow-primary/30">
-                <span className="text-white font-bold text-lg">M</span>
-              </div>
-              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-default-800 to-default-500">
-                Moment LBS
-              </span>
-            </div>
-            <div className="flex gap-4">
-              <Link href={`/${lang}/auth/login`} className="hidden sm:flex">
-                <Button variant="ghost" className="font-medium text-primary">
-                  Log in
-                </Button>
-              </Link>
-              <Link href={`/${lang}/auth/login`}>
-                <Button className="font-medium shadow-md shadow-primary/20 bg-primary text-primary-foreground">
-                  Start for Free
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-16 pb-32 lg:pt-32 lg:pb-40">
-        <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3">
-          <div className="w-[600px] h-[600px] rounded-full bg-primary/20 blur-[100px] opacity-60" />
+        <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 max-w-full overflow-hidden">
+          <div className="w-[300px] h-[300px] md:w-[600px] md:h-[600px] rounded-full bg-primary/20 blur-[100px] opacity-60" />
         </div>
-        <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3">
-          <div className="w-[500px] h-[500px] rounded-full bg-blue-400/20 blur-[100px] opacity-60" />
+        <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 max-w-full overflow-hidden">
+          <div className="w-[250px] h-[250px] md:w-[500px] md:h-[500px] rounded-full bg-blue-400/20 blur-[100px] opacity-60" />
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary mb-8 border border-primary/20">
             <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-sm font-medium">
-              {t('landing.hero.badge')}
-            </span>
+            <span className="text-sm font-medium">{t('landing.hero.badge')}</span>
           </div>
 
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-default-900 mb-6 max-w-4xl">
@@ -73,7 +36,7 @@ export default function HomeClient() {
             {t('landing.hero.subtitle')}
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 w-full justify-center sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-4 w-full items-center sm:items-stretch justify-center sm:w-auto">
             <Link href={`/${lang}/auth/login`}>
               <Button
                 size="lg"
@@ -84,7 +47,7 @@ export default function HomeClient() {
             </Link>
             <Button
               size="lg"
-              variant="outline"
+              variant="ghost"
               className="h-14 px-8 font-semibold text-lg border-2 border-default-200"
             >
               {t('landing.hero.ctaHow')}
@@ -97,22 +60,22 @@ export default function HomeClient() {
       <section className="bg-background py-24 border-y border-default-200 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-default-900 mb-4">{t('landing.benefits.title')}</h2>
-            <p className="text-default-600 max-w-2xl mx-auto">
-              {t('landing.benefits.subtitle')}
-            </p>
+            <h2 className="text-3xl font-bold text-default-900 mb-4">
+              {t('landing.benefits.title')}
+            </h2>
+            <p className="text-default-600 max-w-2xl mx-auto">{t('landing.benefits.subtitle')}</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             <Card className="border-none bg-default-50 hover:bg-default-100 transition-colors">
               <Card.Content className="p-8 pb-10">
                 <div className="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-6">
                   <Smartphone className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold text-default-900 mb-3">{t('landing.benefits.pwa.title')}</h3>
-                <p className="text-default-600 leading-relaxed">
-                  {t('landing.benefits.pwa.desc')}
-                </p>
+                <h3 className="text-xl font-bold text-default-900 mb-3">
+                  {t('landing.benefits.pwa.title')}
+                </h3>
+                <p className="text-default-600 leading-relaxed">{t('landing.benefits.pwa.desc')}</p>
               </Card.Content>
             </Card>
 
@@ -121,7 +84,9 @@ export default function HomeClient() {
                 <div className="w-12 h-12 rounded-2xl bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center mb-6">
                   <CalendarDays className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold text-default-900 mb-3">{t('landing.benefits.scheduling.title')}</h3>
+                <h3 className="text-xl font-bold text-default-900 mb-3">
+                  {t('landing.benefits.scheduling.title')}
+                </h3>
                 <p className="text-default-600 leading-relaxed">
                   {t('landing.benefits.scheduling.desc')}
                 </p>
@@ -133,7 +98,9 @@ export default function HomeClient() {
                 <div className="w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-6">
                   <Map className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold text-default-900 mb-3">{t('landing.benefits.tracking.title')}</h3>
+                <h3 className="text-xl font-bold text-default-900 mb-3">
+                  {t('landing.benefits.tracking.title')}
+                </h3>
                 <p className="text-default-600 leading-relaxed">
                   {t('landing.benefits.tracking.desc')}
                 </p>
@@ -157,10 +124,10 @@ export default function HomeClient() {
                     <CheckCircle2 className="w-6 h-6 shrink-0 text-primary" />
                   </div>
                   <div>
-                    <h4 className="text-lg font-bold text-default-900">{t('landing.features.qr.title')}</h4>
-                    <p className="text-default-600">
-                      {t('landing.features.qr.desc')}
-                    </p>
+                    <h4 className="text-lg font-bold text-default-900">
+                      {t('landing.features.qr.title')}
+                    </h4>
+                    <p className="text-default-600">{t('landing.features.qr.desc')}</p>
                   </div>
                 </li>
                 <li className="flex gap-4">
@@ -168,7 +135,9 @@ export default function HomeClient() {
                     <CheckCircle2 className="w-6 h-6 shrink-0 text-primary" />
                   </div>
                   <div>
-                    <h4 className="text-lg font-bold text-default-900">{t('landing.features.routes.title')}</h4>
+                    <h4 className="text-lg font-bold text-default-900">
+                      {t('landing.features.routes.title')}
+                    </h4>
                     <p className="text-default-600 leading-relaxed">
                       {t('landing.features.routes.desc')}
                     </p>
@@ -179,18 +148,18 @@ export default function HomeClient() {
                     <CheckCircle2 className="w-6 h-6 shrink-0 text-primary" />
                   </div>
                   <div>
-                    <h4 className="text-lg font-bold text-default-900">{t('landing.features.reports.title')}</h4>
-                    <p className="text-default-600">
-                      {t('landing.features.reports.desc')}
-                    </p>
+                    <h4 className="text-lg font-bold text-default-900">
+                      {t('landing.features.reports.title')}
+                    </h4>
+                    <p className="text-default-600">{t('landing.features.reports.desc')}</p>
                   </div>
                 </li>
               </ul>
             </div>
             {/* Visual Placeholder */}
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary-100 to-blue-100 rounded-[2.5rem] transform rotate-3 scale-105" />
-              <div className="relative bg-content1 rounded-3xl shadow-2xl border border-default-200 p-8 flex flex-col items-center justify-center min-h-[400px]">
+            <div className="relative mt-8 lg:mt-0">
+              <div className="absolute inset-0 bg-gradient-to-tr from-primary-100 to-blue-100 rounded-[2.5rem] transform md:rotate-3 scale-[1.02] md:scale-105" />
+              <div className="relative bg-content1 rounded-3xl shadow-2xl border border-default-200 p-6 md:p-8 flex flex-col items-center justify-center min-h-[280px] md:min-h-[400px]">
                 <div className="w-full h-12 bg-default-100 rounded-xl mb-4" />
                 <div className="w-full flex gap-4 h-32 mb-4">
                   <div className="flex-1 bg-primary/10 rounded-xl" />
@@ -222,19 +191,26 @@ export default function HomeClient() {
               <Card.Content className="p-8">
                 <h3 className="text-2xl font-bold mb-2">{t('landing.pricing.free.name')}</h3>
                 <div className="flex items-baseline gap-2 mb-6">
-                  <span className="text-5xl font-extrabold text-primary">{t('landing.pricing.free.price')}</span>
-                  <span className="text-default-500 font-medium">{t('landing.pricing.free.unit')}</span>
+                  <span className="text-5xl font-extrabold text-primary">
+                    {t('landing.pricing.free.price')}
+                  </span>
+                  <span className="text-default-500 font-medium">
+                    {t('landing.pricing.free.unit')}
+                  </span>
                 </div>
                 <div className="w-full h-px bg-default-200 my-6" />
                 <ul className="space-y-4 mb-8 text-default-600">
                   <li className="flex items-center gap-3">
-                    <CheckCircle2 className="w-5 h-5 shrink-0 text-primary" /> {t('landing.pricing.free.feat1')}
+                    <CheckCircle2 className="w-5 h-5 shrink-0 text-primary" />{' '}
+                    {t('landing.pricing.free.feat1')}
                   </li>
                   <li className="flex items-center gap-3">
-                    <CheckCircle2 className="w-5 h-5 shrink-0 text-primary" /> {t('landing.pricing.free.feat2')}
+                    <CheckCircle2 className="w-5 h-5 shrink-0 text-primary" />{' '}
+                    {t('landing.pricing.free.feat2')}
                   </li>
                   <li className="flex items-center gap-3">
-                    <CheckCircle2 className="w-5 h-5 shrink-0 text-primary" /> {t('landing.pricing.free.feat3')}
+                    <CheckCircle2 className="w-5 h-5 shrink-0 text-primary" />{' '}
+                    {t('landing.pricing.free.feat3')}
                   </li>
                 </ul>
                 <Button
@@ -253,21 +229,30 @@ export default function HomeClient() {
                 <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-bl-lg">
                   POPULAR
                 </div>
-                <h3 className="text-2xl font-bold mb-2 text-white">{t('landing.pricing.pro.name')}</h3>
+                <h3 className="text-2xl font-bold mb-2 text-white">
+                  {t('landing.pricing.pro.name')}
+                </h3>
                 <div className="flex items-baseline gap-2 mb-6">
-                  <span className="text-5xl font-extrabold text-white">{t('landing.pricing.pro.price')}</span>
-                  <span className="text-blue-200 font-medium whitespace-nowrap">{t('landing.pricing.pro.unit')}</span>
+                  <span className="text-5xl font-extrabold text-white">
+                    {t('landing.pricing.pro.price')}
+                  </span>
+                  <span className="text-blue-200 font-medium whitespace-nowrap">
+                    {t('landing.pricing.pro.unit')}
+                  </span>
                 </div>
                 <div className="w-full h-px bg-white/20 my-6" />
                 <ul className="space-y-4 mb-8 text-blue-50">
                   <li className="flex items-center gap-3">
-                    <CheckCircle2 className="w-5 h-5 shrink-0 text-yellow-300" /> {t('landing.pricing.pro.feat1')}
+                    <CheckCircle2 className="w-5 h-5 shrink-0 text-yellow-300" />{' '}
+                    {t('landing.pricing.pro.feat1')}
                   </li>
                   <li className="flex items-center gap-3">
-                    <CheckCircle2 className="w-5 h-5 shrink-0 text-yellow-300" /> {t('landing.pricing.pro.feat2')}
+                    <CheckCircle2 className="w-5 h-5 shrink-0 text-yellow-300" />{' '}
+                    {t('landing.pricing.pro.feat2')}
                   </li>
                   <li className="flex items-center gap-3">
-                    <CheckCircle2 className="w-5 h-5 shrink-0 text-yellow-300" /> {t('landing.pricing.pro.feat3')}
+                    <CheckCircle2 className="w-5 h-5 shrink-0 text-yellow-300" />{' '}
+                    {t('landing.pricing.pro.feat3')}
                   </li>
                 </ul>
                 <Button
@@ -283,12 +268,12 @@ export default function HomeClient() {
       </section>
 
       {/* FAQ */}
-      <section className="relative overflow-hidden pt-8 pb-8 lg:pt-8 lg:pb-8 pr-4 pl-4">
-        <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3">
-          <div className="w-[600px] h-[600px] rounded-full bg-primary/20 blur-[100px] opacity-60" />
+      <section className="relative overflow-hidden py-12 lg:py-20 px-4 sm:px-6 lg:px-8">
+        <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 max-w-full overflow-hidden">
+          <div className="w-[300px] h-[300px] md:w-[600px] md:h-[600px] rounded-full bg-primary/20 blur-[100px] opacity-60" />
         </div>
-        <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3">
-          <div className="w-[500px] h-[500px] rounded-full bg-blue-400/20 blur-[100px] opacity-60" />
+        <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 max-w-full overflow-hidden">
+          <div className="w-[250px] h-[250px] md:w-[500px] md:h-[500px] rounded-full bg-blue-400/20 blur-[100px] opacity-60" />
         </div>
 
         <Card className="bg-gradient-to-br from-primary-600 to-blue-700 text-white border-none text-left relative overflow-hidden shadow-xl shadow-primary/20 w-full max-w-4xl mx-auto dark">

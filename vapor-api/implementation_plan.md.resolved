@@ -1,0 +1,265 @@
+# Миграция API-слоя с Next.js на Swift Vapor
+
+## Контекст
+
+Текущий API на Next.js выдаёт ~55 RPS / 900мс. Цель — вынести критические маршруты (`/api/files`, `/api/scheduling`, `/api/reports` и т.д.) на Swift Vapor (порт 8080), оставив SSR/фронтенд на Next.js (порт 3002). Переключение между бэкендами через env-переменную `API_BACKEND`.
+
+### Текущая архитектура (по результатам исследования)
+
+| Компонент | Детали |
+|-----------|--------|
+| **Next.js** | Порт 3002, 18 API route groups в `app/api/` |
+| **Auth** | NextAuth v5 с JWT-стратегией, DB-сессии в таблице `sessions` (`sessionID`, `userID`, `expiresAt`, `ip`, `userAgent`) |
+| **Users** | `users.userID` (varchar 21), `email` (unique), `isAdmin`, `firmaID` → `organisations` |
+| **Files** | `X-Accel-Redirect` → `/private-seaweed/` → SeaweedFS (`127.0.0.1:8888`) |
+| **Nginx** | `moment-lbs.app` (443 SSL), WS на `ws.moment-lbs.app:3003` |
+| **Docker** | `docker-compose.yml` — moment, postgres, seaweedfs, photon, pgadmin, mailserver, blog |
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Стратегия авторизации**: NextAuth использует JWT (подписанный `AUTH_SECRET`). Vapor должен **верифицировать те же JWT-токены** с тем же секретом. Это позволит клиенту использовать один и тот же `Authorization: Bearer <jwt>` для обоих бэкендов без повторной аутентификации.
+
+> [!WARNING]
+> **Постепенная миграция**: План предполагает начать с 2 критических контроллеров (Files + SeaweedProxy). Остальные 16 route groups (`scheduling`, `reports`, `staff` и т.д.) мигрируются позже. Переключатель `API_BACKEND=swift|nextjs` позволяет откатиться в любой момент.
+
+> [!CAUTION]
+> **Shared DB**: Vapor подключается к **той же** PostgreSQL базе. Fluent модели должны точно соответствовать существующей схеме (camelCase column names — `userID`, `firmaID`, `isAdmin`). **Миграции Fluent НЕ запускаются** — схема управляется из Next.js.
+
+---
+
+## Proposed Changes
+
+### Vapor Project Setup
+
+#### [NEW] [vapor-api/](file:///home/hronop/node/moment/vapor-api/)
+Новая директория в корне проекта для Vapor-приложения.
+
+#### [NEW] [Package.swift](file:///home/hronop/node/moment/vapor-api/Package.swift)
+```swift
+// swift-tools-version:6.0
+dependencies:
+  - vapor ~> 4.99
+  - fluent ~> 4.0
+  - fluent-postgres-driver ~> 2.0
+  - jwt ~> 4.0
+```
+
+---
+
+### Fluent Models (без миграций — readonly mapping к существующей схеме)
+
+#### [NEW] [User.swift](file:///home/hronop/node/moment/vapor-api/Sources/App/Models/User.swift)
+Маппинг таблицы `users`:
+- `@ID(custom: "userID")` — varchar(21)
+- `@Field(key: "email")`, `@Field(key: "isAdmin")`, `@Field(key: "firmaID")`
+- Без `@Timestamp` автоматических (вручную `date` как `Date`)
+
+#### [NEW] [DBSession.swift](file:///home/hronop/node/moment/vapor-api/Sources/App/Models/DBSession.swift)
+Маппинг таблицы `sessions`:
+- `@ID(custom: "sessionID")` — varchar(21)
+- `@Parent(key: "userID")` → User
+- `@Field(key: "expiresAt")`, `@Field(key: "ip")`, `@Field(key: "userAgent")`
+
+---
+
+### Auth Middleware
+
+#### [NEW] [JWTAuthMiddleware.swift](file:///home/hronop/node/moment/vapor-api/Sources/App/Middleware/JWTAuthMiddleware.swift)
+1. Извлекает JWT из `Authorization: Bearer <token>` или cookie `authjs.session-token`
+2. Верифицирует подпись с `AUTH_SECRET` (HMAC SHA-256 — стандарт NextAuth)
+3. Извлекает `userId`, `isAdmin`, `sessionId` из payload
+4. Проверяет сессию в DB (`sessions` таблица, `expiresAt > NOW()`)
+5. Добавляет `AuthenticatedUser` в `req.auth`
+
+#### [NEW] [AdminMiddleware.swift](file:///home/hronop/node/moment/vapor-api/Sources/App/Middleware/AdminMiddleware.swift)
+Проверяет `req.auth.require(AuthenticatedUser.self).isAdmin == true`, иначе 403.
+
+---
+
+### Controllers
+
+#### [NEW] [FileController.swift](file:///home/hronop/node/moment/vapor-api/Sources/App/Controllers/FileController.swift)
+Порт логики [files/[...path]/route.ts](file:///home/hronop/node/moment/app/api/files/%5B...path%5D/route.ts):
+- `GET /api/files/**` — авторизация + `X-Accel-Redirect: /private-seaweed/<path>`
+- Публичные пути (содержащие `3Eoxlmzdr4uEJggFueFnB`) — без авторизации
+- Заголовки: `X-Real-IP`, `X-Forwarded-For` учитываются из Nginx
+
+#### [NEW] [SeaweedProxyController.swift](file:///home/hronop/node/moment/vapor-api/Sources/App/Controllers/SeaweedProxyController.swift)
+Порт логики [seaweed-proxy/route.ts](file:///home/hronop/node/moment/app/api/seaweed-proxy/%5B%5B...path%5D%5D/route.ts):
+- `GET/POST/DELETE /api/seaweed-proxy/**` — admin-only
+- Проксирование в SeaweedFS (`SEAWEED_FILER_URL`)
+- HTML-rewriting ссылок (для веб-интерфейса SeaweedFS)
+
+#### [NEW] [HealthController.swift](file:///home/hronop/node/moment/vapor-api/Sources/App/Controllers/HealthController.swift)
+- `GET /api/health` — простой healthcheck для Docker
+
+---
+
+### Application Entry Point
+
+#### [NEW] [entrypoint.swift](file:///home/hronop/node/moment/vapor-api/Sources/App/entrypoint.swift)
+- Конфигурация Fluent PostgreSQL (из `DATABASE_URL` env)
+- Регистрация middleware (CORS, trusted proxy headers)
+- Привязка к `0.0.0.0:8080`
+
+#### [NEW] [configure.swift](file:///home/hronop/node/moment/vapor-api/Sources/App/configure.swift)
+- `app.databases.use(.postgres(url: env.DATABASE_URL))`
+- `app.middleware.use(CORSMiddleware(...))`
+- Регистрация контроллеров на `/api/**`
+
+#### [NEW] [routes.swift](file:///home/hronop/node/moment/vapor-api/Sources/App/routes.swift)
+Регистрация маршрутов:
+```swift
+let api = app.grouped("api")
+let protected = api.grouped(JWTAuthMiddleware())
+let admin = protected.grouped(AdminMiddleware())
+
+protected.grouped("files").get("**", use: FileController.download)
+admin.grouped("seaweed-proxy").get("**", use: SeaweedProxyController.proxy)
+api.get("health", use: HealthController.check)
+```
+
+---
+
+### Docker Integration
+
+#### [NEW] [Dockerfile.vapor](file:///home/hronop/node/moment/vapor-api/Dockerfile)
+Multi-stage build:
+```dockerfile
+# Stage 1: Build (Swift 6.0 official image)
+FROM swift:6.0-noble AS build
+WORKDIR /app
+COPY Package.swift Package.resolved ./
+RUN swift package resolve
+COPY Sources/ Sources/
+RUN swift build -c release --static-swift-stdlib
+
+# Stage 2: Runtime (Ubuntu 24.04 slim — ~25MB base)
+FROM ubuntu:24.04-minimal
+RUN apt-get update && apt-get install -y libcurl4 && rm -rf /var/lib/apt/lists/*
+COPY --from=build /app/.build/release/App /usr/local/bin/vapor-api
+EXPOSE 8080
+CMD ["vapor-api", "serve", "--env", "production", "--hostname", "0.0.0.0", "--port", "8080"]
+```
+
+#### [MODIFY] [docker-compose.yml](file:///home/hronop/node/moment/docker-compose.yml)
+Добавить сервис `vapor-api`:
+```yaml
+  vapor-api:
+    image: vapor-api:latest
+    container_name: vapor-api
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:8080:8080'
+    environment:
+      - DATABASE_URL=postgres://hronop:Sk02081978@postgres:5432/hronop
+      - AUTH_SECRET=${AUTH_SECRET}
+      - SEAWEED_FILER_URL=http://seaweedfs:8888
+    depends_on:
+      - postgres
+      - seaweedfs
+```
+
+---
+
+### Nginx Config Update
+
+#### [MODIFY] [/etc/nginx/sites-available/default](file:///etc/nginx/sites-available/default)
+В серверный блок `moment-lbs.app` (строка 449-544) добавить **перед** `location /`:
+
+```nginx
+    # ===== Swift Vapor API =====
+    # Только если API_BACKEND=swift (управляется через map)
+    location ^~ /api/ {
+        limit_req zone=api burst=50 nodelay;
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;
+        proxy_connect_timeout 10s;
+        proxy_send_timeout 120s;
+    }
+
+    # X-Accel-Redirect для Vapor (тот же location, что и для Next.js)
+    # /private-seaweed/ уже настроен — Swift тоже будет использовать его
+```
+
+> [!NOTE]
+> Существующий `location ^~ /private-seaweed/` (строка 537) уже настроен с `internal;` — он автоматически будет работать и для ответов от Vapor с `X-Accel-Redirect`.
+
+---
+
+### Env Variable
+
+#### [MODIFY] .env
+```
+# API backend: "swift" | "nextjs"
+API_BACKEND=nextjs
+```
+
+Переключение выполняется через Nginx `map` или простую замену upstream в `location ^~ /api/`:
+- `API_BACKEND=nextjs` → `/api/*` → `http://localhost:3002` (Next.js)
+- `API_BACKEND=swift` → `/api/*` → `http://127.0.0.1:8080` (Vapor)
+
+Реализация через Nginx `map` + include файлом:
+```nginx
+# В http {} блоке nginx.conf:
+map $API_BACKEND $api_upstream {
+    default http://localhost:3002;
+    swift   http://127.0.0.1:8080;
+}
+```
+Или проще: ручное переключение при деплое (изменить `proxy_pass` и `nginx -s reload`).
+
+---
+
+## Verification Plan
+
+### Automated Tests
+
+1. **Docker build verification**:
+   ```bash
+   cd /home/hronop/node/moment/vapor-api
+   docker build -t vapor-api:latest .
+   docker run --rm -d -p 8080:8080 \
+     -e DATABASE_URL=postgres://hronop:Sk02081978@host.docker.internal:5432/hronop \
+     -e AUTH_SECRET=test-secret \
+     -e SEAWEED_FILER_URL=http://host.docker.internal:8888 \
+     --name vapor-test vapor-api:latest
+   # Wait 5 seconds, then:
+   curl http://localhost:8080/api/health
+   # Expected: {"status":"ok"}
+   docker stop vapor-test
+   ```
+
+2. **Auth middleware test** (after adding to docker-compose):
+   ```bash
+   # Without token → 401
+   curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/files/test
+   # Expected: 401
+
+   # With invalid token → 401
+   curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer invalid" http://localhost:8080/api/files/test
+   # Expected: 401
+   ```
+
+3. **Nginx routing test**:
+   ```bash
+   # API → Vapor
+   curl -sI https://moment-lbs.app/api/health
+   # Expected: 200, server response from Vapor
+
+   # SSR → Next.js
+   curl -sI https://moment-lbs.app/en/home
+   # Expected: 200, Next.js response headers
+   ```
+
+### Manual Verification
+- После деплоя попросим пользователя проверить:
+  1. Залогиниться на https://moment-lbs.app и открыть страницу с файлами — файлы должны загружаться через Vapor API
+  2. Переключить `API_BACKEND=nextjs` в `.env`, перезагрузить nginx — файлы должны загружаться через Next.js (rollback работает)
+  3. Проверить SeaweedFS proxy (admin panel) — доступ только для isAdmin
