@@ -31,3 +31,15 @@ SeaweedFS: Нужно реализовать логику работы с при
 Асинхронность через async/await.
 
 Типизация моделей через Fluent (для Postgres) и Content.
+
+Почему эти 6 роутов остаются на Next.js:
+Route	Причина
+auth/* (6 files)	NextAuth v5 core — управляет OAuth flow (Google, Apple), JWT шифрованием/дешифрованием, CSRF-проверкой, callback URLs. Это фреймворк, а не просто endpoint — он глубоко интегрирован с Next.js middleware и server-side session. Перенос потребовал бы переписать весь auth-стек.
+convert-heic	Использует Node.js child_process.exec() для вызова системных утилит (sips, ImageMagick, ffmpeg, Python pillow-heif). В Docker-контейнере Vapor (Ubuntu minimal) этих утилит нет, а добавлять их увеличит образ в 5-10 раз. Next.js Docker уже содержит всё нужное.
+[...path] proxy	Catch-all прокси к WebSocket-серверу (порт 3003). Поддерживает streaming body (ReadableStream, duplex: 'half') и multipart uploads. Этот роут — просто transparent proxy, не работает с БД. Нет смысла мигрировать.
+scheduling/events (SSE)	Использует PostgreSQL LISTEN/NOTIFY через persistent connection из 
+
+lib/scheduling-events.ts
+. Это stateful long-lived connection с pub/sub — в Vapor нужно реализовать отдельный механизм подписки на PG notifications. Сложно и хрупко — лучше оставить.
+admin/sse-stats	Возвращает process.memoryUsage(), process.uptime(), SSE connection stats из in-memory singleton. Это метрики самого Next.js процесса — Vapor физически не может их знать.
+support/tickets	После создания тикета отправляет email через sendTicketConfirmation() (SMTP). В Vapor нет SMTP-клиента из коробки, а добавлять зависимость ради одного POST — overkill.

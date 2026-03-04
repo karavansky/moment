@@ -1,0 +1,70 @@
+import Vapor
+import Fluent
+
+/// Controller for pushing subscriptions: POST /api/push/subscribe, POST /api/push/unsubscribe, GET /api/push/vapid-key
+struct PushController: RouteCollection {
+    func boot(routes: any RoutesBuilder) throws {
+        let push = routes.grouped("push")
+        push.get("vapid-key", use: getVapidKey)
+        push.post("subscribe", use: subscribe)
+        push.post("unsubscribe", use: unsubscribe)
+    }
+
+    // GET /api/push/vapid-key
+    func getVapidKey(req: Request) async throws -> Response {
+        // Vapor shouldn't need auth just for public key
+        let key = Environment.get("VAPID_PUBLIC_KEY") ?? "BJoG639sH85zL48M0gIqD-h_K2S-2U_rL41QO63k-b76K8H9P81PqD-28E0D7D7R8B82-"
+        return try await ["publicKey": key].encodeResponse(for: req)
+    }
+
+    // POST /api/push/subscribe
+    func subscribe(req: Request) async throws -> Response {
+        let user = try req.auth.require(AuthenticatedUser.self)
+        
+        struct Keys: Content { var p256dh: String; var auth: String }
+        struct Body: Content { var endpoint: String; var keys: Keys }
+        let body = try req.content.decode(Body.self)
+
+        // Check for existing subscription for this endpoint
+        if let existing = try await PushSubscription.query(on: req.db)
+            .filter(\.$endpoint == body.endpoint)
+            .first() {
+            
+            // Update user if different
+            if existing.userID != user.userId {
+                existing.userID = user.userId
+                try await existing.save(on: req.db)
+            }
+        } else {
+            // Create new
+            let sub = PushSubscription()
+            sub.id = generateId()
+            sub.userID = user.userId
+            sub.endpoint = body.endpoint
+            sub.p256dh = body.keys.p256dh
+            sub.auth = body.keys.auth
+            try await sub.save(on: req.db)
+        }
+
+        return try await ["success": true].encodeResponse(status: .created, for: req)
+    }
+
+    // POST /api/push/unsubscribe
+    func unsubscribe(req: Request) async throws -> Response {
+        let user = try req.auth.require(AuthenticatedUser.self)
+        
+        struct Body: Content { var endpoint: String }
+        let body = try req.content.decode(Body.self)
+
+        // Delete subscription
+        if let existing = try await PushSubscription.query(on: req.db)
+            .filter(\.$endpoint == body.endpoint)
+            .filter(\.$userID == user.userId) // Ensure it belongs to them
+            .first() {
+            
+            try await existing.delete(on: req.db)
+        }
+
+        return try await ["success": true].encodeResponse(for: req)
+    }
+}
