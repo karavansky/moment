@@ -44,19 +44,19 @@ interface TeamsWithWorkers {
   workers: Worker[]
 }
 
-interface ServiceOption {
+export interface ServiceOption {
   id: string
   name: string
   fullPath: string
 }
 
-interface ServiceGroupForSelect {
+export interface ServiceGroupForSelect {
   id: string
   label: string
   options: ServiceOption[]
 }
 
-interface ServicesForSelect {
+export interface ServicesForSelect {
   rootServices: ServiceOption[]
   groups: ServiceGroupForSelect[]
 }

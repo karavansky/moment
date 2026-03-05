@@ -118,9 +118,9 @@ export interface Appointment {
   services: Service[]
   date: Date
   isFixedTime: boolean
-  startTime: Date
+  startTime: Date | undefined
   duration: number
-  endTime: Date
+  endTime: Date | undefined
   fahrzeit: number // время в пути (driving time)
   workerId: string
   workerIds?: string[]

@@ -1,6 +1,6 @@
 {
   "name": "moment",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "private": true,
   "scripts": {
     "dev": "PORT=3007 NEXT_TELEMETRY_DISABLED=1 next dev",
@@ -61,6 +61,7 @@
     "react-dom": "^19.2.4",
     "react-hook-form": "^7.71.2",
     "react-leaflet": "^5.0.0",
+    "react-use-measure": "^2.1.7",
     "react-window": "^2.2.7",
     "web-push": "^3.6.7"
   },

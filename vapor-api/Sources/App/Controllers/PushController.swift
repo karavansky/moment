@@ -43,12 +43,12 @@ struct PushController: RouteCollection {
             }
         } else {
             // Create new
-            let sub = PushSubscription()
-            sub.id = generateId()
-            sub.userID = user.userId
-            sub.endpoint = subData.endpoint
-            sub.p256dh = subData.keys.p256dh
-            sub.auth = subData.keys.auth
+            let sub = PushSubscription(
+                userID: user.userId,
+                endpoint: subData.endpoint,
+                p256dh: subData.keys.p256dh,
+                auth: subData.keys.auth
+            )
             try await sub.save(on: req.db)
         }
 

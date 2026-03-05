@@ -328,17 +328,17 @@ export default function AppointmentModal({
 
             <Modal.Body className="gap-4 ">
               {/* Client Selection */}
-                <ClientSelect
-                  groupedClients={groupedClients}
-                  clients={clients}
-                  selectedClientId={formData.clientID}
-                  onSelectionChange={clientId => {
-                    setFormData(prev => ({ ...prev, clientID: clientId }))
-                    setErrors(prev => ({ ...prev, clientID: '' }))
-                  }}
-                  error={errors.clientID}
-                  isNew={isNewAppointment || !appointment}
-                />
+              <ClientSelect
+                groupedClients={groupedClients}
+                clients={clients}
+                selectedClientId={formData.clientID}
+                onSelectionChange={clientId => {
+                  setFormData(prev => ({ ...prev, clientID: clientId }))
+                  setErrors(prev => ({ ...prev, clientID: '' }))
+                }}
+                error={errors.clientID}
+                isNew={isNewAppointment || !appointment}
+              />
               <Separator className="my-2" />
               {/* Services Selection */}
               <ServiceSelect
@@ -368,7 +368,9 @@ export default function AppointmentModal({
                   setFormData(prev => ({
                     ...prev,
                     workers: workerIds
-                      .map(id => prev.workers.find(w => w.id === id) ?? workers.find(w => w.id === id))
+                      .map(
+                        id => prev.workers.find(w => w.id === id) ?? workers.find(w => w.id === id)
+                      )
                       .filter((w): w is Worker => w !== undefined),
                   }))
                   setErrors(prev => ({ ...prev, workers: '' }))

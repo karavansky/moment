@@ -9,6 +9,7 @@ import { generateCalendarWeeks, formatTime } from '@/lib/calendar-utils'
 import CalendarView from './CalendarView'
 import WeeklyView from './WeeklyView'
 import AppointmentModal from './AppointmentModal'
+import AppModal from './AppModal'
 import AppointmentReport from './AppointmentReport'
 import { useLanguage } from '@/hooks/useLanguage'
 import { useTranslation } from '@/components/Providers'
@@ -354,9 +355,12 @@ function DienstplanView() {
       )}
 
       {/* Appointment Modal */}
-      <AppointmentModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
+      <AppModal
+        isOpen={isModalOpen || isReportModalOpen}
+        onClose={isModalOpen ? handleCloseModal : () => {
+          setIsReportModalOpen(false)
+          setSelectedAppointment(null)
+        }}
         appointment={selectedAppointment}
         selectedDate={selectedDate}
         isNewAppointment={isNewAppointment}
@@ -365,9 +369,10 @@ function DienstplanView() {
             ? selectedAppointment.reports && selectedAppointment.reports.length > 0
             : false
         }
+        activeTab={isReportModalOpen ? 'report' : 'view'}
       />
 
-      {/* Appointment Report Modal */}
+      {/* Appointment Report Modal
       <AppointmentReport
         isOpen={isReportModalOpen}
         onClose={() => {
@@ -375,7 +380,7 @@ function DienstplanView() {
           setSelectedAppointment(null)
         }}
         appointment={selectedAppointment}
-      />
+      /> */}
     </div>
   )
 }

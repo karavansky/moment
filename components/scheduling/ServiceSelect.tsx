@@ -17,22 +17,11 @@ import { Plus, X, HandHeart } from 'lucide-react'
 import { usePlatformContext } from '@/contexts/PlatformContext'
 import { useTranslation } from '@/components/Providers'
 
-interface ServiceOption {
-  id: string
-  name: string // Название с duration и price: "Ganzkörperwäsche, 30 Min, 25€"
-  fullPath: string // Полный путь для чипов: "Ganzkörperwäsche - Körperpflege - Grundpflege"
-}
-
-interface ServiceGroupForSelect {
-  id: string
-  label: string
-  options: ServiceOption[]
-}
-
-interface ServicesForSelect {
-  rootServices: ServiceOption[]
-  groups: ServiceGroupForSelect[]
-}
+import type {
+  ServicesForSelect,
+  ServiceGroupForSelect,
+  ServiceOption,
+} from '@/contexts/SchedulingContext'
 
 interface ServiceSelectProps {
   servicesForSelect: ServicesForSelect
@@ -49,7 +38,7 @@ function ServiceSelect({
   error,
   className,
 }: ServiceSelectProps) {
-  const { isMobile, isReady , isIOS} = usePlatformContext()
+  const { isMobile, isReady, isIOS } = usePlatformContext()
   const { t } = useTranslation()
   const selectRef = useRef<HTMLSelectElement>(null)
   const { contains } = useFilter({ sensitivity: 'base' })
@@ -138,7 +127,7 @@ function ServiceSelect({
                 <Button
                   isIconOnly
                   size="sm"
-                  variant='tertiary'
+                  variant="tertiary"
                   onPress={() => handleRemoveService(id)}
                   className="w-5 h-5 p-0.5 rounded-full"
                 >
@@ -249,7 +238,11 @@ function ServiceSelect({
                 <SearchField.ClearButton />
               </SearchField.Group>
             </SearchField>
-            <ListBox renderEmptyState={() => <EmptyState>{t('appointment.edit.service.noResults')}</EmptyState>}>
+            <ListBox
+              renderEmptyState={() => (
+                <EmptyState>{t('appointment.edit.service.noResults')}</EmptyState>
+              )}
+            >
               {/* Корневые услуги */}
               {servicesForSelect.rootServices.length > 0 && (
                 <ListBox.Section>
