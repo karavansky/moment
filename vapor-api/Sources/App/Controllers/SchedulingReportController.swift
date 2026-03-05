@@ -20,7 +20,7 @@ struct SchedulingReportController: RouteCollection {
             SELECT r.*,
                    COALESCE(
                      json_agg(json_build_object(
-                       'photoID', rp."photoID", 'url', rp."url", 'note', rp."note"
+                       'id', rp."photoID", 'url', rp."url", 'note', rp."note"
                      )) FILTER (WHERE rp."photoID" IS NOT NULL), '[]'
                    ) AS photos
             FROM reports r

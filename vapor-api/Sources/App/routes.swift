@@ -18,6 +18,10 @@ func routes(_ app: Application) throws {
     // Protected routes (JWT auth required)
     let protected = api.grouped(JWTAuthMiddleware())
     try protected.register(collection: FileController())
+    try protected.register(collection: UploadController())
+    // Load test endpoint WITH JWT auth overhead
+    protected.get("test", "vapor-auth", use: TestController().vaporAuthTest)
+
 
     // Scheduling routes (all under /api/scheduling/*)
     try protected.register(collection: SchedulingController())        // GET /api/scheduling

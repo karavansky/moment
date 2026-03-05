@@ -8,8 +8,8 @@ final class Organisation: Model, @unchecked Sendable, Content {
     @ID(custom: "firmaID", generatedBy: .user)
     var id: String?
 
-    @Field(key: "organisationName")
-    var organisationName: String
+    @Field(key: "name")
+    var name: String
 
     init() {}
 }

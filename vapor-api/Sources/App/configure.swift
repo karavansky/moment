@@ -8,7 +8,8 @@ func configure(_ app: Application) async throws {
     guard let databaseURL = Environment.get("DATABASE_URL") else {
         fatalError("DATABASE_URL environment variable is required")
     }
-    try app.databases.use(.postgres(url: databaseURL), as: .psql)
+    // 4 connections per event loop × ~4 loops = ~16 DB connections max (PostgreSQL default limit: 100)
+    try app.databases.use(.postgres(url: databaseURL, maxConnectionsPerEventLoop: 4), as: .psql)
 
     // ====== Server Config ======
     app.http.server.configuration.hostname = "0.0.0.0"

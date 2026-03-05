@@ -24,8 +24,11 @@ struct FileController: RouteCollection, Sendable {
             throw Abort(.badRequest, reason: "File path not provided")
         }
 
-        let filePath = pathComponents.joined(separator: "/")
-        req.logger.info("File request: \(filePath)")
+        let requestedPath = pathComponents.joined(separator: "/")
+        req.logger.info("File request: \(requestedPath)")
+
+        // SeaweedFS stores S3 buckets under /buckets/ folder by default, 
+        // so we DO want to pass the "buckets/" prefix if it was provided in the URL.
 
         // 2. Auth check (skip for public demo paths)
         let isPublicPath = pathComponents.contains("3Eoxlmzdr4uEJggFueFnB")
@@ -40,7 +43,8 @@ struct FileController: RouteCollection, Sendable {
         // Nginx intercepts this header and serves the file from SeaweedFS directly
         // See: location ^~ /private-seaweed/ in nginx config
         let response = Response(status: .ok)
-        response.headers.add(name: "X-Accel-Redirect", value: "/private-seaweed/\(filePath)")
+        // Send the un-prefixed path because nginx rewrites ^/private-seaweed/(.*) /$1
+        response.headers.add(name: "X-Accel-Redirect", value: "/private-seaweed/\(requestedPath)")
         response.headers.add(name: "Content-Type", value: "application/octet-stream")
 
         return response

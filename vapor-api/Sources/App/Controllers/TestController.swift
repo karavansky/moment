@@ -2,15 +2,16 @@ import Vapor
 import Fluent
 import FluentPostgresDriver
 
-/// Load testing endpoint: GET /api/test/vapor
-/// Returns all scheduling data WITHOUT auth and WITHOUT firmaID filtering
+/// Load testing endpoints: GET /api/test/vapor (public) and /api/test/vapor-auth (JWT protected)
 struct TestController: RouteCollection {
     func boot(routes: any RoutesBuilder) throws {
         let test = routes.grouped("test")
         test.get("vapor", use: vaporTest)
+        // vapor-auth is registered separately under the protected group in routes.swift
     }
 
-    func vaporTest(req: Request) async throws -> Response {
+    /// Shared method — reusable for both public and protected test endpoints
+    func schedulingDump(req: Request) async throws -> Response {
         let db = req.db as! any SQLDatabase
 
         // Parallel fetch of all data without filters
@@ -293,5 +294,16 @@ struct TestController: RouteCollection {
         )
 
         return try await response.encodeResponse(for: req)
+    }
+
+    /// Public test endpoint (no auth)
+    func vaporTest(req: Request) async throws -> Response {
+        try await schedulingDump(req: req)
+    }
+
+    /// Auth-protected test endpoint — JWT verification overhead is included
+    func vaporAuthTest(req: Request) async throws -> Response {
+        // JWT already verified by JWTAuthMiddleware — just run the same query
+        try await schedulingDump(req: req)
     }
 }

@@ -2,6 +2,26 @@ import Vapor
 import Fluent
 import FluentPostgresDriver
 
+/// Parse ISO8601 dates that may include fractional seconds (JS sends '2024-01-01T12:00:00.000Z')
+/// The default ISO8601DateFormatter does NOT support fractional seconds out of the box.
+private func isoDate(_ s: String) -> Date? {
+    // 1. Full ISO8601 with fractional seconds
+    let withMs = ISO8601DateFormatter()
+    withMs.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    if let d = withMs.date(from: s) { return d }
+
+    // 2. Standard ISO8601
+    let plain = ISO8601DateFormatter()
+    plain.formatOptions = [.withInternetDateTime]
+    if let d = plain.date(from: s) { return d }
+
+    // 3. Simple date string (YYYY-MM-DD) from Next.js date pickers
+    let simple = DateFormatter()
+    simple.dateFormat = "yyyy-MM-dd"
+    simple.timeZone = TimeZone(secondsFromGMT: 0) // Treat as UTC midnight
+    return simple.date(from: s)
+}
+
 /// CRUD controller for appointments: GET/POST/PUT/DELETE /api/scheduling/appointments
 /// Implements role-based access control:
 ///   - Director (status=0/nil): full CRUD
@@ -223,8 +243,8 @@ struct AppointmentController: RouteCollection {
             }
 
             if let v = body.isOpen { appointment.isOpen = v }
-            if let v = body.openedAt { appointment.openedAt = ISO8601DateFormatter().date(from: v) }
-            if let v = body.closedAt { appointment.closedAt = ISO8601DateFormatter().date(from: v) }
+            if let v = body.openedAt { appointment.openedAt = isoDate(v) }
+            if let v = body.closedAt { appointment.closedAt = isoDate(v) }
 
             // Check at least one field was provided
             guard body.isOpen != nil || body.openedAt != nil || body.closedAt != nil else {
@@ -240,23 +260,63 @@ struct AppointmentController: RouteCollection {
         try await req.db.transaction { database in
             let sqlDB = database as! any SQLDatabase
 
-            if let v = body.date { appointment.date = ISO8601DateFormatter().date(from: v) ?? appointment.date }
-            if let v = body.isFixedTime { appointment.isFixedTime = v }
-            if let v = body.startTime { appointment.startTime = ISO8601DateFormatter().date(from: v) ?? appointment.startTime }
-            if let v = body.endTime { appointment.endTime = ISO8601DateFormatter().date(from: v) ?? appointment.endTime }
-            if let v = body.duration { appointment.duration = v }
-            if let v = body.fahrzeit { appointment.fahrzeit = v }
-            if let v = body.clientID { appointment.clientID = v }
-            if let v = body.isOpen { appointment.isOpen = v }
-            if let v = body.openedAt { appointment.openedAt = ISO8601DateFormatter().date(from: v) }
-            if let v = body.closedAt { appointment.closedAt = ISO8601DateFormatter().date(from: v) }
-            if body.latitude != nil { appointment.latitude = body.latitude }
-            if body.longitude != nil { appointment.longitude = body.longitude }
-            if let wids = body.workerIds, let first = wids.first {
-                appointment.workerId = first
+            req.logger.info("--- PUT /appointments DEBUG ---")
+            req.logger.info("Payload id: \(body.id)")
+            req.logger.info("Payload date: \(String(describing: body.date))")
+            req.logger.info("Payload startTime: \(String(describing: body.startTime))")
+
+            // Re-fetch inside transaction to ensure we're updating within the same connection
+            guard let appt = try await Appointment.query(on: database)
+                .filter(\.$id == body.id)
+                .filter(\.$firmaID == firmaID)
+                .first() else {
+                req.logger.error("Appointment not found in transaction: \(body.id)")
+                throw Abort(.notFound, reason: "Appointment not found in transaction")
             }
 
-            try await appointment.save(on: database)
+            req.logger.info("Before Save -> Appt date: \(appt.date), startTime: \(appt.startTime)")
+
+            if let v = body.date {
+                if let parsed = isoDate(v) {
+                    req.logger.info("Parsed date valid: \(parsed)")
+                    appt.date = parsed
+                } else {
+                    req.logger.warning("isoDate failed to parse date string: \(v)")
+                }
+            }
+            if let v = body.isFixedTime { appt.isFixedTime = v }
+            if let v = body.startTime {
+                if let parsed = isoDate(v) {
+                    req.logger.info("Parsed startTime valid: \(parsed)")
+                    appt.startTime = parsed
+                } else {
+                    req.logger.warning("isoDate failed to parse startTime string: \(v)")
+                }
+            }
+            if let v = body.endTime {
+                if let parsed = isoDate(v) {
+                    appt.endTime = parsed
+                } else {
+                    req.logger.warning("isoDate failed to parse endTime string: \(v)")
+                }
+            }
+            if let v = body.duration { appt.duration = v }
+            if let v = body.fahrzeit { appt.fahrzeit = v }
+            if let v = body.clientID { appt.clientID = v }
+            if let v = body.isOpen { appt.isOpen = v }
+            if let v = body.openedAt { appt.openedAt = isoDate(v) }
+            if let v = body.closedAt { appt.closedAt = isoDate(v) }
+            if body.latitude != nil { appt.latitude = body.latitude }
+            if body.longitude != nil { appt.longitude = body.longitude }
+            if let wids = body.workerIds, let first = wids.first {
+                appt.workerId = first
+            }
+
+            req.logger.info("After modifications -> Appt date: \(appt.date), startTime: \(appt.startTime)")
+            req.logger.info("Appt hasChanges: \(appt.hasChanges)")
+
+            try await appt.save(on: database)
+            req.logger.info("Appt saved via Fluent")
 
             // Update appointment_workers if provided
             if let workerIds = body.workerIds {

@@ -10,6 +10,7 @@ struct ReportController: RouteCollection {
         // Let's implement the specific report endpoints /api/reports/... here
         let reports = routes.grouped("reports")
         reports.get(use: index)
+        reports.post(use: create)
         reports.post("save", use: save)
         
         let reportIdGroup = reports.grouped(":reportId")
@@ -77,7 +78,54 @@ struct ReportController: RouteCollection {
 
         return try await ["reports": reportsOut].encodeResponse(for: req)
     }
+    // POST /api/reports — create a new report
+    func create(req: Request) async throws -> Response {
+        let user = try req.auth.require(AuthenticatedUser.self)
+        guard user.status == nil || user.status == 0 || user.status == 1 else { throw Abort(.forbidden) }
+        guard let firmaID = user.firmaID else { throw Abort(.forbidden) }
 
+        struct Body: Content {
+            var reportID: String?; var type: Int?
+            var workerId: String; var appointmentId: String
+            var notes: String?; var openLatitude: Double?; var openLongitude: Double?
+            var openAddress: String?; var openDistanceToAppointment: Int?
+        }
+        let body = try req.content.decode(Body.self)
+
+        let report = Report()
+        report.id = body.reportID ?? generateId()
+        report.firmaID = firmaID
+        report.workerId = body.workerId
+        report.appointmentId = body.appointmentId
+        report.type = body.type ?? 0
+        report.notes = body.notes
+        report.openLatitude = body.openLatitude
+        report.openLongitude = body.openLongitude
+        report.openAddress = body.openAddress
+        report.openDistanceToAppointment = body.openDistanceToAppointment
+        try await report.save(on: req.db)
+
+        struct CreateReportResponse: Content {
+            var reportID: String
+            var firmaID: String
+            var workerId: String
+            var appointmentId: String
+            var type: Int
+            var openAt: Date?
+        }
+        
+        let out = CreateReportResponse(
+            reportID: report.id!,
+            firmaID: report.firmaID,
+            workerId: report.workerId,
+            appointmentId: report.appointmentId,
+            type: report.type,
+            openAt: report.openAt
+        )
+
+        pgNotify(req: req, firmaID: firmaID, type: "report_created")
+        return try await ["report": out].encodeResponse(status: .ok, for: req)
+    }
     // GET /api/reports/:reportId
     func getOne(req: Request) async throws -> Response {
         let user = try req.auth.require(AuthenticatedUser.self)
@@ -183,63 +231,36 @@ struct ReportController: RouteCollection {
         let user = try req.auth.require(AuthenticatedUser.self)
         guard let firmaID = user.firmaID else { throw Abort(.forbidden) }
 
-        struct SaveBody: Content {
-            var reportID: String
+        struct PhotoData: Content {
+            var id: String
             var url: String
             var note: String?
         }
+        struct SaveBody: Content {
+            var reportId: String
+            var photo: PhotoData
+        }
         let body = try req.content.decode(SaveBody.self)
 
-        // Verify report exists
+        // Verify report exists to ensure the caller has permission to save photos to it
         guard let _ = try await Report.query(on: req.db)
-            .filter(\.$id == body.reportID)
+            .filter(\.$id == body.reportId)
             .filter(\.$firmaID == firmaID)
             .first() else {
             throw Abort(.notFound, reason: "Report not found")
         }
-
-        // Logic for interacting with SeaweedFS replaces AWS SDK.
-        // In Next.js, this used:
-        // await s3.send(new CopyObjectCommand({ Bucket: 'files', CopySource: 'temp/uuid.jpg', Key: 'reports/${reportID}/uuid.jpg' }))
-        // await s3.send(new DeleteObjectCommand({ Bucket: 'temp', Key: 'uuid.jpg' }))
         
-        let fileHost = Environment.get("FILE_HOST") ?? "http://localhost:8333"
-        // Ensure URLs don't have leading slashes if we append them
-        let cleanTempUrl = body.url.hasPrefix("/") ? String(body.url.dropFirst()) : body.url
-        
-        // temp/uuid.jpg
-        let sourcePath = cleanTempUrl
-        guard sourcePath.starts(with: "temp/") else {
-            throw Abort(.badRequest, reason: "Photo must be in temp bucket to save")
-        }
-        let fileName = sourcePath.replacingOccurrences(of: "temp/", with: "")
-        let destPath = "files/reports/\(body.reportID)/\(fileName)"
-        
-        // 1. Download from SeaweedFS /temp/
-        let downloadRes = try await req.client.get(URI(string: "\(fileHost)/\(sourcePath)"))
-        guard downloadRes.status == .ok, let fileData = downloadRes.body else {
-            throw Abort(.internalServerError, reason: "Failed to read file from SeaweedFS temp")
-        }
-        
-        // 2. Upload to SeaweedFS /files/reports/...
-        let uploadRes = try await req.client.put(URI(string: "\(fileHost)/\(destPath)")) { fReq in
-            fReq.body = fileData
-        }
-        guard uploadRes.status == .created || uploadRes.status == .ok else {
-            throw Abort(.internalServerError, reason: "Failed to save file to SeaweedFS")
-        }
-        
-        // 3. Delete from SeaweedFS /temp/
-        _ = try? await req.client.delete(URI(string: "\(fileHost)/\(sourcePath)"))
-
-        // 4. Save photo record to DB
+        // 2. Save photo record to DB
         let photo = ReportPhoto()
-        photo.id = generateId()
-        photo.$report.id = body.reportID
-        photo.url = "/\(destPath)"
-        photo.note = body.note
+        photo.id = body.photo.id
+        photo.$report.id = body.reportId
+        photo.url = body.photo.url
+        photo.note = body.photo.note
         try await photo.save(on: req.db)
 
-        return try await photo.encodeResponse(for: req)
+        struct ResponseData: Content {
+            var photo: PhotoData
+        }
+        return try await ResponseData(photo: PhotoData(id: photo.id!, url: photo.url, note: photo.note)).encodeResponse(for: req)
     }
 }

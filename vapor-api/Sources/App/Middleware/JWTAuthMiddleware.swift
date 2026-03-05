@@ -48,13 +48,13 @@ struct JWTAuthMiddleware: AsyncMiddleware, Sendable {
         // 3. Determine salt (cookie name used for HKDF)
         let salt = determineSalt(from: request)
 
-        // 4. Derive encryption key via HKDF
-        let derivedKey = try deriveEncryptionKey(secret: authSecret, salt: salt)
+        // 4. Derive encryption keys via HKDF (try both v4 and v5 info strings)
+        let derivedKeys = try deriveEncryptionKeys(secret: authSecret, salt: salt)
 
         // 5. Decrypt JWE
         let payload: NextAuthPayload
         do {
-            payload = try decryptJWE(token: token, key: derivedKey)
+            payload = try decryptJWE(token: token, keys: derivedKeys)
         } catch {
             request.logger.warning("JWE decryption failed: \(error)")
             throw Abort(.unauthorized, reason: "Invalid authentication token")
@@ -102,27 +102,43 @@ struct JWTAuthMiddleware: AsyncMiddleware, Sendable {
     /// Extracts JWE token, handling NextAuth's chunked cookie format.
     /// NextAuth splits long JWE tokens into: `name.0`, `name.1`, `name.2`, etc.
     private func extractToken(from request: Request) -> String? {
-        // Try secure cookie first, then non-secure
-        let cookieNames = ["__Secure-authjs.session-token", "authjs.session-token"]
+        request.logger.info("--- JWTAuthMiddleware: Extracting Token ---")
+        request.logger.info("All Cookies received: \(request.cookies.all.keys.map { $0 }.joined(separator: ", "))")
+        
+        // Try secure cookie first, then non-secure (support both NextAuth v4 and v5 names)
+        let cookieNames = [
+            "__Secure-next-auth.session-token", "next-auth.session-token",
+            "__Secure-authjs.session-token", "authjs.session-token"
+        ]
 
         for baseName in cookieNames {
             // Try chunked cookies first (name.0, name.1, ...)
             let chunked = assembleChunkedCookie(from: request, baseName: baseName)
             if let token = chunked, !token.isEmpty {
+                request.logger.info("Found token in chunked cookies: \(baseName)")
                 return token
             }
 
             // Try single (non-chunked) cookie
-            if let token = request.cookies[baseName]?.string, token.split(separator: ".", omittingEmptySubsequences: false).count == 5 {
-                return token
+            if let token = request.cookies[baseName]?.string {
+                request.logger.info("Found single cookie for \(baseName). Length: \(token.count)")
+                let parts = token.split(separator: ".", omittingEmptySubsequences: false)
+                request.logger.info("Token has \(parts.count) dot-separated parts.")
+                if parts.count == 5 {
+                    return token
+                } else {
+                    request.logger.warning("Token from \(baseName) ignored: expected 5 parts (JWE), got \(parts.count)")
+                }
             }
         }
 
         // Try Authorization: Bearer <token>
         if let bearer = request.headers.bearerAuthorization {
+            request.logger.info("Found Bearer token in headers")
             return bearer.token
         }
 
+        request.logger.warning("No authentication token found in cookies or headers")
         return nil
     }
 
@@ -140,9 +156,16 @@ struct JWTAuthMiddleware: AsyncMiddleware, Sendable {
         return chunks.joined()
     }
 
-    /// Determines the HKDF salt based on which cookie was used.
     private func determineSalt(from request: Request) -> String {
-        // Check secure cookie (chunked or single)
+        // Check secure cookie (chunked or single) for v4 and v5
+        if request.cookies["__Secure-next-auth.session-token.0"] != nil ||
+           request.cookies["__Secure-next-auth.session-token"] != nil {
+            return "__Secure-next-auth.session-token"
+        }
+        if request.cookies["next-auth.session-token.0"] != nil ||
+           request.cookies["next-auth.session-token"] != nil {
+            return "next-auth.session-token"
+        }
         if request.cookies["__Secure-authjs.session-token.0"] != nil ||
            request.cookies["__Secure-authjs.session-token"] != nil {
             return "__Secure-authjs.session-token"
@@ -152,43 +175,38 @@ struct JWTAuthMiddleware: AsyncMiddleware, Sendable {
 
     // MARK: - HKDF Key Derivation
 
-    /// Derives 64-byte encryption key using HKDF, matching NextAuth's implementation:
-    /// ```js
-    /// hkdf("sha256", keyMaterial, salt, `Auth.js Generated Encryption Key (${salt})`, 64)
-    /// ```
-    private func deriveEncryptionKey(secret: String, salt: String) throws -> Data {
+    /// Derives 64-byte encryption keys using HKDF.
+    /// NextAuth v4 uses: `NextAuth.js Generated Encryption Key`
+    /// Auth.js v5 uses: `Auth.js Generated Encryption Key (${salt})`
+    private func deriveEncryptionKeys(secret: String, salt: String) throws -> [Data] {
         let ikm = Crypto.SymmetricKey(data: Data(secret.utf8))
         let saltData = Data(salt.utf8)
-        let info = Data("Auth.js Generated Encryption Key (\(salt))".utf8)
+        
+        let infoV5 = Data("Auth.js Generated Encryption Key (\(salt))".utf8)
+        let infoV4 = Data("NextAuth.js Generated Encryption Key".utf8)
 
-        let derived = Crypto.HKDF<Crypto.SHA256>.deriveKey(
-            inputKeyMaterial: ikm,
-            salt: saltData,
-            info: info,
-            outputByteCount: 64
+        let derivedV5 = Crypto.HKDF<Crypto.SHA256>.deriveKey(
+            inputKeyMaterial: ikm, salt: saltData, info: infoV5, outputByteCount: 64
+        )
+        let derivedV4 = Crypto.HKDF<Crypto.SHA256>.deriveKey(
+            inputKeyMaterial: ikm, salt: saltData, info: infoV4, outputByteCount: 64
         )
 
-        return derived.withUnsafeBytes { Data(Array($0)) }
+        return [
+            derivedV5.withUnsafeBytes { Data(Array($0)) },
+            derivedV4.withUnsafeBytes { Data(Array($0)) }
+        ]
     }
 
     // MARK: - JWE Decryption (A256CBC-HS512 with dir)
 
-    /// Decrypts a JWE Compact Serialization token.
-    ///
-    /// JWE format: BASE64URL(header).BASE64URL(encryptedKey).BASE64URL(iv).BASE64URL(ciphertext).BASE64URL(tag)
-    /// For `dir`: encryptedKey is empty, the HKDF-derived key IS the CEK.
-    ///
-    /// A256CBC-HS512 uses:
-    /// - First 32 bytes of CEK → HMAC-SHA-512 key (for authentication tag)
-    /// - Last 32 bytes of CEK → AES-256-CBC key (for decryption)
-    private func decryptJWE(token: String, key: Data) throws -> NextAuthPayload {
+    private func decryptJWE(token: String, keys: [Data]) throws -> NextAuthPayload {
         let parts = token.split(separator: ".", omittingEmptySubsequences: false)
         guard parts.count == 5 else {
             throw JWEError.invalidFormat("Expected 5 parts, got \(parts.count)")
         }
 
         let headerB64 = String(parts[0])
-        // parts[1] = encrypted key (empty for `dir`)
         let ivB64 = String(parts[2])
         let ciphertextB64 = String(parts[3])
         let tagB64 = String(parts[4])
@@ -213,18 +231,8 @@ struct JWTAuthMiddleware: AsyncMiddleware, Sendable {
             }
         }
 
-        // A256CBC-HS512 key split:
-        // CEK (64 bytes) = MAC key (first 32 bytes) || ENC key (last 32 bytes)
-        guard key.count == 64 else {
-            throw JWEError.invalidKey("CEK must be 64 bytes, got \(key.count)")
-        }
-        let macKey = key.prefix(32)    // HMAC-SHA-512 key
-        let encKey = key.suffix(32)    // AES-256-CBC key
-
-        // Verify authentication tag (HMAC-SHA-512)
         // AAD = ASCII(BASE64URL(header))
         let aad = Data(headerB64.utf8)
-        // AL = 64-bit big-endian of AAD length in bits
         let aadLengthBits = UInt64(aad.count * 8)
         var al = Data(count: 8)
         al[0] = UInt8((aadLengthBits >> 56) & 0xFF)
@@ -243,30 +251,44 @@ struct JWTAuthMiddleware: AsyncMiddleware, Sendable {
         hmacInput.append(ciphertext)
         hmacInput.append(al)
 
-        let hmacKey = Crypto.SymmetricKey(data: macKey)
-        let computedMAC = Crypto.HMAC<Crypto.SHA512>.authenticationCode(for: hmacInput, using: hmacKey)
-        let computedTag = Data(Array(Data(computedMAC.map { $0 }))).prefix(32) // Truncate to first 32 bytes
+        var lastError: Error?
 
-        // Constant-time comparison
-        guard computedTag.count == tag.count else {
-            throw JWEError.authenticationFailed("Tag length mismatch")
-        }
-        var diff: UInt8 = 0
-        for i in 0..<computedTag.count {
-            diff |= computedTag[i] ^ tag[i]
-        }
-        guard diff == 0 else {
-            throw JWEError.authenticationFailed("Authentication tag verification failed")
+        for key in keys {
+            // A256CBC-HS512 key split:
+            guard key.count == 64 else { continue }
+            let macKey = key.prefix(32)    // HMAC-SHA-512 key
+            let encKey = key.suffix(32)    // AES-256-CBC key
+
+            let hmacKeyForCrypto = Crypto.SymmetricKey(data: macKey)
+            let computedMAC = Crypto.HMAC<Crypto.SHA512>.authenticationCode(for: hmacInput, using: hmacKeyForCrypto)
+            let computedTag = Data(Array(Data(computedMAC.map { $0 }))).prefix(32)
+
+            // Constant-time comparison
+            guard computedTag.count == tag.count else { continue }
+            var diff: UInt8 = 0
+            for i in 0..<computedTag.count { diff |= computedTag[i] ^ tag[i] }
+            
+            if diff == 0 {
+                // Success! Decrypt AES-256-CBC
+                do {
+                    let aes = try AES(key: Array(encKey), blockMode: CBC(iv: Array(iv)), padding: .pkcs7)
+                    let decrypted = try aes.decrypt(Array(ciphertext))
+                    let decoder = JSONDecoder()
+                    return try decoder.decode(NextAuthPayload.self, from: Data(decrypted))
+                } catch let decodingError as DecodingError {
+                    print("[JWTAuthMiddleware] JSON Decoding Failed: \(decodingError)")
+                    lastError = decodingError
+                } catch {
+                    print("[JWTAuthMiddleware] AES Decryption Failed: \(error)")
+                    lastError = error
+                }
+            }
         }
 
-        // Decrypt AES-256-CBC
-        let aes = try AES(key: Array(encKey), blockMode: CBC(iv: Array(iv)), padding: .pkcs7)
-        let decrypted = try aes.decrypt(Array(ciphertext))
-
-        // Parse JSON payload
-        let decoder = JSONDecoder()
-        return try decoder.decode(NextAuthPayload.self, from: Data(decrypted))
+        if let error = lastError { throw error }
+        throw JWEError.authenticationFailed("Authentication tag verification failed for all derived keys")
     }
+
 
     // MARK: - Base64URL
 

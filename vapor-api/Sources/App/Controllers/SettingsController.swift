@@ -15,7 +15,9 @@ struct SettingsController: RouteCollection {
         let user = try req.auth.require(AuthenticatedUser.self)
         guard let firmaID = user.firmaID else { throw Abort(.forbidden) }
 
-        // Admin/director specific settings
+        // Admin/director settings
+        // organisations table: firmaID, name, createdAt  (no organisationName/logoUrl/accentColor)
+        // users table: no surname
         if user.status == nil || user.status == 0 {
             let row = try await (req.db as! any SQLDatabase).raw("""
                 SELECT
@@ -23,17 +25,10 @@ struct SettingsController: RouteCollection {
                   u."geolocationEnabled",
                   u."name",
                   u."email",
-                  u."surname",
-                  o."organisationName",
-                  o."logoUrl",
-                  o."accentColor",
-                  o."firmaID",
-                  f."currency",
-                  f."timezone",
-                  f."language"
+                  o."name" AS "organisationName",
+                  o."firmaID"
                 FROM users u
                 LEFT JOIN organisations o ON u."firmaID" = o."firmaID"
-                LEFT JOIN firmensettings f ON u."firmaID" = f."firmaId"
                 WHERE u."userID" = \(bind: user.userId)
                 """).first()
 
@@ -43,43 +38,28 @@ struct SettingsController: RouteCollection {
                     var geolocationEnabled: Bool?
                     var name: String?
                     var email: String?
-                    var surname: String?
                     var organisationName: String?
-                    var logoUrl: String?
-                    var accentColor: String?
                     var firmaID: String?
-                    var currency: String?
-                    var timezone: String?
-                    var language: String?
                 }
                 let resp = SettingsOut(
                     pushNotificationsEnabled: try? row.decode(column: "pushNotificationsEnabled", as: Bool?.self),
                     geolocationEnabled: try? row.decode(column: "geolocationEnabled", as: Bool?.self),
                     name: try? row.decode(column: "name", as: String?.self),
                     email: try? row.decode(column: "email", as: String?.self),
-                    surname: try? row.decode(column: "surname", as: String?.self),
                     organisationName: try? row.decode(column: "organisationName", as: String?.self),
-                    logoUrl: try? row.decode(column: "logoUrl", as: String?.self),
-                    accentColor: try? row.decode(column: "accentColor", as: String?.self),
-                    firmaID: try? row.decode(column: "firmaID", as: String?.self),
-                    currency: try? row.decode(column: "currency", as: String?.self),
-                    timezone: try? row.decode(column: "timezone", as: String?.self),
-                    language: try? row.decode(column: "language", as: String?.self)
+                    firmaID: try? row.decode(column: "firmaID", as: String?.self)
                 )
                 return try await resp.encodeResponse(for: req)
             }
         } else if user.status == 1 {
-            // Worker settings
+            // Worker settings — no surname on users, no extra cols on organisations
             let row = try await (req.db as! any SQLDatabase).raw("""
                 SELECT
                     u."pushNotificationsEnabled",
                     u."geolocationEnabled",
                     u."name",
                     u."email",
-                    u."surname",
-                    o."organisationName",
-                    o."logoUrl",
-                    o."accentColor",
+                    o."name" AS "organisationName",
                     o."firmaID",
                     w."name" AS "workerName",
                     w."surname" AS "workerSurname",
@@ -96,10 +76,7 @@ struct SettingsController: RouteCollection {
                     var geolocationEnabled: Bool?
                     var name: String?
                     var email: String?
-                    var surname: String?
                     var organisationName: String?
-                    var logoUrl: String?
-                    var accentColor: String?
                     var firmaID: String?
                     var workerName: String?
                     var workerSurname: String?
@@ -110,10 +87,7 @@ struct SettingsController: RouteCollection {
                     geolocationEnabled: try? row.decode(column: "geolocationEnabled", as: Bool?.self),
                     name: try? row.decode(column: "name", as: String?.self),
                     email: try? row.decode(column: "email", as: String?.self),
-                    surname: try? row.decode(column: "surname", as: String?.self),
                     organisationName: try? row.decode(column: "organisationName", as: String?.self),
-                    logoUrl: try? row.decode(column: "logoUrl", as: String?.self),
-                    accentColor: try? row.decode(column: "accentColor", as: String?.self),
                     firmaID: try? row.decode(column: "firmaID", as: String?.self),
                     workerName: try? row.decode(column: "workerName", as: String?.self),
                     workerSurname: try? row.decode(column: "workerSurname", as: String?.self),
