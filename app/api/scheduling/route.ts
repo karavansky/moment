@@ -161,8 +161,7 @@ export async function GET() {
       order: s.order,
     }))
 
-    const appointments = filteredAppointmentsRaw.map(mapAppointmentToFrontend)
-
+    // Map reports to frontend format
     const reports = reportsRaw.map(r => ({
       id: r.reportID,
       firmaID: r.firmaID,
@@ -187,6 +186,14 @@ export async function GET() {
         note: p.note || '',
       })),
     }))
+
+    // Map appointments and attach reports to each appointment
+    const appointments = filteredAppointmentsRaw.map(aptRaw => {
+      const apt = mapAppointmentToFrontend(aptRaw)
+      // Attach reports for this appointment
+      apt.reports = reports.filter(r => r.appointmentId === apt.id)
+      return apt
+    })
 
     const user = {
       id: userId,

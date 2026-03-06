@@ -3,6 +3,7 @@ import { getSchedulingSession, getAnySchedulingSession } from '../auth-check'
 import { createAppointment, updateAppointment, deleteAppointment, getAppointmentsByFirmaID } from '@/lib/appointments'
 import { getWorkerByUserID } from '@/lib/workers'
 import { getClientByUserID } from '@/lib/clients'
+import { getReportsByFirmaID } from '@/lib/reports'
 import { mapAppointmentToFrontend } from '../_helpers'
 
 /**
@@ -21,7 +22,10 @@ export async function GET() {
     const userId = session.user.id
     const userStatus = session.user.status
 
-    const appointmentsRaw = await getAppointmentsByFirmaID(firmaID)
+    const [appointmentsRaw, reportsRaw] = await Promise.all([
+      getAppointmentsByFirmaID(firmaID),
+      getReportsByFirmaID(firmaID),
+    ])
 
     // Role-based filtering: worker видит только свои, client — свои
     let filtered = appointmentsRaw
@@ -37,7 +41,39 @@ export async function GET() {
         : []
     }
 
-    const appointments = filtered.map(mapAppointmentToFrontend)
+    // Map reports to frontend format
+    const reports = reportsRaw.map(r => ({
+      id: r.reportID,
+      firmaID: r.firmaID,
+      type: r.type,
+      workerId: r.workerId,
+      appointmentId: r.appointmentId,
+      notes: r.notes,
+      date: r.date,
+      openAt: r.openAt,
+      closeAt: r.closeAt,
+      openLatitude: r.openLatitude,
+      openLongitude: r.openLongitude,
+      openAddress: r.openAddress,
+      openDistanceToAppointment: r.openDistanceToAppointment,
+      closeLatitude: r.closeLatitude,
+      closeLongitude: r.closeLongitude,
+      closeAddress: r.closeAddress,
+      closeDistanceToAppointment: r.closeDistanceToAppointment,
+      photos: (r.photos || []).map((p: any) => ({
+        id: p.photoID,
+        url: p.url,
+        note: p.note || '',
+      })),
+    }))
+
+    // Map appointments and attach reports to each appointment
+    const appointments = filtered.map(aptRaw => {
+      const apt = mapAppointmentToFrontend(aptRaw)
+      // Attach reports for this appointment
+      apt.reports = reports.filter(r => r.appointmentId === apt.id)
+      return apt
+    })
 
     return NextResponse.json({ appointments })
   } catch (error) {

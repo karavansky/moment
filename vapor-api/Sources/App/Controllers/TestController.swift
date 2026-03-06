@@ -272,6 +272,27 @@ struct TestController: RouteCollection {
             ))
         }
 
+        // Attach reports to each appointment - manually encode to avoid AnyCodable Content conformance issues
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+
+        var appointmentsJSON: [[String: Any]] = []
+        for apt in appointmentsDTO {
+            let aptReports = reportsDTO.filter { $0.appointmentId == apt.id }
+
+            // Encode appointment
+            let aptData = try encoder.encode(apt)
+            var aptDict = try JSONSerialization.jsonObject(with: aptData) as! [String: Any]
+
+            // Encode reports
+            let reportsData = try encoder.encode(aptReports)
+            let reportsArray = try JSONSerialization.jsonObject(with: reportsData) as! [[String: Any]]
+
+            // Merge
+            aptDict["reports"] = reportsArray
+            appointmentsJSON.append(aptDict)
+        }
+
         // Combine everything
         struct SchedulingResponse: Content {
             var workers: [WorkerOutDTO]
@@ -279,21 +300,25 @@ struct TestController: RouteCollection {
             var teams: [[String: String]]
             var groupes: [[String: String]]
             var services: [ServiceOutDTO]
-            var appointments: [AppointmentDTO]
             var reports: [ReportOutDTO]
         }
 
-        let response = SchedulingResponse(
+        let partialResponse = SchedulingResponse(
             workers: workersDTO,
             clients: clientsDTO,
             teams: teamsDTO,
             groupes: groupesDTO,
             services: servicesDTO,
-            appointments: appointmentsDTO,
             reports: reportsDTO
         )
 
-        return try await response.encodeResponse(for: req)
+        // Encode the partial response and merge with appointments
+        let partialData = try encoder.encode(partialResponse)
+        var responseDict = try JSONSerialization.jsonObject(with: partialData) as! [String: Any]
+        responseDict["appointments"] = appointmentsJSON
+
+        let finalData = try JSONSerialization.data(withJSONObject: responseDict)
+        return Response(status: .ok, headers: ["Content-Type": "application/json"], body: .init(data: finalData))
     }
 
     /// Public test endpoint (no auth)

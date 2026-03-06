@@ -1,3 +1,5 @@
+import type { Report } from '@/types/scheduling'
+
 /**
  * Normalize a Date or date string to YYYY-MM-DD format.
  * PostgreSQL DATE columns come as Date objects at UTC midnight via pg driver,
@@ -15,10 +17,37 @@ function toDateOnly(value: Date | string | null | undefined): string | null {
 }
 
 /**
+ * Raw DB appointment row type (from PostgreSQL query)
+ */
+interface AppointmentDBRow {
+  appointmentID: string
+  firmaID: string
+  userID: string
+  clientID: string
+  workerId: string
+  workerIds?: string[]
+  date: Date | string | null
+  isFixedTime?: boolean
+  startTime?: Date | string
+  endTime?: Date | string
+  duration: number
+  fahrzeit?: number
+  isOpen?: boolean
+  openedAt?: Date | string
+  closedAt?: Date | string
+  latitude?: number
+  longitude?: number
+  services?: any[]
+  workers_data?: any[]
+  client?: any
+}
+
+/**
  * Maps raw DB appointment row to frontend Appointment format.
  * Shared between GET /api/scheduling and GET /api/scheduling/appointments.
+ * Note: reports field should be added separately by the caller.
  */
-export function mapAppointmentToFrontend(a: any) {
+export function mapAppointmentToFrontend(a: AppointmentDBRow) {
   return {
     id: a.appointmentID,
     firmaID: a.firmaID,
@@ -73,5 +102,6 @@ export function mapAppointmentToFrontend(a: any) {
           longitude: a.client.longitude || 0,
         }
       : undefined,
+    reports: [] as Report[], // Default empty array, caller should populate
   }
 }

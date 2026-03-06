@@ -47,12 +47,27 @@ function AppModal({
     getAppointmentWithOverrides,
     clearAppointmentOverride,
   } = useScheduling()
-  const [viewTab, setViewTab] = useState<'view' | 'report' | 'edit' | 'new' | 'notes'>(activeTab)
+  const [viewTab, setViewTab] = useState<'view' | 'report' | 'edit' | 'new' | 'notes'>(() => {
+    // Try to restore viewTab from sessionStorage on initial render
+    if (typeof window !== 'undefined') {
+      const savedTab = sessionStorage.getItem('dienstplan_activeTab') as 'view' | 'report' | 'edit' | 'new' | 'notes' | null
+      return savedTab || activeTab
+    }
+    return activeTab
+  })
   const [ref, { height }] = useMeasure()
   const appViewRef = useRef<HTMLButtonElement>(null)
   const appReportRef = useRef<HTMLButtonElement>(null)
   const appNotesRef = useRef<HTMLButtonElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 })
+
+  // Save viewTab to sessionStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && isOpen && appointment?.id) {
+      console.log('[AppModal] Saving viewTab to sessionStorage:', viewTab)
+      sessionStorage.setItem('dienstplan_activeTab', viewTab)
+    }
+  }, [viewTab, isOpen, appointment?.id])
   const emptyForm: Appointment = {
     clientID: '',
     worker: [] as Worker[],
@@ -74,26 +89,76 @@ function AppModal({
 
   const [formData, setFormData] = useState<Appointment>(emptyForm)
   const formDataRef = useRef<Appointment>(emptyForm)
+  const initializedAppointmentIdRef = useRef<string>('')
 
-  // Save formData to appointmentOverrides on every change (but avoid re-renders)
+  // Save only appointment ID to appointmentOverrides (we'll restore from fresh appointment data)
   useEffect(() => {
     // Only save if formData actually changed (not just re-rendered)
     if (formData.id && appointment?.id === formData.id && formData !== formDataRef.current) {
       formDataRef.current = formData
-      setAppointmentOverride(formData.id, formData)
+      // Save only ID - we'll get fresh data from context on restore
+      setAppointmentOverride(formData.id, { id: formData.id })
+      console.log('[AppModal] Saved appointment ID to overrides:', formData.id)
     }
   }, [formData, appointment?.id, setAppointmentOverride])
 
   useEffect(() => {
-    if (isOpen && appointment) {
-      // Try to restore from appointmentOverrides first
-      const withOverrides = getAppointmentWithOverrides(appointment.id)
-      const shouldRestore = withOverrides && withOverrides.id === appointment.id
+    console.log('[AppModal] Initialization effect:', {
+      isOpen,
+      appointmentId: appointment?.id,
+      activeTab,
+    })
 
-      if (shouldRestore && withOverrides) {
-        console.log('[AppModal] Restoring formData from appointmentOverrides:', withOverrides.id)
-        setFormData(withOverrides)
+    if (isOpen && appointment) {
+      // Check if this appointment was being edited (has ID in overrides)
+      const withOverrides = getAppointmentWithOverrides(appointment.id)
+      const wasBeingEdited = withOverrides && withOverrides.id === appointment.id
+
+      console.log('[AppModal] Restore check:', {
+        appointmentId: appointment.id,
+        hasOverrides: !!withOverrides,
+        wasBeingEdited,
+        formDataId: formData.id,
+        formDataHasReports: formData.reports && formData.reports.length > 0,
+      })
+
+      // If formData already has correct ID and reports, skip reinit (already initialized)
+      if (formData.id === appointment.id && formData.reports && formData.reports.length > 0) {
+        console.log('[AppModal] FormData already initialized with reports for this appointment, skipping')
+        return
+      }
+
+      if (wasBeingEdited) {
+        // Restore from FRESH appointment data (to get latest reports), not from saved overrides
+        console.log('[AppModal] Was being edited, initializing from FRESH appointment:', appointment.id, 'appointment.reports:', appointment.reports?.length)
+        initializedAppointmentIdRef.current = appointment.id
+        const common = {
+          workers: appointment.worker || [],
+          services: appointment.services || [],
+          reports: appointment.reports || [],
+          firmaID: appointment.firmaID || '',
+        }
+        setFormData({
+          ...emptyForm,
+          ...common,
+          clientID: appointment.clientID,
+          date: new Date(appointment.date),
+          startHour:
+            appointment.isFixedTime && appointment.startTime
+              ? new Date(appointment.startTime).getHours()
+              : 0,
+          startMinute:
+            appointment.isFixedTime && appointment.startTime
+              ? new Date(appointment.startTime).getMinutes()
+              : 0,
+          duration: appointment.duration,
+          fahrzeit: appointment.fahrzeit,
+          isFixedTime: appointment.isFixedTime,
+          id: appointment.id,
+        } as unknown as Appointment)
       } else {
+        console.log('[AppModal] No overrides found, initializing fresh formData')
+        initializedAppointmentIdRef.current = appointment.id
         const common = {
           workers: appointment.worker || [],
           services: appointment.services || [],
@@ -132,13 +197,38 @@ function AppModal({
         }
       }
     } else if (!isOpen) {
-      // Clear appointmentOverrides when explicitly closing
-      if (formData.id) {
-        clearAppointmentOverride(formData.id)
+      // Don't clear formData if there's a saved appointmentID (we're in the middle of restore)
+      if (typeof window !== 'undefined') {
+        const hasOverridesInStorage = sessionStorage.getItem('appointmentOverrides')
+        if (hasOverridesInStorage) {
+          console.log('[AppModal] Modal closed but has overrides in storage, keeping formData for restore')
+          return
+        }
       }
+      // Don't clear appointmentOverrides here - it will be cleared on explicit close via handleClose
+      // This allows data to persist when tab is switched and SSE reconnects
+      console.log('[AppModal] Modal closed, clearing formData (formData.id was:', formData.id, ')')
+      initializedAppointmentIdRef.current = ''
       setFormData(emptyForm)
+    } else if (isOpen && !appointment) {
+      // Modal is open but appointment not yet loaded - keep existing formData
+      console.log('[AppModal] Modal open but no appointment yet, keeping formData')
     }
-  }, [isOpen, appointment, selectedDate, activeTab, getAppointmentWithOverrides, clearAppointmentOverride])
+  }, [isOpen, appointment?.id, selectedDate, activeTab])
+
+  // Separate effect to update formData when appointment data changes (SSE updates)
+  useEffect(() => {
+    if (isOpen && appointment && formData.id === appointment.id) {
+      // Update formData with latest reports from appointment
+      console.log('[AppModal] Updating formData with latest appointment data, reports:', appointment.reports?.length)
+      setFormData(prev => ({
+        ...prev,
+        reports: appointment.reports || [],
+        services: appointment.services || [],
+        worker: appointment.worker || [],
+      }))
+    }
+  }, [appointment?.reports, appointment?.services, isOpen, formData.id])
 
   useEffect(() => {
     const updateIndicator = () => {
@@ -194,6 +284,12 @@ function AppModal({
   }, [startTransition])
 
   const handleClose = useCallback(() => {
+    // Clear appointmentOverrides on explicit close
+    if (formData.id) {
+      clearAppointmentOverride(formData.id)
+      console.log('[AppModal] Cleared appointmentOverrides on explicit close:', formData.id)
+    }
+
     setFormData(emptyForm)
     setErrors({})
     onClose()
@@ -201,15 +297,12 @@ function AppModal({
     setTimeout(() => {
       setViewTab('view')
     }, 300)
-  }, [onClose, emptyForm])
+  }, [onClose, emptyForm, formData.id, clearAppointmentOverride])
 
   return (
     <Modal>
       <Modal.Backdrop
         isOpen={isOpen}
-        onOpenChange={open => {
-          if (!open) handleClose()
-        }}
         variant="blur"
       >
         <Modal.Container placement="center">

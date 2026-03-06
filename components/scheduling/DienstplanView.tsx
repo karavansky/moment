@@ -209,14 +209,18 @@ function DienstplanView() {
 
   // Close modal handler
   const handleCloseModal = useCallback(() => {
+    console.log('[DienstplanView] handleCloseModal called')
+    console.trace('[DienstplanView] handleCloseModal stack trace')
     setIsModalOpen(false)
     setSelectedAppointment(null)
     setIsNewAppointment(false)
-    // Clear saved appointment ID and modal type
+    // Clear saved appointment ID, modal type, active tab, and appointmentOverrides
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('dienstplan_selectedAppointmentId')
       sessionStorage.removeItem('dienstplan_isModalOpen')
       sessionStorage.removeItem('dienstplan_modalType')
+      sessionStorage.removeItem('dienstplan_activeTab')
+      sessionStorage.removeItem('appointmentOverrides')
     }
     // Reset restore flag to allow saving again on next modal open
     hasRestoredRef.current = false
@@ -234,9 +238,11 @@ function DienstplanView() {
     if (typeof window !== 'undefined' && !hasRestoredRef.current) {
       if ((isModalOpen || isReportModalOpen) && selectedAppointment?.id) {
         const modalType = isReportModalOpen ? 'report' : 'regular'
-        console.log('[DienstplanView] Saving to sessionStorage:', selectedAppointment.id, 'modalType:', modalType)
+        const activeTab = isReportModalOpen ? 'report' : 'view'
+        console.log('[DienstplanView] Saving to sessionStorage:', selectedAppointment.id, 'modalType:', modalType, 'activeTab:', activeTab)
         sessionStorage.setItem('dienstplan_selectedAppointmentId', selectedAppointment.id)
         sessionStorage.setItem('dienstplan_modalType', modalType)
+        sessionStorage.setItem('dienstplan_activeTab', activeTab)
         sessionStorage.setItem('dienstplan_isModalOpen', 'true')
       }
     }
@@ -244,14 +250,20 @@ function DienstplanView() {
 
   // Restore selectedAppointment after data loads
   useEffect(() => {
-    console.log('[DienstplanView] Restore check:', {
+    const savedId = typeof window !== 'undefined' ? sessionStorage.getItem('dienstplan_selectedAppointmentId') : null
+    const wasModalOpen = typeof window !== 'undefined' ? sessionStorage.getItem('dienstplan_isModalOpen') : null
+    const modalType = typeof window !== 'undefined' ? sessionStorage.getItem('dienstplan_modalType') : null
+
+    console.log('[DienstplanView] Restore effect triggered:', {
       isLoading,
       appointmentsLength: appointments.length,
       selectedAppointmentId: selectedAppointment?.id,
-      savedId: typeof window !== 'undefined' ? sessionStorage.getItem('dienstplan_selectedAppointmentId') : null,
-      wasModalOpen: typeof window !== 'undefined' ? sessionStorage.getItem('dienstplan_isModalOpen') : null,
-      modalType: typeof window !== 'undefined' ? sessionStorage.getItem('dienstplan_modalType') : null,
+      savedId,
+      wasModalOpen,
+      modalType,
       hasRestored: hasRestoredRef.current,
+      isModalOpen,
+      isReportModalOpen,
     })
 
     if (!isLoading && appointments.length > 0 && typeof window !== 'undefined' && !hasRestoredRef.current) {
@@ -277,7 +289,7 @@ function DienstplanView() {
           if (appointment) {
             console.log('[DienstplanView] Restoring selectedAppointment:', savedId, 'as modalType:', modalType)
 
-            // Mark that we're restoring to prevent save loop
+            // Mark that we're restoring to prevent save loop temporarily
             hasRestoredRef.current = true
 
             setSelectedAppointment(appointment)
@@ -289,15 +301,22 @@ function DienstplanView() {
             }
 
             // Clear sessionStorage after successful restore to prevent reopening on next reload
+            // Note: dienstplan_activeTab is NOT cleared here because AppModal needs to read it on mount
             sessionStorage.removeItem('dienstplan_selectedAppointmentId')
             sessionStorage.removeItem('dienstplan_isModalOpen')
             sessionStorage.removeItem('dienstplan_modalType')
-            console.log('[DienstplanView] Cleared sessionStorage after restore')
+            console.log('[DienstplanView] Cleared sessionStorage after restore (keeping activeTab for AppModal)')
+
+            // Reset hasRestoredRef after a short delay to allow saving again
+            setTimeout(() => {
+              hasRestoredRef.current = false
+              console.log('[DienstplanView] Reset hasRestoredRef - saving enabled again')
+            }, 500)
           }
         }
       }
     }
-  }, [isLoading, appointments, selectedAppointment, setSelectedAppointment])
+  }, [isLoading, appointments, setSelectedAppointment])
 
   // Логируем только mount/unmount, без зависимостей от данных
   useEffect(() => {
@@ -444,6 +463,8 @@ function DienstplanView() {
       <AppModal
         isOpen={isModalOpen || isReportModalOpen}
         onClose={isModalOpen ? handleCloseModal : () => {
+          console.log('[DienstplanView] Report modal onClose called')
+          console.trace('[DienstplanView] Report modal onClose stack trace')
           setIsReportModalOpen(false)
           setSelectedAppointment(null)
         }}

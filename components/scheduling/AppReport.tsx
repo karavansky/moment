@@ -74,8 +74,13 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
   } = useScheduling()
 
   const appointment = React.useMemo(() => {
-    if (!formData) return null
-    return appointments.find(a => a.id === formData.id) || formData
+    if (!formData) {
+      console.log('[AppReport] No formData')
+      return null
+    }
+    const found = appointments.find(a => a.id === formData.id)
+    console.log('[AppReport] formData.id:', formData.id, 'found in appointments:', !!found, 'formData.reports:', formData.reports?.length, 'found.reports:', found?.reports?.length)
+    return found || formData
   }, [appointments, formData])
   const isOpen = true
   const [reportSessions, setReportSessions] = useState<Report[]>([])
@@ -775,7 +780,7 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
           ) : null
         })()}
       </div>
-      {user?.status === 1 && isSameDate(appointment.date, new Date()) ? (
+      {isSameDate(appointment.date, new Date()) ? (
         <div className="flex items-center gap-2 w-full">
           <Button
             size="sm"
@@ -881,7 +886,7 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <FileText className="w-5 h-5 text-primary" />
-          <h3 className="text-lg font-semibold">{t('appointment.report.report')}</h3>
+          <h3 className="text-lg font-semibold">{t('appointment.report.report')} {reportSessions.length}</h3>
         </div>
 
         {/* Report Sessions List — only work sessions (type=0), not proxy photo containers */}
@@ -905,27 +910,11 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
                       {session.openAt &&
                         (() => {
                           const d = new Date(session.openAt)
-                          console.log(
-                            `[AppReport] session ${session.id} openAt:`,
-                            session.openAt,
-                            'parsed:',
-                            d,
-                            'isValid:',
-                            !isNaN(d.getTime())
-                          )
                           return !isNaN(d.getTime()) ? formatTime(d) : '—'
                         })()}
                       {session.closeAt &&
                         (() => {
                           const d = new Date(session.closeAt)
-                          console.log(
-                            `[AppReport] session ${session.id} closeAt:`,
-                            session.closeAt,
-                            'parsed:',
-                            d,
-                            'isValid:',
-                            !isNaN(d.getTime())
-                          )
                           return !isNaN(d.getTime()) ? ` → ${formatTime(d)}` : ''
                         })()}
                     </p>

@@ -31,7 +31,39 @@ import { useSchedulingEvents, SchedulingEvent } from '@/hooks/useSchedulingEvent
 
 // Мост между двумя Providers-экземплярами (/ и /[lang]/)
 // Живёт на уровне JS-модуля: переживает SPA-навигацию, сбрасывается при F5
+// ВАЖНО: В dev mode при HMR модуль может перезагружаться, поэтому дублируем в sessionStorage
 const appointmentOverrides: Record<string, Partial<Appointment>> = {}
+
+// Helper functions to sync with sessionStorage
+const STORAGE_KEY = 'appointmentOverrides'
+
+function loadOverridesFromStorage() {
+  if (typeof window === 'undefined') return
+  try {
+    const stored = sessionStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      Object.assign(appointmentOverrides, parsed)
+      console.log('[SchedulingContext] Loaded appointmentOverrides from sessionStorage:', Object.keys(appointmentOverrides))
+    }
+  } catch (e) {
+    console.error('[SchedulingContext] Failed to load appointmentOverrides from sessionStorage:', e)
+  }
+}
+
+function saveOverridesToStorage() {
+  if (typeof window === 'undefined') return
+  try {
+    const json = JSON.stringify(appointmentOverrides)
+    sessionStorage.setItem(STORAGE_KEY, json)
+    console.log('[SchedulingContext] Saved appointmentOverrides to sessionStorage:', Object.keys(appointmentOverrides), 'bytes:', json.length)
+  } catch (e) {
+    console.error('[SchedulingContext] Failed to save appointmentOverrides to sessionStorage:', e)
+  }
+}
+
+// Load on module initialization
+loadOverridesFromStorage()
 
 // Типы для группированных данных
 interface GroupedClients {
@@ -213,22 +245,31 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         })
       }
 
-      setState({
-        user: mockData.user,
-        teams: mockData.teams,
-        groups: mockData.groups,
-        workers: mockData.workers,
-        clients: mockData.clients,
-        appointments,
-        reports: mockData.reports,
-        services: mockData.services,
-        firmaID: mockData.firmaID,
-        isLoading: false,
-        isLiveMode: false,
-        selectedWorker: null,
-        selectedClient: null,
-        selectedDate: new Date(),
-        selectedAppointment: null,
+      setState(prev => {
+        // Preserve selectedAppointment by finding the updated version in new appointments
+        const updatedSelectedAppointment = prev.selectedAppointment
+          ? appointments.find((apt: Appointment) => apt.id === prev.selectedAppointment?.id) || prev.selectedAppointment
+          : null
+
+        return {
+          ...prev,
+          user: mockData.user,
+          teams: mockData.teams,
+          groups: mockData.groups,
+          workers: mockData.workers,
+          clients: mockData.clients,
+          appointments,
+          reports: mockData.reports,
+          services: mockData.services,
+          firmaID: mockData.firmaID,
+          isLoading: false,
+          isLiveMode: false,
+          selectedAppointment: updatedSelectedAppointment,
+          // Don't reset selectedWorker/Client/Date - preserve current state
+          // selectedWorker: null,
+          // selectedClient: null,
+          // selectedDate: new Date(),
+        }
       })
 
       console.log('Mock data loaded successfully:', {
@@ -259,29 +300,46 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         closedAt: apt.closedAt ? new Date(apt.closedAt as string) : apt.closedAt,
       }))
 
-      setState({
-        user: data.user,
-        teams: data.teams,
-        groups: data.groupes,
-        workers: data.workers,
-        clients: data.clients,
-        appointments,
-        reports: data.reports,
-        services: data.services,
-        firmaID: data.firmaID,
-        isLoading: false,
-        isLiveMode: true,
-        selectedWorker: null,
-        selectedClient: null,
-        selectedDate: new Date(),
-        selectedAppointment: null,
+      setState(prev => {
+        // Preserve selectedAppointment by finding the updated version in new appointments
+        const updatedSelectedAppointment = prev.selectedAppointment
+          ? appointments.find((apt: Appointment) => apt.id === prev.selectedAppointment?.id) || prev.selectedAppointment
+          : null
+
+        console.log('[SchedulingContext] loadLiveData setState:', {
+          hadSelectedAppointment: !!prev.selectedAppointment,
+          prevSelectedAppointmentId: prev.selectedAppointment?.id,
+          foundUpdatedAppointment: !!updatedSelectedAppointment,
+          updatedAppointmentId: updatedSelectedAppointment?.id,
+          updatedAppointmentReportsCount: updatedSelectedAppointment?.reports?.length,
+        })
+
+        return {
+          ...prev,
+          user: data.user,
+          teams: data.teams,
+          groups: data.groupes,
+          workers: data.workers,
+          clients: data.clients,
+          appointments,
+          reports: data.reports,
+          services: data.services,
+          firmaID: data.firmaID,
+          isLoading: false,
+          isLiveMode: true,
+          selectedAppointment: updatedSelectedAppointment,
+          // Don't reset selectedWorker/Client/Date - preserve current state
+          // selectedWorker: null,
+          // selectedClient: null,
+          // selectedDate: new Date(),
+        }
       })
 
-      console.log('✅ Live data loaded, isLiveMode set to TRUE:', {
+      console.log('[SchedulingContext] loadLiveData completed:', {
         workers: data.workers.length,
         clients: data.clients.length,
         appointments: data.appointments.length,
-        openAppointments: appointments.filter((a: any) => a.isOpen).map((a: any) => ({ id: a.id, isOpen: a.isOpen })),
+        openAppointments: appointments.filter((a: Appointment) => a.isOpen).map((a: Appointment) => ({ id: a.id, isOpen: a.isOpen })),
       })
     } catch (error) {
       console.error('Error loading live data:', error)
@@ -1172,19 +1230,33 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
           ...appointmentOverrides[appointmentId],
           ...override,
         }
+        console.log('[SchedulingContext] setAppointmentOverride:', appointmentId, 'keys:', Object.keys(appointmentOverrides))
+        // Save to sessionStorage to survive HMR/module reloads
+        saveOverridesToStorage()
         // Don't trigger re-render here to avoid infinite loops
         // The overrides will be applied when appointments are read
       },
 
       getAppointmentWithOverrides: (appointmentId: string) => {
         const appointment = state.appointments.find(apt => apt.id === appointmentId)
-        if (!appointment) return undefined
+        if (!appointment) {
+          console.log('[SchedulingContext] getAppointmentWithOverrides: appointment not found:', appointmentId)
+          return undefined
+        }
         const overrides = appointmentOverrides[appointmentId]
+        console.log('[SchedulingContext] getAppointmentWithOverrides:', appointmentId, 'hasOverrides:', !!overrides, 'allKeys:', Object.keys(appointmentOverrides))
         return overrides ? { ...appointment, ...overrides } : appointment
       },
 
       clearAppointmentOverride: (appointmentId: string) => {
+        const before = Object.keys(appointmentOverrides).length
+        console.log('[SchedulingContext] clearAppointmentOverride CALLED:', appointmentId, 'keysBefore:', Object.keys(appointmentOverrides))
+        console.trace('[SchedulingContext] clearAppointmentOverride stack trace')
         delete appointmentOverrides[appointmentId]
+        const after = Object.keys(appointmentOverrides).length
+        console.log('[SchedulingContext] clearAppointmentOverride DONE:', appointmentId, 'before:', before, 'after:', after, 'keysAfter:', Object.keys(appointmentOverrides))
+        // Save to sessionStorage
+        saveOverridesToStorage()
         // Optionally trigger re-render
         setState(prev => ({ ...prev }))
       },

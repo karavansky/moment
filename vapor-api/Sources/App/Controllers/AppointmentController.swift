@@ -128,7 +128,88 @@ struct AppointmentController: RouteCollection {
             }
         }
 
-        return try await ["appointments": appointments].encodeResponse(for: req)
+        // Fetch reports with photos
+        let reportsRows = try await db.raw("""
+            SELECT r.*,
+                   COALESCE(
+                     json_agg(json_build_object(
+                       'id', rp."photoID", 'url', rp."url", 'note', rp."note"
+                     )) FILTER (WHERE rp."photoID" IS NOT NULL), '[]'
+                   ) AS photos
+            FROM reports r
+            LEFT JOIN report_photos rp ON r."reportID" = rp."reportID"
+            WHERE r."firmaID" = \(bind: firmaID)
+            GROUP BY r."reportID"
+            """).all()
+
+        // Map reports
+        struct ReportOutDTO: Content {
+            var id: String; var firmaID: String; var type: Int
+            var workerId: String; var appointmentId: String; var notes: String?
+            var date: Date?; var openAt: Date?; var closeAt: Date?
+            var openLatitude: Double?; var openLongitude: Double?; var openAddress: String?
+            var openDistanceToAppointment: Int?
+            var closeLatitude: Double?; var closeLongitude: Double?; var closeAddress: String?
+            var closeDistanceToAppointment: Int?
+            var photos: AnyCodable?
+        }
+
+        var reportsDTO: [ReportOutDTO] = []
+        for row in reportsRows {
+            reportsDTO.append(ReportOutDTO(
+                id: try row.decode(column: "reportID", as: String.self),
+                firmaID: try row.decode(column: "firmaID", as: String.self),
+                type: (try? row.decode(column: "type", as: Int.self)) ?? 0,
+                workerId: try row.decode(column: "workerId", as: String.self),
+                appointmentId: try row.decode(column: "appointmentId", as: String.self),
+                notes: try? row.decode(column: "notes", as: String?.self),
+                date: try? row.decode(column: "date", as: Date?.self),
+                openAt: try? row.decode(column: "openAt", as: Date?.self),
+                closeAt: try? row.decode(column: "closeAt", as: Date?.self),
+                openLatitude: try? row.decode(column: "openLatitude", as: Double?.self),
+                openLongitude: try? row.decode(column: "openLongitude", as: Double?.self),
+                openAddress: try? row.decode(column: "openAddress", as: String?.self),
+                openDistanceToAppointment: try? row.decode(column: "openDistanceToAppointment", as: Int?.self),
+                closeLatitude: try? row.decode(column: "closeLatitude", as: Double?.self),
+                closeLongitude: try? row.decode(column: "closeLongitude", as: Double?.self),
+                closeAddress: try? row.decode(column: "closeAddress", as: String?.self),
+                closeDistanceToAppointment: try? row.decode(column: "closeDistanceToAppointment", as: Int?.self),
+                photos: try? row.decode(column: "photos", as: AnyCodable?.self)
+            ))
+        }
+
+        // Attach reports to each appointment
+        struct AppointmentWithReports: Content {
+            let appointment: AppointmentDTO
+            let reports: [ReportOutDTO]
+        }
+
+        let appointmentsWithReports = appointments.map { apt in
+            let aptReports = reportsDTO.filter { $0.appointmentId == apt.id }
+            return AppointmentWithReports(appointment: apt, reports: aptReports)
+        }
+
+        // Convert to JSON response manually to flatten the structure
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+
+        var appointmentsJSON: [[String: Any]] = []
+        for item in appointmentsWithReports {
+            // Encode appointment
+            let aptData = try encoder.encode(item.appointment)
+            var aptDict = try JSONSerialization.jsonObject(with: aptData) as! [String: Any]
+
+            // Encode reports
+            let reportsData = try encoder.encode(item.reports)
+            let reportsArray = try JSONSerialization.jsonObject(with: reportsData) as! [[String: Any]]
+
+            // Merge
+            aptDict["reports"] = reportsArray
+            appointmentsJSON.append(aptDict)
+        }
+
+        let response = try JSONSerialization.data(withJSONObject: ["appointments": appointmentsJSON])
+        return Response(status: .ok, headers: ["Content-Type": "application/json"], body: .init(data: response))
     }
 
     // MARK: - POST /api/scheduling/appointments

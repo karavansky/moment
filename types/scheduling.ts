@@ -150,18 +150,18 @@ export interface Report {
   appointmentId: string
   worker?: Worker
   appointment?: Appointment
-  notes?: string
+  notes?: string | null
   date: Date
-  openAt?: Date
-  closeAt?: Date
-  openLatitude?: number
-  openLongitude?: number
-  openAddress?: string
-  openDistanceToAppointment?: number
-  closeLatitude?: number
-  closeLongitude?: number
-  closeAddress?: string
-  closeDistanceToAppointment?: number
+  openAt?: Date | null
+  closeAt?: Date | null
+  openLatitude?: number | null
+  openLongitude?: number | null
+  openAddress?: string | null
+  openDistanceToAppointment?: number | null
+  closeLatitude?: number | null
+  closeLongitude?: number | null
+  closeAddress?: string | null
+  closeDistanceToAppointment?: number | null
 }
 
 // Пользователь

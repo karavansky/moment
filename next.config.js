@@ -9,7 +9,11 @@ const nextConfig = {
 
   // Compiler optimizations
   compiler: {
-    removeConsole: false, // Keep console.error for debugging
+    removeConsole: process.env.NODE_ENV === 'production'
+      ? {
+          exclude: ['error', 'warn'], // Keep console.error and console.warn in production
+        }
+      : false, // Keep all console in development
   },
 
   env: {
