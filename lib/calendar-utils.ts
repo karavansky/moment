@@ -246,6 +246,11 @@ export const getAllDaysWithAppointments = (weeks: CalendarWeek[]): CalendarDay[]
 
 // Форматирование даты
 export const formatDate = (date: Date, locale: string = 'de-DE'): string => {
+  // Validate date before formatting
+  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+    console.error('[formatDate] Invalid date received:', date)
+    return '—'
+  }
   return new Intl.DateTimeFormat(locale, {
     year: 'numeric',
     month: 'long',
@@ -255,6 +260,11 @@ export const formatDate = (date: Date, locale: string = 'de-DE'): string => {
 
 // Форматирование времени
 export const formatTime = (date: Date, locale: string = 'de-DE'): string => {
+  // Validate date before formatting
+  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+    console.error('[formatTime] Invalid date received:', date)
+    return '—'
+  }
   return new Intl.DateTimeFormat(locale, {
     hour: '2-digit',
     minute: '2-digit',

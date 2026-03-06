@@ -148,7 +148,9 @@ function AppointmentCard({
         const clientName = appointment.client
           ? `${appointment.client.surname} ${appointment.client.name}`
           : 'Unknown Client'
-        const timeText = `${formatTime(appointment.startTime)} - ${formatTime(appointment.endTime)}`
+        const timeText = appointment.startTime && appointment.endTime
+          ? `${formatTime(appointment.startTime)} - ${formatTime(appointment.endTime)}`
+          : 'All day'
 
         ctx.fillStyle = isDark ? '#ffffff' : '#000000'
         ctx.font = 'bold 14px system-ui, sans-serif'
@@ -304,7 +306,9 @@ function AppointmentCard({
       <div className="flex items-center gap-1.5 text-xs">
         <Clock className="w-3 h-3 shrink-0" />
         <span>
-          {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
+          {appointment.startTime && appointment.endTime
+            ? `${formatTime(appointment.startTime)} - ${formatTime(appointment.endTime)}`
+            : 'All day'}
           {appointment.duration > 0 && (
             <span className="text-gray-400 ml-1">({appointment.duration} мин)</span>
           )}

@@ -13,7 +13,10 @@
       "Bash(grep:*)",
       "Bash(python3:*)",
       "Bash(/home/hronop/node/moment/app/api/reports/save/route.ts:*)",
-      "Bash(node /home/hronop/node/moment/.agents/skills/heroui-react/scripts/get_component_docs.mjs:*)"
+      "Bash(node /home/hronop/node/moment/.agents/skills/heroui-react/scripts/get_component_docs.mjs:*)",
+      "Bash(docker images vapor-api:latest --format \"table {{.Repository}}\\t{{.Tag}}\\t{{.CreatedAt}}\")",
+      "Read(//home/hronop/mailserver/**)",
+      "Bash(docker compose logs --tail=100 moment)"
     ]
   }
 }

@@ -90,6 +90,11 @@ const DayColumn = React.memo(
       const allDay: Appointment[] = []
 
       appointments.forEach(app => {
+        if (!app.startTime) {
+          allDay.push(app)
+          return
+        }
+
         const date = new Date(app.startTime)
         const h = date.getHours()
         const m = date.getMinutes()
@@ -105,7 +110,11 @@ const DayColumn = React.memo(
       // Sort by time
       Object.keys(groups).forEach(key => {
         const k = Number(key)
-        groups[k].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+        groups[k].sort((a, b) => {
+          const aTime = a.startTime ? new Date(a.startTime).getTime() : 0
+          const bTime = b.startTime ? new Date(b.startTime).getTime() : 0
+          return aTime - bTime
+        })
       })
       return { hourlyGroups: groups, allDayApps: allDay }
     }, [appointments])
@@ -128,13 +137,16 @@ const DayColumn = React.memo(
           // If not today, scroll to the first appointment, or 6 AM
           let targetMinutes = 6 * 60 // 6:00 AM default
           if (appointments.length > 0) {
-            const earliestStart = Math.min(
-              ...appointments.map(app => {
-                const date = new Date(app.startTime)
-                return date.getHours() * 60 + date.getMinutes()
-              })
-            )
-            targetMinutes = Math.max(0, earliestStart - 30)
+            const appointmentsWithTime = appointments.filter(app => app.startTime)
+            if (appointmentsWithTime.length > 0) {
+              const earliestStart = Math.min(
+                ...appointmentsWithTime.map(app => {
+                  const date = new Date(app.startTime!)
+                  return date.getHours() * 60 + date.getMinutes()
+                })
+              )
+              targetMinutes = Math.max(0, earliestStart - 30)
+            }
           }
           scrollToPixels = (targetMinutes / 60) * HOUR_HEIGHT
         }
@@ -311,6 +323,8 @@ const DayColumn = React.memo(
                       <div className="flex-1 p-1 min-w-0">
                         <div className="flex flex-wrap gap-1 w-full">
                           {hourApps.map((appointment, idx) => {
+                            if (!appointment.startTime || !appointment.endTime) return null
+
                             const start = new Date(appointment.startTime)
                             const end = new Date(appointment.endTime)
 
@@ -334,8 +348,9 @@ const DayColumn = React.memo(
                                       : 'Unknown Client'}
                                   </div>
                                   <div className="text-xs opacity-80">
-                                    {formatTime(appointment.startTime)} -{' '}
-                                    {formatTime(appointment.endTime)}
+                                    {appointment.startTime && appointment.endTime
+                                      ? `${formatTime(appointment.startTime)} - ${formatTime(appointment.endTime)}`
+                                      : 'All day'}
                                   </div>
                                 </div>
                               </div>
@@ -935,7 +950,9 @@ export default function WeeklyView({ onAppointmentPress, onExternalDrop }: Weekl
     // Sort appointments for each day once
     Object.keys(grouped).forEach(key => {
       grouped[key].sort((a, b) => {
-        return a.startTime > b.startTime ? 1 : a.startTime < b.startTime ? -1 : 0
+        const aTime = a.startTime ? new Date(a.startTime).getTime() : 0
+        const bTime = b.startTime ? new Date(b.startTime).getTime() : 0
+        return aTime - bTime
       })
     })
 

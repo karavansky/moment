@@ -196,9 +196,20 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
     posOptions?: PositionOptions
   ): Promise<{ lat?: number; lon?: number; address?: string; distance?: number }> {
     return new Promise(resolve => {
-      if (!navigator.geolocation) return resolve({})
+      if (!navigator.geolocation) {
+        console.warn('[getGeoData] Geolocation not supported')
+        return resolve({})
+      }
+
+      console.log('[getGeoData] Requesting position with options:', posOptions)
+
       navigator.geolocation.getCurrentPosition(
         async pos => {
+          console.log('[getGeoData] ✅ Position received:', {
+            lat: pos.coords.latitude,
+            lon: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+          })
           const lat = pos.coords.latitude
           const lon = pos.coords.longitude
           let address: string | undefined
@@ -216,7 +227,16 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
           }
           resolve({ lat, lon, address, distance })
         },
-        () => resolve({}),
+        (err) => {
+          console.error('[getGeoData] ❌ Position error:', {
+            code: err?.code,
+            message: err?.message,
+            PERMISSION_DENIED: 1,
+            POSITION_UNAVAILABLE: 2,
+            TIMEOUT: 3,
+          })
+          resolve({})
+        },
         posOptions ?? { enableHighAccuracy: true, timeout: 5000 }
       )
     })
@@ -235,6 +255,13 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
 
     try {
       // Step 1: create report — openAt is set by DB server via NOW()
+      console.log('[handleStart] Step 1: Creating report session...', {
+        reportID: reportIdToUpdate,
+        appointmentId: appointment.id,
+        workerId: user.myWorkerID || appointment.workerId,
+        firmaID: user.firmaID,
+      })
+
       const res = await fetch('/api/reports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -246,8 +273,17 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
           firmaID: user.firmaID,
         }),
       })
-      if (!res.ok) throw new Error('Failed to create report session')
+
+      console.log('[handleStart] Step 1: POST response status:', res.status)
+
+      if (!res.ok) {
+        const errorText = await res.text()
+        console.error('[handleStart] Step 1: POST failed:', res.status, errorText)
+        throw new Error('Failed to create report session')
+      }
+
       const { report } = await res.json()
+      console.log('[handleStart] Step 1: Report created successfully:', report)
 
       // Use server-determined openAt so timer reflects server clock
       const serverOpenAt = new Date(report.openAt)
@@ -291,12 +327,25 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
     if (!confirmedSession) return // step 1 failed — skip geo
 
     // Step 2: fire-and-forget geo update — runs in background, doesn't block UI
+    console.log('[handleStart] Step 2: Fetching geolocation data...')
     getGeoData(clientLat, clientLon, {
       enableHighAccuracy: true,
       timeout: 30000,
       maximumAge: 30000,
     }).then(geo => {
-      if (!geo.lat && !geo.lon && !geo.address && geo.distance == null) return
+      console.log('[handleStart] Geolocation received:', geo)
+
+      if (!geo.lat && !geo.lon && !geo.address && geo.distance == null) {
+        console.warn('[handleStart] No geolocation data, skipping PATCH')
+        return
+      }
+
+      console.log('[handleStart] Sending PATCH to /api/reports/' + reportIdToUpdate, {
+        openLatitude: geo.lat,
+        openLongitude: geo.lon,
+        openAddress: geo.address,
+        openDistanceToAppointment: geo.distance,
+      })
 
       fetch(`/api/reports/${reportIdToUpdate}`, {
         method: 'PATCH',
@@ -307,7 +356,22 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
           openAddress: geo.address,
           openDistanceToAppointment: geo.distance,
         }),
-      }).catch(err => console.warn('[handleStart] geo patch failed:', err))
+      })
+        .then(res => {
+          console.log('[handleStart] PATCH response status:', res.status)
+          if (!res.ok) {
+            return res.text().then(text => {
+              console.error('[handleStart] PATCH failed:', res.status, text)
+            })
+          }
+          return res.json()
+        })
+        .then(data => {
+          console.log('[handleStart] PATCH success:', data)
+        })
+        .catch(err => {
+          console.error('[handleStart] PATCH error:', err)
+        })
 
       const geoUpdatedSession = {
         ...confirmedSession,
@@ -375,12 +439,25 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
     // Step 2: fire-and-forget geo update — runs in background, doesn't block UI
     // maximumAge: 30 s accepts a cached position if the browser already has one
     // timeout: 30 s — enough for a fresh GPS fix on mobile
+    console.log('[handleFinish] Step 2: Fetching geolocation data...')
     getGeoData(clientLat, clientLon, {
       enableHighAccuracy: true,
       timeout: 30000,
       maximumAge: 30000,
     }).then(geo => {
-      if (!geo.lat && !geo.lon && !geo.address && geo.distance == null) return
+      console.log('[handleFinish] Geolocation received:', geo)
+
+      if (!geo.lat && !geo.lon && !geo.address && geo.distance == null) {
+        console.warn('[handleFinish] No geolocation data, skipping PATCH')
+        return
+      }
+
+      console.log('[handleFinish] Sending PATCH to /api/reports/' + reportIdToUpdate, {
+        closeLatitude: geo.lat,
+        closeLongitude: geo.lon,
+        closeAddress: geo.address,
+        closeDistanceToAppointment: geo.distance,
+      })
 
       fetch(`/api/reports/${reportIdToUpdate}`, {
         method: 'PATCH',
@@ -391,7 +468,22 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
           closeAddress: geo.address,
           closeDistanceToAppointment: geo.distance,
         }),
-      }).catch(err => console.warn('[handleFinish] geo patch failed:', err))
+      })
+        .then(res => {
+          console.log('[handleFinish] PATCH response status:', res.status)
+          if (!res.ok) {
+            return res.text().then(text => {
+              console.error('[handleFinish] PATCH failed:', res.status, text)
+            })
+          }
+          return res.json()
+        })
+        .then(data => {
+          console.log('[handleFinish] PATCH success:', data)
+        })
+        .catch(err => {
+          console.error('[handleFinish] PATCH error:', err)
+        })
 
       if (!sessionSnapshot) return
 
@@ -632,8 +724,27 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
 
   if (!appointment) return null
 
-  const startTime = new Date(appointment.startTime ?? new Date())
-  const endTime = new Date(appointment.endTime ?? new Date())
+  // Parse and validate times
+  console.log('[AppReport] appointment.startTime:', appointment.startTime, typeof appointment.startTime)
+  console.log('[AppReport] appointment.endTime:', appointment.endTime, typeof appointment.endTime)
+
+  const startTime = appointment.startTime
+    ? (() => {
+        const d = new Date(appointment.startTime)
+        console.log('[AppReport] startTime parsed:', d, 'isValid:', !isNaN(d.getTime()))
+        return isNaN(d.getTime()) ? undefined : d
+      })()
+    : undefined
+  const endTime = appointment.endTime
+    ? (() => {
+        const d = new Date(appointment.endTime)
+        console.log('[AppReport] endTime parsed:', d, 'isValid:', !isNaN(d.getTime()))
+        return isNaN(d.getTime()) ? undefined : d
+      })()
+    : undefined
+
+  console.log('[AppReport] Final startTime:', startTime)
+  console.log('[AppReport] Final endTime:', endTime)
 
   return (
     <div>
@@ -736,8 +847,12 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
             {t('appointment.report.time')}
           </p>
           <p className="font-medium">
-            {appointment.date.toLocaleDateString('de-DE')} | {formatTime(startTime)} -{' '}
-            {formatTime(endTime)}
+            {appointment.date instanceof Date
+              ? appointment.date.toLocaleDateString('de-DE')
+              : new Date(appointment.date).toLocaleDateString('de-DE')}
+            {startTime && endTime
+              ? ` | ${formatTime(startTime)} - ${formatTime(endTime)}`
+              : ' | All day'}
           </p>
         </div>
         <div>
@@ -787,8 +902,32 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
                   {/* Row 1: Time range + open geo */}
                   <div className="flex items-baseline justify-between gap-2 text-sm">
                     <p className="font-medium shrink-0">
-                      {session.openAt && formatTime(new Date(session.openAt))}
-                      {session.closeAt && ` → ${formatTime(new Date(session.closeAt))}`}
+                      {session.openAt &&
+                        (() => {
+                          const d = new Date(session.openAt)
+                          console.log(
+                            `[AppReport] session ${session.id} openAt:`,
+                            session.openAt,
+                            'parsed:',
+                            d,
+                            'isValid:',
+                            !isNaN(d.getTime())
+                          )
+                          return !isNaN(d.getTime()) ? formatTime(d) : '—'
+                        })()}
+                      {session.closeAt &&
+                        (() => {
+                          const d = new Date(session.closeAt)
+                          console.log(
+                            `[AppReport] session ${session.id} closeAt:`,
+                            session.closeAt,
+                            'parsed:',
+                            d,
+                            'isValid:',
+                            !isNaN(d.getTime())
+                          )
+                          return !isNaN(d.getTime()) ? ` → ${formatTime(d)}` : ''
+                        })()}
                     </p>
                     {(session.openAddress || session.openDistanceToAppointment != null) && (
                       <button

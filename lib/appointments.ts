@@ -81,6 +81,7 @@ function sendAppointmentPush(
   // Fire-and-forget: don't block API response
   ;(async () => {
     try {
+      console.error(`[sendAppointmentPush] Called with type=${type}, workerIds=${JSON.stringify(data.workerIds)}, timeChanged=${data.timeChanged}`)
       const clientName = await getClientName(data.clientID)
 
       if (type === 'appointment_created') {
@@ -560,6 +561,7 @@ export async function updateAppointment(
         openedAt: result.openedAt,
         closedAt: result.closedAt,
       })
+      console.error(`[updateAppointment] About to call sendAppointmentPush with workerIds=${JSON.stringify(workerIds)}, timeChanged=${timeChanged}`)
       sendAppointmentPush(firmaID, 'appointment_updated', {
         appointmentID: result.appointmentID,
         workerIds,
@@ -569,6 +571,7 @@ export async function updateAppointment(
         previousIsOpen,
         timeChanged,
       })
+      console.error(`[updateAppointment] sendAppointmentPush called`)
     }
 
     return result

@@ -105,7 +105,11 @@ export function useGeolocation() {
           resolve(true)
         },
         (err) => {
-          if (err.code === err.PERMISSION_DENIED) {
+          console.error('[useGeolocation] Permission request error:', {
+            code: err?.code,
+            message: err?.message,
+          })
+          if (err?.code === err.PERMISSION_DENIED) {
             setPermission('denied')
             localStorage.setItem('geo-permission', 'denied')
           }
@@ -133,9 +137,16 @@ export function useGeolocation() {
   }, [])
 
   const startTracking = useCallback((appointmentId: string) => {
-    if (!('geolocation' in navigator)) return
-    if (watchIdRef.current !== null) return // Already tracking
+    if (!('geolocation' in navigator)) {
+      console.warn('[useGeolocation] Geolocation not supported')
+      return
+    }
+    if (watchIdRef.current !== null) {
+      console.warn('[useGeolocation] Already tracking')
+      return // Already tracking
+    }
 
+    console.log('[useGeolocation] Starting tracking for appointment:', appointmentId)
     activeAppointmentIdRef.current = appointmentId
 
     const watchId = navigator.geolocation.watchPosition(
@@ -148,19 +159,50 @@ export function useGeolocation() {
         latestPositionRef.current = newPos
       },
       (err) => {
-        console.error('[useGeolocation] Watch error:', err)
-        if (err.code === err.PERMISSION_DENIED) {
+        // Some browsers return empty/malformed errors on first mount
+        if (!err || typeof err !== 'object') {
+          console.warn('[useGeolocation] Watch error (malformed):', err)
+          return
+        }
+
+        const errorCode = err.code
+        const errorMessage = err.message || 'Unknown error'
+
+        // POSITION_UNAVAILABLE (code 2) is normal when GPS is acquiring signal
+        // TIMEOUT (code 3) is also recoverable - watchPosition will retry
+        const isRecoverableError = errorCode === 2 || errorCode === 3
+
+        if (isRecoverableError) {
+          console.warn('[useGeolocation] ⚠️ Position unavailable (will keep trying):', {
+            code: errorCode,
+            message: errorMessage,
+            note: 'This is normal - waiting for GPS/Wi-Fi signal. watchPosition will retry automatically.',
+          })
+        } else {
+          console.error('[useGeolocation] Watch error:', {
+            code: errorCode,
+            message: errorMessage,
+            PERMISSION_DENIED: err.PERMISSION_DENIED,
+            POSITION_UNAVAILABLE: err.POSITION_UNAVAILABLE,
+            TIMEOUT: err.TIMEOUT,
+          })
+        }
+
+        if (errorCode === err.PERMISSION_DENIED) {
           setPermission('denied')
+          localStorage.setItem('geo-permission', 'denied')
         }
       },
       {
-        enableHighAccuracy: true,
-        maximumAge: 30000,
+        enableHighAccuracy: false,  // FALSE for desktop - use Wi-Fi/IP location (faster, less accurate)
+        timeout: 30000,             // 30 seconds - desktop needs more time for Wi-Fi positioning
+        maximumAge: 300000,         // 5 minutes - accept older cached position on desktop
       }
     )
 
     watchIdRef.current = watchId
     setIsTracking(true)
+    console.log('[useGeolocation] Watch started, watchId:', watchId)
 
     // Send immediately on start using getCurrentPosition
     navigator.geolocation.getCurrentPosition(
@@ -173,8 +215,21 @@ export function useGeolocation() {
         setPosition(newPos)
         sendLocationToServer(newPos, appointmentId)
       },
-      () => {},
-      { enableHighAccuracy: true, timeout: 10000 }
+      (err) => {
+        // Ignore errors here - watchPosition will handle them
+        // Just log for debugging
+        if (err && typeof err === 'object' && err.code) {
+          console.warn('[useGeolocation] Initial position error (will retry via watch):', {
+            code: err.code,
+            message: err.message || 'Unknown',
+          })
+        }
+      },
+      {
+        enableHighAccuracy: false,  // FALSE for desktop - use Wi-Fi/IP location
+        timeout: 20000,             // 20 seconds for initial position
+        maximumAge: 300000,         // 5 minutes - accept older cached position
+      }
     )
 
     // Periodic send to server

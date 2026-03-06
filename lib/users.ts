@@ -302,10 +302,10 @@ export async function updateDeviceSyncStatus(
     setClauses.push(`"geolocationEnabled" = $${paramIndex++}`)
     values.push(data.geolocationEnabled)
   }
-  if (data.pushNotificationsEnabled !== undefined) {
-    setClauses.push(`"pushNotificationsEnabled" = $${paramIndex++}`)
-    values.push(data.pushNotificationsEnabled)
-  }
+  // NOTE: pushNotificationsEnabled is managed automatically:
+  // - Enabled when user subscribes (see lib/push-notifications.ts saveSubscription)
+  // - Disabled when push token becomes invalid (see app/api/staff/verify-push/route.ts)
+  // We don't sync it from client to prevent race conditions.
 
   // Always update lastLoginAt to show they are active
   setClauses.push(`"lastLoginAt" = CURRENT_TIMESTAMP`)

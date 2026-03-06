@@ -104,7 +104,7 @@ const AppointmentMarker = ({ apt, icon, isSelected }: { apt: AppointmentWithClie
             <div className="flex justify-between">
               <span className="text-gray-500">{t('map.time')}</span>
               <span className="font-medium">
-                {timeFormatter.format(new Date(apt.startTime))} - {timeFormatter.format(new Date(apt.endTime))}
+                {apt.startTime && timeFormatter.format(new Date(apt.startTime))} - {apt.endTime && timeFormatter.format(new Date(apt.endTime))}
               </span>
             </div>
             <div className="flex justify-between">

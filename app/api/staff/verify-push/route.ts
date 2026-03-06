@@ -72,11 +72,9 @@ export async function POST(req: Request) {
       if (pushError.statusCode === 410 || pushError.statusCode === 404) {
         // Ghost / Dead Token -> Prune it
         await pool.query(`DELETE FROM push_subscriptions WHERE "endpoint" = $1`, [sub.endpoint])
-        // Optionally map the user row
-        await pool.query(
-          `UPDATE users SET "pushNotificationsEnabled" = FALSE WHERE "userID" = $1`,
-          [targetUserID]
-        )
+        // NOTE: We no longer disable pushNotificationsEnabled here.
+        // The flag will auto-enable when user re-subscribes (see lib/push-notifications.ts saveSubscription)
+        // Removing the dead subscription is sufficient - attempts to send push will simply skip this user.
 
         return NextResponse.json({
           success: false,

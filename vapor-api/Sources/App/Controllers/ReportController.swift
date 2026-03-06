@@ -16,6 +16,7 @@ struct ReportController: RouteCollection {
         let reportIdGroup = reports.grouped(":reportId")
         reportIdGroup.get(use: getOne)
         reportIdGroup.put(use: update)
+        reportIdGroup.patch(use: patch)  // Add PATCH endpoint
         reportIdGroup.delete(use: remove)
         
         let photoGroup = reports.grouped("photos", ":photoId")
@@ -99,6 +100,7 @@ struct ReportController: RouteCollection {
         report.appointmentId = body.appointmentId
         report.type = body.type ?? 0
         report.notes = body.notes
+        report.openAt = Date()  // Set server timestamp
         report.openLatitude = body.openLatitude
         report.openLongitude = body.openLongitude
         report.openAddress = body.openAddress
@@ -151,6 +153,58 @@ struct ReportController: RouteCollection {
         }
         
         return try await ReportOneDTO(report: report, photos: photos).encodeResponse(for: req)
+    }
+
+    // PATCH /api/reports/:reportId - Partial update (geolocation, notes, etc.)
+    func patch(req: Request) async throws -> Response {
+        let user = try req.auth.require(AuthenticatedUser.self)
+        guard let firmaID = user.firmaID else { throw Abort(.forbidden) }
+        guard let reportId = req.parameters.get("reportId") else { throw Abort(.badRequest) }
+
+        struct Body: Content {
+            var close: Bool?
+            var openLatitude: Double?; var openLongitude: Double?
+            var openAddress: String?; var openDistanceToAppointment: Int?
+            var closeLatitude: Double?; var closeLongitude: Double?
+            var closeAddress: String?; var closeDistanceToAppointment: Int?
+            var notes: String?
+        }
+        let body = try req.content.decode(Body.self)
+
+        guard let report = try await Report.query(on: req.db)
+            .filter(\.$id == reportId)
+            .filter(\.$firmaID == firmaID)
+            .first() else {
+            throw Abort(.notFound)
+        }
+
+        // Update open geolocation
+        if let v = body.openLatitude { report.openLatitude = v }
+        if let v = body.openLongitude { report.openLongitude = v }
+        if let v = body.openAddress { report.openAddress = v }
+        if let v = body.openDistanceToAppointment { report.openDistanceToAppointment = v }
+
+        // Update close geolocation
+        if let v = body.closeLatitude { report.closeLatitude = v }
+        if let v = body.closeLongitude { report.closeLongitude = v }
+        if let v = body.closeAddress { report.closeAddress = v }
+        if let v = body.closeDistanceToAppointment { report.closeDistanceToAppointment = v }
+
+        // Update notes
+        if let v = body.notes { report.notes = v }
+
+        // Close report if requested
+        if body.close == true && report.closeAt == nil {
+            report.closeAt = Date()
+        }
+
+        try await report.save(on: req.db)
+        pgNotify(req: req, firmaID: firmaID, type: "report_updated")
+
+        struct PatchResponse: Content {
+            var report: Report
+        }
+        return try await PatchResponse(report: report).encodeResponse(for: req)
     }
 
     // PUT /api/reports/:reportId

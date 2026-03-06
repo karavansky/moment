@@ -56,6 +56,12 @@ export async function saveSubscription(
        "userID" = $1, "p256dh" = $3, "auth" = $4, "lastUsedAt" = NOW()`,
     [userID, subscription.endpoint, subscription.keys.p256dh, subscription.keys.auth]
   )
+
+  // Auto-enable push notifications when user subscribes
+  await pool.query(
+    `UPDATE users SET "pushNotificationsEnabled" = true WHERE "userID" = $1 AND "pushNotificationsEnabled" = false`,
+    [userID]
+  )
 }
 
 export async function removeSubscription(endpoint: string): Promise<void> {
@@ -70,7 +76,9 @@ async function getSubscriptionsByUserID(userID: string): Promise<PushSubscriptio
 }
 
 export async function sendPushToUser(userID: string, payload: PushPayload): Promise<void> {
+  console.error(`[sendPushToUser] Called for userID=${userID}, payload=${JSON.stringify(payload)}`)
   const subs = await getSubscriptionsByUserID(userID)
+  console.error(`[sendPushToUser] Found ${subs.length} subscriptions`)
   if (subs.length === 0) return
 
   // Check user preference
@@ -78,6 +86,7 @@ export async function sendPushToUser(userID: string, payload: PushPayload): Prom
     `SELECT "pushNotificationsEnabled" FROM users WHERE "userID" = $1`,
     [userID]
   )
+  console.error(`[sendPushToUser] pushNotificationsEnabled=${userResult.rows[0]?.pushNotificationsEnabled}`)
   if (userResult.rows[0]?.pushNotificationsEnabled === false) return
 
   initWebPush()

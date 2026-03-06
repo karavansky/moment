@@ -49,7 +49,10 @@ function AppView({
         </h2>
         {appointment && (
           <p className="text-sm text-default-500">
-            {t('appointment.edit.createdOn')} {appointment.date.toLocaleDateString('de-DE')}
+            {t('appointment.edit.createdOn')}{' '}
+            {appointment.date instanceof Date
+              ? appointment.date.toLocaleDateString('de-DE')
+              : new Date(appointment.date).toLocaleDateString('de-DE')}
           </p>
         )}
       </div>

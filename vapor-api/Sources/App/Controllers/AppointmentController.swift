@@ -193,7 +193,26 @@ struct AppointmentController: RouteCollection {
             }
         }
 
-        pgNotify(req: req, firmaID: firmaID, type: "appointment_created")
+        // Send SSE notification with full payload
+        notifyAppointmentChange(
+            req: req,
+            firmaID: firmaID,
+            type: "appointment_created",
+            appointmentID: appointmentID,
+            workerIds: body.workerIds,
+            clientID: body.clientID
+        )
+
+        // Send push notification to workers
+        sendPushNotification(
+            req: req,
+            type: "workers",
+            workerIds: body.workerIds,
+            title: "New Appointment",
+            body: "You have been assigned to a new appointment.",
+            url: "/dienstplan",
+            tag: "appointment-\(appointmentID)"
+        )
 
         // Return the created appointment
         let created = try await Appointment.query(on: req.db)
@@ -252,7 +271,51 @@ struct AppointmentController: RouteCollection {
             }
 
             try await appointment.save(on: req.db)
-            pgNotify(req: req, firmaID: firmaID, type: "appointment_updated")
+
+            // Fetch workerIds for notification
+            let db = req.db as! any SQLDatabase
+            let workerRows = try await db.raw("""
+                SELECT "workerID" FROM appointment_workers WHERE "appointmentID" = \(bind: body.id)
+                """).all()
+            let workerIds = try workerRows.map { try $0.decode(column: "workerID", as: String.self) }
+
+            notifyAppointmentChange(
+                req: req,
+                firmaID: firmaID,
+                type: "appointment_updated",
+                appointmentID: body.id,
+                workerIds: workerIds,
+                clientID: appointment.clientID,
+                isOpen: appointment.isOpen,
+                openedAt: appointment.openedAt,
+                closedAt: appointment.closedAt
+            )
+
+            // Push to directors when appointment opens/closes
+            if let isOpen = body.isOpen {
+                if isOpen {
+                    sendPushNotification(
+                        req: req,
+                        type: "directors",
+                        firmaID: firmaID,
+                        title: "Appointment Started",
+                        body: "A worker started an appointment.",
+                        url: "/map/\(body.id)",
+                        tag: "appointment-open-\(body.id)"
+                    )
+                } else {
+                    sendPushNotification(
+                        req: req,
+                        type: "directors",
+                        firmaID: firmaID,
+                        title: "Appointment Finished",
+                        body: "A worker finished an appointment.",
+                        url: "/dienstplan",
+                        tag: "appointment-close-\(body.id)"
+                    )
+                }
+            }
+
             return try await appointment.encodeResponse(for: req)
         }
 
@@ -345,7 +408,58 @@ struct AppointmentController: RouteCollection {
             }
         }
 
-        pgNotify(req: req, firmaID: firmaID, type: "appointment_updated")
+        // Fetch final workerIds for notification (after transaction commit)
+        let db = req.db as! any SQLDatabase
+        let workerRows = try await db.raw("""
+            SELECT "workerID" FROM appointment_workers WHERE "appointmentID" = \(bind: body.id)
+            """).all()
+        let finalWorkerIds = try workerRows.map { try $0.decode(column: "workerID", as: String.self) }
+
+        notifyAppointmentChange(
+            req: req,
+            firmaID: firmaID,
+            type: "appointment_updated",
+            appointmentID: body.id,
+            workerIds: finalWorkerIds,
+            clientID: appointment.clientID,
+            isOpen: appointment.isOpen,
+            openedAt: appointment.openedAt,
+            closedAt: appointment.closedAt
+        )
+
+        // Check if time changed (date, startTime, or endTime)
+        let timeChanged = body.date != nil || body.startTime != nil || body.endTime != nil
+
+        if timeChanged {
+            // Send push to all workers about reschedule
+            sendPushNotification(
+                req: req,
+                type: "workers",
+                workerIds: finalWorkerIds,
+                title: "Appointment Time Changed",
+                body: "Your appointment has been rescheduled.",
+                url: "/dienstplan",
+                tag: "appointment-rescheduled-\(body.id)"
+            )
+        }
+
+        // Check for worker changes (additions/removals)
+        // This requires fetching the original workerIds before the update
+        // For simplicity, we'll send push on ANY worker change
+        if body.workerIds != nil {
+            // Note: In a full implementation, we'd compare with original workerIds
+            // and send different messages to added vs removed workers
+            sendPushNotification(
+                req: req,
+                type: "workers",
+                workerIds: finalWorkerIds,
+                title: "Assignment Updated",
+                body: "Your appointment assignment has been updated.",
+                url: "/dienstplan",
+                tag: "appointment-\(body.id)"
+            )
+        }
+
         return try await appointment.encodeResponse(for: req)
     }
 
@@ -365,8 +479,36 @@ struct AppointmentController: RouteCollection {
             throw Abort(.notFound, reason: "Appointment not found")
         }
 
+        // Fetch workerIds BEFORE deletion
+        let db = req.db as! any SQLDatabase
+        let workerRows = try await db.raw("""
+            SELECT "workerID" FROM appointment_workers WHERE "appointmentID" = \(bind: body.id)
+            """).all()
+        let workerIds = try workerRows.map { try $0.decode(column: "workerID", as: String.self) }
+        let clientID = appointment.clientID
+
         try await appointment.delete(on: req.db)
-        pgNotify(req: req, firmaID: firmaID, type: "appointment_deleted")
+
+        notifyAppointmentChange(
+            req: req,
+            firmaID: firmaID,
+            type: "appointment_deleted",
+            appointmentID: body.id,
+            workerIds: workerIds,
+            clientID: clientID
+        )
+
+        // Send push to workers about cancellation
+        sendPushNotification(
+            req: req,
+            type: "workers",
+            workerIds: workerIds,
+            title: "Appointment Cancelled",
+            body: "Your appointment has been cancelled.",
+            url: "/dienstplan",
+            tag: "appointment-\(body.id)"
+        )
+
         return try await ["success": true].encodeResponse(for: req)
     }
 }
@@ -466,6 +608,126 @@ struct AnyCodable: Codable, @unchecked Sendable {
         case let bool as Bool: try container.encode(bool)
         case is NSNull: try container.encodeNil()
         default: try container.encodeNil()
+        }
+    }
+}
+
+// MARK: - Helpers
+
+/// Payload structure for push notifications
+struct PushPayload: Content {
+    var title: String
+    var body: String
+    var url: String?
+    var tag: String?
+}
+
+/// Request body for internal push API
+struct InternalPushRequest: Content {
+    var type: String
+    var workerIds: [String]?
+    var firmaID: String?
+    var payload: PushPayload
+}
+
+/// Send push notification via Next.js internal API (fire-and-forget)
+func sendPushNotification(
+    req: Request,
+    type: String, // "workers" or "directors"
+    workerIds: [String]? = nil,
+    firmaID: String? = nil,
+    title: String,
+    body: String,
+    url: String? = nil,
+    tag: String? = nil
+) {
+    Task {
+        do {
+            // Use Docker service name for inter-container communication
+            // Try to connect to moment container first (production)
+            // Fall back to localhost:3002 (development)
+            let nextjsUrl = Environment.get("NEXTJS_URL") ?? "http://moment:3002/api/internal/send-push"
+
+            // Build request body
+            let requestBody = InternalPushRequest(
+                type: type,
+                workerIds: workerIds,
+                firmaID: firmaID,
+                payload: PushPayload(title: title, body: body, url: url, tag: tag)
+            )
+
+            // Use Vapor's HTTP client
+            let uri = URI(string: nextjsUrl)
+            let response = try await req.client.post(uri) { clientReq in
+                // Add internal API key for authentication
+                let apiKey = Environment.get("INTERNAL_API_KEY") ?? "vapor-internal-2024"
+                clientReq.headers.add(name: "X-Internal-API-Key", value: apiKey)
+                try clientReq.content.encode(requestBody)
+            }
+
+            if response.status != .ok {
+                req.logger.warning("Push notification API returned status \(response.status)")
+            } else {
+                req.logger.info("Push notification sent successfully: \(title)")
+            }
+        } catch {
+            req.logger.error("Failed to send push notification: \(error)")
+        }
+    }
+}
+
+/// Send appointment pg_notify with full payload (workerIds, clientID, isOpen, etc.)
+/// Matches Next.js lib/appointments.ts notifyAppointmentChange()
+func notifyAppointmentChange(
+    req: Request,
+    firmaID: String,
+    type: String,
+    appointmentID: String,
+    workerIds: [String],
+    clientID: String,
+    isOpen: Bool? = nil,
+    openedAt: Date? = nil,
+    closedAt: Date? = nil
+) {
+    let channel = "scheduling_" + firmaID.lowercased().filter { $0.isLetter || $0.isNumber || $0 == "_" }
+
+    // Build JSON payload manually to match Next.js format
+    var payloadDict: [String: Any] = [
+        "type": type,
+        "appointmentID": appointmentID,
+        "workerIds": workerIds,
+        "clientID": clientID,
+        "firmaID": firmaID
+    ]
+
+    if let isOpen = isOpen {
+        payloadDict["isOpen"] = isOpen
+    }
+    if let openedAt = openedAt {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        payloadDict["openedAt"] = formatter.string(from: openedAt)
+    }
+    if let closedAt = closedAt {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        payloadDict["closedAt"] = formatter.string(from: closedAt)
+    }
+
+    guard let payloadData = try? JSONSerialization.data(withJSONObject: payloadDict),
+          let payload = String(data: payloadData, encoding: .utf8) else {
+        req.logger.error("Failed to serialize appointment notification payload")
+        return
+    }
+
+    Task {
+        do {
+            try await (req.db as! any SQLDatabase).raw(
+                "SELECT pg_notify(\(bind: channel), \(bind: payload))"
+            ).run()
+            req.logger.info("pg_notify sent: \(type) for appointment \(appointmentID)")
+        } catch {
+            req.logger.error("pg_notify failed: \(error)")
         }
     }
 }

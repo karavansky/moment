@@ -373,4 +373,27 @@
       transform: translateY(0) scale(1);
     }
   }
+
+  /* Fix for HeroUI Modal.CloseTrigger - make entire button clickable, not just the icon */
+  [data-slot="close-button"] {
+    /* Ensure the button itself is fully clickable */
+    cursor: pointer !important;
+
+    /* Make sure all child elements don't block clicks */
+    & > * {
+      pointer-events: none !important;
+    }
+
+    /* Increase the clickable area with padding if needed */
+    padding: 0.5rem !important;
+
+    /* Ensure the button has a minimum touch target size (44x44px recommended) */
+    min-width: 2.75rem !important;
+    min-height: 2.75rem !important;
+
+    /* Center the icon */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
 }

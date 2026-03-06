@@ -11,6 +11,7 @@ import AppNotes from './AppNotes'
 import { AnimatePresence, motion } from 'framer-motion'
 import useMeasure from 'react-use-measure'
 import type { ServiceTreeItem } from '@/types/scheduling'
+import { X } from 'lucide-react'
 
 interface AppModalProps {
   isOpen: boolean
@@ -188,7 +189,16 @@ function AppModal({
       >
         <Modal.Container placement="center">
           <Modal.Dialog>
-            <Modal.CloseTrigger className="w-6 h-6" />
+            <Button
+              isIconOnly
+              variant="tertiary"
+              size="sm"
+              onPress={handleClose}
+              className="absolute top-3 right-3 z-50 rounded-full"
+              aria-label="Close modal"
+            >
+              <X size={20} />
+            </Button>
             <Modal.Header className="w-full">
               <div className="flex flex-col relative w-full">
                 <div className="flex flex-row gap-2 mb-2">

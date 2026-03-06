@@ -187,9 +187,20 @@ export default function AppointmentReport({
     posOptions?: PositionOptions
   ): Promise<{ lat?: number; lon?: number; address?: string; distance?: number }> {
     return new Promise(resolve => {
-      if (!navigator.geolocation) return resolve({})
+      if (!navigator.geolocation) {
+        console.warn('[getGeoData] Geolocation not supported')
+        return resolve({})
+      }
+
+      console.log('[getGeoData] Requesting position with options:', posOptions)
+
       navigator.geolocation.getCurrentPosition(
         async pos => {
+          console.log('[getGeoData] ✅ Position received:', {
+            lat: pos.coords.latitude,
+            lon: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+          })
           const lat = pos.coords.latitude
           const lon = pos.coords.longitude
           let address: string | undefined
@@ -207,7 +218,16 @@ export default function AppointmentReport({
           }
           resolve({ lat, lon, address, distance })
         },
-        () => resolve({}),
+        (err) => {
+          console.error('[getGeoData] ❌ Position error:', {
+            code: err?.code,
+            message: err?.message,
+            PERMISSION_DENIED: 1,
+            POSITION_UNAVAILABLE: 2,
+            TIMEOUT: 3,
+          })
+          resolve({})
+        },
         posOptions ?? { enableHighAccuracy: true, timeout: 5000 }
       )
     })
@@ -623,8 +643,8 @@ export default function AppointmentReport({
 
   if (!appointment) return null
 
-  const startTime = new Date(appointment.startTime)
-  const endTime = new Date(appointment.endTime)
+  const startTime = appointment.startTime ? new Date(appointment.startTime) : null
+  const endTime = appointment.endTime ? new Date(appointment.endTime) : null
 
   return (
     <>
@@ -749,8 +769,10 @@ export default function AppointmentReport({
                       {t('appointment.report.time')}
                     </p>
                     <p className="font-medium">
-                      {appointment.date.toLocaleDateString('de-DE')} | {formatTime(startTime)} -{' '}
-                      {formatTime(endTime)}
+                      {appointment.date instanceof Date
+                        ? appointment.date.toLocaleDateString('de-DE')
+                        : new Date(appointment.date).toLocaleDateString('de-DE')}
+                      {startTime && endTime ? ` | ${formatTime(startTime)} - ${formatTime(endTime)}` : ' | All day'}
                     </p>
                   </div>
                   <div>

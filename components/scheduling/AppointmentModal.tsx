@@ -91,8 +91,8 @@ export default function AppointmentModal({
             clientID: appointment.clientID,
             workers: appointment.worker || [],
             date: new Date(appointment.date),
-            startHour: appointment.isFixedTime ? new Date(appointment.startTime).getHours() : 0,
-            startMinute: appointment.isFixedTime ? new Date(appointment.startTime).getMinutes() : 0,
+            startHour: appointment.isFixedTime && appointment.startTime ? new Date(appointment.startTime).getHours() : 0,
+            startMinute: appointment.isFixedTime && appointment.startTime ? new Date(appointment.startTime).getMinutes() : 0,
             duration: appointment.duration,
             fahrzeit: appointment.fahrzeit,
             isDuration: appointment.duration > 0,
@@ -129,13 +129,13 @@ export default function AppointmentModal({
   // Initialize form data when appointment or selectedDate changes
   useEffect(() => {
     if (appointment && !isNewAppointment) {
-      const startTime = new Date(appointment.startTime)
+      const startTime = appointment.startTime ? new Date(appointment.startTime) : null
       setFormData({
         clientID: appointment.clientID,
         workers: appointment.worker || [],
         date: new Date(appointment.date),
-        startHour: appointment.isFixedTime ? startTime.getHours() : 0,
-        startMinute: appointment.isFixedTime ? startTime.getMinutes() : 0,
+        startHour: appointment.isFixedTime && startTime ? startTime.getHours() : 0,
+        startMinute: appointment.isFixedTime && startTime ? startTime.getMinutes() : 0,
         duration: appointment.duration,
         fahrzeit: appointment.fahrzeit,
         isDuration: appointment.duration > 0,
@@ -320,7 +320,10 @@ export default function AppointmentModal({
                 </h2>
                 {appointment && (
                   <p className="text-sm text-default-500">
-                    {t('appointment.edit.createdOn')} {appointment.date.toLocaleDateString('de-DE')}
+                    {t('appointment.edit.createdOn')}{' '}
+                    {appointment.date instanceof Date
+                      ? appointment.date.toLocaleDateString('de-DE')
+                      : new Date(appointment.date).toLocaleDateString('de-DE')}
                   </p>
                 )}
               </div>

@@ -274,10 +274,11 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         selectedAppointment: null,
       })
 
-      console.log('Live data loaded:', {
+      console.log('✅ Live data loaded, isLiveMode set to TRUE:', {
         workers: data.workers.length,
         clients: data.clients.length,
         appointments: data.appointments.length,
+        openAppointments: appointments.filter((a: any) => a.isOpen).map((a: any) => ({ id: a.id, isOpen: a.isOpen })),
       })
     } catch (error) {
       console.error('Error loading live data:', error)
@@ -715,11 +716,18 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
           const timeDiff = newDate.getTime() - oldDate.getTime()
           const daysDiff = Math.round(timeDiff / (1000 * 60 * 60 * 24))
 
-          const newStartTime = new Date(appointment.startTime)
-          newStartTime.setDate(newStartTime.getDate() + daysDiff)
+          let newStartTime: Date | undefined
+          let newEndTime: Date | undefined
 
-          const newEndTime = new Date(appointment.endTime)
-          newEndTime.setDate(newEndTime.getDate() + daysDiff)
+          if (appointment.startTime) {
+            newStartTime = new Date(appointment.startTime)
+            newStartTime.setDate(newStartTime.getDate() + daysDiff)
+          }
+
+          if (appointment.endTime) {
+            newEndTime = new Date(appointment.endTime)
+            newEndTime.setDate(newEndTime.getDate() + daysDiff)
+          }
 
           const updatedAppointment: Appointment = {
             ...appointment,
@@ -1318,7 +1326,11 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         return { ...apt, client }
       })
       .filter((apt): apt is AppointmentWithClient => apt !== null)
-      .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+      .sort((a, b) => {
+        const aTime = a.startTime ? new Date(a.startTime).getTime() : 0
+        const bTime = b.startTime ? new Date(b.startTime).getTime() : 0
+        return aTime - bTime
+      })
   }, [state.appointments, state.clients])
 
   // Мемоизируем contextValue

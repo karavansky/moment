@@ -81,6 +81,7 @@ export async function PUT(request: Request) {
     }
 
     const { id, ...data } = await request.json()
+    console.error(`[API PUT /appointments] id=${id}, data=${JSON.stringify(data)}, userStatus=${userStatus}`)
     if (!id) return NextResponse.json({ error: 'Appointment ID required' }, { status: 400 })
 
     // Worker (status=1): может только isOpen/openedAt/closedAt для своих appointments
@@ -107,7 +108,9 @@ export async function PUT(request: Request) {
     }
 
     // Director (status=0/null): полный доступ
+    console.error(`[API PUT /appointments] Calling updateAppointment with id=${id}, firmaID=${firmaID}`)
     const appointment = await updateAppointment(id, firmaID, data)
+    console.error(`[API PUT /appointments] updateAppointment returned:`, appointment ? 'success' : 'null')
     if (!appointment) return NextResponse.json({ error: 'Appointment not found' }, { status: 404 })
     return NextResponse.json(appointment)
   } catch (error) {
