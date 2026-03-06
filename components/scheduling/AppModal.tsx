@@ -43,6 +43,9 @@ function AppModal({
     teamsWithWorkers,
     servicesForSelect,
     services,
+    setAppointmentOverride,
+    getAppointmentWithOverrides,
+    clearAppointmentOverride,
   } = useScheduling()
   const [viewTab, setViewTab] = useState<'view' | 'report' | 'edit' | 'new' | 'notes'>(activeTab)
   const [ref, { height }] = useMeasure()
@@ -70,50 +73,72 @@ function AppModal({
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const [formData, setFormData] = useState<Appointment>(emptyForm)
+  const formDataRef = useRef<Appointment>(emptyForm)
+
+  // Save formData to appointmentOverrides on every change (but avoid re-renders)
+  useEffect(() => {
+    // Only save if formData actually changed (not just re-rendered)
+    if (formData.id && appointment?.id === formData.id && formData !== formDataRef.current) {
+      formDataRef.current = formData
+      setAppointmentOverride(formData.id, formData)
+    }
+  }, [formData, appointment?.id, setAppointmentOverride])
 
   useEffect(() => {
     if (isOpen && appointment) {
-      const common = {
-        workers: appointment.worker || [],
-        services: appointment.services || [],
-        reports: appointment.reports || [],
-        firmaID: appointment.firmaID || '',
-      }
+      // Try to restore from appointmentOverrides first
+      const withOverrides = getAppointmentWithOverrides(appointment.id)
+      const shouldRestore = withOverrides && withOverrides.id === appointment.id
 
-      if (activeTab === 'new') {
-        setFormData({
-          ...emptyForm,
-          ...common,
-          clientID: appointment.clientID || '',
-          date: new Date(selectedDate || appointment.date),
-          duration: 60,
-          isDuration: true,
-        } as unknown as Appointment)
+      if (shouldRestore && withOverrides) {
+        console.log('[AppModal] Restoring formData from appointmentOverrides:', withOverrides.id)
+        setFormData(withOverrides)
       } else {
-        setFormData({
-          ...emptyForm,
-          ...common,
-          clientID: appointment.clientID,
-          date: new Date(appointment.date),
-          startHour:
-            appointment.isFixedTime && appointment.startTime
-              ? new Date(appointment.startTime).getHours()
-              : 0,
-          startMinute:
-            appointment.isFixedTime && appointment.startTime
-              ? new Date(appointment.startTime).getMinutes()
-              : 0,
-          duration: appointment.duration,
-          fahrzeit: appointment.fahrzeit,
-          isFixedTime: appointment.isFixedTime,
-          id: appointment.id,
-        } as unknown as Appointment)
+        const common = {
+          workers: appointment.worker || [],
+          services: appointment.services || [],
+          reports: appointment.reports || [],
+          firmaID: appointment.firmaID || '',
+        }
+
+        if (activeTab === 'new') {
+          setFormData({
+            ...emptyForm,
+            ...common,
+            clientID: appointment.clientID || '',
+            date: new Date(selectedDate || appointment.date),
+            duration: 60,
+            isDuration: true,
+          } as unknown as Appointment)
+        } else {
+          setFormData({
+            ...emptyForm,
+            ...common,
+            clientID: appointment.clientID,
+            date: new Date(appointment.date),
+            startHour:
+              appointment.isFixedTime && appointment.startTime
+                ? new Date(appointment.startTime).getHours()
+                : 0,
+            startMinute:
+              appointment.isFixedTime && appointment.startTime
+                ? new Date(appointment.startTime).getMinutes()
+                : 0,
+            duration: appointment.duration,
+            fahrzeit: appointment.fahrzeit,
+            isFixedTime: appointment.isFixedTime,
+            id: appointment.id,
+          } as unknown as Appointment)
+        }
       }
     } else if (!isOpen) {
-      // Reset when closing
+      // Clear appointmentOverrides when explicitly closing
+      if (formData.id) {
+        clearAppointmentOverride(formData.id)
+      }
       setFormData(emptyForm)
     }
-  }, [isOpen, appointment, selectedDate, activeTab])
+  }, [isOpen, appointment, selectedDate, activeTab, getAppointmentWithOverrides, clearAppointmentOverride])
 
   useEffect(() => {
     const updateIndicator = () => {

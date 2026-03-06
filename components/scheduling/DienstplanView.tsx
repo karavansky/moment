@@ -38,6 +38,7 @@ function DienstplanView() {
   const monthRef = useRef<HTMLButtonElement>(null)
   const weekRef = useRef<HTMLButtonElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 })
+  const hasRestoredRef = useRef(false) // Track if we've already restored from sessionStorage
 
   const today = useVisibilityRefresh()
 
@@ -211,7 +212,92 @@ function DienstplanView() {
     setIsModalOpen(false)
     setSelectedAppointment(null)
     setIsNewAppointment(false)
+    // Clear saved appointment ID and modal type
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('dienstplan_selectedAppointmentId')
+      sessionStorage.removeItem('dienstplan_isModalOpen')
+      sessionStorage.removeItem('dienstplan_modalType')
+    }
+    // Reset restore flag to allow saving again on next modal open
+    hasRestoredRef.current = false
   }, [setSelectedAppointment, setIsNewAppointment, setIsModalOpen])
+
+  // Save selectedAppointment.id and modal type when modal opens (but not during restore)
+  useEffect(() => {
+    console.log('[DienstplanView] Save check:', {
+      isModalOpen,
+      selectedAppointmentId: selectedAppointment?.id,
+      isReportModalOpen,
+      hasRestored: hasRestoredRef.current,
+    })
+
+    if (typeof window !== 'undefined' && !hasRestoredRef.current) {
+      if ((isModalOpen || isReportModalOpen) && selectedAppointment?.id) {
+        const modalType = isReportModalOpen ? 'report' : 'regular'
+        console.log('[DienstplanView] Saving to sessionStorage:', selectedAppointment.id, 'modalType:', modalType)
+        sessionStorage.setItem('dienstplan_selectedAppointmentId', selectedAppointment.id)
+        sessionStorage.setItem('dienstplan_modalType', modalType)
+        sessionStorage.setItem('dienstplan_isModalOpen', 'true')
+      }
+    }
+  }, [isModalOpen, isReportModalOpen, selectedAppointment?.id])
+
+  // Restore selectedAppointment after data loads
+  useEffect(() => {
+    console.log('[DienstplanView] Restore check:', {
+      isLoading,
+      appointmentsLength: appointments.length,
+      selectedAppointmentId: selectedAppointment?.id,
+      savedId: typeof window !== 'undefined' ? sessionStorage.getItem('dienstplan_selectedAppointmentId') : null,
+      wasModalOpen: typeof window !== 'undefined' ? sessionStorage.getItem('dienstplan_isModalOpen') : null,
+      modalType: typeof window !== 'undefined' ? sessionStorage.getItem('dienstplan_modalType') : null,
+      hasRestored: hasRestoredRef.current,
+    })
+
+    if (!isLoading && appointments.length > 0 && typeof window !== 'undefined' && !hasRestoredRef.current) {
+      const savedId = sessionStorage.getItem('dienstplan_selectedAppointmentId')
+      const wasModalOpen = sessionStorage.getItem('dienstplan_isModalOpen') === 'true'
+      const modalType = sessionStorage.getItem('dienstplan_modalType') || 'regular'
+
+      console.log('[DienstplanView] Restore conditions:', { savedId, wasModalOpen, modalType })
+
+      // Restore if: 1) have savedId, 2) modal was open, 3) current appointment is missing or different ID
+      if (savedId && wasModalOpen) {
+        const needsRestore = !selectedAppointment || selectedAppointment.id !== savedId
+
+        console.log('[DienstplanView] needsRestore:', needsRestore, {
+          hasSelectedAppointment: !!selectedAppointment,
+          selectedAppointmentId: selectedAppointment?.id,
+          savedId,
+        })
+
+        if (needsRestore) {
+          const appointment = appointments.find(apt => apt.id === savedId)
+          console.log('[DienstplanView] Found appointment:', !!appointment)
+          if (appointment) {
+            console.log('[DienstplanView] Restoring selectedAppointment:', savedId, 'as modalType:', modalType)
+
+            // Mark that we're restoring to prevent save loop
+            hasRestoredRef.current = true
+
+            setSelectedAppointment(appointment)
+            // Set only the correct modal state based on saved type
+            if (modalType === 'report') {
+              setIsReportModalOpen(true)
+            } else {
+              setIsModalOpen(true)
+            }
+
+            // Clear sessionStorage after successful restore to prevent reopening on next reload
+            sessionStorage.removeItem('dienstplan_selectedAppointmentId')
+            sessionStorage.removeItem('dienstplan_isModalOpen')
+            sessionStorage.removeItem('dienstplan_modalType')
+            console.log('[DienstplanView] Cleared sessionStorage after restore')
+          }
+        }
+      }
+    }
+  }, [isLoading, appointments, selectedAppointment, setSelectedAppointment])
 
   // Логируем только mount/unmount, без зависимостей от данных
   useEffect(() => {

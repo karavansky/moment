@@ -123,6 +123,9 @@ interface SchedulingActions {
   upsertReport: (report: Report) => void
   openAppointment: (appointmentId: string, workerId: string) => void
   closeAppointment: (appointmentId: string) => void
+  setAppointmentOverride: (appointmentId: string, override: Partial<Appointment>) => void
+  getAppointmentWithOverrides: (appointmentId: string) => Appointment | undefined
+  clearAppointmentOverride: (appointmentId: string) => void
 }
 
 // Комбинированный тип для контекста
@@ -1163,6 +1166,28 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
           }
         })
       },
+
+      setAppointmentOverride: (appointmentId: string, override: Partial<Appointment>) => {
+        appointmentOverrides[appointmentId] = {
+          ...appointmentOverrides[appointmentId],
+          ...override,
+        }
+        // Don't trigger re-render here to avoid infinite loops
+        // The overrides will be applied when appointments are read
+      },
+
+      getAppointmentWithOverrides: (appointmentId: string) => {
+        const appointment = state.appointments.find(apt => apt.id === appointmentId)
+        if (!appointment) return undefined
+        const overrides = appointmentOverrides[appointmentId]
+        return overrides ? { ...appointment, ...overrides } : appointment
+      },
+
+      clearAppointmentOverride: (appointmentId: string) => {
+        delete appointmentOverrides[appointmentId]
+        // Optionally trigger re-render
+        setState(prev => ({ ...prev }))
+      },
     }),
     [
       loadLiveData,
@@ -1174,6 +1199,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
       refreshTeams,
       refreshGroups,
       refreshServices,
+      state.appointments,
     ]
   )
 
