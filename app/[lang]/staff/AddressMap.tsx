@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, memo, useMemo, useEffect } from 'react'
+import { useRef, memo, useMemo, useEffect, useCallback } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
@@ -45,9 +45,11 @@ interface AddressMapProps {
     lng: number
   } | null
   address: string
+  onCoordinatesChange?: (lat: number, lng: number) => void
+  draggable?: boolean
 }
 
-function AddressMap({ coordinates, address }: AddressMapProps) {
+function AddressMap({ coordinates, address, onCoordinatesChange, draggable = false }: AddressMapProps) {
   const customIcon = useRef(createCustomIcon())
   const center = useMemo(
     () =>
@@ -56,6 +58,12 @@ function AddressMap({ coordinates, address }: AddressMapProps) {
         : ([51.1657, 10.4515] as [number, number]),
     [coordinates]
   )
+
+  const handleMarkerDragEnd = useCallback((e: any) => {
+    const marker = e.target
+    const position = marker.getLatLng()
+    onCoordinatesChange?.(position.lat, position.lng)
+  }, [onCoordinatesChange])
 
   /*   // Debug logging
   const prevProps = useRef({ coordinates, address })
@@ -106,12 +114,27 @@ function AddressMap({ coordinates, address }: AddressMapProps) {
         <MapController center={center} />
         {tileLayer}
         {coordinates && (
-          <Marker position={center} icon={customIcon.current}>
+          <Marker
+            position={center}
+            icon={customIcon.current}
+            draggable={draggable}
+            eventHandlers={draggable ? {
+              dragend: handleMarkerDragEnd
+            } : undefined}
+          >
             <Popup>
               <div className="text-sm p-1">
                 <strong className="text-gray-900">Adresse:</strong>
                 <br />
                 <span className="text-gray-700">{address}</span>
+                {draggable && (
+                  <>
+                    <br />
+                    <span className="text-xs text-gray-500 italic mt-1 block">
+                      Marker kann verschoben werden
+                    </span>
+                  </>
+                )}
               </div>
             </Popup>
           </Marker>

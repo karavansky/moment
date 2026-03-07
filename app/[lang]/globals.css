@@ -331,6 +331,26 @@
     transform: scale(1.1);
   }
 
+  /* Draggable marker cursor */
+  .leaflet-marker-draggable {
+    cursor: move !important;
+    cursor: grab !important;
+  }
+
+  .leaflet-marker-draggable:active {
+    cursor: grabbing !important;
+  }
+
+  /* Visual feedback for draggable markers */
+  .leaflet-marker-draggable .custom-map-marker svg {
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 0 2px rgba(59, 130, 246, 0.5));
+  }
+
+  .leaflet-marker-draggable:active .custom-map-marker svg {
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.4)) drop-shadow(0 0 0 3px rgba(59, 130, 246, 0.7));
+    transform: scale(1.15);
+  }
+
   /* Timer tooltip над маркером */
   .timer-tooltip {
     background: rgba(22, 163, 74, 0.95) !important;

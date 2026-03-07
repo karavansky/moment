@@ -20,6 +20,7 @@ import {
 } from '@heroui/react'
 import { Client } from '@/types/scheduling'
 import { CountriesHelper } from '@/lib/countries'
+import { getGeocodingApiUrl } from '@/lib/european-countries'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import dynamic from 'next/dynamic'
 import { useAsyncList } from '@react-stately/data'
@@ -112,8 +113,7 @@ export const ClientAdress = memo(function ClientAdress({
       }
       console.log('Fetching cities from API with query:', filterText, 'and country:', country, 'code:', countryCode)
       try {
-        const isGermany = countryCode?.toLowerCase() === 'de'
-        const baseUrl = isGermany ? '/api/photon' : 'https://photon.komoot.io/api'
+        const baseUrl = getGeocodingApiUrl(countryCode)
         const url = `${baseUrl}?q=${encodeURIComponent(filterText)}&osm_tag=place&lang=de&limit=50`
 
         const res = await fetch(url, { signal })
@@ -192,8 +192,7 @@ export const ClientAdress = memo(function ClientAdress({
 
       try {
         const searchQuery = `${streetQuery} ${cityName} ${countryName}`
-        const isGermany = countryCodeValue?.toLowerCase() === 'de'
-        const baseUrl = isGermany ? '/api/photon' : 'https://photon.komoot.io/api'
+        const baseUrl = getGeocodingApiUrl(countryCodeValue)
         const url = `${baseUrl}?q=${encodeURIComponent(searchQuery)}&osm_tag=highway&lang=de&limit=50`
 
         const res = await fetch(url, { signal })
@@ -334,8 +333,7 @@ export const ClientAdress = memo(function ClientAdress({
 
       try {
         const searchQuery = `${query} ${countryName}`
-        const isGermany = countryCodeValue?.toLowerCase() === 'de'
-        const baseUrl = isGermany ? '/api/photon' : 'https://photon.komoot.io/api'
+        const baseUrl = getGeocodingApiUrl(countryCodeValue)
 
         // const url = `/api/photon?q=${encodeURIComponent(searchQuery)}&osm_tag=place&lang=de&limit=20`
         const url = `${baseUrl}?q=${encodeURIComponent(searchQuery)}&osm_tag=place&lang=de&limit=20`
@@ -393,8 +391,7 @@ export const ClientAdress = memo(function ClientAdress({
           ? `${street} ${houseNumber}, ${city}, ${countryValue.toLowerCase() === 'de' ? 'Germany' : countryValue}`
           : `${street}, ${city}, ${countryValue}`
 
-        const isGermany = countryValue.toLowerCase() === 'de'
-        const baseUrl = isGermany ? '/api/photon' : 'https://photon.komoot.io/api'
+        const baseUrl = getGeocodingApiUrl(countryValue)
         const url = `${baseUrl}?q=${encodeURIComponent(fullAddress)}&limit=1`
         // const url = `/api/photon?q=${encodeURIComponent(fullAddress)}&limit=1`
 
@@ -956,6 +953,15 @@ export const ClientAdress = memo(function ClientAdress({
               <AddressMap
                 coordinates={addressCoordinates}
                 address={`${addressData.street} ${addressData.houseNumber}, ${addressData.zipCode} ${addressData.city}, ${country}`}
+                draggable={isHouseInvalid}
+                onCoordinatesChange={(lat: number, lng: number) => {
+                  setAddressCoordinates({ lat, lng })
+                  setAddressData(prev => ({
+                    ...prev,
+                    latitude: lat,
+                    longitude: lng,
+                  }))
+                }}
               />
             </div>{' '}
           </div>
