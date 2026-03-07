@@ -1,0 +1,40 @@
+[Unit]
+Description=WebSocket Server
+After=network.target
+
+[Service]
+Type=simple
+User=hronop
+WorkingDirectory=/home/hronop/websocket
+ExecStart=/home/hronop/websocket/.build/release/WebSocketServer
+Restart=always
+RestartSec=3
+StandardOutput=append:/var/log/websocket.log
+StandardError=append:/var/log/websocket-error.log
+CapabilityBoundingSet=CAP_SYS_NICE
+AmbientCapabilities=CAP_SYS_NICE
+
+# Environment variables (if needed)
+Environment="ENVIRONMENT=production"
+
+# CPU настройки
+#Nice=-10
+#CPUWeight=200
+#CPUQuota=400%
+
+# Memory настройки
+#MemoryHigh=2G
+#MemoryMax=4G
+
+# I/O настройки
+IOWeight=200
+
+# Файловые дескрипторы (для большого количества соединений)
+LimitNOFILE=65536
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

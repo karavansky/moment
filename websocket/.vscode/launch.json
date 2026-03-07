@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:websocket}",
+      "name": "Debug WebSocketServer",
+      "target": "WebSocketServer",
+      "configuration": "debug",
+      "preLaunchTask": "swift: Build Debug WebSocketServer"
+    },
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:websocket}",
+      "name": "Release WebSocketServer",
+      "target": "WebSocketServer",
+      "configuration": "release",
+      "preLaunchTask": "swift: Build Release WebSocketServer"
+    }
+  ]
+}

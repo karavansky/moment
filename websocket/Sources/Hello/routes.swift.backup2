@@ -1,0 +1,409 @@
+import Fluent
+import FluentSQLiteDriver
+import Vapor
+
+func routes(_ app: Application) throws {
+    // Health check
+    app.get("health") { req in
+        return ["status": "ok"]
+    }
+
+    // Get user status history
+    app.get("user", "status-history") { req async throws -> [UserStatusHistoryResponse] in
+        guard let username = try? req.query.get(String.self, at: "username") else {
+            throw Abort(.badRequest, reason: "Username parameter is required")
+        }
+        
+        let history = try await UserStatusHistory.query(on: req.db)
+            .filter(\.$username == username)
+            .all()
+        
+        return history.map { record in
+            UserStatusHistoryResponse(
+                username: record.username,
+                isOnline: record.isOnline,
+                timestamp: record.timestamp ?? 0
+            )
+        }
+    }
+
+    // Debug route
+    app.get("status-test") { req async throws -> String in
+        let count = try await UserStatusHistory.query(on: req.db).count()
+        return "Count: \(count)"
+    }
+
+
+
+    // Test simple string
+    app.get("status-simple") { req async throws -> String in
+        let history = try await UserStatusHistory.query(on: req.db).all()
+        return "Count: \(history.count), First: \(history.first?.username ?? "none")"
+    }
+    // Test all records
+    app.get("status-all") { req async throws -> [UserStatusHistoryResponse] in
+        let history = try await UserStatusHistory.query(on: req.db).all()
+        return history.map { record in
+            UserStatusHistoryResponse(
+                username: record.username,
+                isOnline: record.isOnline,
+                timestamp: record.timestamp ?? 0
+            )
+        }
+    }
+    // Register
+    app.post("register") { req async throws -> AuthResponse in
+        let registerData = try req.content.decode(RegisterRequest.self)
+
+        // Check if user exists
+        if (try await User.query(on: req.db)
+            .filter(\.$username == registerData.username)
+            .first()) != nil
+        {
+            throw Abort(.conflict, reason: "Username already exists")
+        }
+
+        // Hash password
+        let passwordHash = try Bcrypt.hash(registerData.password)
+
+        // Generate token
+        let token = [UInt8].random(count: 32).base64
+
+        // Create user
+        let user = User(username: registerData.username, passwordHash: passwordHash, token: token)
+        try await user.save(on: req.db)
+
+        return AuthResponse(token: token, username: registerData.username)
+    }
+
+    // Get user status history
+    app.post("login") { req async throws -> AuthResponse in
+        let loginData = try req.content.decode(LoginRequest.self)
+
+        // Find user
+        guard
+            let user = try await User.query(on: req.db)
+                .filter(\.$username == loginData.username)
+                .first()
+        else {
+            throw Abort(.unauthorized, reason: "Invalid credentials")
+        }
+
+        // Verify password
+        guard try Bcrypt.verify(loginData.password, created: user.passwordHash) else {
+            throw Abort(.unauthorized, reason: "Invalid credentials")
+        }
+
+        return AuthResponse(token: user.token, username: user.username)
+    }
+
+    // Get user status history
+    app.get("messages") { req async throws -> [Message] in
+        guard let token = req.headers.bearerAuthorization?.token else {
+            throw Abort(.unauthorized)
+        }
+
+        // Verify token
+        guard
+            (try await User.query(on: req.db)
+                .filter(\.$token == token)
+                .first()) != nil
+        else {
+            throw Abort(.unauthorized)
+        }
+
+        return try await Message.query(on: req.db)
+            .sort(\.$createdAt, .descending)
+            .limit(50)
+            .all()
+    }
+
+    // Get user status history
+    app.get("users") { req async throws -> [UserResponse] in
+        let users = try await User.query(on: req.db).all()
+        return users.map { user in
+            UserResponse(username: user.username, status: user.status, isOnline: user.isOnline)
+        }
+    }
+
+    // Get user status history
+    app.get("user") { req async throws -> [MessageResponse] in
+        guard let username = try? req.query.get(String.self, at: "username") else {
+            throw Abort(.badRequest, reason: "Username parameter is required")
+        }
+        
+        let messages = try await Message.query(on: req.db)
+            .filter(\.$username == username)
+            .sort(\.$createdAt, .descending)
+            .all()
+        
+        return messages.map { message in
+            MessageResponse(
+                id: message.id ?? UUID(),
+                username: message.username,
+                content: message.content,
+                createdAt: message.createdAt ?? Date()
+            )
+        }
+    }
+
+    // Get user status history
+    app.webSocket("chat") { req, ws in
+        // Get token from query
+        guard let token = try? req.query.get(String.self, at: "token") else {
+            _ = ws.close(code: .policyViolation)
+            return
+        }
+
+        // We need to query DB asynchronously, so we use eventLoop.future
+        let userQuery: EventLoopFuture<User?> = User.query(on: req.db)
+            .filter(\.$token == token)
+            .first()
+
+        userQuery.whenComplete { result in
+            guard case .success(let user?) = result else {
+                _ = ws.close(code: .policyViolation)
+                return
+            }
+
+            // Add to manager
+            req.application.wsManager.add(token: token, socket: ws, database: req.db)
+            let host: String? = req.headers.first(name: .host)
+            // Send welcome message
+            let welcomeMsg = WSMessage(
+                type: "system",
+                content: "Welcome, \(user.username)! Host: \(host ?? "unknown")",
+                username: nil,
+                timestamp: Date().timeIntervalSince1970,
+                host: host ?? nil
+            )
+            let welcomeData = String(data: try! JSONEncoder().encode(welcomeMsg), encoding: .utf8)!
+            ws.send(welcomeData)
+
+            // Broadcast join
+            let joinMsg = WSMessage(
+                type: "join",
+                content: "\(user.username) joined the chat",
+                username: user.username,
+                timestamp: Date().timeIntervalSince1970,
+                host: host ?? nil
+            )
+
+            req.application.wsManager.broadcast(
+                message: String(data: try! JSONEncoder().encode(joinMsg), encoding: .utf8)!,
+                except: token
+            )
+
+            // Broadcast user status online
+            let statusMsg = WSMessage(
+                type: "user_status",
+                content: "online",
+                username: user.username,
+                timestamp: Date().timeIntervalSince1970,
+                host: host ?? nil
+            )
+            req.application.wsManager.broadcast(
+                message: String(data: try! JSONEncoder().encode(statusMsg), encoding: .utf8)!
+            )
+            // Handle messages
+            ws.onText { ws, text in
+                //req.logger.info("Raw message: \(text)")
+
+                // Update activity timestamp
+                req.application.wsManager.updateActivity(token: token)
+
+                // Update user status to online and save history
+                if !user.isOnline {
+                    user.isOnline = true
+                    _ = user.save(on: req.db)
+                    
+                    // Record status change
+                    let statusHistory = UserStatusHistory(username: user.username, isOnline: true)
+                    _ = statusHistory.save(on: req.db)
+                }
+
+                // Parse base message to get type
+                guard let data = text.data(using: .utf8) else {
+                    req.logger.warning("Failed to convert text to data")
+                    return
+                }
+
+                // Try to get message type
+                if let baseMessage = try? JSONDecoder().decode(BaseMessage.self, from: data) {
+                    switch baseMessage.type {
+                    case "ping":
+                        let pongResponse = "{\"type\":\"pong\"}"
+                        ws.send(pongResponse)
+                        return
+
+                    case "subscribe":
+                        // Subscribe to message type: {"type":"subscribe","messageType":"cpu_status"}
+                        if let subscribeData = try? JSONDecoder().decode(
+                            [String: String].self, from: data),
+                            let messageType = subscribeData["messageType"]
+                        {
+                            req.application.wsManager.subscribe(token: token, to: messageType)
+                            let ackResponse = WSMessage(
+                                type: "subscribed",
+                                content: messageType,
+                                username: nil,
+                                timestamp: Date().timeIntervalSince1970,
+                                host: nil
+                            )
+                            let ackData = String(data: try! JSONEncoder().encode(ackResponse), encoding: .utf8)!
+                            ws.send(ackData)
+                        }
+                        return
+
+                    case "unsubscribe":
+                        // Unsubscribe from message type: {"type":"unsubscribe","messageType":"cpu_status"}
+                        if let unsubscribeData = try? JSONDecoder().decode(
+                            [String: String].self, from: data),
+                            let messageType = unsubscribeData["messageType"]
+                        {
+                            req.application.wsManager.unsubscribe(token: token, from: messageType)
+                            let ackResponse = WSMessage(
+                                type: "unsubscribed",
+                                content: messageType,
+                                username: nil,
+                                timestamp: Date().timeIntervalSince1970,
+                                host: nil
+                            )
+                            let ackData = String(data: try! JSONEncoder().encode(ackResponse), encoding: .utf8)!
+                            ws.send(ackData)
+                        }
+                        return
+
+                    case "cpu":
+                        // req.logger.info("Detected CPU message, will NOT save to DB")
+                        if let cpuMessage = try? JSONDecoder().decode(CPUMessage.self, from: data),
+                            let cpuValue = Double(cpuMessage.message)
+                        {
+                            user.status = Int(cpuValue)
+                            user.update(on: req.db).whenComplete { result in
+                                switch result {
+                                case .success:
+                                    // req.logger.info("User \(user.username) CPU status updated to \(cpuValue)")
+                                    // Broadcast CPU status update to subscribers only
+                                    let cpuStatusMsg = WSMessage(
+                                        type: "cpu_status",
+                                        content: String(Int(cpuValue)),
+                                        username: user.username,
+                                        timestamp: Date().timeIntervalSince1970,
+                                        host: nil
+                                    )
+                                    req.application.wsManager.broadcastToSubscribers(
+                                        message: String(
+                                            data: try! JSONEncoder().encode(cpuStatusMsg),
+                                            encoding: .utf8)!,
+                                        messageType: "cpu_status",
+                                        except: token
+                                    )
+
+                                case .failure(let error):
+                                    req.logger.error("Failed to update CPU status: \(error)")
+                                }
+                            }
+                        }
+                        return
+
+                    case "log":
+                        // Log messages - save to DB and broadcast to subscribers
+                        req.logger.info("Detected log message, saving to DB and broadcasting")
+                        
+                        // Update user status to online if needed and save history
+                        if !user.isOnline {
+                            user.isOnline = true
+                            _ = user.save(on: req.db)
+                            
+                            // Record status change
+                            let statusHistory = UserStatusHistory(username: user.username, isOnline: true)
+                            _ = statusHistory.save(on: req.db)
+                        }
+                        
+                        let message = Message(username: user.username, content: text)
+                        message.save(on: req.db).whenComplete { _ in
+                            // Broadcast to subscribers after save
+                            let broadcastMsg = WSMessage(
+                                type: "message",
+                                content: text,
+                                username: user.username,
+                                timestamp: Date().timeIntervalSince1970,
+                                host: host ?? nil
+                            )
+                            let jsonData = try! JSONEncoder().encode(broadcastMsg)
+                            req.application.wsManager.broadcastToSubscribers(
+                                message: String(data: jsonData, encoding: .utf8)!,
+                                messageType: "all_messages"
+                            )
+                        }
+                        return
+
+                    default: break
+                    // req.logger.info("Unknown message type: \(baseMessage.type), will save to DB")
+                    }
+                }
+
+                // req.logger.info("Saving regular message to DB")
+                // Save regular message asynchronously
+                let message: Message = Message(username: user.username, content: text)
+                message.save(on: req.db).whenComplete { _ in
+                    // Broadcast after save
+                    let broadcastMsg = WSMessage(
+                        type: "message",
+                        content: text,
+                        username: user.username,
+                        timestamp: Date().timeIntervalSince1970,
+                        host: host ?? nil
+                    )
+                    let jsonData = try! JSONEncoder().encode(broadcastMsg)
+                    req.application.wsManager.broadcastToSubscribers(
+                        message: String(data: jsonData, encoding: .utf8)!,
+                        messageType: "all_messages"
+                    )
+                }
+            }
+
+            // Handle close
+            ws.onClose.whenComplete { _ in
+                // Update user status to offline and save history
+                if user.isOnline {
+                    user.isOnline = false
+                    _ = user.save(on: req.db)
+                    
+                    // Record status change
+                    let statusHistory = UserStatusHistory(username: user.username, isOnline: false)
+                    _ = statusHistory.save(on: req.db)
+                }
+
+                // Remove from manager
+                req.application.wsManager.remove(token: token, database: req.db)
+
+                // Broadcast leave
+                let leaveMsg = WSMessage(
+                    type: "leave",
+                    content: "\(user.username) left the chat",
+                    username: user.username,
+                    timestamp: Date().timeIntervalSince1970,
+                    host: host ?? nil
+                )
+                req.application.wsManager.broadcast(
+                    message: String(data: try! JSONEncoder().encode(leaveMsg), encoding: .utf8)!
+                )
+
+                // Broadcast user status offline
+                let statusMsg = WSMessage(
+                    type: "user_status",
+                    content: "offline",
+                    username: user.username,
+                    timestamp: Date().timeIntervalSince1970,
+                    host: host ?? nil
+                )
+                req.application.wsManager.broadcast(
+                    message: String(data: try! JSONEncoder().encode(statusMsg), encoding: .utf8)!
+                )
+            }
+        }
+    }
+
+}

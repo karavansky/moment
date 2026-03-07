@@ -1,0 +1,157 @@
+import Fluent
+import NIOCore
+import Vapor
+
+struct WebSocketManagerKey: StorageKey {
+    typealias Value = WebSocketManager
+}
+/// Thread-safe manager that stores each WebSocket together with its EventLoop.
+/// All operations are executed on the associated EventLoop to avoid crossing event loops.
+final class WebSocketManager: @unchecked Sendable {
+    private var clients: [String: (ws: WebSocket, el: any EventLoop, lastActivity: Date)] = [:]
+    private var subscriptions: [String: Set<String>] = [:]  // token -> set of message types
+    private let lock = NSLock()
+    private var activityCheckTimer: RepeatedTask?
+
+    func add(token: String, socket: WebSocket, database: any Database) {
+        lock.lock()
+        defer { lock.unlock() }
+        clients[token] = (socket, socket.eventLoop, Date())
+        print("[WebSocketManager] Client added. Total clients: \(clients.count)")
+
+        // Set user online
+        User.query(on: database)
+            .filter(\.$token == token)
+            .first()
+            .whenComplete { result in
+                if case .success(let user?) = result {
+                    user.isOnline = true
+                    user.update(on: database).whenComplete { _ in }
+                }
+            }
+    }
+
+    func remove(token: String, database: any Database) {
+        lock.lock()
+        defer { lock.unlock() }
+        _ = clients.removeValue(forKey: token)
+        _ = subscriptions.removeValue(forKey: token)
+        print("[WebSocketManager] Client removed. Total clients: \(clients.count)")
+
+        // Set user offline
+        User.query(on: database)
+            .filter(\.$token == token)
+            .first()
+            .whenComplete { result in
+                if case .success(let user?) = result {
+                    user.isOnline = false
+                    user.update(on: database).whenComplete { _ in }
+                }
+            }
+    }
+
+    func updateActivity(token: String) {
+        lock.lock()
+        defer { lock.unlock() }
+        if var client = clients[token] {
+            client.lastActivity = Date()
+            clients[token] = client
+        }
+    }
+
+    func startActivityMonitoring(on eventLoop: any EventLoop, database: any Database) {
+        activityCheckTimer = eventLoop.scheduleRepeatedTask(
+            initialDelay: .seconds(1), delay: .seconds(1)
+        ) { _ in
+            self.checkInactiveUsers(database: database)
+        }
+    }
+
+    func stopActivityMonitoring() {
+        activityCheckTimer?.cancel()
+    }
+
+    func subscribe(token: String, to messageType: String) {
+        lock.lock()
+        defer { lock.unlock() }
+        if subscriptions[token] == nil {
+            subscriptions[token] = []
+        }
+        subscriptions[token]?.insert(messageType)
+    }
+
+    func unsubscribe(token: String, from messageType: String) {
+        lock.lock()
+        defer { lock.unlock() }
+        subscriptions[token]?.remove(messageType)
+    }
+
+    func isSubscribed(token: String, to messageType: String) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return subscriptions[token]?.contains(messageType) ?? false
+    }
+
+    private func checkInactiveUsers(database: any Database) {
+        lock.lock()
+        let inactiveTokens = clients.filter { _, client in
+            Date().timeIntervalSince(client.lastActivity) > 2.0
+        }.map { $0.key }
+        lock.unlock()
+
+        for token in inactiveTokens {
+            User.query(on: database)
+                .filter(\.$token == token)
+                .first()
+                .whenComplete { result in
+                    if case .success(let user?) = result {
+                        user.isOnline = false
+                        user.update(on: database).whenComplete { _ in }
+                    }
+                }
+        }
+    }
+
+    func broadcast(message: String, except: String? = nil) {
+        lock.lock()
+        let targets: [(ws: WebSocket, el: any EventLoop, lastActivity: Date)] = clients.filter {
+            $0.key != except
+        }.map { $0.value }
+        // print("[WebSocketManager] Broadcasting to \(targets.count) clients (total: \(clients.count), except: \(except ?? "none"))")
+        // print("[WebSocketManager] Message: \(message)")
+        lock.unlock()
+
+        for target: (ws: WebSocket, el: any EventLoop, lastActivity: Date) in targets {
+            target.el.execute {
+                //print("[WebSocketManager] Sending to client...")
+                target.ws.send(message)
+            }
+        }
+    }
+
+    func broadcastToSubscribers(message: String, messageType: String, except: String? = nil) {
+        lock.lock()
+        let subscribedTokens = subscriptions.filter { token, types in
+            token != except && types.contains(messageType)
+        }.map { $0.key }
+
+        let targets = subscribedTokens.compactMap { token in clients[token] }
+        lock.unlock()
+
+        for target in targets {
+            target.el.execute {
+                target.ws.send(message)
+            }
+        }
+    }
+
+    func send(to token: String, message: String) {
+        lock.lock()
+        let target: (ws: WebSocket, el: any EventLoop, lastActivity: Date)? = clients[token]
+        lock.unlock()
+
+        if let t: (ws: WebSocket, el: any EventLoop, lastActivity: Date) = target {
+            t.el.execute { t.ws.send(message) }
+        }
+    }
+}

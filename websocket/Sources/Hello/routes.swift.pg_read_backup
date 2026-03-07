@@ -1,0 +1,610 @@
+import Fluent
+import FluentSQLiteDriver
+import Vapor
+
+func routes(_ app: Application) throws {
+    // Health check
+    app.get("health") { req in
+        return ["status": "ok"]
+    }
+
+    // Server statistics endpoint for monitoring
+    app.get("server-stats") { req async throws -> String in
+        let wsManager = req.application.wsManager
+        let activeConnections = wsManager.getActiveConnectionsCount()
+        let userSessions = wsManager.getUserSessionsCount()
+
+        let totalUsers = try await User.query(on: req.db).count()
+        let onlineUsers = try await User.query(on: req.db).filter(\.$isOnline == true).count()
+
+        // Get session statistics from Redis
+        let totalSessions = try await req.sessionManager.getActiveSessionsCount()
+        let activeSessions = totalSessions  // All Redis sessions are active (expired ones auto-deleted)
+
+        let stats = """
+            ╔═══════════════════════════════════════════════════════════╗
+            ║         VAPOR WEBSOCKET SERVER STATISTICS                 ║
+            ╠═══════════════════════════════════════════════════════════╣
+            ║ Time: \(Date())                                            
+            ╠═══════════════════════════════════════════════════════════╣
+            ║ WebSocket Connections:                                    ║
+            ║   • Active Connections:        \(String(format: "%4d", activeConnections))                          ║
+            ║   • Unique Users Connected:    \(String(format: "%4d", userSessions))                          ║
+            ╠═══════════════════════════════════════════════════════════╣
+            ║ Database Statistics:                                      ║
+            ║   • Total Users:               \(String(format: "%4d", totalUsers))                          ║
+            ║   • Online Users:              \(String(format: "%4d", onlineUsers))                          ║
+            ║   • Total Sessions (Redis):    \(String(format: "%4d", totalSessions))                          ║
+            ║   • Active Sessions (valid):   \(String(format: "%4d", activeSessions))                          ║
+            ╠═══════════════════════════════════════════════════════════╣
+            ║ Performance Metrics:                                      ║
+            ║   • Connections per User:      \(String(format: "%.2f", userSessions > 0 ? Double(activeConnections) / Double(userSessions) : 0))                           ║
+            ║   • Session Hit Rate:          \(String(format: "%3.0f", totalSessions > 0 ? Double(activeSessions) * 100 / Double(totalSessions) : 0))%%                         ║
+            ╚═══════════════════════════════════════════════════════════╝
+
+            To see system resources, run in terminal:
+            $ top -b -n 1 | grep WebSocketServer
+            $ ps aux | grep WebSocketServer
+            """
+
+        return stats
+    }
+
+    // Get user status history
+    app.get("user", "status-history") { req async throws -> [UserStatusHistoryResponse] in
+        guard let username = try? req.query.get(String.self, at: "username") else {
+            throw Abort(.badRequest, reason: "Username parameter is required")
+        }
+
+        let history = try await UserStatusHistory.query(on: req.db)
+            .filter(\.$username == username)
+            .sort(\.$timestamp, .descending)
+            .all()
+
+        return history.map { record in
+            UserStatusHistoryResponse(
+                username: record.username,
+                isOnline: record.isOnline,
+                timestamp: record.timestamp ?? 0
+            )
+        }
+    }
+
+    // Debug route
+    app.get("status-test") { req async throws -> String in
+        let count = try await UserStatusHistory.query(on: req.db).count()
+        return "Count: \(count)"
+    }
+
+    // Test simple string
+    app.get("status-simple") { req async throws -> String in
+        let history = try await UserStatusHistory.query(on: req.db).all()
+        return "Count: \(history.count), First: \(history.first?.username ?? "none")"
+    }
+    // Test all records
+    app.get("status-all") { req async throws -> [UserStatusHistoryResponse] in
+        let history = try await UserStatusHistory.query(on: req.db).all()
+        return history.map { record in
+            UserStatusHistoryResponse(
+                username: record.username,
+                isOnline: record.isOnline,
+                timestamp: record.timestamp ?? 0
+            )
+        }
+    }
+    // Register
+    app.post("register") { req async throws -> AuthResponse in
+        let registerData = try req.content.decode(RegisterRequest.self)
+
+        // Check if user exists
+        if (try await User.query(on: req.db)
+            .filter(\.$username == registerData.username)
+            .first()) != nil
+        {
+            throw Abort(.conflict, reason: "Username already exists")
+        }
+
+        // Hash password
+        let passwordHash = try Bcrypt.hash(registerData.password)
+
+        // Create user (set empty token for DB compatibility)
+        let user = User(username: registerData.username, passwordHash: passwordHash, token: "")
+        // STAGE 1: Save to both databases
+        try await user.saveToBoth(on: req).get()
+
+        // Create session in Redis
+        let sessionId = try await req.sessionManager.createSession(username: user.username, expiresIn: 86400)
+
+        return AuthResponse(
+            username: registerData.username,
+            sessionId: sessionId
+        )
+    }
+
+    // Login
+    app.post("login") { req async throws -> AuthResponse in
+        let loginData = try req.content.decode(LoginRequest.self)
+
+        // Find user
+        guard
+            let user = try await User.query(on: req.db)
+                .filter(\.$username == loginData.username)
+                .first()
+        else {
+            throw Abort(.unauthorized, reason: "Invalid credentials")
+        }
+
+        // Verify password
+        guard try Bcrypt.verify(loginData.password, created: user.passwordHash) else {
+            throw Abort(.unauthorized, reason: "Invalid credentials")
+        }
+
+        // Create new session in Redis
+        let sessionId = try await req.sessionManager.createSession(username: user.username, expiresIn: 86400)
+
+        return AuthResponse(
+            username: user.username,
+            sessionId: sessionId
+        )
+    }
+
+    // Logout - delete session and close WebSocket connections
+    app.post("logout") { req async throws -> HTTPStatus in
+        // Get sessionId from header or query
+        guard
+            let sessionId = req.headers.first(name: "X-Session-ID")
+                ?? (try? req.query.get(String.self, at: "sessionId"))
+        else {
+            throw Abort(
+                .badRequest,
+                reason: "Session ID required in X-Session-ID header or sessionId query parameter")
+        }
+
+        // Get session from Redis
+        guard let session = try await req.sessionManager.getSession(sessionId: sessionId) else {
+            throw Abort(.notFound, reason: "Session not found")
+        }
+
+        let username = session.username
+
+        // Delete session from Redis
+        try await req.sessionManager.deleteSession(sessionId: sessionId)
+
+        // Close all WebSocket connections for this session
+        req.application.wsManager.remove(sessionId: sessionId, database: req.db, userStatusCache: req.userStatusCache)
+
+        req.logger.info("🚪 User '\(username)' logged out, sessionId='\(sessionId.prefix(8))...'")
+
+        return .noContent
+    }
+
+    // Get user status history
+    app.get("messages") { req async throws -> [Message] in
+        guard let token = req.headers.bearerAuthorization?.token else {
+            throw Abort(.unauthorized)
+        }
+
+        // Verify token
+        guard
+            (try await User.query(on: req.db)
+                .filter(\.$token == token)
+                .first()) != nil
+        else {
+            throw Abort(.unauthorized)
+        }
+
+        return try await Message.query(on: req.db)
+            .sort(\.$createdAt, .descending)
+            .limit(50)
+            .all()
+    }
+
+    // Get user status history
+    app.get("users") { req async throws -> [UserResponse] in
+        let users = try await User.query(on: req.db).all()
+        return users.map { user in
+            UserResponse(
+                username: user.username, status: user.status, isOnline: user.isOnline,
+                lastActivity: user.lastActivity)
+        }
+    }
+
+    // Get user status history
+    app.get("user") { req async throws -> [MessageResponse] in
+        guard let username = try? req.query.get(String.self, at: "username") else {
+            throw Abort(.badRequest, reason: "Username parameter is required")
+        }
+
+        let messages = try await Message.query(on: req.db)
+            .filter(\.$username == username)
+            .sort(\.$createdAt, .descending)
+            .all()
+
+        return messages.map { message in
+            MessageResponse(
+                id: message.id ?? UUID(),
+                username: message.username,
+                content: message.content,
+                createdAt: message.createdAt ?? Date()
+            )
+        }
+    }
+
+    // Get user status history
+    app.webSocket("chat") { req, ws in
+        // Log connection attempt with IP and headers
+        let clientIP = req.remoteAddress?.description ?? "unknown"
+        let userAgent = req.headers.first(name: "User-Agent") ?? "unknown"
+
+        // Get sessionId from query
+        guard let sessionId = try? req.query.get(String.self, at: "sessionId") else {
+            req.logger.warning(
+                "❌ WebSocket rejected: No sessionId provided. IP: \(clientIP), User-Agent: \(userAgent)"
+            )
+            _ = ws.close(code: .policyViolation)
+            return
+        }
+
+        // Validate session in Redis using EventLoopFuture
+        let sessionFuture = req.eventLoop.makeFutureWithTask {
+            try await req.sessionManager.getSession(sessionId: sessionId)
+        }
+
+        sessionFuture.whenComplete { result in
+            guard case .success(let session?) = result else {
+                req.logger.warning(
+                    "❌ WebSocket rejected: Invalid or expired sessionId '\(sessionId.prefix(8))...'. IP: \(clientIP), User-Agent: \(userAgent)"
+                )
+                _ = ws.close(code: .policyViolation)
+                return
+            }
+
+            // Update session activity
+            _ = req.eventLoop.makeFutureWithTask {
+                try? await req.sessionManager.updateActivity(sessionId: sessionId)
+            }
+
+            // Log successful connection
+            req.logger.info(
+                "✅ WebSocket connected: user='\(session.username)', sessionId='\(sessionId.prefix(8))...', IP: \(clientIP), User-Agent: \(userAgent), isClosed=\(ws.isClosed)"
+            )
+
+            // Add to manager
+            req.application.wsManager.add(
+                sessionId: sessionId, socket: ws, username: session.username, database: req.db)
+            let host: String? = req.headers.first(name: .host)
+            // Send welcome message
+            let welcomeMsg = WSMessage(
+                type: "system",
+                content: "Welcome, \(session.username)! Host: \(host ?? "unknown")",
+                username: nil,
+                timestamp: Date().timeIntervalSince1970,
+                host: host ?? nil
+            )
+            let welcomeData = String(data: try! JSONEncoder().encode(welcomeMsg), encoding: .utf8)!
+
+            if ws.isClosed {
+                req.logger.warning("⚠️ WebSocket already closed before welcome message! sessionId='\(sessionId.prefix(8))...'")
+                return
+            }
+
+            req.logger.info("📤 Sending welcome message to sessionId='\(sessionId.prefix(8))...'")
+            ws.send(welcomeData, promise: nil)
+
+            // Broadcast join
+            let joinMsg = WSMessage(
+                type: "join",
+                content: "\(session.username) joined the chat",
+                username: session.username,
+                timestamp: Date().timeIntervalSince1970,
+                host: host ?? nil
+            )
+
+            req.application.wsManager.broadcastMessage(
+                message: String(data: try! JSONEncoder().encode(joinMsg), encoding: .utf8)!,
+                messageType: "system_events",
+                fromUsername: session.username,
+                exceptSessionId: sessionId
+            )
+
+            // Broadcast user status online
+            let statusMsg = WSMessage(
+                type: "user_status",
+                content: "online",
+                username: session.username,
+                timestamp: Date().timeIntervalSince1970,
+                host: host ?? nil
+            )
+            req.application.wsManager.broadcastMessage(
+                message: String(data: try! JSONEncoder().encode(statusMsg), encoding: .utf8)!,
+                messageType: "user_status",
+                fromUsername: session.username
+            )
+            // Handle messages
+            ws.onText { ws, text in
+                //req.logger.info("Raw message: \(text)")
+
+                // Update activity timestamp in Redis (non-blocking)
+                _ = req.eventLoop.makeFutureWithTask {
+                    try? await req.sessionManager.updateActivity(sessionId: sessionId)
+                }
+
+                // Update activity in WebSocketManager (for ping/pong tracking)
+                req.application.wsManager.updateActivity(sessionId: sessionId, database: req.db, userStatusCache: req.userStatusCache)
+
+                // Update user status in cache (non-blocking, no SQLite)
+                _ = req.eventLoop.makeFutureWithTask {
+                    try? await req.userStatusCache.updateUserStatus(
+                        username: session.username,
+                        isOnline: true
+                    )
+                }
+
+                // Parse base message to get type
+                guard let data = text.data(using: .utf8) else {
+                    req.logger.warning("Failed to convert text to data")
+                    return
+                }
+
+                // Try to get message type
+                if let baseMessage = try? JSONDecoder().decode(BaseMessage.self, from: data) {
+                    switch baseMessage.type {
+                    case "ping":
+                        // Client sent ping - respond with pong (activity already updated above)
+                        let pongResponse = "{\"type\":\"pong\"}"
+                        if ws.isClosed {
+                            req.logger.warning("⚠️ Cannot send pong - WebSocket closed, sessionId='\(sessionId.prefix(8))...'")
+                            return
+                        }
+                        ws.send(pongResponse, promise: nil)
+                        return
+
+                    case "pong":
+                        // Client responded to our ping - activity already updated above
+                        return
+
+                    case "subscribe":
+                        // Subscribe to message type: {"type":"subscribe","messageType":"cpu_status"}
+                        if let subscribeData = try? JSONDecoder().decode(
+                            [String: String].self, from: data),
+                            let messageType = subscribeData["messageType"]
+                        {
+                            req.application.wsManager.subscribe(
+                                sessionId: sessionId, to: messageType)
+                            let ackResponse = WSMessage(
+                                type: "subscribed",
+                                content: messageType,
+                                username: nil,
+                                timestamp: Date().timeIntervalSince1970,
+                                host: nil
+                            )
+                            let ackData = String(
+                                data: try! JSONEncoder().encode(ackResponse), encoding: .utf8)!
+                            guard !ws.isClosed else { return }
+                            ws.send(ackData, promise: nil)
+                        }
+                        return
+
+                    case "unsubscribe":
+                        // Unsubscribe from message type: {"type":"unsubscribe","messageType":"cpu_status"}
+                        if let unsubscribeData = try? JSONDecoder().decode(
+                            [String: String].self, from: data),
+                            let messageType = unsubscribeData["messageType"]
+                        {
+                            req.application.wsManager.unsubscribe(
+                                sessionId: sessionId, from: messageType)
+                            let ackResponse = WSMessage(
+                                type: "unsubscribed",
+                                content: messageType,
+                                username: nil,
+                                timestamp: Date().timeIntervalSince1970,
+                                host: nil
+                            )
+                            let ackData = String(
+                                data: try! JSONEncoder().encode(ackResponse), encoding: .utf8)!
+                            guard !ws.isClosed else { return }
+                            ws.send(ackData, promise: nil)
+                        }
+                        return
+
+                    case "cpu":
+                        // req.logger.info("Detected CPU message, will NOT save to DB")
+                        if let cpuMessage = try? JSONDecoder().decode(CPUMessage.self, from: data),
+                            let cpuValue = Int(cpuMessage.message)
+                        {
+                            // Update CPU status in cache (non-blocking, no SQLite)
+                            _ = req.eventLoop.makeFutureWithTask {
+                                try? await req.userStatusCache.updateUserStatus(
+                                    username: session.username,
+                                    isOnline: true,
+                                    cpuStatus: cpuValue
+                                )
+                            }
+
+                            // Broadcast CPU status update to subscribers only
+                            let cpuStatusMsg = WSMessage(
+                                type: "cpu_status",
+                                content: String(cpuValue),
+                                username: session.username,
+                                timestamp: Date().timeIntervalSince1970,
+                                host: nil
+                            )
+                            req.application.wsManager.broadcastToSubscribers(
+                                message: String(
+                                    data: try! JSONEncoder().encode(cpuStatusMsg),
+                                    encoding: .utf8)!,
+                                messageType: "cpu_status",
+                                exceptSessionId: sessionId
+                            )
+                        }
+                        return
+                    case "log":
+                        // Log messages - save to DB and broadcast to subscribers
+                        req.logger.info("Detected log message, saving to DB and broadcasting")
+
+                        // Update user status to online if needed (non-blocking)
+                        User.query(on: req.db)
+                            .filter(\.$username == session.username)
+                            .first()
+                            .whenComplete { userResult in
+                                if case .success(let user?) = userResult {
+                                    // Update user status to online if needed and save history
+                                    if !user.isOnline {
+                                        user.isOnline = true
+                                        _ = user.save(on: req.db)
+
+                                        // Record status change
+                                        let statusHistory = UserStatusHistory(
+                                            username: session.username, isOnline: true)
+                                        // STAGE 1: Save to both databases
+                                        _ = statusHistory.saveToBoth(on: req)
+                                    }
+                                }
+                            }
+
+                        // Save message and broadcast (always, regardless of user status)
+                        let message = Message(username: session.username, content: text)
+                        // STAGE 1: Save to both databases
+                        message.saveToBoth(on: req).whenComplete { _ in
+                            // Broadcast to subscribers after save
+                            let broadcastMsg = WSMessage(
+                                type: "message",
+                                content: text,
+                                username: session.username,
+                                timestamp: Date().timeIntervalSince1970,
+                                host: host ?? nil
+                            )
+                            let jsonData = try! JSONEncoder().encode(broadcastMsg)
+                            req.application.wsManager.broadcastMessage(
+                                message: String(data: jsonData, encoding: .utf8)!,
+                                messageType: "all_messages",
+                                fromUsername: session.username
+                            )
+                        }
+                        return
+
+                    default: break
+                    // req.logger.info("Unknown message type: \(baseMessage.type), will save to DB")
+                    }
+                }
+
+                // req.logger.info("Saving regular message to DB")
+                // Save regular message asynchronously
+                let message: Message = Message(username: session.username, content: text)
+                // STAGE 1: Save to both databases
+                message.saveToBoth(on: req).whenComplete { _ in
+                    // Broadcast after save
+                    let broadcastMsg = WSMessage(
+                        type: "message",
+                        content: text,
+                        username: session.username,
+                        timestamp: Date().timeIntervalSince1970,
+                        host: host ?? nil
+                    )
+                    let jsonData = try! JSONEncoder().encode(broadcastMsg)
+                    req.application.wsManager.broadcastMessage(
+                        message: String(data: jsonData, encoding: .utf8)!,
+                        messageType: "all_messages",
+                        fromUsername: session.username
+                    )
+                }
+            }
+
+            // Handle close
+            ws.onClose.whenComplete { result in
+                // Log disconnection with reason
+                switch result {
+                case .success:
+                    req.logger.info(
+                        "🔌 WebSocket disconnected (clean): user='\(session.username)', sessionId='\(sessionId.prefix(8))...', IP: \(clientIP)"
+                    )
+                case .failure(let error):
+                    req.logger.warning(
+                        "⚠️ WebSocket disconnected (error): user='\(session.username)', sessionId='\(sessionId.prefix(8))...', IP: \(clientIP), error: \(error)"
+                    )
+                }
+
+                // Remove from manager (will set user offline only if last session)
+                req.application.wsManager.remove(sessionId: sessionId, database: req.db, userStatusCache: req.userStatusCache)
+
+                // Broadcast leave
+                let leaveMsg = WSMessage(
+                    type: "leave",
+                    content: "\(session.username) left the chat",
+                    username: session.username,
+                    timestamp: Date().timeIntervalSince1970,
+                    host: host ?? nil
+                )
+                req.application.wsManager.broadcastMessage(
+                    message: String(data: try! JSONEncoder().encode(leaveMsg), encoding: .utf8)!,
+                    messageType: "system_events",
+                    fromUsername: session.username
+                )
+
+                // Broadcast user status offline only if no sessions left
+                // (WebSocketManager.remove already handles setting user offline)
+                let statusMsg = WSMessage(
+                    type: "user_status",
+                    content: "offline",
+                    username: session.username,
+                    timestamp: Date().timeIntervalSince1970,
+                    host: host ?? nil
+                )
+                req.application.wsManager.broadcastMessage(
+                    message: String(data: try! JSONEncoder().encode(statusMsg), encoding: .utf8)!,
+                    messageType: "user_status",
+                    fromUsername: session.username
+                )
+            }
+        }
+    }
+
+}
+
+// MARK: - Helper Extensions for Dual Database Support
+
+extension Request {
+    /// Save a model to both SQLite and PostgreSQL databases
+    /// Used during Stage 1 migration to keep both DBs in sync
+    func saveToBothDatabases<M: Model>(_ model: M) -> EventLoopFuture<Void> {
+        let sqliteSave = model.save(on: self.db)  // SQLite (default)
+        let postgresSave = model.save(on: self.application.postgres)  // PostgreSQL
+
+        // Save to both databases independently - log errors but don't fail
+        let sqliteResult = sqliteSave.recover { error -> Void in
+            self.logger.error("❌ SQLite save error: \(error)")
+            return ()
+        }
+
+        let postgresResult = postgresSave.recover { error -> Void in
+            self.logger.error("❌ PostgreSQL save error: \(error)")
+            return ()
+        }
+
+        // Wait for both to complete (both will succeed due to recover)
+        return sqliteResult.and(postgresResult).map { _ in
+            return ()
+        }
+    }
+}
+
+extension User {
+    /// Save user to both databases during migration
+    func saveToBoth(on req: Request) -> EventLoopFuture<Void> {
+        return req.saveToBothDatabases(self)
+    }
+}
+
+extension Message {
+    /// Save message to both databases during migration
+    func saveToBoth(on req: Request) -> EventLoopFuture<Void> {
+        return req.saveToBothDatabases(self)
+    }
+}
+
+extension UserStatusHistory {
+    /// Save status history to both databases during migration
+    func saveToBoth(on req: Request) -> EventLoopFuture<Void> {
+        return req.saveToBothDatabases(self)
+    }
+}

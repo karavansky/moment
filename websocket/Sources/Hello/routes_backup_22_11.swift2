@@ -1,0 +1,828 @@
+import Fluent
+import Vapor
+
+func routes(_ app: Application) throws {
+    // Health check
+    app.get("health") { req in
+        return ["status": "ok"]
+    }
+
+    // Server statistics endpoint for monitoring
+    app.get("server-stats") { req async throws -> String in
+        let wsManager = req.application.wsManager
+        let activeConnections = wsManager.getActiveConnectionsCount()
+        let userSessions = wsManager.getUserSessionsCount()
+
+        let totalUsers = try await User.query(on: req.db).count()
+        let onlineUsers = try await User.query(on: req.db).filter(\.$isOnline == true).count()
+
+        // Get session statistics from Redis
+        let totalSessions = try await req.sessionManager.getActiveSessionsCount()
+        let activeSessions = totalSessions  // All Redis sessions are active (expired ones auto-deleted)
+
+        let stats = """
+            ╔═══════════════════════════════════════════════════════════╗
+            ║         VAPOR WEBSOCKET SERVER STATISTICS                 ║
+            ╠═══════════════════════════════════════════════════════════╣
+            ║ Time: \(Date())                                            
+            ╠═══════════════════════════════════════════════════════════╣
+            ║ WebSocket Connections:                                    ║
+            ║   • Active Connections:        \(String(format: "%4d", activeConnections))                          ║
+            ║   • Unique Users Connected:    \(String(format: "%4d", userSessions))                          ║
+            ╠═══════════════════════════════════════════════════════════╣
+            ║ Database Statistics:                                      ║
+            ║   • Total Users:               \(String(format: "%4d", totalUsers))                          ║
+            ║   • Online Users:              \(String(format: "%4d", onlineUsers))                          ║
+            ║   • Total Sessions (Redis):    \(String(format: "%4d", totalSessions))                          ║
+            ║   • Active Sessions (valid):   \(String(format: "%4d", activeSessions))                          ║
+            ╠═══════════════════════════════════════════════════════════╣
+            ║ Performance Metrics:                                      ║
+            ║   • Connections per User:      \(String(format: "%.2f", userSessions > 0 ? Double(activeConnections) / Double(userSessions) : 0))                           ║
+            ║   • Session Hit Rate:          \(String(format: "%3.0f", totalSessions > 0 ? Double(activeSessions) * 100 / Double(totalSessions) : 0))%%                         ║
+            ╚═══════════════════════════════════════════════════════════╝
+
+            To see system resources, run in terminal:
+            $ top -b -n 1 | grep WebSocketServer
+            $ ps aux | grep WebSocketServer
+            """
+
+        return stats
+    }
+
+    // Get user status history
+    app.get("user", "status-history") { req async throws -> [UserStatusHistoryResponse] in
+        guard let username = try? req.query.get(String.self, at: "username") else {
+            throw Abort(.badRequest, reason: "Username parameter is required")
+        }
+
+        let history = try await UserStatusHistory.query(on: req.db)
+            .filter(\.$username == username)
+            .sort(\.$timestamp, .descending)
+            .all()
+
+        return history.map { record in
+            UserStatusHistoryResponse(
+                username: record.username,
+                isOnline: record.isOnline,
+                timestamp: record.timestamp?.timeIntervalSince1970 ?? 0
+            )
+        }
+    }
+
+    // Debug route
+    app.get("status-test") { req async throws -> String in
+        let count = try await UserStatusHistory.query(on: req.db).count()
+        return "Count: \(count)"
+    }
+
+    // Test simple string
+    app.get("status-simple") { req async throws -> String in
+        let history = try await UserStatusHistory.query(on: req.db).all()
+        return "Count: \(history.count), First: \(history.first?.username ?? "none")"
+    }
+    // Test all records
+    app.get("status-all") { req async throws -> [UserStatusHistoryResponse] in
+        let history = try await UserStatusHistory.query(on: req.db).all()
+        return history.map { record in
+            UserStatusHistoryResponse(
+                username: record.username,
+                isOnline: record.isOnline,
+                timestamp: record.timestamp?.timeIntervalSince1970 ?? 0
+            )
+        }
+    }
+    // Register
+    app.post("register") { req async throws -> AuthResponse in
+        let registerData = try req.content.decode(RegisterRequest.self)
+
+        // Check if user exists
+        if (try await User.query(on: req.db)
+            .filter(\.$username == registerData.username)
+            .first()) != nil
+        {
+            throw Abort(.conflict, reason: "Username already exists")
+        }
+
+        // Hash password
+        let passwordHash = try Bcrypt.hash(registerData.password)
+
+        // Create user (set empty token for DB compatibility)
+        let user = User(
+            username: registerData.username, passwordHash: passwordHash, token: "",
+            host: registerData.host)
+        // Save to PostgreSQL
+        try await user.save(on: req.db)
+
+        // NOTE: We don't create a session here anymore for administrative user creation.
+        // Users must login explicitly to get a session.
+        // Return empty sessionId to maintain API compatibility
+        return AuthResponse(
+            username: registerData.username,
+            sessionId: "",
+            expiresAt: nil
+        )
+    }
+
+    // Fast login for load testing (DEVELOPMENT ONLY - no password verification!)
+    app.post("fast-login") { req async throws -> AuthResponse in
+        // let startTime = Date()  // [PERF]
+        do {
+            //let afterDecode = Date()  // [PERF]
+            let loginData = try req.content.decode(LoginRequest.self)
+            //let decodeTime = afterDecode.timeIntervalSince(startTime) * 1000 // [PERF]
+
+            // Find user (no password verification for speed!)
+            //let beforeDB = Date()  // [PERF]
+            guard
+                let user = try await User.query(on: req.db)
+                    .filter(\.$username == loginData.username)
+                    .first()
+            else {
+                req.logger.warning(
+                    "Fast-login failed: user not found - username='\(loginData.username)'")
+                throw Abort(.unauthorized, reason: "Invalid credentials")
+            }
+            //let afterDB = Date()  // [PERF]
+            //let dbTime = afterDB.timeIntervalSince(beforeDB) * 1000  // [PERF]
+
+            // Create session in Redis (cleanup is skipped by default, runs only on ping/pong timeout)
+            // let beforeRedis = Date()  // [PERF]
+            let expiresIn: TimeInterval = 86400
+            let sessionId = try await req.sessionManager.createSession(
+                username: user.username, expiresIn: expiresIn)
+            let expiresAt = Date().timeIntervalSince1970 + expiresIn
+            //let afterRedis = Date()  // [PERF]
+            // let redisTime = afterRedis.timeIntervalSince(beforeRedis) * 1000  // [PERF]
+
+            // let totalTime = afterRedis.timeIntervalSince(startTime) * 1000  // [PERF]
+            // print("[PERF /fast-login] Decode=\(String(format: "%.1f", decodeTime))ms, DB=\(String(format: "%.1f", dbTime))ms, Redis=\(String(format: "%.1f", redisTime))ms, Total=\(String(format: "%.1f", totalTime))ms")
+
+            return AuthResponse(
+                username: user.username,
+                sessionId: sessionId,
+                expiresAt: expiresAt
+            )
+        } catch let error as Abort {
+            throw error
+        } catch {
+            req.logger.error("Fast-login error: \(error)")
+            throw Abort(.internalServerError, reason: "Login failed: \(error.localizedDescription)")
+        }
+    }
+
+    // Login
+    app.post("login") { req async throws -> AuthResponse in
+        //let startTime = Date()  // [PERF]
+        do {
+            //let afterDecode = Date()  // [PERF]
+            let loginData = try req.content.decode(LoginRequest.self)
+            // let decodeTime = afterDecode.timeIntervalSince(startTime) * 1000  // [PERF]
+
+            // Find user
+            //let beforeDB = Date()  // [PERF]
+            guard
+                let user = try await User.query(on: req.db)
+                    .filter(\.$username == loginData.username)
+                    .first()
+            else {
+                req.logger.warning(
+                    "Login failed: user not found - username='\(loginData.username)'")
+                throw Abort(.unauthorized, reason: "Invalid credentials")
+            }
+            // let afterDB = Date()  // [PERF]
+            // let dbTime = afterDB.timeIntervalSince(beforeDB) * 1000  // [PERF]
+
+            // Verify password
+            // let beforeBcrypt = Date()  // [PERF]
+            guard try Bcrypt.verify(loginData.password, created: user.passwordHash) else {
+                req.logger.warning(
+                    "Login failed: wrong password - username='\(loginData.username)'")
+                throw Abort(.unauthorized, reason: "Invalid credentials")
+            }
+            // let afterBcrypt = Date()  // [PERF]
+            // let bcryptTime = afterBcrypt.timeIntervalSince(beforeBcrypt) * 1000  // [PERF]
+
+            // Create new session in Redis
+            //let beforeRedis = Date()  // [PERF]
+            let expiresIn: TimeInterval = 86400
+            let sessionId = try await req.sessionManager.createSession(
+                username: user.username, expiresIn: expiresIn)
+            let expiresAt = Date().timeIntervalSince1970 + expiresIn
+            //let afterRedis = Date()  // [PERF]
+            // let redisTime = afterRedis.timeIntervalSince(beforeRedis) * 1000  // [PERF]
+
+            // let totalTime = afterRedis.timeIntervalSince(startTime) * 1000  // [PERF]
+            // print("[PERF /login] Decode=\(String(format: "%.1f", decodeTime))ms, DB=\(String(format: "%.1f", dbTime))ms, Bcrypt=\(String(format: "%.1f", bcryptTime))ms, Redis=\(String(format: "%.1f", redisTime))ms, Total=\(String(format: "%.1f", totalTime))ms")
+
+            return AuthResponse(
+                username: user.username,
+                sessionId: sessionId,
+                expiresAt: expiresAt
+            )
+        } catch let error as Abort {
+            throw error
+        } catch {
+            req.logger.error("Login error: \(error)")
+            throw Abort(.internalServerError, reason: "Login failed: \(error.localizedDescription)")
+        }
+    }
+
+    // Logout - delete session and close WebSocket connections
+    app.post("logout") { req async throws -> HTTPStatus in
+        // Get sessionId from header or query
+        guard
+            let sessionId = req.headers.first(name: "X-Session-ID")
+                ?? (try? req.query.get(String.self, at: "sessionId"))
+        else {
+            throw Abort(
+                .badRequest,
+                reason: "Session ID required in X-Session-ID header or sessionId query parameter")
+        }
+
+        // Get session from Redis
+        guard let session = try await req.sessionManager.getSession(sessionId: sessionId) else {
+            throw Abort(.notFound, reason: "Session not found")
+        }
+
+        let username = session.username
+
+        // Delete session from Redis
+        try await req.sessionManager.deleteSession(sessionId: sessionId)
+
+        // Close all WebSocket connections for this session
+        req.application.wsManager.remove(
+            sessionId: sessionId, database: req.db, userStatusCache: req.userStatusCache)
+
+        req.logger.info("🚪 User '\(username)' logged out, sessionId='\(sessionId.prefix(8))...'")
+
+        return .noContent
+    }
+
+    // Get user status history
+    app.get("messages") { req async throws -> [Message] in
+        guard let token = req.headers.bearerAuthorization?.token else {
+            throw Abort(.unauthorized)
+        }
+
+        // Verify token
+        guard
+            (try await User.query(on: req.db)
+                .filter(\.$token == token)
+                .first()) != nil
+        else {
+            throw Abort(.unauthorized)
+        }
+
+        return try await Message.query(on: req.db)
+            .sort(\.$createdAt, .descending)
+            .limit(50)
+            .all()
+    }
+
+    // Get user status history
+    app.get("users") { req async throws -> [UserResponse] in
+        let users = try await User.query(on: req.db)
+            .sort(\.$isOnline, .descending)  // true (online) first, then false (offline)
+            .sort(\.$username, .ascending)  // then alphabetically by username
+            .all()
+
+        // Get active sessions count for each user from Redis
+        var userResponses: [UserResponse] = []
+        for user in users {
+            let activeSessions =
+                (try? await req.sessionManager.getUserActiveSessionsCount(username: user.username))
+                ?? 0
+            userResponses.append(
+                UserResponse(
+                    username: user.username,
+                    status: user.status,
+                    isOnline: user.isOnline,
+                    lastActivity: user.lastActivity,
+                    host: user.host,
+                    activeSessions: activeSessions
+                ))
+        }
+
+        return userResponses
+    }
+
+    // Get user status history
+    app.get("user") { req async throws -> [MessageResponse] in
+        guard let username = try? req.query.get(String.self, at: "username") else {
+            throw Abort(.badRequest, reason: "Username parameter is required")
+        }
+
+        let messages = try await Message.query(on: req.db)
+            .filter(\.$username == username)
+            .sort(\.$createdAt, .descending)
+            .all()
+
+        return messages.map { message in
+            MessageResponse(
+                id: message.id ?? UUID(),
+                username: message.username,
+                content: message.content,
+                createdAt: message.createdAt ?? Date()
+            )
+        }
+    }
+
+    // Get user status history
+    app.webSocket("chat") { req, ws in
+        // let startTime = Date()  // [PERF]
+
+        // Log connection attempt with IP and headers
+        let clientIP = req.remoteAddress?.description ?? "unknown"
+        let userAgent = req.headers.first(name: "User-Agent") ?? "unknown"
+
+        // Get sessionId from query
+        guard let sessionId = try? req.query.get(String.self, at: "sessionId") else {
+            req.logger.warning(
+                "❌ WebSocket rejected: No sessionId provided. IP: \(clientIP), User-Agent: \(userAgent)"
+            )
+            _ = ws.close(code: .policyViolation)
+            return
+        }
+
+        // let afterParse = Date()  // [PERF]
+
+        // Validate session in Redis using EventLoopFuture
+        let sessionFuture: EventLoopFuture<SessionData?> = req.eventLoop.makeFutureWithTask {
+            // let redisStart = Date()  // [PERF]
+            let session: SessionData? = try await req.sessionManager.getSession(sessionId: sessionId)
+            // let redisEnd = Date()  // [PERF]
+            // let redisTime = redisEnd.timeIntervalSince(redisStart) * 1000  // [PERF]
+            // print("[PERF] Redis getSession took \(String(format: "%.1f", redisTime))ms")
+            return session
+        }
+
+        sessionFuture.whenComplete { result in
+            // let afterRedis = Date()  // [PERF]
+            // let redisTotal = afterRedis.timeIntervalSince(afterParse) * 1000
+            // print("[PERF] Total Redis future time: \(String(format: "%.1f", redisTotal))ms")
+            guard case .success(let session?) = result else {
+                req.logger.warning(
+                    "❌ WebSocket rejected: Invalid or expired sessionId '\(sessionId.prefix(8))...'. IP: \(clientIP), User-Agent: \(userAgent)"
+                )
+                _ = ws.close(code: .policyViolation)
+                return
+            }
+
+            // Update session activity
+            _ = req.eventLoop.makeFutureWithTask {
+                try? await req.sessionManager.updateActivity(sessionId: sessionId)
+            }
+
+            // Log successful connection
+            req.logger.info(
+                "✅ WebSocket connected: user='\(session.username)', sessionId='\(sessionId.prefix(8))...', IP: \(clientIP), User-Agent: \(userAgent), isClosed=\(ws.isClosed)"
+            )
+
+            // Add to manager
+            req.application.wsManager.add(
+                sessionId: sessionId, socket: ws, username: session.username, database: req.db)
+            let host: String? = req.headers.first(name: .host)
+            // Send welcome message (optimized with short keys)
+            let welcomeMsg = WSMessageShort(
+                type: "system",
+                content: "Welcome, \(session.username)! Host: \(host ?? "unknown")",
+                username: nil,
+                timestamp: Date().timeIntervalSince1970,
+                host: host ?? nil
+            )
+            let welcomeData = String(data: try! JSONEncoder().encode(welcomeMsg), encoding: .utf8)!
+
+            if ws.isClosed {
+                req.logger.warning(
+                    "⚠️ WebSocket already closed before welcome message! sessionId='\(sessionId.prefix(8))...'"
+                )
+                return
+            }
+
+            req.logger.info("📤 Sending welcome message to sessionId='\(sessionId.prefix(8))...'")
+            // let beforeSend = Date()  // [PERF]
+            ws.send(welcomeData, promise: nil)
+            // let afterSend = Date()  // [PERF]
+            // let sendTime = afterSend.timeIntervalSince(beforeSend) * 1000  // [PERF]
+
+            // let totalTime = afterSend.timeIntervalSince(startTime) * 1000  // [PERF]
+            // print("[PERF] Welcome send took \(String(format: "%.1f", sendTime))ms, total connection time: \(String(format: "%.1f", totalTime))ms")
+
+            // Broadcast join and status in background (non-blocking) - optimized with short keys
+            _ = req.eventLoop.makeFutureWithTask {
+                let joinMsg = WSMessageShort(
+                    type: "join",
+                    content: "\(session.username) joined the chat",
+                    username: session.username,
+                    timestamp: Date().timeIntervalSince1970,
+                    host: host ?? nil
+                )
+
+                req.application.wsManager.broadcastMessage(
+                    message: String(data: try! JSONEncoder().encode(joinMsg), encoding: .utf8)!,
+                    messageType: "system_events",
+                    fromUsername: session.username,
+                    exceptSessionId: sessionId
+                )
+
+                // Broadcast user status online (optimized)
+                let statusMsg = WSMessageShort(
+                    type: "user_status",
+                    content: "online",
+                    username: session.username,
+                    timestamp: Date().timeIntervalSince1970,
+                    host: host ?? nil
+                )
+                req.application.wsManager.broadcastMessage(
+                    message: String(data: try! JSONEncoder().encode(statusMsg), encoding: .utf8)!,
+                    messageType: "user_status",
+                    fromUsername: session.username
+                )
+            }
+            // Handle messages
+            ws.onText { ws, text in
+                //req.logger.info("Raw message: \(text)")
+
+                // Fast path: Check for simple ping/pong strings first (optimization)
+                if text == "ping" {
+                    // Update activity
+                    _ = req.eventLoop.makeFutureWithTask {
+                        try? await req.sessionManager.updateActivity(sessionId: sessionId)
+                    }
+                    req.application.wsManager.updateActivity(
+                        sessionId: sessionId, database: req.db, userStatusCache: req.userStatusCache
+                    )
+
+                    // Respond with simple pong
+                    if !ws.isClosed {
+                        ws.send("pong", promise: nil)
+                    }
+                    return
+                }
+
+                if text == "pong" {
+                    // Update activity
+                    _ = req.eventLoop.makeFutureWithTask {
+                        try? await req.sessionManager.updateActivity(sessionId: sessionId)
+                    }
+                    req.application.wsManager.updateActivity(
+                        sessionId: sessionId, database: req.db, userStatusCache: req.userStatusCache
+                    )
+                    return
+                }
+
+                // Update activity timestamp in Redis (non-blocking)
+                _ = req.eventLoop.makeFutureWithTask {
+                    do {
+                        try await req.sessionManager.updateActivity(sessionId: sessionId)
+                    } catch {
+                        req.logger.error(
+                            "❌ Failed to update activity for session '\(sessionId.prefix(8))...': \(error)"
+                        )
+                    }
+                }
+
+                // Update activity in WebSocketManager (for ping/pong tracking)
+                req.application.wsManager.updateActivity(
+                    sessionId: sessionId, database: req.db, userStatusCache: req.userStatusCache)
+
+                // Update user status in cache (non-blocking, no SQLite)
+                _ = req.eventLoop.makeFutureWithTask {
+                    try? await req.userStatusCache.updateUserStatus(
+                        username: session.username,
+                        isOnline: true
+                    )
+                }
+
+                // Parse base message to get type
+                guard let data = text.data(using: .utf8) else {
+                    req.logger.warning("Failed to convert text to data")
+                    return
+                }
+
+                // Try to get message type
+                if let baseMessage = try? JSONDecoder().decode(BaseMessage.self, from: data) {
+                    switch baseMessage.type {
+                    case "ping":
+                        // Legacy JSON ping support - respond with simple pong
+                        if !ws.isClosed {
+                            ws.send("pong", promise: nil)
+                        }
+                        return
+
+                    case "pong":
+                        // Legacy JSON pong - activity already updated above
+                        return
+
+                    case "latency_ping":
+                        // Client sent latency ping - echo back with same timestamp (optimized short keys)
+                        if let latencyMsg = try? JSONDecoder().decode(
+                            LatencyPingMessage.self, from: data)
+                        {
+                            // Short keys: t=type, d=date/timestamp
+                            let echoResponse =
+                                "{\"t\":\"latency_pong\",\"d\":\(latencyMsg.clientTimestamp)}"
+                            if ws.isClosed {
+                                req.logger.warning(
+                                    "⚠️ Cannot send latency_pong - WebSocket closed, sessionId='\(sessionId.prefix(8))...'"
+                                )
+                                return
+                            }
+                            ws.send(echoResponse, promise: nil)
+                        }
+                        return
+
+                    case "subscribe":
+                        // Subscribe to message type: {"type":"subscribe","messageType":"cpu_status"}
+                        if let subscribeData = try? JSONDecoder().decode(
+                            [String: String].self, from: data),
+                            let messageType = subscribeData["messageType"]
+                        {
+                            req.application.wsManager.subscribe(
+                                sessionId: sessionId, to: messageType)
+                            // Optimized response with short keys
+                            let ackResponse = WSMessageShort(
+                                type: "subscribed",
+                                content: messageType,
+                                username: nil,
+                                timestamp: Date().timeIntervalSince1970,
+                                host: nil
+                            )
+                            let ackData = String(
+                                data: try! JSONEncoder().encode(ackResponse), encoding: .utf8)!
+                            guard !ws.isClosed else { return }
+                            ws.send(ackData, promise: nil)
+                        }
+                        return
+
+                    case "unsubscribe":
+                        // Unsubscribe from message type: {"type":"unsubscribe","messageType":"cpu_status"}
+                        if let unsubscribeData = try? JSONDecoder().decode(
+                            [String: String].self, from: data),
+                            let messageType = unsubscribeData["messageType"]
+                        {
+                            req.application.wsManager.unsubscribe(
+                                sessionId: sessionId, from: messageType)
+                            // Optimized response with short keys
+                            let ackResponse = WSMessageShort(
+                                type: "unsubscribed",
+                                content: messageType,
+                                username: nil,
+                                timestamp: Date().timeIntervalSince1970,
+                                host: nil
+                            )
+                            let ackData = String(
+                                data: try! JSONEncoder().encode(ackResponse), encoding: .utf8)!
+                            guard !ws.isClosed else { return }
+                            ws.send(ackData, promise: nil)
+                        }
+                        return
+
+                    case "cpu":
+                        // req.logger.info("Detected CPU message, will NOT save to DB \(text)")
+                        if let cpuMessage = try? JSONDecoder().decode(CPUMessage.self, from: data),
+                            let cpuValue = Int(cpuMessage.message)
+                        {
+                            // Update CPU status in cache (non-blocking, no SQLite)
+                            _ = req.eventLoop.makeFutureWithTask {
+                                try? await req.userStatusCache.updateUserStatus(
+                                    username: session.username,
+                                    isOnline: true,
+                                    cpuStatus: cpuValue
+                                )
+                            }
+
+                            // Broadcast CPU status update to subscribers only (optimized with short keys)
+                            let cpuStatusMsg = WSMessageShort(
+                                type: "cpu",
+                                content: String(cpuValue),
+                                username: session.username,
+                                timestamp: nil,  //Date().timeIntervalSince1970,
+                                host: nil
+                            )
+                            //print("[WebSocket] Broadcasting CPU status:", cpuStatusMsg)
+                            if let encodedData: Data = try? JSONEncoder().encode(cpuStatusMsg),
+                                let encoded: String = String(data: encodedData, encoding: .utf8)
+                            {
+                                //print(
+                                //    "[WebSocket] Encoded CPU status JSON:",
+                                //    encoded)
+                                req.application.wsManager.broadcastToSubscribers(
+                                    message: encoded,
+                                    messageType: "cpu_status",
+                                    exceptSessionId: sessionId
+                                )
+                            } else {
+                                print("[WebSocket] Failed to encode CPU status message")
+                            }
+
+                        } else {
+                            req.logger.warning("Failed to decode CPU message: \(text)")
+                        }
+                        return
+                    case "log":
+                        // Log messages - save to DB and broadcast to subscribers
+                        req.logger.info("Detected log message, saving to DB and broadcasting")
+
+                        // Update user status to online if needed (fallback check)
+                        // Note: This is a fallback - status should already be set by WebSocketManager.add()
+                        User.query(on: req.db)
+                            .filter(\.$username == session.username)
+                            .first()
+                            .whenComplete { userResult in
+                                if case .success(let user?) = userResult {
+                                    // Update user status to online if needed and save history
+                                    if !user.isOnline {
+                                        user.isOnline = true
+                                        _ = user.save(on: req.db)
+
+                                        // Record status change (shouldn't happen if WebSocketManager.add() worked)
+                                        let statusHistory = UserStatusHistory(
+                                            username: session.username, isOnline: true)
+                                        _ = statusHistory.save(on: req.db)
+                                        req.logger.warning(
+                                            "⚠️ User '\(session.username)' was offline despite active WebSocket - status corrected"
+                                        )
+                                    }
+                                }
+                            }
+
+                        // Save message and broadcast (always, regardless of user status)
+                        let message = Message(username: session.username, content: text)
+                        // Save to PostgreSQL
+                        message.save(on: req.db).whenComplete { _ in
+                            // Broadcast to subscribers after save (optimized with short keys)
+                            // print("[WebSocket] Broadcasting log message from user '\(session.username)'")
+                            let broadcastMsg = WSMessageShort(
+                                type: "message",
+                                content: text,
+                                username: session.username,
+                                timestamp: Date().timeIntervalSince1970,
+                                host: host ?? nil
+                            )
+                            if let jsonData = try? JSONEncoder().encode(broadcastMsg) {
+                                //print(
+                                //    "[WebSocket] Encoded log message JSON:",
+                                //    String(data: jsonData, encoding: .utf8) ?? "encoding failed")
+                                req.application.wsManager.broadcastMessage(
+                                    message: String(data: jsonData, encoding: .utf8)!,
+                                    messageType: "all_messages",
+                                    fromUsername: session.username
+                                )
+                            } else {
+                                print("[WebSocket] Failed to encode log message for broadcasting")
+                            }
+                        }
+                        return
+
+                    default: break
+                    // req.logger.info("Unknown message type: \(baseMessage.type), will save to DB")
+                    }
+                }
+
+                // req.logger.info("Saving regular message to DB")
+                // Save regular message asynchronously
+                let message: Message = Message(username: session.username, content: text)
+                // Save to PostgreSQL
+                message.save(on: req.db).whenComplete { _ in
+                    // Broadcast after save (optimized with short keys)
+                    let broadcastMsg = WSMessageShort(
+                        type: "message",
+                        content: text,
+                        username: session.username,
+                        timestamp: Date().timeIntervalSince1970,
+                        host: host ?? nil
+                    )
+                    let jsonData = try! JSONEncoder().encode(broadcastMsg)
+                    req.application.wsManager.broadcastMessage(
+                        message: String(data: jsonData, encoding: .utf8)!,
+                        messageType: "all_messages",
+                        fromUsername: session.username
+                    )
+                }
+            }
+
+            // Handle close
+            ws.onClose.whenComplete { result in
+                // Log disconnection with reason
+                switch result {
+                case .success:
+                    req.logger.info(
+                        "🔌 WebSocket disconnected (clean): user='\(session.username)', sessionId='\(sessionId.prefix(8))...', IP: \(clientIP)"
+                    )
+                case .failure(let error):
+                    req.logger.warning(
+                        "⚠️ WebSocket disconnected (error): user='\(session.username)', sessionId='\(sessionId.prefix(8))...', IP: \(clientIP), error: \(error)"
+                    )
+                }
+
+                // Remove from manager (will set user offline only if last session)
+                // Session remains in Redis (will expire automatically after 24h TTL)
+                req.application.wsManager.remove(
+                    sessionId: sessionId, database: req.db, userStatusCache: req.userStatusCache)
+
+                // Broadcast leave (optimized with short keys)
+                let leaveMsg = WSMessageShort(
+                    type: "leave",
+                    content: "\(session.username) left the chat",
+                    username: session.username,
+                    timestamp: Date().timeIntervalSince1970,
+                    host: host ?? nil
+                )
+                req.application.wsManager.broadcastMessage(
+                    message: String(data: try! JSONEncoder().encode(leaveMsg), encoding: .utf8)!,
+                    messageType: "system_events",
+                    fromUsername: session.username
+                )
+
+                // Broadcast user status offline only if no sessions left (optimized with short keys)
+                // (WebSocketManager.remove already handles setting user offline)
+                let statusMsg = WSMessageShort(
+                    type: "user_status",
+                    content: "offline",
+                    username: session.username,
+                    timestamp: Date().timeIntervalSince1970,
+                    host: host ?? nil
+                )
+                req.application.wsManager.broadcastMessage(
+                    message: String(data: try! JSONEncoder().encode(statusMsg), encoding: .utf8)!,
+                    messageType: "user_status",
+                    fromUsername: session.username
+                )
+            }
+        }
+    }
+
+    // MARK: - User Management Endpoints
+
+    // Delete user
+    app.delete("users", ":username") { req async throws -> HTTPStatus in
+        guard let username = req.parameters.get("username") else {
+            throw Abort(.badRequest, reason: "Username parameter is required")
+        }
+
+        // Find user
+        guard
+            let user = try await User.query(on: req.db)
+                .filter(\.$username == username)
+                .first()
+        else {
+            throw Abort(.notFound, reason: "User not found")
+        }
+
+        // Delete user (cascade will delete sessions)
+        try await user.delete(on: req.db)
+
+        req.logger.info("User '\(username)' deleted")
+        return .ok
+    }
+
+    // Update user password
+    app.put("users", "password") { req async throws -> HTTPStatus in
+        let updateData = try req.content.decode(UpdatePasswordRequest.self)
+
+        // Find user
+        guard
+            let user = try await User.query(on: req.db)
+                .filter(\.$username == updateData.username)
+                .first()
+        else {
+            throw Abort(.notFound, reason: "User not found")
+        }
+
+        // Hash new password
+        let newPasswordHash = try Bcrypt.hash(updateData.newPassword)
+        user.passwordHash = newPasswordHash
+
+        // Save to database
+        try await user.save(on: req.db)
+
+        req.logger.info("Password updated for user '\(updateData.username)'")
+        return .ok
+    }
+
+    // Update user host
+    app.put("users", "host") { req async throws -> HTTPStatus in
+        let updateData = try req.content.decode(UpdateHostRequest.self)
+
+        // Find user
+        guard
+            let user = try await User.query(on: req.db)
+                .filter(\.$username == updateData.username)
+                .first()
+        else {
+            throw Abort(.notFound, reason: "User not found")
+        }
+
+        // Update host
+        user.host = updateData.host
+
+        // Save to database
+        try await user.save(on: req.db)
+
+        req.logger.info(
+            "Host updated for user '\(updateData.username)' to '\(updateData.host ?? "null")'")
+        return .ok
+    }
+
+}

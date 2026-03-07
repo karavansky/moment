@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebSocket Multi-Session Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+      }
+      .session {
+        border: 2px solid #333;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 5px;
+      }
+      .session.connected {
+        border-color: #28a745;
+        background: #d4edda;
+      }
+      .session.disconnected {
+        border-color: #dc3545;
+        background: #f8d7da;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 5px;
+        cursor: pointer;
+      }
+      .connect-btn {
+        background: #28a745;
+        color: white;
+        border: none;
+      }
+      .disconnect-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+      }
+      .send-btn {
+        background: #007bff;
+        color: white;
+        border: none;
+      }
+      .messages {
+        background: #f8f9fa;
+        padding: 10px;
+        margin: 10px 0;
+        height: 200px;
+        overflow-y: auto;
+        font-family: monospace;
+        font-size: 12px;
+      }
+      .info {
+        background: #e7f3ff;
+        padding: 10px;
+        margin: 10px 0;
+        border-left: 4px solid #2196f3;
+      }
+      input[type="text"] {
+        padding: 8px;
+        width: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔌 WebSocket Multi-Session Test</h1>
+
+    <div class="info">
+      <strong>Test Scenario:</strong> This page simulates multiple browser tabs for the same user. Each "session"
+      represents a separate WebSocket connection with its own sessionId. Messages sent from one session should be
+      received by all other sessions of the same user.
+    </div>
+
+    <div>
+      <label>Username: <input type="text" id="username" value="testmulti" /></label>
+      <label>Password: <input type="text" id="password" value="test123" /></label>
+      <button onclick="createAllSessions()" class="connect-btn">Create All Sessions</button>
+      <button onclick="disconnectAll()" class="disconnect-btn">Disconnect All</button>
+    </div>
+
+    <div id="sessions-container"></div>
+
+    <script>
+      const SERVER = "ubuntu-wrk-03-vm:3003";
+      const sessions = [];
+      let sessionCounter = 1;
+
+      function createSessionUI(sessionId, sessionIdToken) {
+        const container = document.getElementById("sessions-container");
+        const sessionDiv = document.createElement("div");
+        sessionDiv.className = "session disconnected";
+        sessionDiv.id = `session-${sessionId}`;
+        sessionDiv.innerHTML = `
+                <h3>Session ${sessionId} <span id="status-${sessionId}">❌ Disconnected</span></h3>
+                <p><strong>SessionID:</strong> <code id="sessionid-${sessionId}">Not connected</code></p>
+                <button onclick="connectSession(${sessionId}, '${sessionIdToken}')" class="connect-btn">Connect</button>
+                <button onclick="disconnectSession(${sessionId})" class="disconnect-btn">Disconnect</button>
+                <input type="text" id="input-${sessionId}" placeholder="Type message...">
+                <button onclick="sendMessage(${sessionId})" class="send-btn">Send</button>
+                <div class="messages" id="messages-${sessionId}"></div>
+            `;
+        container.appendChild(sessionDiv);
+        return sessionId;
+      }
+
+      async function createAllSessions() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        // Create 3 sessions for testing
+        for (let i = 0; i < 3; i++) {
+          try {
+            const response = await fetch(`http://${SERVER}/login`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ username, password }),
+            });
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              alert(`Failed to login (HTTP ${response.status}): ${errorText}`);
+              break;
+            }
+
+            const data = await response.json();
+
+            if (data.sessionId) {
+              const sid = sessionCounter++;
+              createSessionUI(sid, data.sessionId);
+              addMessage(sid, `Session created: ${data.sessionId.substring(0, 16)}...`);
+              // Auto-connect the WebSocket
+              connectSession(sid, data.sessionId);
+            } else {
+              alert("Failed to create session: " + (data.reason || "Unknown error"));
+              break;
+            }
+          } catch (error) {
+            alert(`Error creating session: ${error.message}`);
+            console.error("Session creation error:", error);
+            break;
+          }
+        }
+      }
+
+      function connectSession(sessionId, sessionIdToken) {
+        const ws = new WebSocket(`ws://${SERVER}/chat?sessionId=${sessionIdToken}`);
+        sessions[sessionId] = { ws, sessionIdToken };
+
+        ws.onopen = () => {
+          updateStatus(sessionId, true);
+          addMessage(sessionId, "✅ Connected to WebSocket");
+          document.getElementById(`sessionid-${sessionId}`).textContent = sessionIdToken.substring(0, 32) + "...";
+
+          // Subscribe to all messages
+          ws.send(JSON.stringify({ type: "subscribe", messageType: "all_messages" }));
+        };
+
+        ws.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+
+          // Handle ping from server - respond with pong
+          if (data.type === "ping") {
+            ws.send(JSON.stringify({ type: "pong" }));
+            addMessage(sessionId, `🏓 Ping received, sent pong`);
+            return;
+          }
+
+          addMessage(sessionId, `📨 ${data.type}: ${data.content || JSON.stringify(data)}`);
+        };
+
+        ws.onclose = () => {
+          updateStatus(sessionId, false);
+          addMessage(sessionId, "❌ Disconnected");
+        };
+
+        ws.onerror = (error) => {
+          addMessage(sessionId, `🔴 Error: ${error.message}`);
+        };
+      }
+
+      function disconnectSession(sessionId) {
+        if (sessions[sessionId]?.ws) {
+          sessions[sessionId].ws.close();
+          delete sessions[sessionId];
+          updateStatus(sessionId, false);
+        }
+      }
+
+      function disconnectAll() {
+        sessions.forEach((session, id) => {
+          if (session?.ws) disconnectSession(id);
+        });
+      }
+
+      function sendMessage(sessionId) {
+        const input = document.getElementById(`input-${sessionId}`);
+        const message = input.value.trim();
+        if (message && sessions[sessionId]?.ws) {
+          sessions[sessionId].ws.send(
+            JSON.stringify({
+              type: "log",
+              content: `[Session ${sessionId}] ${message}`,
+            })
+          );
+          input.value = "";
+          addMessage(sessionId, `📤 Sent: ${message}`);
+        }
+      }
+
+      function addMessage(sessionId, text) {
+        const messagesDiv = document.getElementById(`messages-${sessionId}`);
+        const time = new Date().toLocaleTimeString();
+        messagesDiv.innerHTML += `<div>[${time}] ${text}</div>`;
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      }
+
+      function updateStatus(sessionId, connected) {
+        const sessionDiv = document.getElementById(`session-${sessionId}`);
+        const statusSpan = document.getElementById(`status-${sessionId}`);
+        if (connected) {
+          sessionDiv.className = "session connected";
+          statusSpan.textContent = "✅ Connected";
+        } else {
+          sessionDiv.className = "session disconnected";
+          statusSpan.textContent = "❌ Disconnected";
+        }
+      }
+
+      // Allow Enter key to send messages
+      document.addEventListener("keypress", (e) => {
+        if (e.key === "Enter" && e.target.id.startsWith("input-")) {
+          const sessionId = parseInt(e.target.id.split("-")[1]);
+          sendMessage(sessionId);
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,30 @@
+warning: 'hello': found 3 file(s) which are unhandled; explicitly declare them as resources or exclude from the target
+    /home/a0e394/testSwift/Hello/Sources/Hello/routes.swift.backup2
+    /home/a0e394/testSwift/Hello/Sources/Hello/WebSocketManager.swift.backup
+    /home/a0e394/testSwift/Hello/Sources/Hello/routes.swift.backup
+[0/1] Planning build
+Building for debugging...
+[0/2] Write swift-version--4D6DA11074CFF03.txt
+Build of product 'WebSocketServer' complete! (12.38s)
+✅ Redis connected at localhost:6379
+[PingTimer] Starting ping timer with 20 second interval
+[ NOTICE ] Server started on http://0.0.0.0:3003
+[PingTimer] Timer fired at 2025-11-16 20:32:57 +0000
+[SendPing] Checking 0 clients for activity
+[ INFO ] GET /chat [request-id: 23BBC525-5B6C-4863-83CA-CFFC6E33F39E]
+[ INFO ] ✅ WebSocket connected: user='admin', sessionId='VYmd9BmV...', IP: [IPv4]10.157.71.133/10.157.71.133:53403, User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36, isClosed=false [request-id: 23BBC525-5B6C-4863-83CA-CFFC6E33F39E]
+[WebSocketManager] Session 'VYmd9BmV...' added for user 'admin'. User has 1 session(s), total clients: 1
+[ INFO ] 📤 Sending welcome message to sessionId='VYmd9BmV...' [request-id: 23BBC525-5B6C-4863-83CA-CFFC6E33F39E]
+[WebSocketManager] Synced User.lastActivity for 'admin' from Redis to SQLite (diff: 668s)
+[WebSocketManager] Synced User.lastActivity for 'admin' from Redis to SQLite (diff: 668s)
+[ INFO ] GET /users [request-id: 53A35061-D74C-46D4-8598-EF0D1044A3E3]
+[PingTimer] Timer fired at 2025-11-16 20:33:17 +0000
+[SendPing] Checking 1 clients for activity
+[PingTimer] Timer fired at 2025-11-16 20:33:37 +0000
+[SendPing] Checking 1 clients for activity
+[PingTimer] Timer fired at 2025-11-16 20:33:57 +0000
+[SendPing] Checking 1 clients for activity
+[PingTimer] Timer fired at 2025-11-16 20:34:17 +0000
+[SendPing] Checking 1 clients for activity
+[ INFO ] GET /health [request-id: 2AEC9A07-9F34-480C-8EE5-0B684C897F15]
+[ INFO ] POST /register [request-id: 7500386B-0029-437D-A9A4-6C5F994F6338]

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Test Subscription Fix</title>
+    <style>
+      body {
+        font-family: monospace;
+        padding: 20px;
+        background: #1e1e1e;
+        color: #d4d4d4;
+      }
+      .session {
+        border: 2px solid #444;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 5px;
+        background: #252526;
+      }
+      .session.connected {
+        border-color: #4ec9b0;
+      }
+      button {
+        padding: 8px 16px;
+        margin: 5px;
+        cursor: pointer;
+        background: #0e639c;
+        color: white;
+        border: none;
+        border-radius: 3px;
+      }
+      button:hover {
+        background: #1177bb;
+      }
+      .messages {
+        background: #1e1e1e;
+        padding: 10px;
+        margin: 10px 0;
+        height: 300px;
+        overflow-y: auto;
+        border: 1px solid #444;
+        font-size: 12px;
+      }
+      .msg-received {
+        color: #4ec9b0;
+      }
+      .msg-sent {
+        color: #dcdcaa;
+      }
+      .msg-system {
+        color: #569cd6;
+      }
+      input {
+        padding: 8px;
+        width: 300px;
+        background: #3c3c3c;
+        border: 1px solid #444;
+        color: #d4d4d4;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🧪 Test Subscription Fix - all_messages</h1>
+
+    <div class="session" id="session-admin">
+      <h3>Session: admin (subscriber)</h3>
+      <p><strong>SessionID:</strong> <span id="sessionid-admin">Not connected</span></p>
+      <button onclick="connectAdmin()">Connect admin</button>
+      <button onclick="disconnectAdmin()">Disconnect</button>
+      <div class="messages" id="messages-admin"></div>
+    </div>
+
+    <div class="session" id="session-sender">
+      <h3>Session: loadtest (sender)</h3>
+      <p><strong>SessionID:</strong> <span id="sessionid-sender">Not connected</span></p>
+      <button onclick="connectSender()">Connect loadtest</button>
+      <button onclick="disconnectSender()">Disconnect</button>
+      <input type="text" id="input-sender" placeholder="Type message..." />
+      <button onclick="sendMessage()">Send</button>
+      <div class="messages" id="messages-sender"></div>
+    </div>
+
+    <script>
+      const SERVER = "ubuntu-wrk-03-vm:3003";
+      let adminWs = null;
+      let adminSessionId = null;
+      let senderWs = null;
+      let senderSessionId = null;
+
+      function addMessage(target, text, type = "system") {
+        const div = document.getElementById(`messages-${target}`);
+        const time = new Date().toLocaleTimeString();
+        const className = `msg-${type}`;
+        div.innerHTML += `<div class="${className}">[${time}] ${text}</div>`;
+        div.scrollTop = div.scrollHeight;
+      }
+
+      async function connectAdmin() {
+        try {
+          // Login as admin
+          const response = await fetch(`http://${SERVER}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: "admin", password: "admin" }),
+          });
+
+          if (!response.ok) {
+            addMessage("admin", `❌ Login failed: ${response.status}`, "system");
+            return;
+          }
+
+          const data = await response.json();
+          adminSessionId = data.sessionId;
+          document.getElementById("sessionid-admin").textContent = adminSessionId.substring(0, 32) + "...";
+          addMessage("admin", `✅ Logged in, sessionId: ${adminSessionId.substring(0, 16)}...`, "system");
+
+          // Connect WebSocket
+          adminWs = new WebSocket(`ws://${SERVER}/chat?sessionId=${adminSessionId}`);
+
+          adminWs.onopen = () => {
+            document.getElementById("session-admin").classList.add("connected");
+            addMessage("admin", "✅ WebSocket connected", "system");
+
+            // Subscribe to all_messages
+            adminWs.send(JSON.stringify({ type: "subscribe", messageType: "all_messages" }));
+            addMessage("admin", "📨 Subscribing to 'all_messages'...", "system");
+          };
+
+          adminWs.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            // Handle ping
+            if (data.type === "ping") {
+              adminWs.send(JSON.stringify({ type: "pong" }));
+              addMessage("admin", "🏓 Ping/Pong", "system");
+              return;
+            }
+
+            // Handle subscription confirmation
+            if (data.type === "subscribed") {
+              addMessage("admin", `✅ Subscribed to: ${data.content}`, "system");
+              return;
+            }
+
+            // Handle messages
+            if (data.type === "message") {
+              addMessage("admin", `📨 FROM ${data.username}: ${data.content}`, "received");
+            } else {
+              addMessage("admin", `${data.type}: ${JSON.stringify(data)}`, "received");
+            }
+          };
+
+          adminWs.onclose = () => {
+            document.getElementById("session-admin").classList.remove("connected");
+            addMessage("admin", "❌ WebSocket closed", "system");
+          };
+
+          adminWs.onerror = (err) => {
+            addMessage("admin", `❌ Error: ${err.message}`, "system");
+          };
+        } catch (error) {
+          addMessage("admin", `❌ Error: ${error.message}`, "system");
+        }
+      }
+
+      async function connectSender() {
+        try {
+          // Login as loadtest
+          const response = await fetch(`http://${SERVER}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: "loadtest", password: "test123" }),
+          });
+
+          if (!response.ok) {
+            addMessage("sender", `❌ Login failed: ${response.status}`, "system");
+            return;
+          }
+
+          const data = await response.json();
+          senderSessionId = data.sessionId;
+          document.getElementById("sessionid-sender").textContent = senderSessionId.substring(0, 32) + "...";
+          addMessage("sender", `✅ Logged in, sessionId: ${senderSessionId.substring(0, 16)}...`, "system");
+
+          // Connect WebSocket
+          senderWs = new WebSocket(`ws://${SERVER}/chat?sessionId=${senderSessionId}`);
+
+          senderWs.onopen = () => {
+            document.getElementById("session-sender").classList.add("connected");
+            addMessage("sender", "✅ WebSocket connected", "system");
+          };
+
+          senderWs.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            // Handle ping
+            if (data.type === "ping") {
+              senderWs.send(JSON.stringify({ type: "pong" }));
+              addMessage("sender", "🏓 Ping/Pong", "system");
+              return;
+            }
+
+            addMessage("sender", `${data.type}: ${JSON.stringify(data)}`, "received");
+          };
+
+          senderWs.onclose = () => {
+            document.getElementById("session-sender").classList.remove("connected");
+            addMessage("sender", "❌ WebSocket closed", "system");
+          };
+
+          senderWs.onerror = (err) => {
+            addMessage("sender", `❌ Error: ${err.message}`, "system");
+          };
+        } catch (error) {
+          addMessage("sender", `❌ Error: ${error.message}`, "system");
+        }
+      }
+
+      function disconnectAdmin() {
+        if (adminWs) {
+          adminWs.close();
+          adminWs = null;
+        }
+      }
+
+      function disconnectSender() {
+        if (senderWs) {
+          senderWs.close();
+          senderWs = null;
+        }
+      }
+
+      function sendMessage() {
+        const input = document.getElementById("input-sender");
+        const message = input.value.trim();
+        if (!message || !senderWs) return;
+
+        // Send with type "log" to trigger save + broadcast
+        senderWs.send(JSON.stringify({ type: "log", content: message }));
+        addMessage("sender", `📤 Sent: ${message}`, "sent");
+        input.value = "";
+      }
+
+      // Allow Enter key to send
+      document.getElementById("input-sender").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") sendMessage();
+      });
+    </script>
+  </body>
+</html>

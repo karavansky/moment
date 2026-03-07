@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebSocket Load Test + Server Monitor</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        max-width: 1800px;
+        margin: 0 auto;
+      }
+      .panel {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .full-width {
+        grid-column: 1 / -1;
+      }
+      h1 {
+        margin: 0 0 20px 0;
+        color: #333;
+      }
+      h2 {
+        margin: 0 0 15px 0;
+        color: #555;
+        font-size: 18px;
+      }
+
+      .controls {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      input[type="number"],
+      input[type="text"] {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .btn-primary {
+        background: #007bff;
+        color: white;
+      }
+      .btn-success {
+        background: #28a745;
+        color: white;
+      }
+      .btn-danger {
+        background: #dc3545;
+        color: white;
+      }
+      .btn-warning {
+        background: #ffc107;
+        color: #333;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+      .stat-box {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 6px;
+        border-left: 4px solid #007bff;
+      }
+      .stat-label {
+        font-size: 12px;
+        color: #6c757d;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+      }
+      .stat-value {
+        font-size: 28px;
+        font-weight: bold;
+        color: #333;
+      }
+
+      .monitor-frame {
+        width: 100%;
+        height: 500px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: #000;
+        color: #0f0;
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+        padding: 10px;
+        overflow-y: auto;
+        white-space: pre;
+      }
+
+      .sessions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      .session-card {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 4px;
+        border: 2px solid #ddd;
+        font-size: 11px;
+      }
+      .session-card.connected {
+        border-color: #28a745;
+        background: #d4edda;
+      }
+      .session-card.disconnected {
+        border-color: #dc3545;
+        background: #f8d7da;
+      }
+
+      .log {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 4px;
+        height: 300px;
+        overflow-y: auto;
+        font-family: "Courier New", monospace;
+        font-size: 11px;
+      }
+      .log-entry {
+        padding: 2px 0;
+        border-bottom: 1px solid #e9ecef;
+      }
+      .log-error {
+        color: #dc3545;
+      }
+      .log-success {
+        color: #28a745;
+      }
+      .log-info {
+        color: #007bff;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 20px;
+        background: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 10px 0;
+      }
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #007bff, #0056b3);
+        transition: width 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 11px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="panel full-width">
+        <h1>🚀 WebSocket Load Test & Server Monitor</h1>
+
+        <div class="controls">
+          <label>Username: <input type="text" id="username" value="loadtest" /></label>
+          <label>Password: <input type="text" id="password" value="test123" /></label>
+          <label>Connections: <input type="number" id="numConnections" value="10" min="1" max="1000" /></label>
+          <label style="display: flex; align-items: center; gap: 5px">
+            <input type="checkbox" id="autoSendMessages" onchange="toggleAutoMessaging()" />
+            Auto-send messages (1/sec)
+          </label>
+          <label style="display: flex; align-items: center; gap: 5px">
+            <input type="checkbox" id="debugMode" />
+            Debug mode (log all messages)
+          </label>
+          <button class="btn-success" onclick="startLoadTest()">🔥 Start Load Test</button>
+          <button class="btn-danger" onclick="stopAll()">⛔ Stop All</button>
+          <button class="btn-warning" onclick="sendBroadcast()">📢 Broadcast Message</button>
+        </div>
+
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress" style="width: 0%">0%</div>
+        </div>
+
+        <div class="stats">
+          <div class="stat-box">
+            <div class="stat-label">Total Sessions</div>
+            <div class="stat-value" id="totalSessions">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Connected</div>
+            <div class="stat-value" id="connectedSessions" style="color: #28a745">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Disconnected</div>
+            <div class="stat-value" id="disconnectedSessions" style="color: #dc3545">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Messages Sent</div>
+            <div class="stat-value" id="messagesSent">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Messages Received</div>
+            <div class="stat-value" id="messagesReceived">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Errors</div>
+            <div class="stat-value" id="errorCount" style="color: #dc3545">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>📊 Server Monitor (top command)</h2>
+        <button class="btn-primary" onclick="startMonitoring()" style="margin-bottom: 10px">▶️ Start Monitoring</button>
+        <button class="btn-danger" onclick="stopMonitoring()" style="margin-bottom: 10px">⏹️ Stop</button>
+        <div class="monitor-frame" id="monitor"></div>
+      </div>
+
+      <div class="panel">
+        <h2>📝 Event Log</h2>
+        <button class="btn-warning" onclick="clearLog()" style="margin-bottom: 10px">🗑️ Clear</button>
+        <div class="log" id="eventLog"></div>
+      </div>
+
+      <div class="panel full-width">
+        <h2>🔌 Active Sessions (showing first 50)</h2>
+        <div class="sessions-grid" id="sessionsGrid"></div>
+      </div>
+    </div>
+
+    <script>
+      const SERVER = "ubuntu-wrk-03-vm:3003";
+      let sessions = [];
+      let stats = {
+        total: 0,
+        connected: 0,
+        disconnected: 0,
+        messagesSent: 0,
+        messagesReceived: 0,
+        errors: 0,
+      };
+      let monitorInterval = null;
+
+      function log(message, type = "info") {
+        const logDiv = document.getElementById("eventLog");
+        const time = new Date().toLocaleTimeString();
+        const entry = document.createElement("div");
+        entry.className = `log-entry log-${type}`;
+        entry.textContent = `[${time}] ${message}`;
+        logDiv.appendChild(entry);
+        logDiv.scrollTop = logDiv.scrollHeight;
+      }
+
+      function clearLog() {
+        document.getElementById("eventLog").innerHTML = "";
+      }
+
+      function updateStats() {
+        document.getElementById("totalSessions").textContent = stats.total;
+        document.getElementById("connectedSessions").textContent = stats.connected;
+        document.getElementById("disconnectedSessions").textContent = stats.disconnected;
+        document.getElementById("messagesSent").textContent = stats.messagesSent;
+        document.getElementById("messagesReceived").textContent = stats.messagesReceived;
+        document.getElementById("errorCount").textContent = stats.errors;
+      }
+
+      function updateProgress(current, total) {
+        const percent = Math.round((current / total) * 100);
+        const progressFill = document.getElementById("progress");
+        progressFill.style.width = percent + "%";
+        progressFill.textContent = `${current}/${total} (${percent}%)`;
+      }
+
+      async function startLoadTest() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const numConnections = parseInt(document.getElementById("numConnections").value);
+
+        log(`Starting load test with ${numConnections} connections...`, "info");
+
+        // First, try to register the user
+        try {
+          const response = await fetch(`http://${SERVER}/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password }),
+          });
+          if (response.status === 409) {
+            log(`User '${username}' already exists, proceeding with login`, "info");
+          } else if (response.ok) {
+            log(`User '${username}' registered successfully`, "success");
+          }
+        } catch (error) {
+          log(`Registration error: ${error.message}`, "error");
+        }
+
+        // Create sessions
+        for (let i = 0; i < numConnections; i++) {
+          try {
+            const response = await fetch(`http://${SERVER}/login`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ username, password }),
+            });
+
+            if (!response.ok) {
+              log(`Failed to create session ${i + 1}: HTTP ${response.status}`, "error");
+              stats.errors++;
+              continue;
+            }
+
+            const data = await response.json();
+            if (data.sessionId) {
+              createSession(i, data.sessionId, username);
+              updateProgress(i + 1, numConnections);
+
+              // Small delay to avoid overwhelming the server
+              if (i % 10 === 0 && i > 0) {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+              }
+            }
+          } catch (error) {
+            log(`Error creating session ${i + 1}: ${error.message}`, "error");
+            stats.errors++;
+          }
+        }
+
+        log(`Load test completed. Created ${stats.total} sessions.`, "success");
+        updateStats();
+      }
+
+      function createSession(id, sessionId, username) {
+        const ws = new WebSocket(`ws://${SERVER}/chat?sessionId=${sessionId}`);
+
+        const session = {
+          id,
+          sessionId,
+          username,
+          ws,
+          connected: false,
+          messageCount: 0,
+          sentMessageCount: 0,
+          autoMessageInterval: null,
+        };
+
+        sessions.push(session);
+        stats.total++;
+
+        ws.onopen = () => {
+          session.connected = true;
+          stats.connected++;
+          updateStats();
+          updateSessionCard(session);
+
+          // Subscribe to messages and CPU status
+          ws.send(JSON.stringify({ type: "subscribe", messageType: "all_messages" }));
+          ws.send(JSON.stringify({ type: "subscribe", messageType: "cpu_status" }));
+
+          // Start auto-sending messages if enabled
+          if (document.getElementById("autoSendMessages").checked) {
+            startAutoMessaging(session);
+          }
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            const debugMode = document.getElementById("debugMode").checked;
+
+            // Debug logging
+            if (debugMode && session.id === 0) {
+              console.log(`[Session ${session.id}] Received:`, data);
+            }
+
+            // Auto-respond to ping
+            if (data.type === "ping") {
+              ws.send(JSON.stringify({ type: "pong" }));
+              return;
+            }
+
+            // Count only actual messages (not system messages)
+            if (data.type === "message" || data.type === "log" || data.type === "cpu_status") {
+              session.messageCount++;
+              stats.messagesReceived++;
+              updateStats();
+
+              if (debugMode && session.id === 0) {
+                log(`[Session ${session.id}] ${data.type} received: ${data.content?.substring(0, 30)}...`, "info");
+              }
+            }
+
+            // Log other message types
+            if (debugMode && (data.type === "system" || data.type === "join" || data.type === "leave" || data.type === "subscribed")) {
+              console.log(`[Session ${session.id}] ${data.type}: ${data.content || 'no content'}`);
+            }
+          } catch (error) {
+            console.error(`[Session ${session.id}] Error parsing message:`, error, event.data);
+            stats.errors++;
+            updateStats();
+          }
+        };
+
+        ws.onclose = () => {
+          if (session.connected) {
+            stats.connected--;
+          }
+          session.connected = false;
+          stats.disconnected++;
+
+          // Stop auto-messaging
+          if (session.autoMessageInterval) {
+            clearInterval(session.autoMessageInterval);
+            session.autoMessageInterval = null;
+          }
+
+          updateStats();
+          updateSessionCard(session);
+        };
+
+        ws.onerror = () => {
+          stats.errors++;
+          updateStats();
+        };
+
+        updateSessionCard(session);
+      }
+
+      function startAutoMessaging(session) {
+        if (session.autoMessageInterval) return; // Already running
+
+        session.autoMessageInterval = setInterval(() => {
+          if (session.connected && session.ws.readyState === WebSocket.OPEN) {
+            session.sentMessageCount++;
+            // Use "cpu" type - does NOT write to SQLite, much faster!
+            const cpuValue = Math.floor(Math.random() * 100); // Random CPU 0-100%
+            const message = {
+              type: "cpu",
+              message: String(cpuValue), // CPU messages use "message", not "content"
+            };
+            session.ws.send(JSON.stringify(message));
+            stats.messagesSent++;
+            updateStats();
+            updateSessionCard(session);
+          }
+        }, 1000); // Every 1 second
+      }
+
+      function stopAutoMessaging(session) {
+        if (session.autoMessageInterval) {
+          clearInterval(session.autoMessageInterval);
+          session.autoMessageInterval = null;
+        }
+      }
+
+      function toggleAutoMessaging() {
+        const enabled = document.getElementById("autoSendMessages").checked;
+
+        if (enabled) {
+          log("Starting auto-messaging for all connected sessions...", "info");
+          sessions.forEach((session) => {
+            if (session.connected) {
+              startAutoMessaging(session);
+            }
+          });
+        } else {
+          log("Stopping auto-messaging for all sessions...", "info");
+          sessions.forEach((session) => {
+            stopAutoMessaging(session);
+          });
+        }
+      }
+
+      function updateSessionCard(session) {
+        const grid = document.getElementById("sessionsGrid");
+        let card = document.getElementById(`session-${session.id}`);
+
+        if (!card) {
+          card = document.createElement("div");
+          card.id = `session-${session.id}`;
+          card.className = "session-card";
+          grid.appendChild(card);
+        }
+
+        card.className = `session-card ${session.connected ? "connected" : "disconnected"}`;
+        card.innerHTML = `
+                <strong>#${session.id}</strong> ${session.connected ? "✅" : "❌"}<br>
+                SessionID: ${session.sessionId.substring(0, 8)}...<br>
+                Received: ${session.messageCount}<br>
+                Sent: ${session.sentMessageCount || 0} ${session.autoMessageInterval ? "🔄" : ""}
+            `;
+
+        // Only show first 50 to avoid DOM overload
+        if (session.id >= 50) {
+          card.style.display = "none";
+        }
+      }
+
+      function stopAll() {
+        log(`Stopping all ${sessions.length} sessions...`, "info");
+        sessions.forEach((session) => {
+          // Stop auto-messaging
+          if (session.autoMessageInterval) {
+            clearInterval(session.autoMessageInterval);
+            session.autoMessageInterval = null;
+          }
+          // Close WebSocket
+          if (session.ws && session.ws.readyState === WebSocket.OPEN) {
+            session.ws.close();
+          }
+        });
+        sessions = [];
+        stats = {
+          total: 0,
+          connected: 0,
+          disconnected: 0,
+          messagesSent: 0,
+          messagesReceived: 0,
+          errors: 0,
+        };
+        updateStats();
+        document.getElementById("sessionsGrid").innerHTML = "";
+        document.getElementById("progress").style.width = "0%";
+        document.getElementById("progress").textContent = "0%";
+        document.getElementById("autoSendMessages").checked = false;
+        log("All sessions stopped", "success");
+      }
+
+      function sendBroadcast() {
+        const message = prompt("Enter broadcast message:", "Load test message");
+        if (!message) return;
+
+        let sent = 0;
+        sessions.forEach((session) => {
+          if (session.connected && session.ws.readyState === WebSocket.OPEN) {
+            session.ws.send(
+              JSON.stringify({
+                type: "log",
+                content: message,
+              })
+            );
+            sent++;
+            stats.messagesSent++;
+          }
+        });
+
+        log(`Broadcast sent to ${sent} sessions`, "success");
+        updateStats();
+      }
+
+      async function startMonitoring() {
+        if (monitorInterval) return;
+
+        log("Starting server monitoring...", "info");
+
+        monitorInterval = setInterval(async () => {
+          try {
+            const response = await fetch(`http://${SERVER}/server-stats`);
+            if (response.ok) {
+              const data = await response.text();
+              document.getElementById("monitor").textContent = data;
+            } else {
+              // Fallback: показываем локальную статистику
+              const now = new Date().toLocaleTimeString();
+              const monitorDiv = document.getElementById("monitor");
+              monitorDiv.textContent = `
+=== WebSocket Server Statistics (${now}) ===
+
+Active Connections: ${stats.connected}
+Total Sessions Created: ${stats.total}
+Disconnected: ${stats.disconnected}
+Messages Sent: ${stats.messagesSent}
+Messages Received: ${stats.messagesReceived}
+Errors: ${stats.errors}
+
+Connection Rate: ${((stats.connected / stats.total) * 100).toFixed(1)}%
+
+Note: For real server stats, add /server-stats endpoint
+or use terminal: ssh user@server 'top -b -n 1 | head -20'
+                        `;
+            }
+          } catch (error) {
+            document.getElementById(
+              "monitor"
+            ).textContent = `Error fetching stats: ${error.message}\n\nShowing local statistics instead:\n\nConnected: ${stats.connected}\nTotal: ${stats.total}`;
+          }
+        }, 2000);
+      }
+
+      function stopMonitoring() {
+        if (monitorInterval) {
+          clearInterval(monitorInterval);
+          monitorInterval = null;
+          log("Server monitoring stopped", "info");
+        }
+      }
+
+      // Initial log
+      log('Load test page ready. Configure and click "Start Load Test"', "info");
+    </script>
+  </body>
+</html>

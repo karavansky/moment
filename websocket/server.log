@@ -1,0 +1,14 @@
+✅ Redis connected at localhost:6379
+[PingTimer] Starting ping timer with 20 second interval
+[ NOTICE ] Server started on http://0.0.0.0:3003
+[ INFO ] GET /chat [request-id: E8E18E39-B956-4BE7-8A73-7BF5803E6BAC]
+[ INFO ] ✅ WebSocket connected: user='admin', sessionId='VYmd9BmV...', IP: [IPv4]10.157.71.133/10.157.71.133:50733, User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36, isClosed=false [request-id: E8E18E39-B956-4BE7-8A73-7BF5803E6BAC]
+[WebSocketManager] Session 'VYmd9BmV...' added for user 'admin'. User has 1 session(s), total clients: 1
+[ INFO ] 📤 Sending welcome message to sessionId='VYmd9BmV...' [request-id: E8E18E39-B956-4BE7-8A73-7BF5803E6BAC]
+[WebSocketManager] Synced User.lastActivity for 'admin' from Redis to SQLite (diff: 11s)
+[WebSocketManager] Synced User.lastActivity for 'admin' from Redis to SQLite (diff: 11s)
+[ INFO ] POST /login [request-id: E0955993-F928-47E8-A151-B57E34FE295E]
+[ INFO ] GET /chat [request-id: 4B1D3A70-8E0B-4DF6-ABB4-45874A4B313B]
+[ INFO ] ✅ WebSocket connected: user='star', sessionId='JGvzeGaf...', IP: [IPv4]10.64.0.242/10.64.0.242:52900, User-Agent: unknown, isClosed=false [request-id: 4B1D3A70-8E0B-4DF6-ABB4-45874A4B313B]
+[WebSocketManager] Session 'JGvzeGaf...' added for user 'star'. User has 1 session(s), total clients: 2
+[ INFO ] 📤 Sending welcome message to sessionId='JGvzeGaf...' [request-id: 4B1D3A70-8E0B-4DF6-ABB4-45874A4B313B]

@@ -1,0 +1,392 @@
+[ WARNING ] bind(descriptor:ptr:bytes:): Address already in use) (errno: 98)
+[ WARNING ] bind(descriptor:ptr:bytes:): Address already in use) (errno: 98)
+Swift/ErrorType.swift:254: Fatal error: Error raised at top level: bind(descriptor:ptr:bytes:): Address already in use) (errno: 98)
+
+*** Signal 4: Backtracing from 0x7a1033ae2e18... done ***
+
+*** Program crashed: Illegal instruction at 0x00007a1033ae2e18 ***
+
+Platform: x86_64 Linux (Ubuntu 24.04.3 LTS)
+
+Thread 0 "WebSocketServer":
+
+  0      0x00007a10314455eb <unknown> in libc.so.6
+  1 [ra] 0x00007a10333b0dc8 _dispatch_sigsuspend + 23 in libdispatch.so
+  2 [ra] 0x00007a103142a1d6 <unknown> in libc.so.6
+  3 [ra] 0x00007a103142a28b <unknown> in libc.so.6
+...
+
+Thread 1 "NIO-SGLTN-1-#1":
+
+  0                0x00007a103152a072 <unknown> in libc.so.6
+  1 [ra] [inlined] 0x00005e28ee327d11 closure #1 in static Epoll.epoll_wait(epfd:events:maxevents:timeout:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/Linux.swift:174:13
+  2 [ra] [inlined] 0x00005e28ee327d11 specialized syscall<A>(blocking:where:_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOPosix/System.swift:303:23
+  3 [ra]           0x00005e28ee327d11 specialized static Epoll.epoll_wait(epfd:events:maxevents:timeout:) + 80 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/Linux.swift:173:13
+  4 [ra] [system]  0x00005e28ee36847f specialized Selector.whenReady0(strategy:onLoopBegin:_:) + 990 in WebSocketServer at //<compiler-generated>
+  5 [ra] [inlined] 0x00005e28ee372ec3 specialized Selector.whenReady(strategy:onLoopBegin:_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOPosix/SelectorGeneric.swift:376:18
+  6 [ra]           0x00005e28ee372ec3 SelectableEventLoop._blockingWaitForWork(nextReadyDeadline:_:) + 226 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:814:28
+  7 [ra] [inlined] 0x00005e28ee36584b closure #2 in SelectableEventLoop.run() in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:888:26
+  8 [ra] [inlined] 0x00005e28ee36584b specialized withAutoReleasePool<A>(_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:47:16
+  9 [ra]           0x00005e28ee36584b SelectableEventLoop.run() + 314 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:887:17
+ 10 [ra] [inlined] 0x00005e28ee328984 static MultiThreadedEventLoopGroup.runTheLoop(thread:uniqueID:parentGroup:canEventLoopBeShutdownIndividually:selectorFactory:initializer:metricsDelegate:_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/MultiThreadedEventLoopGroup.swift:115:22
+ 11 [ra]           0x00005e28ee328984 closure #1 in static MultiThreadedEventLoopGroup.setupThreadAndEventLoop(name:uniqueID:parentGroup:selectorFactory:initializer:metricsDelegate:) + 1331 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/MultiThreadedEventLoopGroup.swift:137:41
+ 12 [ra] [thunk]   0x00005e28ee32db3e partial apply for closure #1 in static MultiThreadedEventLoopGroup.setupThreadAndEventLoop(name:uniqueID:parentGroup:selectorFactory:initializer:metricsDelegate:) + 61 in WebSocketServer at //<compiler-generated>
+ 13 [ra] [thunk]   0x00005e28ee33298f thunk for @escaping @callee_guaranteed (@guaranteed NIOThread) -> () + 14 in WebSocketServer at //<compiler-generated>
+ 14 [ra]           0x00005e28ee39027e closure #1 in closure #1 in static ThreadOpsPosix.run(handle:args:) + 365 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/ThreadPosix.swift:172:21
+ 15 [ra]           0x00007a103149caa4 <unknown> in libc.so.6
+...
+
+Thread 2 "NIO-SGLTN-1-#2":
+
+  0                0x00007a103152a072 <unknown> in libc.so.6
+  1 [ra] [inlined] 0x00005e28ee327d11 closure #1 in static Epoll.epoll_wait(epfd:events:maxevents:timeout:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/Linux.swift:174:13
+  2 [ra] [inlined] 0x00005e28ee327d11 specialized syscall<A>(blocking:where:_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOPosix/System.swift:303:23
+  3 [ra]           0x00005e28ee327d11 specialized static Epoll.epoll_wait(epfd:events:maxevents:timeout:) + 80 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/Linux.swift:173:13
+  4 [ra] [system]  0x00005e28ee36847f specialized Selector.whenReady0(strategy:onLoopBegin:_:) + 990 in WebSocketServer at //<compiler-generated>
+  5 [ra] [inlined] 0x00005e28ee372ec3 specialized Selector.whenReady(strategy:onLoopBegin:_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOPosix/SelectorGeneric.swift:376:18
+  6 [ra]           0x00005e28ee372ec3 SelectableEventLoop._blockingWaitForWork(nextReadyDeadline:_:) + 226 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:814:28
+  7 [ra] [inlined] 0x00005e28ee36584b closure #2 in SelectableEventLoop.run() in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:888:26
+  8 [ra] [inlined] 0x00005e28ee36584b specialized withAutoReleasePool<A>(_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:47:16
+  9 [ra]           0x00005e28ee36584b SelectableEventLoop.run() + 314 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:887:17
+ 10 [ra] [inlined] 0x00005e28ee328984 static MultiThreadedEventLoopGroup.runTheLoop(thread:uniqueID:parentGroup:canEventLoopBeShutdownIndividually:selectorFactory:initializer:metricsDelegate:_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/MultiThreadedEventLoopGroup.swift:115:22
+ 11 [ra]           0x00005e28ee328984 closure #1 in static MultiThreadedEventLoopGroup.setupThreadAndEventLoop(name:uniqueID:parentGroup:selectorFactory:initializer:metricsDelegate:) + 1331 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/MultiThreadedEventLoopGroup.swift:137:41
+ 12 [ra] [thunk]   0x00005e28ee32db3e partial apply for closure #1 in static MultiThreadedEventLoopGroup.setupThreadAndEventLoop(name:uniqueID:parentGroup:selectorFactory:initializer:metricsDelegate:) + 61 in WebSocketServer at //<compiler-generated>
+ 13 [ra] [thunk]   0x00005e28ee33298f thunk for @escaping @callee_guaranteed (@guaranteed NIOThread) -> () + 14 in WebSocketServer at //<compiler-generated>
+ 14 [ra]           0x00005e28ee39027e closure #1 in closure #1 in static ThreadOpsPosix.run(handle:args:) + 365 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/ThreadPosix.swift:172:21
+ 15 [ra]           0x00007a103149caa4 <unknown> in libc.so.6
+...
+
+Thread 3 "NIO-SGLTN-1-#3":
+
+  0                0x00007a103152a072 <unknown> in libc.so.6
+  1 [ra] [inlined] 0x00005e28ee327d11 closure #1 in static Epoll.epoll_wait(epfd:events:maxevents:timeout:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/Linux.swift:174:13
+  2 [ra] [inlined] 0x00005e28ee327d11 specialized syscall<A>(blocking:where:_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOPosix/System.swift:303:23
+  3 [ra]           0x00005e28ee327d11 specialized static Epoll.epoll_wait(epfd:events:maxevents:timeout:) + 80 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/Linux.swift:173:13
+  4 [ra] [system]  0x00005e28ee36847f specialized Selector.whenReady0(strategy:onLoopBegin:_:) + 990 in WebSocketServer at //<compiler-generated>
+  5 [ra] [inlined] 0x00005e28ee372ec3 specialized Selector.whenReady(strategy:onLoopBegin:_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOPosix/SelectorGeneric.swift:376:18
+  6 [ra]           0x00005e28ee372ec3 SelectableEventLoop._blockingWaitForWork(nextReadyDeadline:_:) + 226 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:814:28
+  7 [ra] [inlined] 0x00005e28ee36584b closure #2 in SelectableEventLoop.run() in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:888:26
+  8 [ra] [inlined] 0x00005e28ee36584b specialized withAutoReleasePool<A>(_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:47:16
+  9 [ra]           0x00005e28ee36584b SelectableEventLoop.run() + 314 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:887:17
+ 10 [ra] [inlined] 0x00005e28ee328984 static MultiThreadedEventLoopGroup.runTheLoop(thread:uniqueID:parentGroup:canEventLoopBeShutdownIndividually:selectorFactory:initializer:metricsDelegate:_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/MultiThreadedEventLoopGroup.swift:115:22
+ 11 [ra]           0x00005e28ee328984 closure #1 in static MultiThreadedEventLoopGroup.setupThreadAndEventLoop(name:uniqueID:parentGroup:selectorFactory:initializer:metricsDelegate:) + 1331 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/MultiThreadedEventLoopGroup.swift:137:41
+ 12 [ra] [thunk]   0x00005e28ee32db3e partial apply for closure #1 in static MultiThreadedEventLoopGroup.setupThreadAndEventLoop(name:uniqueID:parentGroup:selectorFactory:initializer:metricsDelegate:) + 61 in WebSocketServer at //<compiler-generated>
+ 13 [ra] [thunk]   0x00005e28ee33298f thunk for @escaping @callee_guaranteed (@guaranteed NIOThread) -> () + 14 in WebSocketServer at //<compiler-generated>
+ 14 [ra]           0x00005e28ee39027e closure #1 in closure #1 in static ThreadOpsPosix.run(handle:args:) + 365 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/ThreadPosix.swift:172:21
+ 15 [ra]           0x00007a103149caa4 <unknown> in libc.so.6
+...
+
+Thread 4 "NIO-SGLTN-1-#4":
+
+  0                0x00007a103152a072 <unknown> in libc.so.6
+  1 [ra] [inlined] 0x00005e28ee327d11 closure #1 in static Epoll.epoll_wait(epfd:events:maxevents:timeout:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/Linux.swift:174:13
+  2 [ra] [inlined] 0x00005e28ee327d11 specialized syscall<A>(blocking:where:_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOPosix/System.swift:303:23
+  3 [ra]           0x00005e28ee327d11 specialized static Epoll.epoll_wait(epfd:events:maxevents:timeout:) + 80 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/Linux.swift:173:13
+  4 [ra] [system]  0x00005e28ee36847f specialized Selector.whenReady0(strategy:onLoopBegin:_:) + 990 in WebSocketServer at //<compiler-generated>
+  5 [ra] [inlined] 0x00005e28ee372ec3 specialized Selector.whenReady(strategy:onLoopBegin:_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOPosix/SelectorGeneric.swift:376:18
+  6 [ra]           0x00005e28ee372ec3 SelectableEventLoop._blockingWaitForWork(nextReadyDeadline:_:) + 226 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:814:28
+  7 [ra] [inlined] 0x00005e28ee36584b closure #2 in SelectableEventLoop.run() in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:888:26
+  8 [ra] [inlined] 0x00005e28ee36584b specialized withAutoReleasePool<A>(_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:47:16
+  9 [ra]           0x00005e28ee36584b SelectableEventLoop.run() + 314 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:887:17
+ 10 [ra] [inlined] 0x00005e28ee328984 static MultiThreadedEventLoopGroup.runTheLoop(thread:uniqueID:parentGroup:canEventLoopBeShutdownIndividually:selectorFactory:initializer:metricsDelegate:_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/MultiThreadedEventLoopGroup.swift:115:22
+ 11 [ra]           0x00005e28ee328984 closure #1 in static MultiThreadedEventLoopGroup.setupThreadAndEventLoop(name:uniqueID:parentGroup:selectorFactory:initializer:metricsDelegate:) + 1331 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/MultiThreadedEventLoopGroup.swift:137:41
+ 12 [ra] [thunk]   0x00005e28ee32db3e partial apply for closure #1 in static MultiThreadedEventLoopGroup.setupThreadAndEventLoop(name:uniqueID:parentGroup:selectorFactory:initializer:metricsDelegate:) + 61 in WebSocketServer at //<compiler-generated>
+ 13 [ra] [thunk]   0x00005e28ee33298f thunk for @escaping @callee_guaranteed (@guaranteed NIOThread) -> () + 14 in WebSocketServer at //<compiler-generated>
+ 14 [ra]           0x00005e28ee39027e closure #1 in closure #1 in static ThreadOpsPosix.run(handle:args:) + 365 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/ThreadPosix.swift:172:21
+ 15 [ra]           0x00007a103149caa4 <unknown> in libc.so.6
+...
+
+Thread 5 "NIO-SGLTN-1-#5":
+
+  0                0x00007a103152a072 <unknown> in libc.so.6
+  1 [ra] [inlined] 0x00005e28ee327d11 closure #1 in static Epoll.epoll_wait(epfd:events:maxevents:timeout:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/Linux.swift:174:13
+  2 [ra] [inlined] 0x00005e28ee327d11 specialized syscall<A>(blocking:where:_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOPosix/System.swift:303:23
+  3 [ra]           0x00005e28ee327d11 specialized static Epoll.epoll_wait(epfd:events:maxevents:timeout:) + 80 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/Linux.swift:173:13
+  4 [ra] [system]  0x00005e28ee36847f specialized Selector.whenReady0(strategy:onLoopBegin:_:) + 990 in WebSocketServer at //<compiler-generated>
+  5 [ra] [inlined] 0x00005e28ee372ec3 specialized Selector.whenReady(strategy:onLoopBegin:_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOPosix/SelectorGeneric.swift:376:18
+  6 [ra]           0x00005e28ee372ec3 SelectableEventLoop._blockingWaitForWork(nextReadyDeadline:_:) + 226 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:814:28
+  7 [ra] [inlined] 0x00005e28ee36584b closure #2 in SelectableEventLoop.run() in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:888:26
+  8 [ra] [inlined] 0x00005e28ee36584b specialized withAutoReleasePool<A>(_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:47:16
+  9 [ra]           0x00005e28ee36584b SelectableEventLoop.run() + 314 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:887:17
+ 10 [ra] [inlined] 0x00005e28ee328984 static MultiThreadedEventLoopGroup.runTheLoop(thread:uniqueID:parentGroup:canEventLoopBeShutdownIndividually:selectorFactory:initializer:metricsDelegate:_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/MultiThreadedEventLoopGroup.swift:115:22
+ 11 [ra]           0x00005e28ee328984 closure #1 in static MultiThreadedEventLoopGroup.setupThreadAndEventLoop(name:uniqueID:parentGroup:selectorFactory:initializer:metricsDelegate:) + 1331 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/MultiThreadedEventLoopGroup.swift:137:41
+ 12 [ra] [thunk]   0x00005e28ee32db3e partial apply for closure #1 in static MultiThreadedEventLoopGroup.setupThreadAndEventLoop(name:uniqueID:parentGroup:selectorFactory:initializer:metricsDelegate:) + 61 in WebSocketServer at //<compiler-generated>
+ 13 [ra] [thunk]   0x00005e28ee33298f thunk for @escaping @callee_guaranteed (@guaranteed NIOThread) -> () + 14 in WebSocketServer at //<compiler-generated>
+ 14 [ra]           0x00005e28ee39027e closure #1 in closure #1 in static ThreadOpsPosix.run(handle:args:) + 365 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/ThreadPosix.swift:172:21
+ 15 [ra]           0x00007a103149caa4 <unknown> in libc.so.6
+...
+
+Thread 6 "NIO-SGLTN-1-#6":
+
+  0                0x00007a103152a072 <unknown> in libc.so.6
+  1 [ra] [inlined] 0x00005e28ee327d11 closure #1 in static Epoll.epoll_wait(epfd:events:maxevents:timeout:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/Linux.swift:174:13
+  2 [ra] [inlined] 0x00005e28ee327d11 specialized syscall<A>(blocking:where:_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOPosix/System.swift:303:23
+  3 [ra]           0x00005e28ee327d11 specialized static Epoll.epoll_wait(epfd:events:maxevents:timeout:) + 80 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/Linux.swift:173:13
+  4 [ra] [system]  0x00005e28ee36847f specialized Selector.whenReady0(strategy:onLoopBegin:_:) + 990 in WebSocketServer at //<compiler-generated>
+  5 [ra] [inlined] 0x00005e28ee372ec3 specialized Selector.whenReady(strategy:onLoopBegin:_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOPosix/SelectorGeneric.swift:376:18
+  6 [ra]           0x00005e28ee372ec3 SelectableEventLoop._blockingWaitForWork(nextReadyDeadline:_:) + 226 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:814:28
+  7 [ra] [inlined] 0x00005e28ee36584b closure #2 in SelectableEventLoop.run() in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:888:26
+  8 [ra] [inlined] 0x00005e28ee36584b specialized withAutoReleasePool<A>(_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:47:16
+  9 [ra]           0x00005e28ee36584b SelectableEventLoop.run() + 314 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:887:17
+ 10 [ra] [inlined] 0x00005e28ee328984 static MultiThreadedEventLoopGroup.runTheLoop(thread:uniqueID:parentGroup:canEventLoopBeShutdownIndividually:selectorFactory:initializer:metricsDelegate:_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/MultiThreadedEventLoopGroup.swift:115:22
+ 11 [ra]           0x00005e28ee328984 closure #1 in static MultiThreadedEventLoopGroup.setupThreadAndEventLoop(name:uniqueID:parentGroup:selectorFactory:initializer:metricsDelegate:) + 1331 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/MultiThreadedEventLoopGroup.swift:137:41
+ 12 [ra] [thunk]   0x00005e28ee32db3e partial apply for closure #1 in static MultiThreadedEventLoopGroup.setupThreadAndEventLoop(name:uniqueID:parentGroup:selectorFactory:initializer:metricsDelegate:) + 61 in WebSocketServer at //<compiler-generated>
+ 13 [ra] [thunk]   0x00005e28ee33298f thunk for @escaping @callee_guaranteed (@guaranteed NIOThread) -> () + 14 in WebSocketServer at //<compiler-generated>
+ 14 [ra]           0x00005e28ee39027e closure #1 in closure #1 in static ThreadOpsPosix.run(handle:args:) + 365 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/ThreadPosix.swift:172:21
+ 15 [ra]           0x00007a103149caa4 <unknown> in libc.so.6
+...
+
+Thread 7 "NIO-SGLTN-1-#7":
+
+  0                0x00007a103152a072 <unknown> in libc.so.6
+  1 [ra] [inlined] 0x00005e28ee327d11 closure #1 in static Epoll.epoll_wait(epfd:events:maxevents:timeout:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/Linux.swift:174:13
+  2 [ra] [inlined] 0x00005e28ee327d11 specialized syscall<A>(blocking:where:_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOPosix/System.swift:303:23
+  3 [ra]           0x00005e28ee327d11 specialized static Epoll.epoll_wait(epfd:events:maxevents:timeout:) + 80 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/Linux.swift:173:13
+  4 [ra] [system]  0x00005e28ee36847f specialized Selector.whenReady0(strategy:onLoopBegin:_:) + 990 in WebSocketServer at //<compiler-generated>
+  5 [ra] [inlined] 0x00005e28ee372ec3 specialized Selector.whenReady(strategy:onLoopBegin:_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOPosix/SelectorGeneric.swift:376:18
+  6 [ra]           0x00005e28ee372ec3 SelectableEventLoop._blockingWaitForWork(nextReadyDeadline:_:) + 226 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:814:28
+  7 [ra] [inlined] 0x00005e28ee36584b closure #2 in SelectableEventLoop.run() in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:888:26
+  8 [ra] [inlined] 0x00005e28ee36584b specialized withAutoReleasePool<A>(_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:47:16
+  9 [ra]           0x00005e28ee36584b SelectableEventLoop.run() + 314 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:887:17
+ 10 [ra] [inlined] 0x00005e28ee328984 static MultiThreadedEventLoopGroup.runTheLoop(thread:uniqueID:parentGroup:canEventLoopBeShutdownIndividually:selectorFactory:initializer:metricsDelegate:_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/MultiThreadedEventLoopGroup.swift:115:22
+ 11 [ra]           0x00005e28ee328984 closure #1 in static MultiThreadedEventLoopGroup.setupThreadAndEventLoop(name:uniqueID:parentGroup:selectorFactory:initializer:metricsDelegate:) + 1331 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/MultiThreadedEventLoopGroup.swift:137:41
+ 12 [ra] [thunk]   0x00005e28ee32db3e partial apply for closure #1 in static MultiThreadedEventLoopGroup.setupThreadAndEventLoop(name:uniqueID:parentGroup:selectorFactory:initializer:metricsDelegate:) + 61 in WebSocketServer at //<compiler-generated>
+ 13 [ra] [thunk]   0x00005e28ee33298f thunk for @escaping @callee_guaranteed (@guaranteed NIOThread) -> () + 14 in WebSocketServer at //<compiler-generated>
+ 14 [ra]           0x00005e28ee39027e closure #1 in closure #1 in static ThreadOpsPosix.run(handle:args:) + 365 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/ThreadPosix.swift:172:21
+ 15 [ra]           0x00007a103149caa4 <unknown> in libc.so.6
+...
+
+Thread 8 "NIO-SGLTN-1-#8":
+
+  0                0x00007a103152a072 <unknown> in libc.so.6
+  1 [ra] [inlined] 0x00005e28ee327d11 closure #1 in static Epoll.epoll_wait(epfd:events:maxevents:timeout:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/Linux.swift:174:13
+  2 [ra] [inlined] 0x00005e28ee327d11 specialized syscall<A>(blocking:where:_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOPosix/System.swift:303:23
+  3 [ra]           0x00005e28ee327d11 specialized static Epoll.epoll_wait(epfd:events:maxevents:timeout:) + 80 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/Linux.swift:173:13
+  4 [ra] [system]  0x00005e28ee36847f specialized Selector.whenReady0(strategy:onLoopBegin:_:) + 990 in WebSocketServer at //<compiler-generated>
+  5 [ra] [inlined] 0x00005e28ee372ec3 specialized Selector.whenReady(strategy:onLoopBegin:_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOPosix/SelectorGeneric.swift:376:18
+  6 [ra]           0x00005e28ee372ec3 SelectableEventLoop._blockingWaitForWork(nextReadyDeadline:_:) + 226 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:814:28
+  7 [ra] [inlined] 0x00005e28ee36584b closure #2 in SelectableEventLoop.run() in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:888:26
+  8 [ra] [inlined] 0x00005e28ee36584b specialized withAutoReleasePool<A>(_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:47:16
+  9 [ra]           0x00005e28ee36584b SelectableEventLoop.run() + 314 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/SelectableEventLoop.swift:887:17
+ 10 [ra] [inlined] 0x00005e28ee328984 static MultiThreadedEventLoopGroup.runTheLoop(thread:uniqueID:parentGroup:canEventLoopBeShutdownIndividually:selectorFactory:initializer:metricsDelegate:_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/MultiThreadedEventLoopGroup.swift:115:22
+ 11 [ra]           0x00005e28ee328984 closure #1 in static MultiThreadedEventLoopGroup.setupThreadAndEventLoop(name:uniqueID:parentGroup:selectorFactory:initializer:metricsDelegate:) + 1331 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/MultiThreadedEventLoopGroup.swift:137:41
+ 12 [ra] [thunk]   0x00005e28ee32db3e partial apply for closure #1 in static MultiThreadedEventLoopGroup.setupThreadAndEventLoop(name:uniqueID:parentGroup:selectorFactory:initializer:metricsDelegate:) + 61 in WebSocketServer at //<compiler-generated>
+ 13 [ra] [thunk]   0x00005e28ee33298f thunk for @escaping @callee_guaranteed (@guaranteed NIOThread) -> () + 14 in WebSocketServer at //<compiler-generated>
+ 14 [ra]           0x00005e28ee39027e closure #1 in closure #1 in static ThreadOpsPosix.run(handle:args:) + 365 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/ThreadPosix.swift:172:21
+ 15 [ra]           0x00007a103149caa4 <unknown> in libc.so.6
+...
+
+Thread 9:
+
+  0      0x00007a1031498d71 <unknown> in libc.so.6
+  1 [ra] 0x00007a10314a4d93 <unknown> in libc.so.6
+...
+
+Thread 10:
+
+  0      0x00007a103152a072 <unknown> in libc.so.6
+  1 [ra] 0x00007a10333b9be5 _dispatch_event_loop_drain + 52 in libdispatch.so
+...
+
+Thread 11:
+
+  0      0x00007a1031498d71 <unknown> in libc.so.6
+  1 [ra] 0x00007a10314a4d93 <unknown> in libc.so.6
+...
+
+Thread 12 "SGLTN-TP-#0":
+
+  0                0x00007a1031498d71 <unknown> in libc.so.6
+  1 [ra]           0x00007a103149b7ed <unknown> in libc.so.6
+  2 [ra] [inlined] 0x00005e28ee0dc684 specialized ManagedBuffer<>.withUnsafeMutablePointerToElements<A, B>(_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/lock.swift:204:27
+  3 [ra] [inlined] 0x00005e28ee0dc684 specialized LockStorage.withLockPrimitive<A>(_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:173:18
+  4 [ra] [inlined] 0x00005e28ee0dc684 specialized NIOLock.withLockPrimitive<A>(_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:233:27
+  5 [ra] [inlined] 0x00005e28ee0dc684 closure #1 in ConditionLock.lock(whenValue:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/lock.swift:199:24
+  6 [ra]           0x00005e28ee0dc684 ConditionLock.lock(whenValue:) + 227 in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:174:17
+  7 [ra] [inlined] 0x00005e28ee330128 NIOThreadPool._blockingWaitForWork(identifier:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:532:18
+  8 [ra] [inlined] 0x00005e28ee330128 specialized ConditionLock._lock(when:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:304:37
+  9 [ra] [inlined] 0x00005e28ee330128 specialized ConditionLock.withLock<A>(when:_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:549:14
+ 10 [ra]           0x00005e28ee330128 NIOThreadPool.process(identifier:) + 39 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:257:29
+ 11 [ra]           0x00005e28ee33048d closure #2 in NIOThreadPool._start(threadNamePrefix:) + 124 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:381:22
+ 12 [ra] [thunk]   0x00005e28ee3329e4 partial apply for thunk for @escaping @callee_guaranteed (@guaranteed NIOThread) -> () + 19 in WebSocketServer at //<compiler-generated>
+ 13 [ra]           0x00005e28ee39027e closure #1 in closure #1 in static ThreadOpsPosix.run(handle:args:) + 365 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/ThreadPosix.swift:172:21
+ 14 [ra]           0x00007a103149caa4 <unknown> in libc.so.6
+...
+
+Thread 13 "SGLTN-TP-#1":
+
+  0                0x00007a1031498d71 <unknown> in libc.so.6
+  1 [ra]           0x00007a103149b7ed <unknown> in libc.so.6
+  2 [ra] [inlined] 0x00005e28ee0dc684 specialized ManagedBuffer<>.withUnsafeMutablePointerToElements<A, B>(_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/lock.swift:204:27
+  3 [ra] [inlined] 0x00005e28ee0dc684 specialized LockStorage.withLockPrimitive<A>(_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:173:18
+  4 [ra] [inlined] 0x00005e28ee0dc684 specialized NIOLock.withLockPrimitive<A>(_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:233:27
+  5 [ra] [inlined] 0x00005e28ee0dc684 closure #1 in ConditionLock.lock(whenValue:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/lock.swift:199:24
+  6 [ra]           0x00005e28ee0dc684 ConditionLock.lock(whenValue:) + 227 in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:174:17
+  7 [ra] [inlined] 0x00005e28ee3301ef specialized ConditionLock._lock(when:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:532:18
+  8 [ra] [inlined] 0x00005e28ee3301ef specialized ConditionLock.withLock<A>(when:_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:549:14
+  9 [ra] [inlined] 0x00005e28ee3301ef NIOThreadPool._blockingWaitForWork(identifier:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:257:29
+ 10 [ra]           0x00005e28ee3301ef NIOThreadPool.process(identifier:) + 238 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:304:37
+ 11 [ra]           0x00005e28ee33048d closure #2 in NIOThreadPool._start(threadNamePrefix:) + 124 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:381:22
+ 12 [ra] [thunk]   0x00005e28ee3329e4 partial apply for thunk for @escaping @callee_guaranteed (@guaranteed NIOThread) -> () + 19 in WebSocketServer at //<compiler-generated>
+ 13 [ra]           0x00005e28ee39027e closure #1 in closure #1 in static ThreadOpsPosix.run(handle:args:) + 365 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/ThreadPosix.swift:172:21
+ 14 [ra]           0x00007a103149caa4 <unknown> in libc.so.6
+...
+
+Thread 14 "SGLTN-TP-#2":
+
+  0                0x00007a1031498d71 <unknown> in libc.so.6
+  1 [ra]           0x00007a103149b7ed <unknown> in libc.so.6
+  2 [ra] [inlined] 0x00005e28ee0dc684 specialized ManagedBuffer<>.withUnsafeMutablePointerToElements<A, B>(_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/lock.swift:204:27
+  3 [ra] [inlined] 0x00005e28ee0dc684 specialized LockStorage.withLockPrimitive<A>(_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:173:18
+  4 [ra] [inlined] 0x00005e28ee0dc684 specialized NIOLock.withLockPrimitive<A>(_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:233:27
+  5 [ra] [inlined] 0x00005e28ee0dc684 closure #1 in ConditionLock.lock(whenValue:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/lock.swift:199:24
+  6 [ra]           0x00005e28ee0dc684 ConditionLock.lock(whenValue:) + 227 in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:174:17
+  7 [ra] [inlined] 0x00005e28ee3301ef specialized ConditionLock._lock(when:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:532:18
+  8 [ra] [inlined] 0x00005e28ee3301ef specialized ConditionLock.withLock<A>(when:_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:549:14
+  9 [ra] [inlined] 0x00005e28ee3301ef NIOThreadPool._blockingWaitForWork(identifier:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:257:29
+ 10 [ra]           0x00005e28ee3301ef NIOThreadPool.process(identifier:) + 238 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:304:37
+ 11 [ra]           0x00005e28ee33048d closure #2 in NIOThreadPool._start(threadNamePrefix:) + 124 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:381:22
+ 12 [ra] [thunk]   0x00005e28ee3329e4 partial apply for thunk for @escaping @callee_guaranteed (@guaranteed NIOThread) -> () + 19 in WebSocketServer at //<compiler-generated>
+ 13 [ra]           0x00005e28ee39027e closure #1 in closure #1 in static ThreadOpsPosix.run(handle:args:) + 365 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/ThreadPosix.swift:172:21
+ 14 [ra]           0x00007a103149caa4 <unknown> in libc.so.6
+...
+
+Thread 15 "SGLTN-TP-#3":
+
+  0                0x00007a1031498d71 <unknown> in libc.so.6
+  1 [ra]           0x00007a103149b7ed <unknown> in libc.so.6
+  2 [ra] [inlined] 0x00005e28ee0dc684 specialized ManagedBuffer<>.withUnsafeMutablePointerToElements<A, B>(_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/lock.swift:204:27
+  3 [ra] [inlined] 0x00005e28ee0dc684 specialized LockStorage.withLockPrimitive<A>(_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:173:18
+  4 [ra] [inlined] 0x00005e28ee0dc684 specialized NIOLock.withLockPrimitive<A>(_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:233:27
+  5 [ra] [inlined] 0x00005e28ee0dc684 closure #1 in ConditionLock.lock(whenValue:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/lock.swift:199:24
+  6 [ra]           0x00005e28ee0dc684 ConditionLock.lock(whenValue:) + 227 in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:174:17
+  7 [ra] [inlined] 0x00005e28ee330128 NIOThreadPool._blockingWaitForWork(identifier:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:532:18
+  8 [ra] [inlined] 0x00005e28ee330128 specialized ConditionLock._lock(when:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:304:37
+  9 [ra] [inlined] 0x00005e28ee330128 specialized ConditionLock.withLock<A>(when:_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:549:14
+ 10 [ra]           0x00005e28ee330128 NIOThreadPool.process(identifier:) + 39 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:257:29
+ 11 [ra]           0x00005e28ee33048d closure #2 in NIOThreadPool._start(threadNamePrefix:) + 124 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:381:22
+ 12 [ra] [thunk]   0x00005e28ee3329e4 partial apply for thunk for @escaping @callee_guaranteed (@guaranteed NIOThread) -> () + 19 in WebSocketServer at //<compiler-generated>
+ 13 [ra]           0x00005e28ee39027e closure #1 in closure #1 in static ThreadOpsPosix.run(handle:args:) + 365 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/ThreadPosix.swift:172:21
+ 14 [ra]           0x00007a103149caa4 <unknown> in libc.so.6
+...
+
+Thread 16 "SGLTN-TP-#4":
+
+  0                0x00007a1031498d71 <unknown> in libc.so.6
+  1 [ra]           0x00007a103149b7ed <unknown> in libc.so.6
+  2 [ra] [inlined] 0x00005e28ee0dc684 specialized ManagedBuffer<>.withUnsafeMutablePointerToElements<A, B>(_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/lock.swift:204:27
+  3 [ra] [inlined] 0x00005e28ee0dc684 specialized LockStorage.withLockPrimitive<A>(_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:173:18
+  4 [ra] [inlined] 0x00005e28ee0dc684 specialized NIOLock.withLockPrimitive<A>(_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:233:27
+  5 [ra] [inlined] 0x00005e28ee0dc684 closure #1 in ConditionLock.lock(whenValue:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/lock.swift:199:24
+  6 [ra]           0x00005e28ee0dc684 ConditionLock.lock(whenValue:) + 227 in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:174:17
+  7 [ra] [inlined] 0x00005e28ee330128 NIOThreadPool._blockingWaitForWork(identifier:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:532:18
+  8 [ra] [inlined] 0x00005e28ee330128 specialized ConditionLock._lock(when:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:304:37
+  9 [ra] [inlined] 0x00005e28ee330128 specialized ConditionLock.withLock<A>(when:_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:549:14
+ 10 [ra]           0x00005e28ee330128 NIOThreadPool.process(identifier:) + 39 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:257:29
+ 11 [ra]           0x00005e28ee33048d closure #2 in NIOThreadPool._start(threadNamePrefix:) + 124 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:381:22
+ 12 [ra] [thunk]   0x00005e28ee3329e4 partial apply for thunk for @escaping @callee_guaranteed (@guaranteed NIOThread) -> () + 19 in WebSocketServer at //<compiler-generated>
+ 13 [ra]           0x00005e28ee39027e closure #1 in closure #1 in static ThreadOpsPosix.run(handle:args:) + 365 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/ThreadPosix.swift:172:21
+ 14 [ra]           0x00007a103149caa4 <unknown> in libc.so.6
+...
+
+Thread 17 "SGLTN-TP-#5":
+
+  0                0x00007a1031498d71 <unknown> in libc.so.6
+  1 [ra]           0x00007a103149b7ed <unknown> in libc.so.6
+  2 [ra] [inlined] 0x00005e28ee0dc684 specialized ManagedBuffer<>.withUnsafeMutablePointerToElements<A, B>(_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/lock.swift:204:27
+  3 [ra] [inlined] 0x00005e28ee0dc684 specialized LockStorage.withLockPrimitive<A>(_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:173:18
+  4 [ra] [inlined] 0x00005e28ee0dc684 specialized NIOLock.withLockPrimitive<A>(_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:233:27
+  5 [ra] [inlined] 0x00005e28ee0dc684 closure #1 in ConditionLock.lock(whenValue:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/lock.swift:199:24
+  6 [ra]           0x00005e28ee0dc684 ConditionLock.lock(whenValue:) + 227 in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:174:17
+  7 [ra] [inlined] 0x00005e28ee330128 NIOThreadPool._blockingWaitForWork(identifier:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:532:18
+  8 [ra] [inlined] 0x00005e28ee330128 specialized ConditionLock._lock(when:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:304:37
+  9 [ra] [inlined] 0x00005e28ee330128 specialized ConditionLock.withLock<A>(when:_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:549:14
+ 10 [ra]           0x00005e28ee330128 NIOThreadPool.process(identifier:) + 39 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:257:29
+ 11 [ra]           0x00005e28ee33048d closure #2 in NIOThreadPool._start(threadNamePrefix:) + 124 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:381:22
+ 12 [ra] [thunk]   0x00005e28ee3329e4 partial apply for thunk for @escaping @callee_guaranteed (@guaranteed NIOThread) -> () + 19 in WebSocketServer at //<compiler-generated>
+ 13 [ra]           0x00005e28ee39027e closure #1 in closure #1 in static ThreadOpsPosix.run(handle:args:) + 365 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/ThreadPosix.swift:172:21
+ 14 [ra]           0x00007a103149caa4 <unknown> in libc.so.6
+...
+
+Thread 18 "SGLTN-TP-#6":
+
+  0                0x00007a1031498d71 <unknown> in libc.so.6
+  1 [ra]           0x00007a103149b7ed <unknown> in libc.so.6
+  2 [ra] [inlined] 0x00005e28ee0dc684 specialized ManagedBuffer<>.withUnsafeMutablePointerToElements<A, B>(_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/lock.swift:204:27
+  3 [ra] [inlined] 0x00005e28ee0dc684 specialized LockStorage.withLockPrimitive<A>(_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:173:18
+  4 [ra] [inlined] 0x00005e28ee0dc684 specialized NIOLock.withLockPrimitive<A>(_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:233:27
+  5 [ra] [inlined] 0x00005e28ee0dc684 closure #1 in ConditionLock.lock(whenValue:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/lock.swift:199:24
+  6 [ra]           0x00005e28ee0dc684 ConditionLock.lock(whenValue:) + 227 in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:174:17
+  7 [ra] [inlined] 0x00005e28ee3301ef specialized ConditionLock._lock(when:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:532:18
+  8 [ra] [inlined] 0x00005e28ee3301ef specialized ConditionLock.withLock<A>(when:_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:549:14
+  9 [ra] [inlined] 0x00005e28ee3301ef NIOThreadPool._blockingWaitForWork(identifier:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:257:29
+ 10 [ra]           0x00005e28ee3301ef NIOThreadPool.process(identifier:) + 238 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:304:37
+ 11 [ra]           0x00005e28ee33048d closure #2 in NIOThreadPool._start(threadNamePrefix:) + 124 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:381:22
+ 12 [ra] [thunk]   0x00005e28ee3329e4 partial apply for thunk for @escaping @callee_guaranteed (@guaranteed NIOThread) -> () + 19 in WebSocketServer at //<compiler-generated>
+ 13 [ra]           0x00005e28ee39027e closure #1 in closure #1 in static ThreadOpsPosix.run(handle:args:) + 365 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/ThreadPosix.swift:172:21
+ 14 [ra]           0x00007a103149caa4 <unknown> in libc.so.6
+...
+
+Thread 19 "SGLTN-TP-#7":
+
+  0                0x00007a1031498d71 <unknown> in libc.so.6
+  1 [ra]           0x00007a103149b7ed <unknown> in libc.so.6
+  2 [ra] [inlined] 0x00005e28ee0dc684 specialized ManagedBuffer<>.withUnsafeMutablePointerToElements<A, B>(_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/lock.swift:204:27
+  3 [ra] [inlined] 0x00005e28ee0dc684 specialized LockStorage.withLockPrimitive<A>(_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:173:18
+  4 [ra] [inlined] 0x00005e28ee0dc684 specialized NIOLock.withLockPrimitive<A>(_:) in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:233:27
+  5 [ra] [inlined] 0x00005e28ee0dc684 closure #1 in ConditionLock.lock(whenValue:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/lock.swift:199:24
+  6 [ra]           0x00005e28ee0dc684 ConditionLock.lock(whenValue:) + 227 in WebSocketServer at .build/checkouts/swift-nio/Sources/NIOConcurrencyHelpers/NIOLock.swift:174:17
+  7 [ra] [inlined] 0x00005e28ee3301ef specialized ConditionLock._lock(when:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:532:18
+  8 [ra] [inlined] 0x00005e28ee3301ef specialized ConditionLock.withLock<A>(when:_:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:549:14
+  9 [ra] [inlined] 0x00005e28ee3301ef NIOThreadPool._blockingWaitForWork(identifier:) in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:257:29
+ 10 [ra]           0x00005e28ee3301ef NIOThreadPool.process(identifier:) + 238 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:304:37
+ 11 [ra]           0x00005e28ee33048d closure #2 in NIOThreadPool._start(threadNamePrefix:) + 124 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/NIOThreadPool.swift:381:22
+ 12 [ra] [thunk]   0x00005e28ee3329e4 partial apply for thunk for @escaping @callee_guaranteed (@guaranteed NIOThread) -> () + 19 in WebSocketServer at //<compiler-generated>
+ 13 [ra]           0x00005e28ee39027e closure #1 in closure #1 in static ThreadOpsPosix.run(handle:args:) + 365 in WebSocketServer at /home/a0e394/testSwift/Hello/.build/checkouts/swift-nio/Sources/NIOPosix/ThreadPosix.swift:172:21
+ 14 [ra]           0x00007a103149caa4 <unknown> in libc.so.6
+...
+
+Thread 20 crashed:
+
+  0               0x00007a1033ae2e18 _assertionFailure(_:_:file:line:flags:) + 264 in libswiftCore.so
+  1 [ra]          0x00007a1033b2e2c1 swift_errorInMain + 768 in libswiftCore.so
+  2 [ra] [system] 0x00005e28ee682891 specialized thunk for @escaping @convention(thin) @async () -> () + 32 in WebSocketServer at //<compiler-generated>
+  3 [async]       0x00007a1033757c60 completeTaskAndRelease(swift::AsyncContext*, swift::SwiftError*) in libswift_Concurrency.so
+...
+
+
+Registers:
+
+rax 0x0000000200000003  8589934595
+rdx 0x0000000000000002  2
+rcx 0xfffffffe00000000  18446744065119617024
+rbx 0x0000000000000003  3
+rsi 0x00007a0fd4000f78  03 00 00 00 00 00 00 00 70 00 00 00 00 00 00 80  ········p·······
+rdi 0x00007a1000002cd0  88 05 7e ee 28 5e 00 00 85 00 00 00 00 00 00 00  ··~î(^··········
+rbp 0x00007a0fdbffeb00  90 eb ff db 0f 7a 00 00 c1 e2 b2 33 10 7a 00 00  ·ëÿÛ·z··Áâ²3·z··
+rsp 0x00007a0fdbffea90  a0 ea ff db 0f 7a 00 00 eb 9c a0 33 10 7a 00 00   êÿÛ·z··ë· 3·z··
+ r8 0x00007a0fd40008e0  00 00 01 00 02 00 07 00 02 00 01 00 01 00 01 00  ················
+ r9 0x0000000000000007  7
+r10 0x00007a1000002ce0  02 00 00 a1 07 00 00 00 65 f9 cf 5b 94 9c 38 e3  ···¡····eùÏ[··8ã
+r11 0xe3389c945bcff965  16373008606314887525
+r12 0x000000000000005b  91
+r13 0x00007a0fdbffeb58  5b 00 00 00 00 00 00 f0 70 0f 00 d4 0f 7a 00 00  [······ðp··Ô·z··
+r14 0xf00000000000005b  17293822569102704731
+r15 0x0000000000000000  0
+rip 0x00007a1033ae2e18  0f 0b 48 8d 35 7f 0c fb ff 48 8d 55 a0 45 31 e4  ··H·5··ûÿH·U E1ä
+
+rflags 0x0000000000010206  PF
+
+cs 0x0033  fs 0x0000  gs 0x0000
+
+
+Images (15 omitted):
+
+0x00005e28ed1b8000–0x00005e28ee7ab170 9708144d95a39c2b9cdfc188425bc99110528c6d WebSocketServer         /home/a0e394/testSwift/Hello/.build/x86_64-unknown-linux-gnu/release/WebSocketServer
+0x00007a1031400000–0x00007a10315afcf9 274eec488d230825a136fa9c4d85370fed7a0a5e libc.so.6               /usr/lib/x86_64-linux-gnu/libc.so.6
+0x00007a1033373000–0x00007a10333bbd00 8cfa305c3c4517fda017a97f997de6ba42397e0f libdispatch.so          /home/linuxbrew/.linuxbrew/Cellar/swift/6.2/libexec/lib/swift/linux/libdispatch.so
+0x00007a10336e4000–0x00007a10337746b0 e89e17a2181f5e5d7c863c6ccc8866b4c26db53a libswift_Concurrency.so /home/linuxbrew/.linuxbrew/Cellar/swift/6.2/libexec/lib/swift/linux/libswift_Concurrency.so
+0x00007a1033800000–0x00007a1033db17c0 824dd83c3ff972ef35a1168e32e8d535718c5dbc libswiftCore.so         /home/linuxbrew/.linuxbrew/Cellar/swift/6.2/libexec/lib/swift/linux/libswiftCore.so
+
+Backtrace took 25.61s
+
