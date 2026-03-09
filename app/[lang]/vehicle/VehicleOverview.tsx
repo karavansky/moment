@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, memo } from 'react'
-import { Button, Spinner, toast, Modal, Input, Select } from '@heroui/react'
+import { Button, Spinner, toast, Modal } from '@heroui/react'
 import { Plus, Pencil, Trash2, Truck } from 'lucide-react'
 import { useDisclosure } from '@/lib/useDisclosure'
 import { useScheduling } from '@/contexts/SchedulingContext'
@@ -191,30 +191,40 @@ function VehicleOverview({ className }: VehicleOverviewProps) {
                 <span>{isCreating ? 'Добавить транспорт' : 'Редактировать транспорт'}</span>
               </Modal.Header>
               <Modal.Body className="gap-4">
-                <Input
-                  label="Гос. номер"
-                  placeholder="A123BC777"
-                  value={plateNumber}
-                  onChange={e => setPlateNumber(e.target.value)}
-                />
-                <Select
-                  label="Тип транспорта"
-                  value={vehicleType}
-                  onChange={e => setVehicleType(e.target.value as VehicleType)}
-                >
-                  <option value="STANDARD">Стандарт</option>
-                  <option value="MINIVAN">Минивэн</option>
-                  <option value="WHEELCHAIR">Для инвалидов</option>
-                </Select>
-                <Select
-                  label="Статус"
-                  value={status}
-                  onChange={e => setStatus(e.target.value as VehicleStatus)}
-                >
-                  <option value="ACTIVE">Активный</option>
-                  <option value="REPAIR">Ремонт</option>
-                  <option value="INACTIVE">Неактивный</option>
-                </Select>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium">Гос. номер</label>
+                  <input
+                    type="text"
+                    placeholder="A123BC777"
+                    value={plateNumber}
+                    onChange={e => setPlateNumber(e.target.value)}
+                    className="w-full px-3 py-2 border border-default-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium">Тип транспорта</label>
+                  <select
+                    value={vehicleType}
+                    onChange={e => setVehicleType(e.target.value as VehicleType)}
+                    className="w-full px-3 py-2 border border-default-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    <option value="STANDARD">Стандарт</option>
+                    <option value="MINIVAN">Минивэн</option>
+                    <option value="WHEELCHAIR">Для инвалидов</option>
+                  </select>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium">Статус</label>
+                  <select
+                    value={status}
+                    onChange={e => setStatus(e.target.value as VehicleStatus)}
+                    className="w-full px-3 py-2 border border-default-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    <option value="ACTIVE">Активный</option>
+                    <option value="REPAIR">Ремонт</option>
+                    <option value="INACTIVE">Неактивный</option>
+                  </select>
+                </div>
               </Modal.Body>
               <Modal.Footer>
                 <Button variant="outline" onPress={onClose}>

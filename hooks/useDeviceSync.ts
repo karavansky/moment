@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from 'react'
 import { usePushNotifications } from './usePushNotifications'
+import { useSession } from 'next-auth/react'
+import { encryptTelemetry } from '@/lib/telemetry-crypto'
 
 interface BatteryManager extends EventTarget {
   level: number
@@ -40,10 +42,17 @@ function getOSVersion(): string {
 }
 
 export function useDeviceSync() {
+  const { data: session, status } = useSession()
   const { isSubscribed } = usePushNotifications()
   const syncTimeout = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
+    // Don't sync in demo mode (no authenticated session)
+    if (status !== 'authenticated' || !session) {
+      console.log('[useDeviceSync] Skipping sync - not authenticated (demo mode)')
+      return
+    }
+
     const syncStatus = async () => {
       let geoEnabled = false
       try {
@@ -77,14 +86,18 @@ export function useDeviceSync() {
         pushNotificationsEnabled: isSubscribed,
       }
 
-      console.log('[useDeviceSync] Sending telemetry payload:', payload)
+      console.log('[useDeviceSync] Sending encrypted telemetry')
+
+      // Encrypt payload to protect business logic from competitors
+      const encrypted = await encryptTelemetry(payload)
 
       fetch('/api/staff/sync-device', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ encrypted }),
+        credentials: 'include',
       }).catch(err => console.error('[useDeviceSync] Failed to sync telemetry:', err))
     }
 
@@ -106,5 +119,5 @@ export function useDeviceSync() {
 
     document.addEventListener('visibilitychange', handleVisibility)
     return () => document.removeEventListener('visibilitychange', handleVisibility)
-  }, [isSubscribed])
+  }, [isSubscribed, session, status])
 }

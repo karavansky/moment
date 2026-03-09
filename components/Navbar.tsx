@@ -39,10 +39,10 @@ export default function Navbar({
         isHydrated ? 'transition-all duration-300' : ''
       } ${sidebarExpanded ? 'md:left-56' : 'md:left-16'}`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
         <div className="flex items-center justify-end h-16">
           {/* Mobile Center Section: App Store Badge + Language Switcher + Sidebar Menu Button */}
-          <div className="md:hidden flex items-center gap-3">
+          <div className="md:hidden flex items-center gap-1 sm:gap-3">
             <LoginLogout />
             <SupportButtons lang={lang} onAction={handleSupportAction} t={t} />
             <NotificationDropdown

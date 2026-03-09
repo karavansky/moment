@@ -1,6 +1,6 @@
 import pool from './db'
 import type { OrderDB, OrderStatus } from '../types/transport'
-import { sendPushNotification } from './push-notifications'
+import { sendPushToUser } from './push-notifications'
 import { generateId } from './generate-id'
 
 function getChannel(firmaID: string): string {
@@ -599,7 +599,7 @@ async function sendOrderPushToDriver(
         ? `You have been assigned to a new order #${orderID.slice(0, 8)}`
         : `Order #${orderID.slice(0, 8)} has been cancelled`
 
-    await sendPushNotification(worker.userID, {
+    await sendPushToUser(worker.userID, {
       title,
       body,
       url: '/driver',
@@ -633,7 +633,7 @@ async function sendOrderPushToDispatchers(
         : `Order #${orderID.slice(0, 8)} has been completed`
 
     for (const director of directorsResult.rows) {
-      await sendPushNotification(director.userID, {
+      await sendPushToUser(director.userID, {
         title,
         body,
         url: `/map/${orderID}`,

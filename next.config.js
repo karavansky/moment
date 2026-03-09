@@ -9,11 +9,8 @@ const nextConfig = {
 
   // Compiler optimizations
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production'
-      ? {
-          exclude: ['error', 'warn'], // Keep console.error and console.warn in production
-        }
-      : false, // Keep all console in development
+    // Keep all console logs in production for debugging during development
+    removeConsole: false,
   },
 
   env: {
@@ -82,7 +79,7 @@ const nextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googletagmanager.com https://*.google-analytics.com https://cdn.jsdelivr.net https://challenges.cloudflare.com",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: https:",
+              "img-src 'self' data: blob: https:",
               "font-src 'self' data:",
               "connect-src 'self' wss://dev.moment-lbs.app https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://stats.g.doubleclick.net https://analytics.google.com https://photon.komoot.io https://challenges.cloudflare.com",
               "worker-src 'self' blob:",

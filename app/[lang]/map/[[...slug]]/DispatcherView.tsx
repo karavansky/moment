@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react'
 import dynamic from 'next/dynamic'
-import OrdersList from '@/components/dispatcher/OrdersList'
+import List from '@/components/map/List'
 import { getAllTransportMockData } from '@/lib/transport-mock-data'
 import type { Order } from '@/types/transport'
 
-// Динамический импорт OrdersMap без SSR (Leaflet требует window)
-const OrdersMap = dynamic(() => import('@/components/dispatcher/OrdersMap'), {
+// Динамический импорт Map без SSR (Leaflet требует window)
+const Map = dynamic(() => import('@/components/map/Map'), {
   ssr: false,
   loading: () => (
     <div className="h-full w-full flex items-center justify-center bg-default-100">
@@ -45,7 +45,7 @@ export default function DispatcherView() {
       <div className="flex-1 flex overflow-hidden">
         {/* Map Section - 60% width */}
         <div className="w-3/5 relative">
-          <OrdersMap
+          <Map
             orders={orders}
             vehicles={mockData.vehicles}
             selectedOrderId={selectedOrderId}
@@ -55,7 +55,7 @@ export default function DispatcherView() {
 
         {/* Orders List Section - 40% width */}
         <div className="w-2/5 border-l border-default-200 overflow-hidden">
-          <OrdersList
+          <List
             orders={orders}
             vehicles={mockData.vehicles}
             selectedOrderId={selectedOrderId}

@@ -1,38 +1,130 @@
 'use client'
 
+import React, { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { use } from 'react'
-import { Tabs } from '@heroui/react'
+import { useScheduling } from '@/contexts/SchedulingContext'
+import { getAllTransportMockData } from '@/lib/transport-mock-data'
+import type { Order } from '@/types/transport'
+import List from '@/components/map/List'
 
-const AppointmentsMap = dynamic(() => import('./AppointmentsMap'), { ssr: false })
-const DispatcherView = dynamic(() => import('./DispatcherView'), { ssr: false })
+// Динамический импорт Map без SSR (Leaflet требует window)
+const Map = dynamic(() => import('@/components/map/Map'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-full w-full flex items-center justify-center bg-default-100">
+      <p className="text-default-500">Загрузка карты...</p>
+    </div>
+  ),
+})
 
-export default function MapPage({ params }: { params: Promise<{ slug?: string[] }> }) {
+interface MapPageProps {
+  params: Promise<{
+    lang: string
+    slug?: string[]
+  }>
+}
+
+export default function MapPage({ params }: MapPageProps) {
   const { slug } = use(params)
+  // Get slug parameter (appointment ID or order ID)
+  const slugId = slug?.[0]
+
+  // Appointments data
+  const { todayAppointments } = useScheduling()
+
+  // Orders data
+  const mockData = getAllTransportMockData()
+  const [orders, setOrders] = useState<Order[]>(mockData.orders)
+
+  // Active tab state
+  const [activeTab, setActiveTab] = useState<string>(todayAppointments.length > 0 ? 'appointments' : 'orders')
+
+  // List collapsed state
+  const [isListCollapsed, setIsListCollapsed] = useState(false)
+
+  // Selection state
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null)
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+
+  // Handle slug parameter for initial selection
+  useEffect(() => {
+    if (!slugId) return
+
+    // Check if slug is an appointment ID
+    const appointment = todayAppointments.find((a) => a.id === slugId)
+    if (appointment) {
+      setSelectedAppointmentId(slugId)
+      setSelectedOrderId(null)
+      setActiveTab('appointments')
+      return
+    }
+
+    // Check if slug is an order ID
+    const order = orders.find((o) => o.id === slugId)
+    if (order) {
+      setSelectedOrderId(slugId)
+      setSelectedAppointmentId(null)
+      setActiveTab('orders')
+      return
+    }
+  }, [slugId, todayAppointments, orders])
+
+  const handleAppointmentSelect = (appointmentId: string) => {
+    setSelectedAppointmentId(appointmentId === selectedAppointmentId ? null : appointmentId)
+    setSelectedOrderId(null)
+  }
+
+  const handleOrderSelect = (orderId: string) => {
+    setSelectedOrderId(orderId === selectedOrderId ? null : orderId)
+    setSelectedAppointmentId(null)
+  }
+
+  const handleOrderUpdate = (updatedOrder: Order) => {
+    setOrders((prev) =>
+      prev.map((order) => (order.id === updatedOrder.id ? updatedOrder : order))
+    )
+  }
 
   return (
-    <div className="h-screen flex flex-col">
-      <Tabs defaultSelectedKey="appointments" className="flex-1 flex flex-col">
-        <Tabs.ListContainer className="px-4 pt-4">
-          <Tabs.List aria-label="Map views">
-            <Tabs.Tab id="appointments">
-              Записи
-              <Tabs.Indicator />
-            </Tabs.Tab>
-            <Tabs.Tab id="dispatcher">
-              Диспетчерская
-              <Tabs.Indicator />
-            </Tabs.Tab>
-          </Tabs.List>
-        </Tabs.ListContainer>
+    <div className="h-full flex flex-col overflow-hidden">
+      {/* Main Content */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Map Section - Dynamic width based on sidebar state */}
+        <div className="flex-1 relative">
+          <Map
+            // Show only data for active tab
+            appointments={activeTab === 'appointments' ? todayAppointments : []}
+            selectedAppointmentId={selectedAppointmentId}
+            onAppointmentSelect={handleAppointmentSelect}
+            orders={activeTab === 'orders' ? orders : []}
+            vehicles={activeTab === 'orders' ? mockData.vehicles : []}
+            selectedOrderId={selectedOrderId}
+            onOrderSelect={handleOrderSelect}
+          />
+        </div>
 
-        <Tabs.Panel id="appointments" className="flex-1 overflow-hidden">
-          <AppointmentsMap slug={slug?.[0]} />
-        </Tabs.Panel>
-        <Tabs.Panel id="dispatcher" className="flex-1 overflow-hidden">
-          <DispatcherView />
-        </Tabs.Panel>
-      </Tabs>
+        {/* List/Sidebar Section - Collapsible */}
+        <div className="shrink-0">
+          <List
+            // Always pass all data to List component
+            appointments={todayAppointments}
+            selectedAppointmentId={selectedAppointmentId}
+            onAppointmentSelect={handleAppointmentSelect}
+            orders={orders}
+            vehicles={mockData.vehicles}
+            selectedOrderId={selectedOrderId}
+            onOrderSelect={handleOrderSelect}
+            onOrderUpdate={handleOrderUpdate}
+            // Pass active tab and handler
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            // Pass collapse state and handler
+            isCollapsed={isListCollapsed}
+            onCollapsedChange={setIsListCollapsed}
+          />
+        </div>
+      </div>
     </div>
   )
 }

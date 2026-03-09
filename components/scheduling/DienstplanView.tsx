@@ -226,6 +226,23 @@ function DienstplanView() {
     hasRestoredRef.current = false
   }, [setSelectedAppointment, setIsNewAppointment, setIsModalOpen])
 
+  const handleCloseReportModal = useCallback(() => {
+    console.log('[DienstplanView] handleCloseReportModal called')
+    console.trace('[DienstplanView] handleCloseReportModal stack trace')
+    setIsReportModalOpen(false)
+    setSelectedAppointment(null)
+    // Clear saved appointment ID, modal type, active tab, and appointmentOverrides
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('dienstplan_selectedAppointmentId')
+      sessionStorage.removeItem('dienstplan_isModalOpen')
+      sessionStorage.removeItem('dienstplan_modalType')
+      sessionStorage.removeItem('dienstplan_activeTab')
+      sessionStorage.removeItem('appointmentOverrides')
+    }
+    // Reset restore flag to allow saving again on next modal open
+    hasRestoredRef.current = false
+  }, [setSelectedAppointment, setIsReportModalOpen])
+
   // Save selectedAppointment.id and modal type when modal opens (but not during restore)
   useEffect(() => {
     console.log('[DienstplanView] Save check:', {
@@ -462,12 +479,7 @@ function DienstplanView() {
       {/* Appointment Modal */}
       <AppModal
         isOpen={isModalOpen || isReportModalOpen}
-        onClose={isModalOpen ? handleCloseModal : () => {
-          console.log('[DienstplanView] Report modal onClose called')
-          console.trace('[DienstplanView] Report modal onClose stack trace')
-          setIsReportModalOpen(false)
-          setSelectedAppointment(null)
-        }}
+        onClose={isModalOpen ? handleCloseModal : handleCloseReportModal}
         appointment={selectedAppointment}
         selectedDate={selectedDate}
         isNewAppointment={isNewAppointment}

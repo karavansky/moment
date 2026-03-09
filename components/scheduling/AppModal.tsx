@@ -399,13 +399,20 @@ function AppModal({
                         transition={{ duration: 0.3, ease: 'easeInOut' }}
                         className="h-full"
                       >
-                        <AppReport
-                          formData={formData}
-                          setFormData={setFormData}
-                          errors={errors}
-                          setErrors={setErrors}
-                          selectedDate={selectedDate}
-                        />
+                        {/* Only render AppReport when formData has valid ID */}
+                        {formData.id ? (
+                          <AppReport
+                            formData={formData}
+                            setFormData={setFormData}
+                            errors={errors}
+                            setErrors={setErrors}
+                            selectedDate={selectedDate}
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center h-full">
+                            <span className="text-default-400">Loading...</span>
+                          </div>
+                        )}
                       </motion.div>
                     ) : viewTab === 'notes' ? (
                       <motion.div

@@ -80,6 +80,18 @@ export interface Order {
   appointment?: Appointment | null
   routes?: Route[]
   rejects?: OrderReject[]
+
+  // Simplified fields (for UI/mock data compatibility)
+  // These can be used instead of routes[] array for simple single-destination orders
+  pickupAddress?: string
+  pickupLat?: number | null
+  pickupLng?: number | null
+  dropoffAddress?: string
+  dropoffLat?: number | null
+  dropoffLng?: number | null
+  passengerName?: string
+  passengerPhone?: string
+  notes?: string | null
 }
 
 // Database model

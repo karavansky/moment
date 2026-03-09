@@ -17,6 +17,7 @@ import {
   Square,
   MapPin,
 } from 'lucide-react'
+import { AuthenticatedImage } from '../AuthenticatedImage'
 
 const MapView = dynamic(() => import('./MapView'), { ssr: false })
 import { generateId } from '@/lib/generate-id'
@@ -46,7 +47,13 @@ interface PhotoUrlContext {
 
 const getPhotoUrl = (url: string, context: PhotoUrlContext): string => {
   if (!url) return ''
-  if (url.startsWith('/api/files/buckets/')) return url
+
+  // If URL already has full path, fix double slashes if present
+  if (url.startsWith('/api/files/buckets/')) {
+    // Replace multiple slashes with single slash (except after protocol)
+    return url.replace(/([^:]\/)\/+/g, '$1')
+  }
+
   const { firmaID, appointmentId, reportId } = context
   return `/api/files/buckets/images/${firmaID}/${appointmentId}/${reportId}/${url}`
 }
@@ -153,6 +160,7 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ close: true }),
+            credentials: 'include',
           }).catch(err =>
             console.warn('[AppointmentReport] Failed to auto-close orphaned session:', err)
           )
@@ -277,6 +285,7 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
           workerId: user.myWorkerID || appointment.workerId,
           firmaID: user.firmaID,
         }),
+        credentials: 'include',
       })
 
       console.log('[handleStart] Step 1: POST response status:', res.status)
@@ -361,6 +370,7 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
           openAddress: geo.address,
           openDistanceToAppointment: geo.distance,
         }),
+        credentials: 'include',
       })
         .then(res => {
           console.log('[handleStart] PATCH response status:', res.status)
@@ -412,6 +422,7 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ close: true }),
+        credentials: 'include',
       })
       if (!res.ok) throw new Error('Failed to close report session')
       const { report } = await res.json()
@@ -473,6 +484,7 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
           closeAddress: geo.address,
           closeDistanceToAppointment: geo.distance,
         }),
+        credentials: 'include',
       })
         .then(res => {
           console.log('[handleFinish] PATCH response status:', res.status)
@@ -523,6 +535,7 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes: sessionNotes[reportId] }),
+        credentials: 'include',
       })
       const updatedSessions = reportSessions.map(s =>
         s.id === reportId ? { ...s, notes: sessionNotes[reportId] } : s
@@ -562,6 +575,7 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
         const convertResponse = await fetch('/api/convert-heic', {
           method: 'POST',
           body: heicFormData,
+          credentials: 'include',
         })
         const convertData = await convertResponse.json()
         if (!convertResponse.ok) {
@@ -602,6 +616,7 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
             workerId: user.myWorkerID || appointment.workerId,
             firmaID: user.firmaID,
           }),
+          credentials: 'include',
         })
         if (!createRes.ok) throw new Error('Failed to auto-create proxy report session')
         const { report } = await createRes.json()
@@ -623,7 +638,14 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
         upsertReport(newSession)
       }
 
-      if (!user?.firmaID || !appointment?.id) throw new Error('Missing required data')
+      if (!user?.firmaID || !appointment?.id) {
+        console.error('[handlePhotoUpload] Missing required data:', {
+          firmaID: user?.firmaID,
+          appointmentId: appointment?.id,
+          appointment
+        })
+        throw new Error('Missing required data: firmaID or appointmentId')
+      }
 
       const formData = new FormData()
       const fileName = originalFile.name.replace(/\.[^.]+$/, '.jpeg')
@@ -632,9 +654,16 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
       formData.append('appointmentId', appointment.id)
       formData.append('reportId', activeReportId)
 
+      console.log('[handlePhotoUpload] Uploading with:', {
+        firmaID: user.firmaID,
+        appointmentId: appointment.id,
+        reportId: activeReportId
+      })
+
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
+        credentials: 'include',
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.details || data.error || 'Upload failed')
@@ -647,6 +676,7 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
           reportId: activeReportId,
           photo: { id: data.photoId, url: data.url, note: '' },
         }),
+        credentials: 'include',
       })
       const saveData = await saveRes.json()
       const savedPhoto: Photo = {
@@ -700,7 +730,7 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
       })
       return updated
     })
-    fetch(`/api/reports/photos/${id}`, { method: 'DELETE' }).catch(err =>
+    fetch(`/api/reports/photos/${id}`, { method: 'DELETE', credentials: 'include' }).catch(err =>
       console.error('[handleRemovePhoto] Error:', err)
     )
   }
@@ -1039,24 +1069,23 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
           )}
 
           <div ref={photosContainerRef} className="flex gap-4 overflow-x-auto pb-2">
-            {photos.map(photo => (
-              <div
-                key={photo.id}
-                className="relative aspect-3/4 bg-default-100 rounded-lg overflow-hidden group shrink-0 w-48"
-              >
-                <img
-                  src={getPhotoUrl(photo.url, {
-                    firmaID: user?.firmaID || '',
-                    appointmentId: appointment?.id || '',
-                    reportId:
-                      currentReportId ||
-                      reportSessions.find(s => (s.photos || []).some(p => p.id === photo.id))?.id ||
-                      '',
-                  })}
-                  alt="Report photo"
-                  className="w-full h-full object-cover cursor-pointer"
-                  onClick={() => setSelectedPhotoId(photo.id)}
-                />
+            {photos.map(photo => {
+              const photoReport = reportSessions.find(s => (s.photos || []).some(p => p.id === photo.id))
+              return (
+                <div
+                  key={photo.id}
+                  className="relative aspect-3/4 bg-default-100 rounded-lg overflow-hidden group shrink-0 w-48"
+                >
+                  <AuthenticatedImage
+                    src={getPhotoUrl(photo.url, {
+                      firmaID: user?.firmaID || '',
+                      appointmentId: appointment?.id || '',
+                      reportId: currentReportId || photoReport?.id || '',
+                    })}
+                    alt="Report photo"
+                    className="w-full h-full object-cover cursor-pointer"
+                    onClick={() => setSelectedPhotoId(photo.id)}
+                  />
                 <button
                   onClick={() => handleRemovePhoto(photo.id)}
                   className="absolute top-1 right-1 z-20 bg-black/50 text-white p-1 rounded-full"
@@ -1072,7 +1101,8 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
                   />
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
         </div>
 
@@ -1132,7 +1162,7 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
               <Modal.CloseTrigger className="z-50" />
               {selectedPhoto && (
                 <Modal.Body className="relative flex-1 flex items-center justify-center bg-default-100 rounded-lg overflow-hidden group min-h-0">
-                  <img
+                  <AuthenticatedImage
                     src={getPhotoUrl(selectedPhoto?.url || '', {
                       firmaID: user?.firmaID || '',
                       appointmentId: appointment?.id || '',

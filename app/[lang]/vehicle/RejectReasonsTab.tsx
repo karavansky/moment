@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, memo } from 'react'
-import { Button, Spinner, toast, Modal, Input, Switch } from '@heroui/react'
+import { Button, Spinner, toast, Modal, Switch } from '@heroui/react'
 import { Plus, Pencil, Trash2, Ban, ToggleLeft, ToggleRight } from 'lucide-react'
 import { useDisclosure } from '@/lib/useDisclosure'
 import { useScheduling } from '@/contexts/SchedulingContext'
@@ -151,7 +151,6 @@ function RejectReasonsTab({ className }: RejectReasonsTabProps) {
                         variant="outline"
                         size="sm"
                         onPress={() => handleToggleActive(reason)}
-                        title="Деактивировать"
                       >
                         <ToggleRight className="w-4 h-4 text-success-600" />
                       </Button>
@@ -191,7 +190,6 @@ function RejectReasonsTab({ className }: RejectReasonsTabProps) {
                         variant="outline"
                         size="sm"
                         onPress={() => handleToggleActive(reason)}
-                        title="Активировать"
                       >
                         <ToggleLeft className="w-4 h-4 text-default-400" />
                       </Button>
@@ -220,15 +218,19 @@ function RejectReasonsTab({ className }: RejectReasonsTabProps) {
                 <span>{isCreating ? 'Добавить причину отказа' : 'Редактировать причину'}</span>
               </Modal.Header>
               <Modal.Body className="gap-4">
-                <Input
-                  label="Текст причины"
-                  placeholder="Например: Занят другим заказом"
-                  value={reasonText}
-                  onChange={e => setReasonText(e.target.value)}
-                />
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium">Текст причины</label>
+                  <input
+                    type="text"
+                    placeholder="Например: Занят другим заказом"
+                    value={reasonText}
+                    onChange={e => setReasonText(e.target.value)}
+                    className="w-full px-3 py-2 border border-default-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium">Активная</label>
-                  <Switch checked={isActive} onChange={e => setIsActive(e.target.checked)} />
+                  <Switch isSelected={isActive} onChange={(value: boolean) => setIsActive(value)} />
                 </div>
               </Modal.Body>
               <Modal.Footer>

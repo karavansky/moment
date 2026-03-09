@@ -13,8 +13,8 @@ struct FileController: RouteCollection, Sendable {
 
     /// Downloads a file from SeaweedFS via Nginx X-Accel-Redirect.
     ///
-    /// - For public demo paths (containing `3Eoxlmzdr4uEJggFueFnB`): no auth required
-    /// - For other paths: requires valid JWT session
+    /// - For public demo paths (containing `3Eoxlmzdr4uEJggFueFnB`): no auth required (via FileAuthMiddleware)
+    /// - For other paths: requires valid JWT session (via FileAuthMiddleware)
     @Sendable
     func download(req: Request) async throws -> Response {
         // 1. Extract file path from catch-all parameters
@@ -27,17 +27,7 @@ struct FileController: RouteCollection, Sendable {
         let requestedPath = pathComponents.joined(separator: "/")
         req.logger.info("File request: \(requestedPath)")
 
-        // SeaweedFS stores S3 buckets under /buckets/ folder by default, 
-        // so we DO want to pass the "buckets/" prefix if it was provided in the URL.
-
-        // 2. Auth check (skip for public demo paths)
-        let isPublicPath = pathComponents.contains("3Eoxlmzdr4uEJggFueFnB")
-
-        if !isPublicPath {
-            guard req.auth.has(AuthenticatedUser.self) else {
-                throw Abort(.unauthorized, reason: "Authentication required")
-            }
-        }
+        // Auth is handled by FileAuthMiddleware - public paths skip auth, private paths require JWT
 
         // 3. Return X-Accel-Redirect response
         // Nginx intercepts this header and serves the file from SeaweedFS directly

@@ -15,9 +15,12 @@ func routes(_ app: Application) throws {
     // Partially public (vapid-key is public)
     try api.register(collection: PushController())
 
+    // FileController with custom middleware (public for demo paths, protected otherwise)
+    let fileAuth = api.grouped(FileAuthMiddleware())
+    try fileAuth.register(collection: FileController())
+
     // Protected routes (JWT auth required)
     let protected = api.grouped(JWTAuthMiddleware())
-    try protected.register(collection: FileController())
     try protected.register(collection: UploadController())
     // Load test endpoint WITH JWT auth overhead
     protected.get("test", "vapor-auth", use: TestController().vaporAuthTest)
