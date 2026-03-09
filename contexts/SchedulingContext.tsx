@@ -22,6 +22,7 @@ import {
   ServiceTreeItem,
   Notif,
 } from '@/types/scheduling'
+import type { Vehicle, RejectReason } from '@/types/transport'
 import getAllSampleObjects from '@/lib/scheduling-mock-data'
 import { useNotifications } from '@/contexts/NotificationContext'
 import { generateId } from '@/lib/generate-id'
@@ -103,6 +104,8 @@ interface SchedulingState {
   appointments: Appointment[]
   reports: Report[]
   services: ServiceTreeItem[]
+  vehicles: Vehicle[]
+  rejectReasons: RejectReason[]
   firmaID: string
   isLoading: boolean
   isLiveMode: boolean
@@ -158,6 +161,12 @@ interface SchedulingActions {
   setAppointmentOverride: (appointmentId: string, override: Partial<Appointment>) => void
   getAppointmentWithOverrides: (appointmentId: string) => Appointment | undefined
   clearAppointmentOverride: (appointmentId: string) => void
+  addVehicle: (vehicle: Vehicle) => void
+  updateVehicle: (vehicle: Vehicle) => void
+  deleteVehicle: (id: string) => void
+  addRejectReason: (reason: RejectReason) => void
+  updateRejectReason: (reason: RejectReason) => void
+  deleteRejectReason: (id: string) => void
 }
 
 // Комбинированный тип для контекста
@@ -212,6 +221,8 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     appointments: [],
     reports: [],
     services: [],
+    vehicles: [],
+    rejectReasons: [],
     firmaID: '',
     isLoading: true,
     isLiveMode: false,
@@ -261,6 +272,8 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
           appointments,
           reports: mockData.reports,
           services: mockData.services,
+          vehicles: mockData.vehicles || [],
+          rejectReasons: mockData.rejectReasons || [],
           firmaID: mockData.firmaID,
           isLoading: false,
           isLiveMode: false,
@@ -324,6 +337,8 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
           appointments,
           reports: data.reports,
           services: data.services,
+          vehicles: data.vehicles || [],
+          rejectReasons: data.rejectReasons || [],
           firmaID: data.firmaID,
           isLoading: false,
           isLiveMode: true,
@@ -1259,6 +1274,125 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
         saveOverridesToStorage()
         // Optionally trigger re-render
         setState(prev => ({ ...prev }))
+      },
+
+      // Transport actions
+      addVehicle: (vehicle: Vehicle) => {
+        setState(prev => ({
+          ...prev,
+          vehicles: [...prev.vehicles, vehicle],
+        }))
+
+        if (isLiveModeRef.current) {
+          apiFetch('/api/transport/vehicles', {
+            method: 'POST',
+            body: JSON.stringify({
+              plateNumber: vehicle.plateNumber,
+              type: vehicle.type,
+              status: vehicle.status,
+              currentDriverID: vehicle.currentDriverID,
+            }),
+          }).catch(error => {
+            console.error('[addVehicle] API error:', error)
+            setState(prev => ({
+              ...prev,
+              vehicles: prev.vehicles.filter(v => v.id !== vehicle.id),
+            }))
+          })
+        }
+      },
+
+      updateVehicle: (updatedVehicle: Vehicle) => {
+        setState(prev => ({
+          ...prev,
+          vehicles: prev.vehicles.map(vehicle =>
+            vehicle.id === updatedVehicle.id ? updatedVehicle : vehicle
+          ),
+        }))
+
+        if (isLiveModeRef.current) {
+          apiFetch('/api/transport/vehicles', {
+            method: 'PUT',
+            body: JSON.stringify({
+              id: updatedVehicle.id,
+              plateNumber: updatedVehicle.plateNumber,
+              type: updatedVehicle.type,
+              status: updatedVehicle.status,
+              currentDriverID: updatedVehicle.currentDriverID,
+            }),
+          }).catch(error => console.error('[updateVehicle] API error:', error))
+        }
+      },
+
+      deleteVehicle: (id: string) => {
+        setState(prev => ({
+          ...prev,
+          vehicles: prev.vehicles.filter(vehicle => vehicle.id !== id),
+        }))
+
+        if (isLiveModeRef.current) {
+          apiFetch('/api/transport/vehicles', {
+            method: 'DELETE',
+            body: JSON.stringify({ id }),
+          }).catch(error => console.error('[deleteVehicle] API error:', error))
+        }
+      },
+
+      addRejectReason: (reason: RejectReason) => {
+        setState(prev => ({
+          ...prev,
+          rejectReasons: [...prev.rejectReasons, reason],
+        }))
+
+        if (isLiveModeRef.current) {
+          apiFetch('/api/transport/reject-reasons', {
+            method: 'POST',
+            body: JSON.stringify({
+              reasonText: reason.reasonText,
+              isActive: reason.isActive,
+            }),
+          }).catch(error => {
+            console.error('[addRejectReason] API error:', error)
+            setState(prev => ({
+              ...prev,
+              rejectReasons: prev.rejectReasons.filter(r => r.id !== reason.id),
+            }))
+          })
+        }
+      },
+
+      updateRejectReason: (updatedReason: RejectReason) => {
+        setState(prev => ({
+          ...prev,
+          rejectReasons: prev.rejectReasons.map(reason =>
+            reason.id === updatedReason.id ? updatedReason : reason
+          ),
+        }))
+
+        if (isLiveModeRef.current) {
+          apiFetch('/api/transport/reject-reasons', {
+            method: 'PUT',
+            body: JSON.stringify({
+              id: updatedReason.id,
+              reasonText: updatedReason.reasonText,
+              isActive: updatedReason.isActive,
+            }),
+          }).catch(error => console.error('[updateRejectReason] API error:', error))
+        }
+      },
+
+      deleteRejectReason: (id: string) => {
+        setState(prev => ({
+          ...prev,
+          rejectReasons: prev.rejectReasons.filter(reason => reason.id !== id),
+        }))
+
+        if (isLiveModeRef.current) {
+          apiFetch('/api/transport/reject-reasons', {
+            method: 'DELETE',
+            body: JSON.stringify({ id }),
+          }).catch(error => console.error('[deleteRejectReason] API error:', error))
+        }
       },
     }),
     [

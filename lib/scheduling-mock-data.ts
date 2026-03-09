@@ -1025,6 +1025,122 @@ export const getAllSampleObjects = () => {
     service_12,
   ]
 
+  // Transport System Mock Data
+  // Vehicles - автопарк из 5 машин разных типов
+  const vehicle1 = {
+    id: generateId(),
+    firmaID: firmaID,
+    plateNumber: 'A123BC777',
+    type: 'STANDARD' as const,
+    status: 'ACTIVE' as const,
+    currentDriverID: null,
+    currentLat: null,
+    currentLng: null,
+    lastLocationUpdate: null,
+    createdAt: addDays(currentDate, -30),
+  }
+
+  const vehicle2 = {
+    id: generateId(),
+    firmaID: firmaID,
+    plateNumber: 'B456DE777',
+    type: 'MINIVAN' as const,
+    status: 'ACTIVE' as const,
+    currentDriverID: null,
+    currentLat: 55.7558,
+    currentLng: 37.6173,
+    lastLocationUpdate: addHours(currentDate, -1),
+    createdAt: addDays(currentDate, -25),
+  }
+
+  const vehicle3 = {
+    id: generateId(),
+    firmaID: firmaID,
+    plateNumber: 'C789FG777',
+    type: 'WHEELCHAIR' as const,
+    status: 'ACTIVE' as const,
+    currentDriverID: null,
+    currentLat: null,
+    currentLng: null,
+    lastLocationUpdate: null,
+    createdAt: addDays(currentDate, -20),
+  }
+
+  const vehicle4 = {
+    id: generateId(),
+    firmaID: firmaID,
+    plateNumber: 'D012HI777',
+    type: 'STANDARD' as const,
+    status: 'REPAIR' as const,
+    currentDriverID: null,
+    currentLat: null,
+    currentLng: null,
+    lastLocationUpdate: null,
+    createdAt: addDays(currentDate, -15),
+  }
+
+  const vehicle5 = {
+    id: generateId(),
+    firmaID: firmaID,
+    plateNumber: 'E345JK777',
+    type: 'MINIVAN' as const,
+    status: 'INACTIVE' as const,
+    currentDriverID: null,
+    currentLat: null,
+    currentLng: null,
+    lastLocationUpdate: null,
+    createdAt: addDays(currentDate, -10),
+  }
+
+  // Reject Reasons - 6 стандартных причин отказа
+  const reason1 = {
+    id: generateId(),
+    firmaID: firmaID,
+    reasonText: 'Занят другим заказом',
+    isActive: true,
+    createdAt: addDays(currentDate, -60),
+  }
+
+  const reason2 = {
+    id: generateId(),
+    firmaID: firmaID,
+    reasonText: 'Не подходящий тип транспорта',
+    isActive: true,
+    createdAt: addDays(currentDate, -60),
+  }
+
+  const reason3 = {
+    id: generateId(),
+    firmaID: firmaID,
+    reasonText: 'Слишком далеко от текущего местоположения',
+    isActive: true,
+    createdAt: addDays(currentDate, -60),
+  }
+
+  const reason4 = {
+    id: generateId(),
+    firmaID: firmaID,
+    reasonText: 'Не успеваю в указанное время',
+    isActive: true,
+    createdAt: addDays(currentDate, -60),
+  }
+
+  const reason5 = {
+    id: generateId(),
+    firmaID: firmaID,
+    reasonText: 'Завершаю смену',
+    isActive: true,
+    createdAt: addDays(currentDate, -60),
+  }
+
+  const reason6 = {
+    id: generateId(),
+    firmaID: firmaID,
+    reasonText: 'Технические проблемы с автомобилем',
+    isActive: false,
+    createdAt: addDays(currentDate, -60),
+  }
+
   return {
     user,
     teams: [team1, team2],
@@ -1072,6 +1188,8 @@ export const getAllSampleObjects = () => {
     ],
     reports: [report1, report2],
     services,
+    vehicles: [vehicle1, vehicle2, vehicle3, vehicle4, vehicle5],
+    rejectReasons: [reason1, reason2, reason3, reason4, reason5, reason6],
     firmaID,
   }
 }

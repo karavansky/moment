@@ -109,13 +109,26 @@ export interface Worker {
   batteryStatus?: string | null
 }
 
+// Тип назначения
+export type AppointmentType = 0 | 1 // 0 = визит (встреча), 1 = поездка (транспорт)
+
+// Пункт маршрута для транспорта
+export interface RoutePoint {
+  id: string
+  address: string
+  lat?: number
+  lng?: number
+}
+
 // Назначение (встреча/визит)
 export interface Appointment {
   id: string
   firmaID: string
   userID: string
   clientID: string
+  type?: AppointmentType // 0 = визит, 1 = поездка (транспорт)
   services: Service[]
+  routes?: RoutePoint[] // Маршрут для транспорта (type=1)
   date: Date
   isFixedTime: boolean
   startTime: Date | undefined
@@ -132,6 +145,7 @@ export interface Appointment {
   longitude?: number
   openedAt?: Date
   closedAt?: Date
+  orderID?: string // Связь с транспортным заказом (если type=1)
 }
 
 export interface Photo {

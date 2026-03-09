@@ -195,17 +195,19 @@ function AppointmentsMap({ slug }: AppointmentsMapProps) {
   }
 
   return (
-    <div className="flex flex-col h-full p-4 gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">
-          {t('map.title')} ({todayAppointments.length})
-        </h1>
-        <span className="text-default-500">
-          {dateFormatter.format(new Date())}
-        </span>
+    <div className="flex flex-col h-full">
+      <div className="bg-background border-b border-default-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold">
+            {t('map.title')} ({todayAppointments.length})
+          </h1>
+          <span className="text-default-500">
+            {dateFormatter.format(new Date())}
+          </span>
+        </div>
       </div>
 
-      <div className="relative z-10 flex-1 rounded-lg overflow-hidden border border-default-200 shadow-sm min-h-100">
+      <div className="relative z-10 flex-1 overflow-hidden">
         <MapContainer
           center={defaultCenter}
           zoom={6}

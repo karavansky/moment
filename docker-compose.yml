@@ -83,7 +83,7 @@ services:
     command: 'server -dir=/data -s3 -filer -s3.config=/etc/seaweedfs/s3.json'
 
   postgres:
-    image: postgis/postgis:16-3.4-alpine
+    image: postgis/postgis:18-3.5-alpine
     container_name: alpine
     restart: unless-stopped
     ports:
@@ -91,7 +91,7 @@ services:
     environment:
       - POSTGRES_USER=hronop
       - POSTGRES_PASSWORD=Sk02081978
-      - PGDATA=/var/lib/postgresql/data
+      - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
       - postgres-data:/var/lib/postgresql/data
 

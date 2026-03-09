@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   Bell,
   HandHeart,
+  Radio,
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -49,12 +50,13 @@ const menuItems: MenuItem[] = [
   { icon: Home, label: 'sidebar.menu.home', href: '/' },
   { icon: Calendar1, label: 'sidebar.menu.schedule', href: '/dienstplan' },
   { icon: Map, label: 'sidebar.menu.map', href: '/map' },
+  { icon: Radio, label: 'sidebar.menu.dispatcher', href: '/dispatcher' },
 ]
 
 const crmSubItems: MenuItem[] = [
   { icon: UserStar, label: 'sidebar.crm.clients', href: '/clients' },
   { icon: Users, label: 'sidebar.crm.staff', href: '/staff' },
-  { icon: Van, label: 'sidebar.crm.transport', href: '/transport' },
+  { icon: Van, label: 'sidebar.crm.transport', href: '/vehicle' },
   { icon: HandHeart, label: 'sidebar.crm.services', href: '/services' },
 ]
 

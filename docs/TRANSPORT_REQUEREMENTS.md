@@ -210,7 +210,7 @@
  * dispatcherID (Foreign Key, Nullable) — кто обработал/назначил.
  * driverID (Foreign Key, Nullable) — кому назначен.
  * vehicleID ( Foreign Key, Nullable) — на какой машине выполняется.
- * routeID (Foreign Key) — ссылка на таблицу routes.
+ * routeID (Foreign Key) —л ссылка на таблицу routes.
  * scheduledTime (DateTime, Nullable) — если заказ предварительный.
  * status (Enum: CREATED, ASSIGNED, ACCEPTED, ARRIVED, IN_PROGRESS, COMPLETED, CANCELLED)
  * clientComment (String, Nullable) — комментарий клиники.
