@@ -368,6 +368,8 @@ export default function Map({
         style={{ height: '100%', width: '100%' }}
         zoomControl={true}
         scrollWheelZoom={true}
+        zoomSnap={0.5}
+        zoomDelta={0.5}
       >
         <MapController
           center={mapCenter}

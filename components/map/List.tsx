@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useTransition, useRef, useEffect } from 'react'
-import { Card, Button, Chip, Separator, Modal } from '@heroui/react'
+import { Card, Button, Chip, Separator, Modal, Badge } from '@heroui/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Clock,
@@ -76,8 +76,8 @@ export default function List({
 
   // Tab animation state
   const [isPending, startTransition] = useTransition()
-  const appointmentsRef = useRef<HTMLButtonElement>(null)
-  const ordersRef = useRef<HTMLButtonElement>(null)
+  const appointmentsRef = useRef<HTMLDivElement>(null)
+  const ordersRef = useRef<HTMLDivElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 })
 
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'ALL'>('ALL')
@@ -302,35 +302,47 @@ export default function List({
           </div>
 
           {/* Tabs */}
-          {appointments.length > 0 && orders.length > 0 && (
-            <div className="px-4 pt-3 shrink-0">
+          <div className="px-4 pt-3 shrink-0">
+            <div className="flex flex-col relative">
               <div className="flex flex-row gap-2 mb-2">
-                <Button
-                  ref={appointmentsRef}
-                  variant={activeTab === 'appointments' ? 'tertiary' : 'outline'}
-                  onPress={() => {
-                    startTransition(() => {
-                      setActiveTab('appointments')
-                      setSearchQuery('')
-                      setStatusFilter('ALL')
-                    })
-                  }}
-                >
-                  <Calendar className="w-5 h-5 mr-2" /> Визиты ({appointments.length})
-                </Button>
-                <Button
-                  ref={ordersRef}
-                  variant={activeTab === 'orders' ? 'tertiary' : 'outline'}
-                  onPress={() => {
-                    startTransition(() => {
-                      setActiveTab('orders')
-                      setSearchQuery('')
-                      setStatusFilter('ALL')
-                    })
-                  }}
-                >
-                  <Package className="w-5 h-5 mr-2" /> Поездки ({orders.length})
-                </Button>
+                <Badge.Anchor ref={appointmentsRef}>
+                  <Button
+                    variant={activeTab === 'appointments' ? 'tertiary' : 'outline'}
+                    onPress={() => {
+                      startTransition(() => {
+                        setActiveTab('appointments')
+                        setSearchQuery('')
+                        setStatusFilter('ALL')
+                      })
+                    }}
+                  >
+                    <Calendar className="w-5 h-5 mr-2" /> Визиты
+                  </Button>
+                  {appointments.length > 0 && (
+                    <Badge color="warning" size="sm" placement="top-right">
+                      {appointments.length}
+                    </Badge>
+                  )}
+                </Badge.Anchor>
+                <Badge.Anchor ref={ordersRef}>
+                  <Button
+                    variant={activeTab === 'orders' ? 'tertiary' : 'outline'}
+                    onPress={() => {
+                      startTransition(() => {
+                        setActiveTab('orders')
+                        setSearchQuery('')
+                        setStatusFilter('ALL')
+                      })
+                    }}
+                  >
+                    <Package className="w-5 h-5 mr-2" /> Поездки
+                  </Button>
+                  {orders.length > 0 && (
+                    <Badge color="warning" size="sm" placement="top-right">
+                      {orders.length}
+                    </Badge>
+                  )}
+                </Badge.Anchor>
               </div>
               <div className="relative w-full">
                 <Separator />
@@ -343,7 +355,7 @@ export default function List({
                 />
               </div>
             </div>
-          )}
+          </div>
 
           {/* Search */}
           <div className="px-4 py-3 shrink-0">

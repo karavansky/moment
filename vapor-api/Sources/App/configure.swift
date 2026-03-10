@@ -1,6 +1,7 @@
 import Vapor
 import Fluent
 import FluentPostgresDriver
+import Redis
 
 func configure(_ app: Application) async throws {
     // ====== Database ======
@@ -10,6 +11,19 @@ func configure(_ app: Application) async throws {
     }
     // 4 connections per event loop × ~4 loops = ~16 DB connections max (PostgreSQL default limit: 100)
     try app.databases.use(.postgres(url: databaseURL, maxConnectionsPerEventLoop: 4), as: .psql)
+
+    // ====== Redis ======
+    let redisHost = Environment.get("REDIS_HOST") ?? "127.0.0.1"
+    let redisPort = Int(Environment.get("REDIS_PORT") ?? "6379") ?? 6379
+    app.redis.configuration = try RedisConfiguration(
+        hostname: redisHost,
+        port: redisPort,
+        pool: .init(
+            maximumConnectionCount: .maximumActiveConnections(8),
+            minimumConnectionCount: 2
+        )
+    )
+    app.logger.info("Redis configured: \(redisHost):\(redisPort)")
 
     // ====== Server Config ======
     app.http.server.configuration.hostname = "0.0.0.0"

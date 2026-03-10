@@ -7,6 +7,7 @@ func routes(_ app: Application) throws {
     try api.register(collection: HealthController())
     try api.register(collection: VersionController())
     try api.register(collection: PhotonController())
+    try api.register(collection: RoutingController())
     try api.register(collection: TestController())
     
     // Partially public (validate route is public, create is protected)
