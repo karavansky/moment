@@ -19,11 +19,14 @@ import {
   Calendar,
   ArrowLeftToLine,
   ArrowRightToLine,
+  ArrowUpToLine,
+  ArrowDownToLine,
 } from 'lucide-react'
 import type { Order, Vehicle, OrderStatus } from '@/types/transport'
 import type { AppointmentWithClient } from '@/contexts/SchedulingContext'
 import { useLanguage } from '@/hooks/useLanguage'
 import { useTranslation } from '@/components/Providers'
+import { useIsPortrait } from '@/hooks/useMediaQuery'
 
 interface ListProps {
   // For orders
@@ -63,6 +66,7 @@ export default function List({
 }: ListProps) {
   const lang = useLanguage()
   const { t } = useTranslation()
+  const isPortrait = useIsPortrait()
 
   // Use external tab state if provided, otherwise manage internally
   const [internalActiveTab, setInternalActiveTab] = useState<string>(appointments.length > 0 ? 'appointments' : 'orders')
@@ -249,115 +253,184 @@ export default function List({
     <motion.div
       initial={false}
       animate={{
-        width: isCollapsed ? '3rem' : '24rem', // w-12 = 3rem, w-96 = 24rem
+        width: isPortrait ? undefined : (isCollapsed ? '3.5rem' : '24rem'), // w-14 = 3.5rem for collapsed, w-96 = 24rem for expanded
+        height: isPortrait ? (isCollapsed ? '3.5rem' : '50vh') : undefined, // Height in portrait
+        minHeight: isPortrait ? (isCollapsed ? '3.5rem' : undefined) : undefined,
+        maxHeight: isPortrait ? (isCollapsed ? '3.5rem' : '50vh') : undefined,
       }}
       transition={{
         duration: 0.3,
         ease: 'easeInOut',
       }}
-      className="h-full flex flex-col bg-background border-l border-default-200"
+      className={`flex flex-col bg-background ${isPortrait ? 'w-full' : 'h-full'} ${!isPortrait && isCollapsed ? 'overflow-visible' : ''}`}
     >
-      {isCollapsed ? (
-        <motion.div
-          key="collapsed"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="h-full flex flex-col items-center pt-4"
-        >
+      {/* Tabs with collapse button - Always visible */}
+      <div className={`shrink-0 ${isPortrait ? 'px-4 pt-3' : (isCollapsed ? 'w-full h-full py-4 flex flex-col items-center justify-between gap-4 overflow-visible' : 'px-4 pt-3')}`}>
+        {!isPortrait && isCollapsed ? (
+          <>
+            {/* Tabs rotated vertically in landscape collapsed mode */}
+            <div className="flex flex-col gap-6 flex-1 justify-center items-center w-full">
+              <div className="h-[140px] w-8 flex items-center justify-center">
+                <div className="-rotate-90">
+                  <Badge.Anchor ref={appointmentsRef}>
+                    <Button
+                      variant={activeTab === 'appointments' ? 'tertiary' : 'outline'}
+                      size="sm"
+                      className="whitespace-nowrap"
+                      onPress={() => {
+                        startTransition(() => {
+                          setActiveTab('appointments')
+                          setSearchQuery('')
+                          setStatusFilter('ALL')
+                          if (isCollapsed) {
+                            setIsCollapsed(false)
+                          }
+                        })
+                      }}
+                    >
+                      <Calendar className="w-5 h-5 mr-2" /> Визиты
+                    </Button>
+                    {appointments.length > 0 && (
+                      <Badge color="warning" size="sm" placement="top-right">
+                        {appointments.length}
+                      </Badge>
+                    )}
+                  </Badge.Anchor>
+                </div>
+              </div>
+              <div className="h-[140px] w-8 flex items-center justify-center">
+                <div className="-rotate-90">
+                  <Badge.Anchor ref={ordersRef}>
+                    <Button
+                      variant={activeTab === 'orders' ? 'tertiary' : 'outline'}
+                      size="sm"
+                      className="whitespace-nowrap"
+                      onPress={() => {
+                        startTransition(() => {
+                          setActiveTab('orders')
+                          setSearchQuery('')
+                          setStatusFilter('ALL')
+                          if (isCollapsed) {
+                            setIsCollapsed(false)
+                          }
+                        })
+                      }}
+                    >
+                      <Package className="w-5 h-5 mr-2" /> Поездки
+                    </Button>
+                    {orders.length > 0 && (
+                      <Badge color="warning" size="sm" placement="top-right">
+                        {orders.length}
+                      </Badge>
+                    )}
+                  </Badge.Anchor>
+                </div>
+              </div>
+            </div>
+            {/* Collapse button */}
+            <div className="pb-2">
+              <Button
+                isIconOnly
+                variant="tertiary"
+                size="sm"
+                onPress={() => setIsCollapsed(!isCollapsed)}
+              >
+                <ArrowLeftToLine size={18} />
+              </Button>
+            </div>
+          </>
+        ) : (
+          <div className={`flex relative ${isPortrait ? 'flex-row justify-between items-center mb-2' : 'flex-col'}`}>
+            <div className={`flex gap-2 ${isPortrait ? 'flex-row' : 'flex-row'}`}>
+              <Badge.Anchor ref={appointmentsRef}>
+                <Button
+                  variant={activeTab === 'appointments' ? 'tertiary' : 'outline'}
+                  size={isCollapsed && !isPortrait ? 'sm' : undefined}
+                  className={isCollapsed && !isPortrait ? '-rotate-90' : ''}
+                  onPress={() => {
+                    startTransition(() => {
+                      setActiveTab('appointments')
+                      setSearchQuery('')
+                      setStatusFilter('ALL')
+                      // Auto-expand when tab is clicked
+                      if (isCollapsed) {
+                        setIsCollapsed(false)
+                      }
+                    })
+                  }}
+                >
+                  <Calendar className="w-5 h-5 mr-2" /> Визиты
+                </Button>
+                {appointments.length > 0 && (
+                  <Badge color="warning" size="sm" placement="top-right">
+                    {appointments.length}
+                  </Badge>
+                )}
+              </Badge.Anchor>
+              <Badge.Anchor ref={ordersRef}>
+                <Button
+                  variant={activeTab === 'orders' ? 'tertiary' : 'outline'}
+                  size={isCollapsed && !isPortrait ? 'sm' : undefined}
+                  className={isCollapsed && !isPortrait ? '-rotate-90' : ''}
+                  onPress={() => {
+                    startTransition(() => {
+                      setActiveTab('orders')
+                      setSearchQuery('')
+                      setStatusFilter('ALL')
+                      // Auto-expand when tab is clicked
+                      if (isCollapsed) {
+                        setIsCollapsed(false)
+                      }
+                    })
+                  }}
+                >
+                  <Package className="w-5 h-5 mr-2" /> Поездки
+                </Button>
+                {orders.length > 0 && (
+                  <Badge color="warning" size="sm" placement="top-right">
+                    {orders.length}
+                  </Badge>
+                )}
+              </Badge.Anchor>
+          </div>
+
+          {/* Collapse button */}
           <Button
             isIconOnly
             variant="tertiary"
             size="sm"
-            onPress={() => setIsCollapsed(false)}
-            className="mb-4"
+            onPress={() => setIsCollapsed(!isCollapsed)}
           >
-            <ArrowLeftToLine size={18} />
+            {isCollapsed
+              ? (isPortrait ? <ArrowDownToLine size={18} /> : <ArrowLeftToLine size={18} />)
+              : (isPortrait ? <ArrowUpToLine size={18} /> : <ArrowRightToLine size={18} />)
+            }
           </Button>
-          <div className="transform -rotate-90 whitespace-nowrap text-sm font-medium text-default-600 mt-8">
-            {activeTab === 'appointments' ? 'Визиты' : 'Поездки'}
-          </div>
-        </motion.div>
-      ) : (
-        <motion.div
-          key="expanded"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="h-full flex flex-col"
-        >
-          {/* Header with collapse button */}
-          <div className="p-4 border-b border-default-200 flex items-center justify-between shrink-0">
-            <h2 className="text-lg font-semibold">Карта</h2>
-            <Button
-              isIconOnly
-              variant="tertiary"
-              size="sm"
-              onPress={() => setIsCollapsed(true)}
-            >
-              <ArrowRightToLine size={18} />
-            </Button>
-          </div>
 
-          {/* Tabs */}
-          <div className="px-4 pt-3 shrink-0">
-            <div className="flex flex-col relative">
-              <div className="flex flex-row gap-2 mb-2">
-                <Badge.Anchor ref={appointmentsRef}>
-                  <Button
-                    variant={activeTab === 'appointments' ? 'tertiary' : 'outline'}
-                    onPress={() => {
-                      startTransition(() => {
-                        setActiveTab('appointments')
-                        setSearchQuery('')
-                        setStatusFilter('ALL')
-                      })
-                    }}
-                  >
-                    <Calendar className="w-5 h-5 mr-2" /> Визиты
-                  </Button>
-                  {appointments.length > 0 && (
-                    <Badge color="warning" size="sm" placement="top-right">
-                      {appointments.length}
-                    </Badge>
-                  )}
-                </Badge.Anchor>
-                <Badge.Anchor ref={ordersRef}>
-                  <Button
-                    variant={activeTab === 'orders' ? 'tertiary' : 'outline'}
-                    onPress={() => {
-                      startTransition(() => {
-                        setActiveTab('orders')
-                        setSearchQuery('')
-                        setStatusFilter('ALL')
-                      })
-                    }}
-                  >
-                    <Package className="w-5 h-5 mr-2" /> Поездки
-                  </Button>
-                  {orders.length > 0 && (
-                    <Badge color="warning" size="sm" placement="top-right">
-                      {orders.length}
-                    </Badge>
-                  )}
-                </Badge.Anchor>
-              </div>
-              <div className="relative w-full">
-                <Separator />
-                <div
-                  className="absolute bottom-0 h-0.5 bg-blue-500 transition-all duration-200 ease-out"
-                  style={{
-                    width: `${indicatorStyle.width}px`,
-                    left: `${indicatorStyle.left}px`,
-                  }}
-                />
-              </div>
+          {!isCollapsed && (
+          <div className={isPortrait ? '' : 'w-full'}>
+            {!isPortrait && (
+            <div className="relative w-full">
+              <Separator />
+              <div
+                className="absolute bottom-0 h-0.5 bg-blue-500 transition-all duration-200 ease-out"
+                style={{
+                  width: `${indicatorStyle.width}px`,
+                  left: `${indicatorStyle.left}px`,
+                }}
+              />
             </div>
+            )}
           </div>
+          )}
+        </div>
+        )}
+      </div>
 
-          {/* Search */}
+      {/* Content - only visible when expanded */}
+      <AnimatePresence>
+        {!isCollapsed && (
+          <>{/* Search */}
           <div className="px-4 py-3 shrink-0">
             <div className="relative">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-default-400" />
@@ -399,7 +472,9 @@ export default function List({
           )}
 
           {/* List Content - Scrollable with animation */}
-          <div className={`flex-1 overflow-y-auto px-4 pb-4 transition-opacity duration-200 ${isPending ? 'opacity-50' : 'opacity-100'}`}>
+          <div className={`flex-1 transition-opacity duration-200 ${isPending ? 'opacity-50' : 'opacity-100'} ${
+            isPortrait ? 'overflow-x-auto overflow-y-hidden pl-4' : 'overflow-y-auto overflow-x-hidden px-4 pb-4'
+          }`}>
             <AnimatePresence mode="wait">
               {activeTab === 'appointments' ? (
                 // Appointments List
@@ -409,7 +484,7 @@ export default function List({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ duration: 0.3, ease: 'easeInOut' }}
-                  className="space-y-3"
+                  className={isPortrait ? 'flex flex-row gap-3 h-full pr-4' : 'space-y-3'}
                 >
                   {filteredAppointments.length === 0 ? (
                     <div className="text-center py-12 text-default-400">
@@ -424,7 +499,7 @@ export default function List({
                           selectedAppointmentId === apt.id
                             ? 'ring-2 ring-primary-500 bg-primary-50'
                             : ''
-                        }`}
+                        } ${isPortrait ? 'shrink-0 w-72 h-full' : ''}`}
                         onClick={() => onAppointmentSelect?.(apt.id)}
                       >
                         <Card.Content>
@@ -469,7 +544,7 @@ export default function List({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3, ease: 'easeInOut' }}
-                  className="space-y-3"
+                  className={isPortrait ? 'flex flex-row gap-3 h-full pr-4' : 'space-y-3'}
                 >
                   {sortedOrders.length === 0 ? (
                     <div className="text-center py-12 text-default-400">
@@ -484,7 +559,7 @@ export default function List({
                           selectedOrderId === order.id
                             ? 'ring-2 ring-primary-500 bg-primary-50'
                             : ''
-                        }`}
+                        } ${isPortrait ? 'shrink-0 w-72 h-full' : ''}`}
                         onClick={() => onOrderSelect?.(order.id)}
                       >
                         <Card.Content>
@@ -576,8 +651,9 @@ export default function List({
               )}
             </AnimatePresence>
           </div>
-        </motion.div>
-      )}
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Assign Driver Modal */}
       <Modal.Backdrop isOpen={assignModalOpen} onOpenChange={setAssignModalOpen}>

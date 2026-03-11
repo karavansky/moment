@@ -34,3 +34,22 @@ export const useIsMobile = () => useMediaQuery('(max-width: 639px)')
 export const useIsTablet = () => useMediaQuery('(min-width: 640px) and (max-width: 1023px)')
 export const useIsDesktop = () => useMediaQuery('(min-width: 1024px)')
 export const useIsCompact = () => useMediaQuery('(max-width: 1023px)')
+
+/**
+ * Custom hook to detect device orientation
+ * @returns 'portrait' if height > width, 'landscape' otherwise
+ */
+export function useOrientation(): 'portrait' | 'landscape' {
+  const isPortrait = useMediaQuery('(orientation: portrait)')
+  return isPortrait ? 'portrait' : 'landscape'
+}
+
+/**
+ * Check if device is in portrait mode (height > width)
+ */
+export const useIsPortrait = () => useMediaQuery('(orientation: portrait)')
+
+/**
+ * Check if device is in landscape mode (width > height)
+ */
+export const useIsLandscape = () => useMediaQuery('(orientation: landscape)')

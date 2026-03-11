@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
+import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import List from '@/components/map/List'
 import { getAllTransportMockData } from '@/lib/transport-mock-data'
 import type { Order } from '@/types/transport'
+import { useIsPortrait } from '@/hooks/useMediaQuery'
 
 // Динамический импорт Map без SSR (Leaflet требует window)
 const Map = dynamic(() => import('@/components/dispatcher/Map'), {
@@ -20,6 +21,7 @@ export default function DispatcherPage() {
   const mockData = getAllTransportMockData()
   const [orders, setOrders] = useState<Order[]>(mockData.orders)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+  const isPortrait = useIsPortrait()
 
   const handleOrderSelect = (orderId: string) => {
     setSelectedOrderId(orderId === selectedOrderId ? null : orderId)
@@ -42,25 +44,33 @@ export default function DispatcherPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Map Section - 60% width */}
-        <div className="w-3/5 relative">
-          <Map
-            orders={orders}
-            vehicles={mockData.vehicles}
-            selectedOrderId={selectedOrderId}
-            onOrderSelect={handleOrderSelect}
-          />
-        </div>
-
-        {/* Orders List Section - 40% width */}
-        <div className="w-2/5 border-l border-default-200 overflow-hidden">
+      <div className={`flex-1 flex overflow-hidden ${isPortrait ? 'flex-col' : 'flex-row'}`}>
+        {/* Orders List Section - Portrait: top (auto height), Landscape: right 40% */}
+        <div className={`shrink-0 border-default-200 overflow-hidden ${
+          isPortrait
+            ? 'w-full border-b'
+            : 'w-2/5 border-l order-2'
+        }`}>
           <List
             orders={orders}
             vehicles={mockData.vehicles}
             selectedOrderId={selectedOrderId}
             onOrderSelect={handleOrderSelect}
             onOrderUpdate={handleOrderUpdate}
+          />
+        </div>
+
+        {/* Map Section - Portrait: flex-1 (takes remaining space), Landscape: left 60% */}
+        <div className={`relative flex-1 ${
+          isPortrait
+            ? 'w-full order-2'
+            : 'w-3/5 order-1'
+        }`}>
+          <Map
+            orders={orders}
+            vehicles={mockData.vehicles}
+            selectedOrderId={selectedOrderId}
+            onOrderSelect={handleOrderSelect}
           />
         </div>
       </div>
