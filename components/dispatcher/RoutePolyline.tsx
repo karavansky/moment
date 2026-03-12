@@ -16,6 +16,7 @@ interface RoutePolylineProps {
   opacity?: number
   dashArray?: string
   onClick?: () => void
+  animate?: boolean
 }
 
 export default function RoutePolyline({
@@ -26,6 +27,7 @@ export default function RoutePolyline({
   opacity = 0.7,
   dashArray,
   onClick,
+  animate = false,
 }: RoutePolylineProps) {
   const [routeCoordinates, setRouteCoordinates] = useState<[number, number][]>([
     pickup,
@@ -54,6 +56,7 @@ export default function RoutePolyline({
       weight={weight}
       opacity={opacity}
       dashArray={dashArray}
+      className={animate ? 'animate-pulse' : ''}
       eventHandlers={onClick ? { click: onClick } : undefined}
     />
   )

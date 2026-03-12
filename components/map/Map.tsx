@@ -123,6 +123,10 @@ interface MapProps {
   appointments?: AppointmentWithClient[]
   selectedAppointmentId?: string | null
   onAppointmentSelect?: (appointmentId: string) => void
+
+  // Optional: Force specific center and zoom (e.g., for "show on map" button)
+  forceCenter?: [number, number]
+  forceZoom?: number
 }
 
 // Appointment Marker Component
@@ -198,6 +202,48 @@ function AppointmentMarker({
   )
 }
 
+// Order Marker Component (for pickup/dropoff)
+function OrderMarker({
+  position,
+  icon,
+  isSelected,
+  onSelect,
+  children,
+}: {
+  position: [number, number]
+  icon: L.DivIcon
+  isSelected: boolean
+  onSelect: () => void
+  children: React.ReactNode
+}) {
+  const markerRef = useRef<L.Marker>(null)
+
+  useEffect(() => {
+    if (isSelected && markerRef.current) {
+      // Открываем popup с небольшой задержкой для pickup маркера
+      setTimeout(() => {
+        markerRef.current?.openPopup()
+      }, 50)
+    } else if (!isSelected && markerRef.current) {
+      // Закрываем popup когда маркер не выбран
+      markerRef.current.closePopup()
+    }
+  }, [isSelected])
+
+  return (
+    <Marker
+      ref={markerRef}
+      position={position}
+      icon={icon}
+      eventHandlers={{
+        click: onSelect,
+      }}
+    >
+      {children}
+    </Marker>
+  )
+}
+
 // Component to handle map centering and bounds
 function MapController({
   center,
@@ -215,6 +261,12 @@ function MapController({
   selectedAppointmentId?: string | null
 }) {
   const map = useMap()
+
+  // Create stable references for positions count
+  const ordersCount = orders.length
+  const appointmentsCount = appointments.length
+  const prevOrdersCount = useRef(ordersCount)
+  const prevAppointmentsCount = useRef(appointmentsCount)
 
   // Watch for container resize and invalidate map size
   useEffect(() => {
@@ -237,12 +289,27 @@ function MapController({
     map.invalidateSize()
 
     // If we have a specific center/zoom, use it
-    if (center && zoom) {
-      map.setView(center, zoom)
+    if (center && zoom !== undefined) {
+      // Explicit zoom provided - use setView (for "show on map" buttons)
+      map.setView(center, zoom, { animate: true, duration: 0.5 })
+      return
+    } else if (center) {
+      // Only center provided - pan without changing zoom (for marker selection)
+      map.panTo(center, { animate: true, duration: 0.5 })
       return
     }
 
-    // Otherwise fit bounds to all markers
+    // Only fit bounds when data actually changes (not on every re-render)
+    const dataChanged = ordersCount !== prevOrdersCount.current || appointmentsCount !== prevAppointmentsCount.current
+
+    if (!dataChanged) {
+      // Data unchanged, skip fitBounds to preserve user's zoom level
+      return
+    }
+
+    prevOrdersCount.current = ordersCount
+    prevAppointmentsCount.current = appointmentsCount
+
     const allPositions: [number, number][] = []
 
     // Add appointment positions
@@ -273,12 +340,33 @@ function MapController({
     }, 100)
 
     return () => clearTimeout(timer)
-  }, [map, center, zoom, orders, appointments, selectedOrderId, selectedAppointmentId])
+  }, [map, center, zoom, ordersCount, appointmentsCount])
+
+  // Handle selected order - fit bounds to show entire route
+  useEffect(() => {
+    if (selectedOrderId) {
+      const selectedOrder = orders.find((o) => o.id === selectedOrderId)
+      if (selectedOrder && selectedOrder.pickupLat && selectedOrder.pickupLng &&
+          selectedOrder.dropoffLat && selectedOrder.dropoffLng) {
+        // Fit bounds to show entire route (pickup + dropoff)
+        const bounds = L.latLngBounds([
+          [selectedOrder.pickupLat, selectedOrder.pickupLng],
+          [selectedOrder.dropoffLat, selectedOrder.dropoffLng]
+        ])
+        map.fitBounds(bounds, {
+          padding: [50, 50],
+          maxZoom: 15,
+          animate: true,
+          duration: 0.5
+        })
+      }
+    }
+  }, [selectedOrderId, orders, map])
 
   return null
 }
 
-export default function Map({
+const Map = React.memo(function Map({
   orders = [],
   vehicles = [],
   selectedOrderId = null,
@@ -286,6 +374,8 @@ export default function Map({
   appointments = [],
   selectedAppointmentId = null,
   onAppointmentSelect,
+  forceCenter,
+  forceZoom,
 }: MapProps) {
   const lang = useLanguage()
   const { t } = useTranslation()
@@ -294,26 +384,36 @@ export default function Map({
 
   const [mapCenter, setMapCenter] = useState<[number, number] | undefined>()
   const [mapZoom, setMapZoom] = useState<number | undefined>()
+  const prevSelectedOrderId = useRef<string | null>(null)
+  const prevSelectedAppointmentId = useRef<string | null>(null)
 
-  // Update map center when order is selected
+  // Apply forced center/zoom (e.g., from "show on map" button)
   useEffect(() => {
-    if (selectedOrderId) {
-      const selectedOrder = orders.find((o) => o.id === selectedOrderId)
-      if (selectedOrder && selectedOrder.pickupLat && selectedOrder.pickupLng) {
-        setMapCenter([selectedOrder.pickupLat, selectedOrder.pickupLng])
-        setMapZoom(14)
-      }
-    } else if (selectedAppointmentId) {
+    if (forceCenter) {
+      setMapCenter(forceCenter)
+      setMapZoom(forceZoom) // Will be undefined if not provided
+    }
+  }, [forceCenter, forceZoom])
+
+  // Update map center when appointment selection changes
+  useEffect(() => {
+    // Only center map if selection changed to a different item (not on re-render with same selection)
+    const appointmentChanged = selectedAppointmentId !== prevSelectedAppointmentId.current
+
+    if (selectedAppointmentId && appointmentChanged) {
       const selectedAppt = appointments.find((a) => a.id === selectedAppointmentId)
       if (selectedAppt) {
         setMapCenter([selectedAppt.client.latitude, selectedAppt.client.longitude])
-        setMapZoom(14)
+        // Don't change zoom - let user control it
       }
-    } else {
+      prevSelectedAppointmentId.current = selectedAppointmentId
+    } else if (!selectedOrderId && !selectedAppointmentId) {
       setMapCenter(undefined)
       setMapZoom(undefined)
+      prevSelectedOrderId.current = null
+      prevSelectedAppointmentId.current = null
     }
-  }, [selectedOrderId, selectedAppointmentId, orders, appointments])
+  }, [selectedOrderId, selectedAppointmentId, appointments])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -370,6 +470,7 @@ export default function Map({
         scrollWheelZoom={true}
         zoomSnap={0.5}
         zoomDelta={0.5}
+        closePopupOnClick={false}
       >
         <MapController
           center={mapCenter}
@@ -432,15 +533,14 @@ export default function Map({
 
           return (
             <React.Fragment key={order.id}>
-              {/* Pickup Marker */}
-              <Marker
+              {/* Pickup Marker - always visible */}
+              <OrderMarker
                 position={[order.pickupLat, order.pickupLng]}
                 icon={pickupIcon}
-                eventHandlers={{
-                  click: () => onOrderSelect?.(order.id),
-                }}
+                isSelected={isSelected}
+                onSelect={() => onOrderSelect?.(order.id)}
               >
-                <Popup>
+                <Popup autoClose={false} closeOnClick={false}>
                   <div className="text-sm">
                     <p className="font-semibold flex items-center gap-1">
                       <MapPin size={14} />
@@ -456,17 +556,16 @@ export default function Map({
                     </p>
                   </div>
                 </Popup>
-              </Marker>
+              </OrderMarker>
 
-              {/* Dropoff Marker */}
-              <Marker
+              {/* Dropoff Marker - always visible */}
+              <OrderMarker
                 position={[order.dropoffLat, order.dropoffLng]}
                 icon={dropoffIcon}
-                eventHandlers={{
-                  click: () => onOrderSelect?.(order.id),
-                }}
+                isSelected={isSelected}
+                onSelect={() => onOrderSelect?.(order.id)}
               >
-                <Popup>
+                <Popup autoClose={false} closeOnClick={false}>
                   <div className="text-sm">
                     <p className="font-semibold flex items-center gap-1">
                       <CheckCircle2 size={14} />
@@ -476,16 +575,18 @@ export default function Map({
                     <p className="text-xs text-default-500 mt-1">{order.passengerName}</p>
                   </div>
                 </Popup>
-              </Marker>
+              </OrderMarker>
 
               {/* Route Line */}
               <RoutePolyline
                 pickup={[order.pickupLat, order.pickupLng]}
                 dropoff={[order.dropoffLat, order.dropoffLng]}
                 color={statusColor}
-                weight={isSelected ? 4 : 2}
-                opacity={isSelected ? 0.8 : 0.5}
+                weight={isSelected ? 6 : 4}
+                opacity={isSelected ? 0.9 : 0.7}
                 dashArray={order.status === 'COMPLETED' ? '10, 10' : undefined}
+                animate={isSelected}
+                onClick={() => onOrderSelect?.(order.id)}
               />
             </React.Fragment>
           )
@@ -514,4 +615,6 @@ export default function Map({
       )}
     </div>
   )
-}
+})
+
+export default Map
