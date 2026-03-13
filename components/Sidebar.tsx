@@ -196,8 +196,8 @@ const ToggleButton = memo(({ onToggle }: { onToggle: () => void }) => {
         className="w-10 h-10 rounded-full shadow-xl relative"
       >
         {/* Рендерим обе иконки, управляем видимостью через CSS */}
-        <ArrowLeftToLine className="absolute inset-0 m-auto toggle-icon-collapse" />
-        <ArrowRightToLine className="absolute inset-0 m-auto toggle-icon-expand" />
+        <ArrowLeftToLine className="absolute inset-0 m-auto toggle-icon-collapse" strokeWidth={3} />
+        <ArrowRightToLine className="absolute inset-0 m-auto toggle-icon-expand" strokeWidth={3} />
       </Button>
     </div>
   )

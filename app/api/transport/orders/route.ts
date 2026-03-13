@@ -14,6 +14,7 @@ import {
   completeOrder,
   cancelOrder,
 } from '@/lib/orders'
+import { getRoutesByOrderIDs, getRoutesByOrderID } from '@/lib/routes'
 import { generateId } from '@/lib/generate-id'
 
 // GET - Get all orders for firma or specific order by ID
@@ -35,7 +36,46 @@ export async function GET(request: Request) {
       if (!order) {
         return NextResponse.json({ error: 'Order not found' }, { status: 404 })
       }
-      return NextResponse.json({ order })
+
+      // Fetch routes for this order
+      const routes = await getRoutesByOrderID(orderID, session.user.firmaID)
+
+      return NextResponse.json({
+        order: {
+          id: order.orderID,
+          firmaID: order.firmaID,
+          clientID: order.clientID,
+          dispatcherID: order.dispatcherID,
+          driverID: order.driverID,
+          vehicleID: order.vehicleID,
+          appointmentID: order.appointmentID,
+          requestedTime: order.requestedTime,
+          scheduledTime: order.scheduledTime,
+          status: order.status,
+          clientComment: order.clientComment,
+          phone: order.phone,
+          createdAt: order.createdAt,
+          assignedAt: order.assignedAt,
+          acceptedAt: order.acceptedAt,
+          arrivedAt: order.arrivedAt,
+          startedAt: order.startedAt,
+          completedAt: order.completedAt,
+          cancelledAt: order.cancelledAt,
+          routes: routes.map(r => ({
+            id: r.routeID,
+            firmaID: r.firmaID,
+            orderID: r.orderID,
+            sequence: r.sequence,
+            pickupAddress: r.pickupAddress,
+            dropoffAddress: r.dropoffAddress,
+            pickupLat: r.pickupLat,
+            pickupLng: r.pickupLng,
+            dropoffLat: r.dropoffLat,
+            dropoffLng: r.dropoffLng,
+            createdAt: r.createdAt,
+          })),
+        },
+      })
     }
 
     // Get all orders for firma
@@ -51,6 +91,10 @@ export async function GET(request: Request) {
     if (driverID) {
       filteredOrders = filteredOrders.filter(o => o.driverID === driverID)
     }
+
+    // Batch fetch routes for all filtered orders
+    const orderIDs = filteredOrders.map(o => o.orderID)
+    const routesByOrderID = await getRoutesByOrderIDs(orderIDs, session.user.firmaID)
 
     return NextResponse.json({
       orders: filteredOrders.map(o => ({
@@ -73,6 +117,19 @@ export async function GET(request: Request) {
         startedAt: o.startedAt,
         completedAt: o.completedAt,
         cancelledAt: o.cancelledAt,
+        routes: (routesByOrderID.get(o.orderID) || []).map(r => ({
+          id: r.routeID,
+          firmaID: r.firmaID,
+          orderID: r.orderID,
+          sequence: r.sequence,
+          pickupAddress: r.pickupAddress,
+          dropoffAddress: r.dropoffAddress,
+          pickupLat: r.pickupLat,
+          pickupLng: r.pickupLng,
+          dropoffLat: r.dropoffLat,
+          dropoffLng: r.dropoffLng,
+          createdAt: r.createdAt,
+        })),
       })),
     })
   } catch (error) {

@@ -5,6 +5,7 @@ import {
   RejectReason,
   Order,
   OrderStatus,
+  Route,
 } from '@/types/transport'
 import { generateId } from './generate-id'
 
@@ -21,6 +22,31 @@ const addHours = (date: Date, hours: number): Date => {
   result.setHours(result.getHours() + hours)
   return result
 }
+
+// Helper функция для создания маршрута
+const createRoute = (
+  firmaID: string,
+  orderID: string,
+  sequence: number,
+  pickupAddress: string,
+  pickupLat: number,
+  pickupLng: number,
+  dropoffAddress: string,
+  dropoffLat: number,
+  dropoffLng: number
+): Route => ({
+  id: generateId(),
+  firmaID,
+  orderID,
+  sequence,
+  pickupAddress,
+  dropoffAddress,
+  pickupLat,
+  pickupLng,
+  dropoffLat,
+  dropoffLng,
+  createdAt: new Date(),
+})
 
 // Функция генерации всех mock данных для транспортной системы
 export const getAllTransportMockData = () => {
@@ -148,8 +174,9 @@ export const getAllTransportMockData = () => {
 
   // Orders - несколько тестовых заказов в разных статусах
   // Köln coordinates range: ~50.88-51.00 lat, ~6.90-7.05 lng
+  const order1ID = generateId()
   const order1: Order = {
-    id: generateId(),
+    id: order1ID,
     firmaID: firmaID,
     clientID: generateId(),
     dispatcherID: null,
@@ -158,12 +185,6 @@ export const getAllTransportMockData = () => {
     appointmentID: null,
     status: 'CREATED' as OrderStatus,
     scheduledTime: addHours(currentDate, 2),
-    pickupAddress: 'Köln, Domkloster 4',
-    pickupLat: 50.9413,
-    pickupLng: 6.9582,
-    dropoffAddress: 'Köln, Hohenzollernring 72',
-    dropoffLat: 50.9429,
-    dropoffLng: 6.9452,
     passengerName: 'Tom Hanks',
     passengerPhone: '+49 221 123-4567',
     notes: 'Требуется помощь с посадкой',
@@ -174,6 +195,27 @@ export const getAllTransportMockData = () => {
     startedAt: null,
     completedAt: null,
     cancelledAt: null,
+    // Маршрут (новая структура с routes[])
+    routes: [
+      createRoute(
+        firmaID,
+        order1ID,
+        1,
+        'Köln, Domkloster 4',
+        50.9413,
+        6.9581,
+        'Köln, Hohenzollernring 72',
+        50.9410,
+        6.9408
+      ),
+    ],
+    // Упрощенные поля для обратной совместимости (берем первый route)
+    pickupAddress: 'Köln, Domkloster 4',
+    pickupLat: 50.9413,
+    pickupLng: 6.9581,
+    dropoffAddress: 'Köln, Hohenzollernring 72',
+    dropoffLat: 50.9410,
+    dropoffLng: 6.9408,
   }
 
   const order2: Order = {
@@ -187,11 +229,11 @@ export const getAllTransportMockData = () => {
     status: 'ACCEPTED' as OrderStatus,
     scheduledTime: addHours(currentDate, 1),
     pickupAddress: 'Köln, Neumarkt 18',
-    pickupLat: 50.9366,
-    pickupLng: 6.9476,
+    pickupLat: 50.9370,
+    pickupLng: 6.9464,
     dropoffAddress: 'Köln, Heumarkt 25',
-    dropoffLat: 50.9365,
-    dropoffLng: 6.9617,
+    dropoffLat: 50.9355,
+    dropoffLng: 6.9601,
     passengerName: 'Meryl Streep',
     passengerPhone: '+49 221 234-5678',
     notes: null,
@@ -215,11 +257,11 @@ export const getAllTransportMockData = () => {
     status: 'COMPLETED' as OrderStatus,
     scheduledTime: addHours(currentDate, -3),
     pickupAddress: 'Köln, Rudolfplatz 1',
-    pickupLat: 50.9375,
-    pickupLng: 6.9422,
+    pickupLat: 50.9364,
+    pickupLng: 6.9402,
     dropoffAddress: 'Köln, Friesenplatz 14',
-    dropoffLat: 50.9379,
-    dropoffLng: 6.9364,
+    dropoffLat: 50.9407,
+    dropoffLng: 6.9388,
     passengerName: 'Brad Pitt',
     passengerPhone: '+49 221 345-6789',
     notes: 'Коляска для инвалидов',
@@ -243,11 +285,11 @@ export const getAllTransportMockData = () => {
     status: 'CREATED' as OrderStatus,
     scheduledTime: addHours(currentDate, 3),
     pickupAddress: 'Köln, Eigelstein 135',
-    pickupLat: 50.9503,
-    pickupLng: 6.9575,
+    pickupLat: 50.9491,
+    pickupLng: 6.9567,
     dropoffAddress: 'Köln, Zülpicher Straße 28',
-    dropoffLat: 50.9288,
-    dropoffLng: 6.9326,
+    dropoffLat: 50.9296,
+    dropoffLng: 6.9377,
     passengerName: 'George Clooney',
     passengerPhone: '+49 221 456-7890',
     notes: 'Важная встреча, не опаздывать',
@@ -260,8 +302,9 @@ export const getAllTransportMockData = () => {
     cancelledAt: null,
   }
 
+  const order5ID = generateId()
   const order5: Order = {
-    id: generateId(),
+    id: order5ID,
     firmaID: firmaID,
     clientID: generateId(),
     dispatcherID: generateId(),
@@ -270,15 +313,9 @@ export const getAllTransportMockData = () => {
     appointmentID: null,
     status: 'IN_PROGRESS' as OrderStatus,
     scheduledTime: addHours(currentDate, 0.5),
-    pickupAddress: 'Köln, Aachener Straße 1253',
-    pickupLat: 50.9165,
-    pickupLng: 6.8728,
-    dropoffAddress: 'Köln, Venloer Straße 241',
-    dropoffLat: 50.9452,
-    dropoffLng: 6.9147,
     passengerName: 'Angelina Jolie',
     passengerPhone: '+49 221 567-8901',
-    notes: 'Пассажир на коляске',
+    notes: 'Пассажир на коляске, сложный маршрут с остановками',
     createdAt: addHours(currentDate, -3),
     assignedAt: addHours(currentDate, -2.5),
     acceptedAt: addHours(currentDate, -2),
@@ -286,6 +323,52 @@ export const getAllTransportMockData = () => {
     startedAt: addHours(currentDate, -0.5),
     completedAt: null,
     cancelledAt: null,
+    // Сложный маршрут с 3 остановками (промежуточные точки)
+    routes: [
+      // Остановка 1: Забрать пассажира
+      createRoute(
+        firmaID,
+        order5ID,
+        1,
+        'Köln, Aachener Straße 1253',
+        50.9380,
+        6.8356,
+        'Köln, Barbarossaplatz 2',
+        50.9279,
+        6.9369
+      ),
+      // Остановка 2: Промежуточная остановка (аптека)
+      createRoute(
+        firmaID,
+        order5ID,
+        2,
+        'Köln, Barbarossaplatz 2',
+        50.9279,
+        6.9369,
+        'Köln, Neumarkt 10',
+        50.9366,
+        6.9473
+      ),
+      // Остановка 3: Финальное место назначения
+      createRoute(
+        firmaID,
+        order5ID,
+        3,
+        'Köln, Neumarkt 10',
+        50.9366,
+        6.9473,
+        'Köln, Venloer Straße 241',
+        50.9469,
+        6.9232
+      ),
+    ],
+    // Упрощенные поля для обратной совместимости (первая и последняя точка)
+    pickupAddress: 'Köln, Aachener Straße 1253',
+    pickupLat: 50.9380,
+    pickupLng: 6.8356,
+    dropoffAddress: 'Köln, Venloer Straße 241',
+    dropoffLat: 50.9469,
+    dropoffLng: 6.9232,
   }
 
   const order6: Order = {
@@ -293,17 +376,17 @@ export const getAllTransportMockData = () => {
     firmaID: firmaID,
     clientID: generateId(),
     dispatcherID: generateId(),
-    driverID: null,
-    vehicleID: null,
+    driverID: generateId(),
+    vehicleID: vehicle1.id,
     appointmentID: null,
     status: 'ASSIGNED' as OrderStatus,
     scheduledTime: addHours(currentDate, 4),
     pickupAddress: 'Köln, Ehrenstraße 55',
-    pickupLat: 50.9358,
-    pickupLng: 6.9398,
+    pickupLat: 50.9382,
+    pickupLng: 6.9416,
     dropoffAddress: 'Köln, Mittelstraße 12',
-    dropoffLat: 50.9414,
-    dropoffLng: 6.9525,
+    dropoffLat: 50.8941,
+    dropoffLng: 6.9929,
     passengerName: 'Leonardo DiCaprio',
     passengerPhone: '+49 221 678-9012',
     notes: null,
@@ -327,11 +410,11 @@ export const getAllTransportMockData = () => {
     status: 'ARRIVED' as OrderStatus,
     scheduledTime: addHours(currentDate, 0.2),
     pickupAddress: 'Köln, Rheinauhafen 1',
-    pickupLat: 50.9264,
-    pickupLng: 6.9629,
-    dropoffAddress: 'Köln, Deutzer Brücke',
-    dropoffLat: 50.9379,
-    dropoffLng: 6.9669,
+    pickupLat: 50.9274,
+    pickupLng: 6.9661,
+    dropoffAddress: 'Köln, Deutz-Mülheimer Straße 183',
+    dropoffLat: 50.9577,
+    dropoffLng: 6.9942,
     passengerName: 'Jennifer Lawrence',
     passengerPhone: '+49 221 789-0123',
     notes: 'С большим багажом',

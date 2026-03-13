@@ -1,5 +1,6 @@
 import Vapor
 import Fluent
+import FluentPostgresDriver
 
 /// Controller for pushing subscriptions: POST /api/push/subscribe, POST /api/push/unsubscribe, GET /api/push/vapid-key
 struct PushController: RouteCollection {
@@ -23,7 +24,7 @@ struct PushController: RouteCollection {
     // POST /api/push/subscribe
     func subscribe(req: Request) async throws -> Response {
         let user = try req.auth.require(AuthenticatedUser.self)
-        
+
         struct Keys: Content { var p256dh: String; var auth: String }
         struct SubscriptionData: Content { var endpoint: String; var keys: Keys }
         struct Body: Content { var subscription: SubscriptionData }
@@ -31,28 +32,22 @@ struct PushController: RouteCollection {
 
         let subData = body.subscription
 
-        // Check for existing subscription for this endpoint
-        if let existing = try await PushSubscription.query(on: req.db)
-            .filter(\.$endpoint == subData.endpoint)
-            .first() {
-            
-            // Update user if different
-            if existing.userID != user.userId {
-                existing.userID = user.userId
-                try await existing.save(on: req.db)
-            }
-        } else {
-            // Create new
-            let sub = PushSubscription(
-                userID: user.userId,
-                endpoint: subData.endpoint,
-                p256dh: subData.keys.p256dh,
-                auth: subData.keys.auth
-            )
-            try await sub.save(on: req.db)
-        }
+        // Use PostgreSQL UPSERT to handle race condition
+        let db = req.db as! SQLDatabase
+        let now = Date()
 
-        return try await ["success": true].encodeResponse(status: .created, for: req)
+        try await db.raw("""
+            INSERT INTO push_subscriptions (\"userID\", endpoint, p256dh, auth, \"createdAt\", \"lastUsedAt\")
+            VALUES (\(bind: user.userId), \(bind: subData.endpoint), \(bind: subData.keys.p256dh), \(bind: subData.keys.auth), \(bind: now), \(bind: now))
+            ON CONFLICT (endpoint)
+            DO UPDATE SET
+                \"userID\" = EXCLUDED.\"userID\",
+                p256dh = EXCLUDED.p256dh,
+                auth = EXCLUDED.auth,
+                \"lastUsedAt\" = EXCLUDED.\"lastUsedAt\"
+            """).run()
+
+        return try await ["success": true].encodeResponse(status: .ok, for: req)
     }
 
     // POST /api/push/unsubscribe

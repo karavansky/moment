@@ -20,7 +20,9 @@
       "Bash(docker compose up -d postgres)",
       "Bash(docker compose exec -T postgres psql -U hronop -d moment -c \"\\d appointments\")",
       "Bash(curl -s \"https://photon.komoot.io/api/?q=Burgstrasse%20156&limit=10&lang=de\")",
-      "Read(//etc/nginx/sites-available/**)"
+      "Read(//etc/nginx/sites-available/**)",
+      "Bash(docker compose exec -T postgres psql -U hronop -d moment -c \"\\d routes\")",
+      "Bash(docker compose exec -T postgres psql -U hronop -d moment -c \"SELECT table_name FROM information_schema.tables WHERE table_schema = ''public'' AND table_name LIKE ''%firm%'';\")"
     ]
   }
 }

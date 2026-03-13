@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import { use } from 'react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { getAllTransportMockData } from '@/lib/transport-mock-data'
-import type { Order } from '@/types/transport'
+import type { Order, OrderStatus } from '@/types/transport'
 import List from '@/components/map/List'
 import { useIsPortrait } from '@/hooks/useMediaQuery'
 
@@ -34,8 +34,8 @@ export default function MapPage({ params }: MapPageProps) {
   // Appointments data
   const { todayAppointments } = useScheduling()
 
-  // Orders data
-  const mockData = getAllTransportMockData()
+  // Orders data - initialize once
+  const [mockData] = useState(() => getAllTransportMockData())
   const [orders, setOrders] = useState<Order[]>(mockData.orders)
 
   // Active tab state
@@ -50,6 +50,40 @@ export default function MapPage({ params }: MapPageProps) {
 
   // Orientation detection
   const isPortrait = useIsPortrait()
+
+  // Order status filter state (lifted from List.tsx)
+  const [statusFilter, setStatusFilter] = useState<OrderStatus | 'ALL'>('ALL')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Filter orders based on status and search query
+  const filteredOrders = useMemo(() => {
+    return orders.filter(order => {
+      // Status filter
+      if (statusFilter !== 'ALL' && order.status !== statusFilter) {
+        return false
+      }
+
+      // Search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase()
+        const matchesPassenger = order.passengerName?.toLowerCase().includes(query)
+        const matchesPhone = order.phone?.toLowerCase().includes(query)
+        const matchesComment = order.clientComment?.toLowerCase().includes(query)
+
+        // Search in routes if available
+        const matchesRoute = order.routes?.some(route =>
+          route.pickupAddress?.toLowerCase().includes(query) ||
+          route.dropoffAddress?.toLowerCase().includes(query)
+        )
+
+        if (!matchesPassenger && !matchesPhone && !matchesComment && !matchesRoute) {
+          return false
+        }
+      }
+
+      return true
+    })
+  }, [orders, statusFilter, searchQuery])
 
   // Handle slug parameter for initial selection
   useEffect(() => {
@@ -116,6 +150,11 @@ export default function MapPage({ params }: MapPageProps) {
             // Pass collapse state and handler
             isCollapsed={isListCollapsed}
             onCollapsedChange={setIsListCollapsed}
+            // Pass filter state and handlers
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
+            searchQuery={searchQuery}
+            onSearchQueryChange={setSearchQuery}
           />
         </div>
 
@@ -132,7 +171,7 @@ export default function MapPage({ params }: MapPageProps) {
             appointments={activeTab === 'appointments' ? todayAppointments : []}
             selectedAppointmentId={selectedAppointmentId}
             onAppointmentSelect={handleAppointmentSelect}
-            orders={activeTab === 'orders' ? orders : []}
+            orders={activeTab === 'orders' ? filteredOrders : []}
             vehicles={activeTab === 'orders' ? mockData.vehicles : []}
             selectedOrderId={selectedOrderId}
             onOrderSelect={handleOrderSelect}

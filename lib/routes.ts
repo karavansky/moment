@@ -135,6 +135,36 @@ export async function getRoutesByAppointmentID(
   return result.rows
 }
 
+// Batch fetch routes for multiple orders (efficient for API responses)
+export async function getRoutesByOrderIDs(
+  orderIDs: string[],
+  firmaID: string
+): Promise<Map<string, RouteDB[]>> {
+  if (orderIDs.length === 0) {
+    return new Map()
+  }
+
+  const query = `
+    SELECT * FROM routes
+    WHERE "orderID" = ANY($1) AND "firmaID" = $2
+    ORDER BY "orderID", "sequence" ASC
+  `
+
+  const result = await pool.query(query, [orderIDs, firmaID])
+
+  // Group routes by orderID
+  const routesByOrder = new Map<string, RouteDB[]>()
+  for (const route of result.rows) {
+    const orderID = route.orderID
+    if (!routesByOrder.has(orderID)) {
+      routesByOrder.set(orderID, [])
+    }
+    routesByOrder.get(orderID)!.push(route)
+  }
+
+  return routesByOrder
+}
+
 export async function getRouteByID(routeID: string, firmaID: string): Promise<RouteDB | null> {
   const query = `
     SELECT * FROM routes

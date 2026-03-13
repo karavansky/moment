@@ -16,11 +16,14 @@ final class Ticket: Model, @unchecked Sendable, Content {
     @Field(key: "subject")
     var subject: String
 
-    @Field(key: "status")
-    var status: String // "Vom Benutzer beantwortet" etc
+    @Field(key: "category")
+    var category: Int
 
-    @Timestamp(key: "createdAt", on: .create)
-    var createdAt: Date?
+    @Field(key: "pripority") // Note: typo in DB schema
+    var priority: Int
+
+    @Timestamp(key: "date", on: .none)
+    var date: Date?
 
     @Children(for: \.$ticket)
     var messages: [Message]

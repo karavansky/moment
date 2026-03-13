@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useTransition, useRef, useEffect } from 'react'
-import { Card, Button, Chip, Separator, Modal, Badge } from '@heroui/react'
+import { Card, Button, Chip, Separator, Modal, Badge, Dropdown, DropdownItem } from '@heroui/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Clock,
@@ -21,6 +21,7 @@ import {
   ArrowRightToLine,
   ArrowUpToLine,
   ArrowDownToLine,
+  ChevronDown,
 } from 'lucide-react'
 import type { Order, Vehicle, OrderStatus } from '@/types/transport'
 import type { AppointmentWithClient } from '@/contexts/SchedulingContext'
@@ -48,6 +49,12 @@ interface ListProps {
   // Collapse control (optional - managed internally if not provided)
   isCollapsed?: boolean
   onCollapsedChange?: (collapsed: boolean) => void
+
+  // Filter control (optional - managed internally if not provided)
+  statusFilter?: OrderStatus | 'ALL'
+  onStatusFilterChange?: (filter: OrderStatus | 'ALL') => void
+  searchQuery?: string
+  onSearchQueryChange?: (query: string) => void
 }
 
 export default function List({
@@ -63,6 +70,10 @@ export default function List({
   onTabChange: externalOnTabChange,
   isCollapsed: externalIsCollapsed,
   onCollapsedChange: externalOnCollapsedChange,
+  statusFilter: externalStatusFilter,
+  onStatusFilterChange: externalOnStatusFilterChange,
+  searchQuery: externalSearchQuery,
+  onSearchQueryChange: externalOnSearchQueryChange,
 }: ListProps) {
   const lang = useLanguage()
   const { t } = useTranslation()
@@ -80,14 +91,21 @@ export default function List({
   const isCollapsed = externalIsCollapsed ?? internalIsCollapsed
   const setIsCollapsed = externalOnCollapsedChange ?? setInternalIsCollapsed
 
+  // Use external filter state if provided, otherwise manage internally
+  const [internalStatusFilter, setInternalStatusFilter] = useState<OrderStatus | 'ALL'>('ALL')
+  const statusFilter = externalStatusFilter ?? internalStatusFilter
+  const setStatusFilter = externalOnStatusFilterChange ?? setInternalStatusFilter
+
+  const [internalSearchQuery, setInternalSearchQuery] = useState('')
+  const searchQuery = externalSearchQuery ?? internalSearchQuery
+  const setSearchQuery = externalOnSearchQueryChange ?? setInternalSearchQuery
+
   // Tab animation state
   const [isPending, startTransition] = useTransition()
   const appointmentsRef = useRef<HTMLDivElement>(null)
   const ordersRef = useRef<HTMLDivElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 })
 
-  const [statusFilter, setStatusFilter] = useState<OrderStatus | 'ALL'>('ALL')
-  const [searchQuery, setSearchQuery] = useState('')
   const [assignModalOpen, setAssignModalOpen] = useState(false)
   const [orderToAssign, setOrderToAssign] = useState<Order | null>(null)
 
@@ -175,22 +193,23 @@ export default function List({
     }
   }, [activeTab, isCollapsed, isPortrait])
 
-  const getStatusVariant = (status: OrderStatus): 'primary' | 'secondary' | 'tertiary' | 'soft' => {
+  const getStatusStyle = (status: OrderStatus): { color: 'default' | 'accent' | 'success' | 'warning' | 'danger', variant: 'primary' | 'secondary' | 'tertiary' | 'soft' } => {
     switch (status) {
       case 'CREATED':
-        return 'primary'
+        return { color: 'accent', variant: 'soft' }
       case 'ASSIGNED':
+        return { color: 'warning', variant: 'soft' }
       case 'ACCEPTED':
-        return 'secondary'
+        return { color: 'accent', variant: 'primary' }
       case 'IN_PROGRESS':
       case 'ARRIVED':
-        return 'tertiary'
+        return { color: 'warning', variant: 'primary' }
       case 'COMPLETED':
-        return 'tertiary'
+        return { color: 'success', variant: 'soft' }
       case 'CANCELLED':
-        return 'soft' // Changed from 'danger' to 'soft'
+        return { color: 'danger', variant: 'soft' }
       default:
-        return 'secondary'
+        return { color: 'default', variant: 'secondary' }
     }
   }
 
@@ -272,7 +291,7 @@ export default function List({
         width: isPortrait ? '100%' : isCollapsed ? '4rem' : '24rem', // w-14 = 3.5rem for collapsed, w-96 = 24rem for expanded
         height: isPortrait ? (isCollapsed ? '4rem' : '50vh') : isCollapsed ? '50vh' : '100%', // Always set explicit height
         minHeight: isPortrait ? (isCollapsed ? '4rem' : undefined) : undefined,
-        maxHeight: isPortrait ? (isCollapsed ? '4rem' : '50vh') : '100vh',
+        maxHeight: isPortrait ? (isCollapsed ? '4rem' : '40vh') : '100vh',
       }}
       transition={{
         duration: 0.3,
@@ -291,10 +310,10 @@ export default function List({
               <Button
                 isIconOnly
                 variant="tertiary"
-                size="sm"
+                size="md"
                 onPress={() => setIsCollapsed(!isCollapsed)}
               >
-                <ArrowLeftToLine size={18} />
+                <ArrowLeftToLine size={18} strokeWidth={3} />
               </Button>
             </div>
             {/* Tabs rotated vertically in landscape collapsed mode */}
@@ -429,14 +448,14 @@ export default function List({
               >
                 {isCollapsed ? (
                   isPortrait ? (
-                    <ArrowDownToLine size={18} />
+                    <ArrowDownToLine size={18} strokeWidth={3} />
                   ) : (
-                    <ArrowLeftToLine size={18} />
+                    <ArrowLeftToLine size={18} strokeWidth={3} />
                   )
                 ) : isPortrait ? (
-                  <ArrowUpToLine size={18} />
+                  <ArrowUpToLine size={18} strokeWidth={3} />
                 ) : (
-                  <ArrowRightToLine size={18} />
+                  <ArrowRightToLine size={18} strokeWidth={3} />
                 )}
               </Button>
             </div>
@@ -462,49 +481,100 @@ export default function List({
       <AnimatePresence>
         {!isCollapsed && (
           <>
-            {/* Search */}
+            {/* Search and Status Filter */}
             <div className="px-4 py-3 shrink-0">
-              <div className="relative">
-                <Search
-                  size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-default-400"
-                />
-                <input
-                  type="text"
-                  placeholder={
-                    activeTab === 'appointments'
-                      ? 'Поиск по имени, адресу...'
-                      : 'Поиск по имени, телефону, адресу...'
-                  }
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-default-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
+              <div className="flex gap-2">
+                {/* Search */}
+                <div className="relative flex-1">
+                  <Search
+                    size={16}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-default-400"
+                  />
+                  <input
+                    type="text"
+                    placeholder={
+                      activeTab === 'appointments'
+                        ? 'Поиск по имени, адресу...'
+                        : 'Поиск по имени, телефону, адресу...'
+                    }
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-default-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+
+                {/* Status Filter for Orders */}
+                {activeTab === 'orders' && (
+                  <div className="shrink-0" style={{ minWidth: '180px' }}>
+                    <Dropdown>
+                      <Button variant="tertiary" className="w-full justify-between h-full">
+                        {statusFilter === 'ALL' ? (
+                          'Все статусы'
+                        ) : (
+                          <Chip size="sm" {...getStatusStyle(statusFilter)}>
+                            {getStatusIcon(statusFilter)}
+                            <Chip.Label>{getStatusLabel(statusFilter)}</Chip.Label>
+                          </Chip>
+                        )}
+                        <ChevronDown className="text-small" size={16} />
+                      </Button>
+                      <Dropdown.Popover>
+                        <Dropdown.Menu
+                          disallowEmptySelection
+                          aria-label="Фильтр по статусу"
+                          selectedKeys={[statusFilter]}
+                          selectionMode="single"
+                          onSelectionChange={(keys) => {
+                            const selected = Array.from(keys)[0] as OrderStatus | 'ALL'
+                            setStatusFilter(selected)
+                          }}
+                        >
+                          <DropdownItem key="ALL" id="ALL">
+                            Все статусы
+                            <Dropdown.ItemIndicator />
+                          </DropdownItem>
+                          <DropdownItem key="CREATED" id="CREATED">
+                            <Chip size="sm" {...getStatusStyle('CREATED')}>
+                              {getStatusIcon('CREATED')}
+                              <Chip.Label>{getStatusLabel('CREATED')}</Chip.Label>
+                            </Chip>
+                            <Dropdown.ItemIndicator />
+                          </DropdownItem>
+                          <DropdownItem key="ASSIGNED" id="ASSIGNED">
+                            <Chip size="sm" {...getStatusStyle('ASSIGNED')}>
+                              {getStatusIcon('ASSIGNED')}
+                              <Chip.Label>{getStatusLabel('ASSIGNED')}</Chip.Label>
+                            </Chip>
+                            <Dropdown.ItemIndicator />
+                          </DropdownItem>
+                          <DropdownItem key="ACCEPTED" id="ACCEPTED">
+                            <Chip size="sm" {...getStatusStyle('ACCEPTED')}>
+                              {getStatusIcon('ACCEPTED')}
+                              <Chip.Label>{getStatusLabel('ACCEPTED')}</Chip.Label>
+                            </Chip>
+                            <Dropdown.ItemIndicator />
+                          </DropdownItem>
+                          <DropdownItem key="IN_PROGRESS" id="IN_PROGRESS">
+                            <Chip size="sm" {...getStatusStyle('IN_PROGRESS')}>
+                              {getStatusIcon('IN_PROGRESS')}
+                              <Chip.Label>{getStatusLabel('IN_PROGRESS')}</Chip.Label>
+                            </Chip>
+                            <Dropdown.ItemIndicator />
+                          </DropdownItem>
+                          <DropdownItem key="COMPLETED" id="COMPLETED">
+                            <Chip size="sm" {...getStatusStyle('COMPLETED')}>
+                              {getStatusIcon('COMPLETED')}
+                              <Chip.Label>{getStatusLabel('COMPLETED')}</Chip.Label>
+                            </Chip>
+                            <Dropdown.ItemIndicator />
+                          </DropdownItem>
+                        </Dropdown.Menu>
+                      </Dropdown.Popover>
+                    </Dropdown>
+                  </div>
+                )}
               </div>
             </div>
-
-            {/* Status Filter for Orders */}
-            {activeTab === 'orders' && (
-              <div className="px-4 pb-3 shrink-0">
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {(
-                    ['ALL', 'CREATED', 'ASSIGNED', 'ACCEPTED', 'IN_PROGRESS', 'COMPLETED'] as const
-                  ).map(status => (
-                    <button
-                      key={status}
-                      onClick={() => setStatusFilter(status)}
-                      className={`px-3 py-1 text-xs rounded-full whitespace-nowrap transition-colors ${
-                        statusFilter === status
-                          ? 'bg-primary-500 text-white'
-                          : 'bg-default-100 text-default-600 hover:bg-default-200'
-                      }`}
-                    >
-                      {status === 'ALL' ? 'Все' : getStatusLabel(status)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* List Content - Scrollable with animation */}
             <div
@@ -589,7 +659,7 @@ export default function List({
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.3, ease: 'easeInOut' }}
-                    className={isPortrait ? 'flex flex-row gap-3 h-full pr-4' : 'space-y-3'}
+                    className={isPortrait ? 'flex flex-row gap-3 h-full pr-4 p-1' : 'space-y-3'}
                   >
                     {sortedOrders.length === 0 ? (
                       <div className="text-center py-12 text-default-400">
@@ -600,7 +670,7 @@ export default function List({
                       sortedOrders.map(order => (
                         <Card
                           key={order.id}
-                          className={`p-4 cursor-pointer transition-all hover:shadow-md ${
+                          className={`p-3 cursor-pointer transition-all hover:shadow-md ${
                             selectedOrderId === order.id
                               ? 'ring-2 ring-primary-500 bg-primary-50'
                               : ''
@@ -609,92 +679,126 @@ export default function List({
                         >
                           <Card.Content>
                             {/* Header */}
-                            <div className="flex items-start justify-between mb-3">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <Chip size="sm" variant={getStatusVariant(order.status)}>
-                                    <span className="flex items-center gap-1">
-                                      {getStatusIcon(order.status)}
-                                      {getStatusLabel(order.status)}
-                                    </span>
-                                  </Chip>
-                                </div>
-                                <div className="flex items-center gap-2 text-xs text-default-500">
-                                  <Clock size={12} />
-                                  <span suppressHydrationWarning>
-                                    {new Date(
-                                      order.scheduledTime || order.createdAt
-                                    ).toLocaleString('ru-RU', {
-                                      day: '2-digit',
-                                      month: '2-digit',
-                                      hour: '2-digit',
-                                      minute: '2-digit',
-                                    })}
-                                  </span>
-                                </div>
+                            <div className="flex items-center justify-between  gap-2">
+                              <div className="flex items-center gap-2 text-sm text-default-500">
+                                <Clock size={12} />
+                                <span suppressHydrationWarning>
+                                  {new Date(
+                                    order.scheduledTime || order.createdAt
+                                  ).toLocaleString('ru-RU', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </span>
                               </div>
+                              <Chip size="sm" {...getStatusStyle(order.status)}>
+                                {getStatusIcon(order.status)}
+                                <Chip.Label>{getStatusLabel(order.status)}</Chip.Label>
+                              </Chip>
                             </div>
 
                             {/* Passenger Info */}
-                            <div className="space-y-2 mb-3">
-                              <div className="flex items-center gap-2 text-sm">
-                                <User size={14} className="text-default-400 flex-shrink-0" />
-                                <span className="font-medium">{order.passengerName}</span>
+                            <div className="space-y-2 mb-1">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2 text-sm">
+                                  <User size={14} className="text-default-400 shrink-0" />
+                                  <span className="font-medium">{order.passengerName}</span>
+                                </div>
+                                {/* Vehicle Chip - показываем рядом с именем пассажира */}
+                                {order.vehicleID && (
+                                  <Chip size="sm" color="default" variant="soft">
+                                    <Car size={12} />
+                                    <Chip.Label>
+                                      {vehicles.find(v => v.id === order.vehicleID)?.plateNumber || 'N/A'}
+                                    </Chip.Label>
+                                  </Chip>
+                                )}
                               </div>
-                              <div className="flex items-center gap-2 text-sm text-default-600">
-                                <Phone size={14} className="text-default-400 flex-shrink-0" />
+                              <a
+                                href={`tel:${order.passengerPhone}`}
+                                className="flex items-center gap-2 text-sm text-default-600 hover:text-primary-500 transition-colors"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Phone size={14} className="text-default-400 shrink-0" />
                                 <span>{order.passengerPhone}</span>
-                              </div>
+                              </a>
                             </div>
 
-                            {/* Addresses */}
-                            <div className="space-y-2 mb-3">
-                              <div className="flex items-start gap-2 text-sm">
-                                <MapPin size={14} className="text-blue-500 flex-shrink-0 mt-0.5" />
-                                <span className="text-default-600 text-xs">
-                                  {order.pickupAddress}
-                                </span>
+                            {/* Addresses with Assign Button */}
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <div className="space-y-2 flex-1">
+                                {/* Используем routes[] если есть, иначе упрощенные поля */}
+                                {order.routes && order.routes.length > 0 ? (
+                                  <>
+                                    {/* Первая точка - откуда */}
+                                    <div className="flex items-start gap-2 text-sm">
+                                      <MapPin size={14} className="text-blue-500 shrink-0 mt-0.5" />
+                                      <span className="text-default-600 text-xs">
+                                        {order.routes[0].pickupAddress}
+                                      </span>
+                                    </div>
+
+                                    {/* Промежуточные остановки */}
+                                    {order.routes.length > 1 && order.routes.slice(0, -1).map((route, index) => (
+                                      <div key={route.id} className="flex items-start gap-2 text-sm">
+                                        <MapPin size={14} className="text-amber-500 shrink-0 mt-0.5" />
+                                        <span className="text-default-600 text-xs">
+                                          <span className="font-medium">#{index + 1}</span> {route.dropoffAddress}
+                                        </span>
+                                      </div>
+                                    ))}
+
+                                    {/* Последняя точка - куда */}
+                                    <div className="flex items-start gap-2 text-sm">
+                                      <Navigation size={14} className="text-green-500 shrink-0 mt-0.5" />
+                                      <span className="text-default-600 text-xs">
+                                        {order.routes[order.routes.length - 1].dropoffAddress}
+                                      </span>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    {/* Fallback на упрощенные поля */}
+                                    <div className="flex items-start gap-2 text-sm">
+                                      <MapPin size={14} className="text-blue-500 shrink-0 mt-0.5" />
+                                      <span className="text-default-600 text-xs">
+                                        {order.pickupAddress}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-start gap-2 text-sm">
+                                      <Navigation size={14} className="text-green-500 shrink-0 mt-0.5" />
+                                      <span className="text-default-600 text-xs">
+                                        {order.dropoffAddress}
+                                      </span>
+                                    </div>
+                                  </>
+                                )}
                               </div>
-                              <div className="flex items-start gap-2 text-sm">
-                                <Navigation
-                                  size={14}
-                                  className="text-green-500 flex-shrink-0 mt-0.5"
-                                />
-                                <span className="text-default-600 text-xs">
-                                  {order.dropoffAddress}
-                                </span>
-                              </div>
+                              {/* Assign Button - только для CREATED статуса */}
+                              {!order.vehicleID && order.status === 'CREATED' && (
+                                <div onClick={e => e.stopPropagation()} className="shrink-0">
+                                  <Button
+                                    size="sm"
+                                    variant="primary"
+                                    className="whitespace-normal text-center leading-tight min-w-[80px] h-auto py-1.5"
+                                    onPress={() => handleAssignDriver(order)}
+                                  >
+                                    <span className="flex flex-col items-center gap-0.5">
+                                      <span className="text-xs">Назначить<br/>водителя</span>
+                                    </span>
+                                  </Button>
+                                </div>
+                              )}
                             </div>
 
                             {/* Notes */}
                             {order.notes && (
-                              <div className="bg-default-100 rounded-lg p-2 mb-3">
+                              <div className="bg-default-100 rounded-lg p-2 mb-1">
                                 <p className="text-xs text-default-600">{order.notes}</p>
                               </div>
                             )}
-
-                            {/* Vehicle Info or Assign Button */}
-                            {order.vehicleID ? (
-                              <div className="flex items-center gap-2 text-xs text-default-500 bg-default-100 rounded-lg p-2">
-                                <Car size={14} />
-                                <span>
-                                  {vehicles.find(v => v.id === order.vehicleID)?.plateNumber ||
-                                    'Неизвестно'}
-                                </span>
-                              </div>
-                            ) : order.status === 'CREATED' ? (
-                              <div onClick={e => e.stopPropagation()}>
-                                <Button
-                                  size="sm"
-                                  variant="primary"
-                                  className="w-full"
-                                  onPress={() => handleAssignDriver(order)}
-                                >
-                                  <Car size={16} />
-                                  Назначить водителя
-                                </Button>
-                              </div>
-                            ) : null}
                           </Card.Content>
                         </Card>
                       ))

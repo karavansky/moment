@@ -29,13 +29,13 @@ export default function RoutePolyline({
   onClick,
   animate = false,
 }: RoutePolylineProps) {
-  const [routeCoordinates, setRouteCoordinates] = useState<[number, number][]>([
-    pickup,
-    dropoff,
-  ])
+  const [routeCoordinates, setRouteCoordinates] = useState<[number, number][] | null>(null)
 
   useEffect(() => {
     let cancelled = false
+
+    // Сбрасываем маршрут при изменении координат
+    setRouteCoordinates(null)
 
     // Получаем маршрут от OSRM
     fetchRoute(pickup, dropoff).then((coordinates) => {
@@ -48,6 +48,11 @@ export default function RoutePolyline({
       cancelled = true
     }
   }, [pickup[0], pickup[1], dropoff[0], dropoff[1]])
+
+  // Не рисуем ничего пока не получили маршрут от API
+  if (!routeCoordinates) {
+    return null
+  }
 
   return (
     <Polyline

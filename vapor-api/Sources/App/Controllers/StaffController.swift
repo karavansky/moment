@@ -68,13 +68,14 @@ struct StaffController: RouteCollection {
     }
 
     /// Decrypt AES-GCM telemetry data from client
+    /// Client uses PBKDF2 (100000 iterations, SHA-256) to derive key, then AES-GCM
     private func decryptTelemetry<T: Decodable>(encrypted: String, secret: String) throws -> T {
         // Decode base64
         guard let combined = Data(base64Encoded: encrypted) else {
             throw Abort(.badRequest, reason: "Invalid base64 encrypted data")
         }
 
-        // Extract salt (16 bytes), IV (12 bytes), and encrypted data
+        // Extract salt (16 bytes), IV (12 bytes), and encrypted data (includes auth tag)
         guard combined.count > 28 else {
             throw Abort(.badRequest, reason: "Encrypted data too short")
         }
@@ -83,20 +84,24 @@ struct StaffController: RouteCollection {
         let iv = combined.dropFirst(16).prefix(12)
         let ciphertext = combined.dropFirst(28)
 
-        // Derive key using HKDF (same as client)
-        let inputKeyMaterial = SymmetricKey(data: Data(secret.utf8))
-        let derivedKey = HKDF<SHA256>.deriveKey(
-            inputKeyMaterial: inputKeyMaterial,
+        // Derive key using PBKDF2 (matching client: 100000 iterations, SHA-256)
+        guard let derivedKeyData = try? deriveKeyPBKDF2(
+            password: secret,
             salt: salt,
-            info: Data(),
-            outputByteCount: 32
-        )
+            iterations: 100000,
+            keyLength: 32
+        ) else {
+            throw Abort(.internalServerError, reason: "Key derivation failed")
+        }
+
+        let derivedKey = SymmetricKey(data: derivedKeyData)
 
         // Decrypt using AES-GCM
+        // AES.GCM.SealedBox expects combined data (ciphertext + tag)
         let sealedBox = try AES.GCM.SealedBox(
             nonce: AES.GCM.Nonce(data: iv),
-            ciphertext: ciphertext.dropLast(16), // Remove auth tag
-            tag: ciphertext.suffix(16) // Last 16 bytes are the tag
+            ciphertext: ciphertext.dropLast(16), // Actual ciphertext
+            tag: ciphertext.suffix(16) // Last 16 bytes are the auth tag
         )
 
         let decryptedData = try AES.GCM.open(sealedBox, using: derivedKey)
@@ -104,5 +109,39 @@ struct StaffController: RouteCollection {
         // Decode JSON
         let decoder = JSONDecoder()
         return try decoder.decode(T.self, from: decryptedData)
+    }
+
+    /// Derive key using PBKDF2 (matching Web Crypto API)
+    /// Manual implementation using HMAC-SHA256
+    private func deriveKeyPBKDF2(password: String, salt: Data, iterations: Int, keyLength: Int) throws -> Data {
+        let passwordData = Data(password.utf8)
+        var result = Data()
+
+        // PBKDF2 generates multiple blocks if needed
+        let blockCount = (keyLength + 32 - 1) / 32 // SHA256 produces 32 bytes
+
+        for blockIndex in 1...blockCount {
+            var block = Data()
+            var u = salt + withUnsafeBytes(of: UInt32(blockIndex).bigEndian) { Data($0) }
+
+            // First iteration
+            let key = SymmetricKey(data: passwordData)
+            u = Data(HMAC<SHA256>.authenticationCode(for: u, using: key))
+            block = u
+
+            // Remaining iterations
+            for _ in 1..<iterations {
+                u = Data(HMAC<SHA256>.authenticationCode(for: u, using: key))
+                // XOR with previous result
+                for i in 0..<u.count {
+                    block[i] ^= u[i]
+                }
+            }
+
+            result.append(block)
+        }
+
+        // Truncate to desired length
+        return result.prefix(keyLength)
     }
 }

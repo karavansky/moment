@@ -37,6 +37,12 @@ func routes(_ app: Application) throws {
     try protected.register(collection: ServiceController())           // CRUD /api/scheduling/services
     try protected.register(collection: SchedulingReportController())  // GET/POST /api/scheduling/reports
 
+    // Transport routes (all under /api/transport/*)
+    try protected.register(collection: OrdersController())            // CRUD /api/transport/orders
+    try protected.register(collection: VehiclesController())          // CRUD /api/transport/vehicles
+    try protected.register(collection: TransportRoutesController())   // CRUD /api/transport/routes
+    try protected.register(collection: RejectReasonsController())     // CRUD /api/transport/reject-reasons
+
     // Other protected routes
     try protected.register(collection: ReportController())            // CRUD /api/reports + photos
     try protected.register(collection: TicketController())            // /api/tickets
@@ -49,5 +55,5 @@ func routes(_ app: Application) throws {
     try admin.register(collection: SeaweedProxyController())
     try admin.register(collection: AdminController())
 
-    app.logger.info("Routes registered: /api/health, /api/version, /api/photon, /api/scheduling/**, /api/reports/**, /api/tickets/**, /api/admin/**, etc.")
+    app.logger.info("Routes registered: /api/health, /api/version, /api/photon, /api/scheduling/**, /api/transport/**, /api/reports/**, /api/tickets/**, /api/admin/**, etc.")
 }

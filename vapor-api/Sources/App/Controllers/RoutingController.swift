@@ -34,7 +34,7 @@ struct RoutingController: RouteCollection {
                 req.logger.info("✅ Cache hit for: \(coordinates)")
 
                 // Return cached response with metadata
-                var response = Response(status: .ok)
+                let response = Response(status: .ok)
                 let wrappedData = CachedOSRMResponse(
                     routes: cachedData.routes,
                     waypoints: cachedData.waypoints,
@@ -95,7 +95,7 @@ struct RoutingController: RouteCollection {
         }
 
         // Return response with metadata
-        var response = Response(status: .ok)
+        let response = Response(status: .ok)
         let wrappedData = CachedOSRMResponse(
             routes: data.routes,
             waypoints: data.waypoints,
@@ -126,7 +126,7 @@ struct RoutingController: RouteCollection {
         }
 
         // Return response with fallback metadata
-        var response = Response(status: .ok)
+        let response = Response(status: .ok)
         let wrappedData = FallbackOSRMResponse(
             routes: data.routes,
             waypoints: data.waypoints,

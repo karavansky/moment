@@ -18,12 +18,11 @@ struct TicketController: RouteCollection {
         let user = try req.auth.require(AuthenticatedUser.self)
         guard let firmaID = user.firmaID else { throw Abort(.forbidden) }
 
-        // Needs to join with unread messages count or last message.
-        // For simplicity, we can fetch tickets and then map them.
+        // Fetch tickets for this user and firma
         let tickets = try await Ticket.query(on: req.db)
             .filter(\.$firmaID == firmaID)
             .filter(\.$userID == user.userId)
-            .sort(\.$createdAt, .descending)
+            .sort(\.$date, .descending)
             .all()
 
         return try await tickets.encodeResponse(for: req)
@@ -35,6 +34,7 @@ struct TicketController: RouteCollection {
         guard let firmaID = user.firmaID else { throw Abort(.forbidden) }
         guard let ticketID = req.parameters.get("ticketID") else { throw Abort(.badRequest) }
 
+        // Verify ticket belongs to user and firma
         guard let _ = try await Ticket.query(on: req.db)
             .filter(\.$id == ticketID)
             .filter(\.$firmaID == firmaID)
@@ -60,7 +60,8 @@ struct TicketController: RouteCollection {
         struct Body: Content { var message: String }
         let body = try req.content.decode(Body.self)
 
-        guard let ticket = try await Ticket.query(on: req.db)
+        // Verify ticket belongs to user and firma
+        guard let _ = try await Ticket.query(on: req.db)
             .filter(\.$id == ticketID)
             .filter(\.$firmaID == firmaID)
             .filter(\.$userID == user.userId)
@@ -75,10 +76,6 @@ struct TicketController: RouteCollection {
         msg.senderID = user.userId
         msg.text = body.message
         try await msg.save(on: req.db)
-
-        // Update ticket status
-        ticket.status = "Vom Benutzer beantwortet"
-        try await ticket.save(on: req.db)
 
         return try await msg.encodeResponse(status: .ok, for: req)
     }

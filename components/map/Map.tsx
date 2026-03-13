@@ -524,70 +524,102 @@ const Map = React.memo(function Map({
 
         {/* Orders */}
         {orders.map((order) => {
-          if (!order.pickupLat || !order.pickupLng || !order.dropoffLat || !order.dropoffLng) {
-            return null
-          }
-
           const isSelected = order.id === selectedOrderId
           const statusColor = getStatusColor(order.status)
 
+          // Используем routes[] если есть, иначе fallback на упрощенные поля
+          const routes = order.routes && order.routes.length > 0
+            ? order.routes
+            : (order.pickupLat && order.pickupLng && order.dropoffLat && order.dropoffLng
+                ? [{
+                    id: `${order.id}-default`,
+                    firmaID: order.firmaID,
+                    orderID: order.id,
+                    sequence: 1,
+                    pickupAddress: order.pickupAddress || '',
+                    dropoffAddress: order.dropoffAddress || '',
+                    pickupLat: order.pickupLat,
+                    pickupLng: order.pickupLng,
+                    dropoffLat: order.dropoffLat,
+                    dropoffLng: order.dropoffLng,
+                    createdAt: new Date(),
+                  }]
+                : [])
+
+          if (routes.length === 0) {
+            return null
+          }
+
           return (
             <React.Fragment key={order.id}>
-              {/* Pickup Marker - always visible */}
-              <OrderMarker
-                position={[order.pickupLat, order.pickupLng]}
-                icon={pickupIcon}
-                isSelected={isSelected}
-                onSelect={() => onOrderSelect?.(order.id)}
-              >
-                <Popup autoClose={false} closeOnClick={false}>
-                  <div className="text-sm">
-                    <p className="font-semibold flex items-center gap-1">
-                      <MapPin size={14} />
-                      Откуда
-                    </p>
-                    <p className="text-xs mt-1">{order.pickupAddress}</p>
-                    <p className="text-xs text-default-500 mt-1">{order.passengerName}</p>
-                    <p
-                      className="text-xs font-medium mt-1"
-                      style={{ color: statusColor }}
+              {/* Render markers and routes for each route segment */}
+              {routes.map((route, index) => {
+                if (!route.pickupLat || !route.pickupLng || !route.dropoffLat || !route.dropoffLng) {
+                  return null
+                }
+
+                const isFirstRoute = index === 0
+                const isLastRoute = index === routes.length - 1
+
+                return (
+                  <React.Fragment key={route.id}>
+                    {/* Pickup Marker - show for first route or intermediate stops */}
+                    {isFirstRoute && (
+                      <OrderMarker
+                        position={[route.pickupLat, route.pickupLng]}
+                        icon={pickupIcon}
+                        isSelected={isSelected}
+                        onSelect={() => onOrderSelect?.(order.id)}
+                      >
+                        <Popup autoClose={false} closeOnClick={false}>
+                          <div className="text-sm">
+                            <p className="font-semibold flex items-center gap-1">
+                              <MapPin size={14} />
+                              Откуда
+                            </p>
+                            <p className="text-xs mt-1">{route.pickupAddress}</p>
+                            <p className="text-xs text-default-500 mt-1">{order.passengerName}</p>
+                            <p className="text-xs font-medium mt-1" style={{ color: statusColor }}>
+                              {getStatusLabel(order.status)}
+                            </p>
+                          </div>
+                        </Popup>
+                      </OrderMarker>
+                    )}
+
+                    {/* Dropoff Marker - show for last route or all intermediate stops */}
+                    <OrderMarker
+                      position={[route.dropoffLat, route.dropoffLng]}
+                      icon={isLastRoute ? dropoffIcon : pickupIcon}
+                      isSelected={isSelected}
+                      onSelect={() => onOrderSelect?.(order.id)}
                     >
-                      {getStatusLabel(order.status)}
-                    </p>
-                  </div>
-                </Popup>
-              </OrderMarker>
+                      <Popup autoClose={false} closeOnClick={false}>
+                        <div className="text-sm">
+                          <p className="font-semibold flex items-center gap-1">
+                            {isLastRoute ? <CheckCircle2 size={14} /> : <MapPin size={14} />}
+                            {isLastRoute ? 'Куда' : `Остановка ${route.sequence}`}
+                          </p>
+                          <p className="text-xs mt-1">{route.dropoffAddress}</p>
+                          <p className="text-xs text-default-500 mt-1">{order.passengerName}</p>
+                        </div>
+                      </Popup>
+                    </OrderMarker>
 
-              {/* Dropoff Marker - always visible */}
-              <OrderMarker
-                position={[order.dropoffLat, order.dropoffLng]}
-                icon={dropoffIcon}
-                isSelected={isSelected}
-                onSelect={() => onOrderSelect?.(order.id)}
-              >
-                <Popup autoClose={false} closeOnClick={false}>
-                  <div className="text-sm">
-                    <p className="font-semibold flex items-center gap-1">
-                      <CheckCircle2 size={14} />
-                      Куда
-                    </p>
-                    <p className="text-xs mt-1">{order.dropoffAddress}</p>
-                    <p className="text-xs text-default-500 mt-1">{order.passengerName}</p>
-                  </div>
-                </Popup>
-              </OrderMarker>
-
-              {/* Route Line */}
-              <RoutePolyline
-                pickup={[order.pickupLat, order.pickupLng]}
-                dropoff={[order.dropoffLat, order.dropoffLng]}
-                color={statusColor}
-                weight={isSelected ? 6 : 4}
-                opacity={isSelected ? 0.9 : 0.7}
-                dashArray={order.status === 'COMPLETED' ? '10, 10' : undefined}
-                animate={isSelected}
-                onClick={() => onOrderSelect?.(order.id)}
-              />
+                    {/* Route Line */}
+                    <RoutePolyline
+                      pickup={[route.pickupLat, route.pickupLng]}
+                      dropoff={[route.dropoffLat, route.dropoffLng]}
+                      color={statusColor}
+                      weight={isSelected ? 6 : 4}
+                      opacity={isSelected ? 0.9 : 0.7}
+                      dashArray={order.status === 'COMPLETED' ? '10, 10' : undefined}
+                      animate={isSelected}
+                      onClick={() => onOrderSelect?.(order.id)}
+                    />
+                  </React.Fragment>
+                )
+              })}
             </React.Fragment>
           )
         })}
