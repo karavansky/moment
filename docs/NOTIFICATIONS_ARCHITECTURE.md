@@ -30,7 +30,7 @@ _Работают только когда приложение открыто в
 1.  **Начало встречи (`appointment_updated` -> `event.isOpen === true && !existing.isOpen`):**
     - **Кому:** Отправляется локально текущему пользователю в браузере (директору, если он смотрит дашборд).
     - **Данные:** `workerNames started an appointment with clientName clientAddress`.
-    - **Action:** Кнопка "See on map" (Ссылка `/map/{appointmentID}`).
+    - **Action:** Кнопка "See on map" (Ссылка `/dispatcher/{appointmentID}`).
 2.  **Завершение встречи (`appointment_updated` -> `!event.isOpen && existing.isOpen`):**
     - **Кому:** Локально текущему пользователю в браузере.
     - **Данные:** `workerNames finished an appointment with clientName clientAddress`.
@@ -55,7 +55,7 @@ _Работают всегда, даже если PWA закрыто (выпол
 3.  **Начало встречи (`appointment_updated` -> Переход `isOpen: false -> true`):**
     - **Кому:** Всем директорам (Directors) данной фирмы.
     - **Текст:** `{workerNames} started an appointment with {clientName}.`
-    - **URL:** `/map/{appointmentID}`.
+    - **URL:** `/dispatcher/{appointmentID}`.
 
 4.  **Завершение встречи (`appointment_updated` -> Переход `isOpen: true -> false`):**
     - **Кому:** Всем директорам (Directors) данной фирмы.

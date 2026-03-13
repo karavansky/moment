@@ -544,7 +544,7 @@
     "menu": {
       "home": "Главная",
       "schedule": "Расписание",
-      "map": "Карта"
+      "dispatcher": "Диспетчерская"
     },
     "crm": {
       "title": "CRM",

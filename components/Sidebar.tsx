@@ -49,7 +49,6 @@ interface MenuSection {
 const menuItems: MenuItem[] = [
   { icon: Home, label: 'sidebar.menu.home', href: '/' },
   { icon: Calendar1, label: 'sidebar.menu.schedule', href: '/dienstplan' },
-  { icon: Map, label: 'sidebar.menu.map', href: '/map' },
   { icon: Radio, label: 'sidebar.menu.dispatcher', href: '/dispatcher' },
 ]
 

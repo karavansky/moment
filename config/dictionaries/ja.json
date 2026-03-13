@@ -544,7 +544,7 @@
     "menu": {
       "home": "ホーム",
       "schedule": "スケジュール",
-      "map": "地図"
+      "dispatcher": "コントロールルーム"
     },
     "crm": {
       "title": "CRM",

@@ -381,7 +381,7 @@ struct AppointmentController: RouteCollection {
                         firmaID: firmaID,
                         title: "Appointment Started",
                         body: "A worker started an appointment.",
-                        url: "/map/\(body.id)",
+                        url: "/dispatcher/\(body.id)",
                         tag: "appointment-open-\(body.id)"
                     )
                 } else {

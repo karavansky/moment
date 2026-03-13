@@ -118,4 +118,4 @@ closeAppointment: (appointmentId: string) => {
 
 ## Навигация из toast-уведомлений
 
-`NotificationObserver` добавляет `/{lang}` префикс к href из notification, так как actions хранят пути без языкового префикса (`/map/{id}`), а маршруты приложения требуют его (`/de/map/{id}`).
+`NotificationObserver` добавляет `/{lang}` префикс к href из notification, так как actions хранят пути без языкового префикса (`/dispatcher/{id}`), а маршруты приложения требуют его (`/de/dispatcher/{id}`).

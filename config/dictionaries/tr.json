@@ -544,7 +544,7 @@
     "menu": {
       "home": "Ana Sayfa",
       "schedule": "Program",
-      "map": "Harita"
+      "dispatcher": "Kontrol odası"
     },
     "crm": {
       "title": "CRM",

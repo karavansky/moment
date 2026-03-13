@@ -17,7 +17,7 @@ const DEMO_NOTIFICATIONS: Omit<Notif, 'id' | 'date' | 'isRead'>[] = [
     message: 'Welcome to Moment! Click to learn more about features.',
     actionProps: {
       children: 'Learn More',
-      href: '/map/001',
+      href: '/dispatcher/001',
       variant: 'primary',
     },
   },

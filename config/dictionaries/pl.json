@@ -544,7 +544,7 @@
     "menu": {
       "home": "Strona główna",
       "schedule": "Harmonogram",
-      "map": "Mapa"
+      "dispatcher": "Sala kontrolna"
     },
     "crm": {
       "title": "CRM",

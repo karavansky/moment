@@ -130,7 +130,7 @@ Functionality:
 - Push notifications (already implemented, reuse from appointments)
 - Real-time order updates via SSE
 
-### 2. Dispatcher Interface - integrate into `/app/[lang]/map`
+### 2. Dispatcher Interface - integrate into `/app/[lang]/dispatcher`
 **Priority: MEDIUM**
 
 Extend existing `AppointmentsMap.tsx`:
@@ -217,7 +217,7 @@ Uses existing `/lib/push-notifications.ts` infrastructure.
 ### Short-term (This Week):
 4. ⏳ Implement Driver interface (PWA)
 5. ⏳ Implement continuous GPS tracking
-6. ⏳ Integrate Dispatcher interface into `/map`
+6. ⏳ Integrate Dispatcher interface into `/dispatcher`
 
 ### Mid-term (Next Week):
 7. ⏳ Add vehicle management to Sidebar

@@ -544,7 +544,7 @@
     "menu": {
       "home": "Inicio",
       "schedule": "Agenda",
-      "map": "Mapa"
+      "dispatcher": "Sala de control"
     },
     "crm": {
       "title": "CRM",

@@ -609,7 +609,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
                     message: `${workerNames} started an appointment with ${client.name} ${client.surname} ${client.street} ${client.houseNumber}, ${client.city}.`,
                     actionProps: {
                       children: 'See on map',
-                      href: `/map/${event.appointmentID}`,
+                      href: `/dispatcher/${event.appointmentID}`,
                       variant: 'primary',
                     },
                     id: generateId(),
@@ -1166,7 +1166,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
                 message: `Worker ${worker.name} ${worker.surname} has started an appointment with ${client.name} ${client.surname} ${client.street} ${client.houseNumber}, ${client.city}.`,
                 actionProps: {
                   children: 'See on map',
-                  href: `/map/${appointmentId}`,
+                  href: `/dispatcher/${appointmentId}`,
                   variant: 'primary',
                 },
                 id: generateId(),

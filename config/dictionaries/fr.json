@@ -544,7 +544,7 @@
     "menu": {
       "home": "Accueil",
       "schedule": "Planning",
-      "map": "Carte"
+      "dispatcher": "Salle de contrôle"
     },
     "crm": {
       "title": "CRM",

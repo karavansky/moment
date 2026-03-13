@@ -532,7 +532,7 @@
     "menu": {
       "home": "Home",
       "schedule": "Schedule",
-      "map": "Map"
+      "dispatcher": "Control room"
     },
     "crm": {
       "title": "CRM",

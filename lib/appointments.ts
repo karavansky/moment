@@ -100,7 +100,7 @@ function sendAppointmentPush(
           await sendPushToDirectors(firmaID, {
             title: 'Appointment Started',
             body: `${workerNames} started an appointment with ${clientName}.`,
-            url: `/map/${data.appointmentID}`,
+            url: `/dispatcher/${data.appointmentID}`,
             tag: `appointment-open-${data.appointmentID}`,
           })
         } else if (data.isOpen === false && data.previousIsOpen === true) {

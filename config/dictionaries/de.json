@@ -544,8 +544,7 @@
     "menu": {
       "home": "Startseite",
       "schedule": "Terminplan",
-      "map": "Karte",
-      "dispatcher": "Диспетчерская"
+      "dispatcher": "Kontrollraum"  
     },
     "crm": {
       "title": "CRM",

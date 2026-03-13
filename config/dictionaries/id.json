@@ -544,7 +544,7 @@
     "menu": {
       "home": "Beranda",
       "schedule": "Jadwal",
-      "map": "Peta"
+      "dispatcher": "Ruang kendali"
     },
     "crm": {
       "title": "CRM",

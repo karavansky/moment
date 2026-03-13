@@ -636,7 +636,7 @@ async function sendOrderPushToDispatchers(
       await sendPushToUser(director.userID, {
         title,
         body,
-        url: `/map/${orderID}`,
+        url: `/dispatcher/${orderID}`,
         tag: `order_${orderID}`,
       })
     }
