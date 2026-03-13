@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useRef, useEffect, useCallback } from 'react'
 import { Button, Separator } from '@heroui/react'
-import { Undo2, Truck, Ban } from 'lucide-react'
+import { Undo2, Truck, Ban, Van } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import VehicleOverview from './VehicleOverview'
@@ -45,16 +45,10 @@ export default function VehiclePage() {
     startTransition(() => setActiveTab('reasons'))
   }, [startTransition])
 
-  const handleBack = () => {
-    router.back()
-  }
-
   return (
     <div className="flex flex-col h-full p-4">
       <div className="flex items-center pl-2 gap-2 mb-4 shrink-0">
-        <Button onClick={handleBack}>
-          <Undo2 className="w-5 h-5 text-primary" />
-        </Button>
+        <Van className="w-6 h-6 mr-2" />
         <h2 className="text-2xl font-semibold">Транспорт</h2>
       </div>
 

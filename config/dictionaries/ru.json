@@ -451,7 +451,7 @@
   },
   "auth": {
     "welcome": "Добро пожаловать в Moment LBS",
-    "signInToAccess": "Войдите, чтобы получить доступ к поддержке",
+    "signInToAccess": "Зарегистрируйтесь сейчас и воспользуйтесь всеми преимуществами",
     "continueWithGoogle": "Продолжить с Google",
     "continueWithApple": "Продолжить с Apple",
     "byContinuing": "Продолжая, вы соглашаетесь с нашими",

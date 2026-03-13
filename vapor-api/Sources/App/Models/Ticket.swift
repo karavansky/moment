@@ -19,7 +19,7 @@ final class Ticket: Model, @unchecked Sendable, Content {
     @Field(key: "category")
     var category: Int
 
-    @Field(key: "pripority") // Note: typo in DB schema
+    @Field(key: "priority")
     var priority: Int
 
     @Timestamp(key: "date", on: .none)

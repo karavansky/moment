@@ -37,7 +37,7 @@ export default function HomeClient() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 w-full items-center sm:items-stretch justify-center sm:w-auto">
-            <Link href={`/${lang}/auth/login`}>
+            <Link href={`/${lang}/auth/signin`}>
               <Button
                 size="lg"
                 className="font-semibold shadow-xl shadow-primary/30 h-14 px-8 text-lg bg-primary text-primary-foreground"

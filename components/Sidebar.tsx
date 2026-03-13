@@ -56,8 +56,8 @@ const menuItems: MenuItem[] = [
 const crmSubItems: MenuItem[] = [
   { icon: UserStar, label: 'sidebar.crm.clients', href: '/clients' },
   { icon: Users, label: 'sidebar.crm.staff', href: '/staff' },
-  { icon: Van, label: 'sidebar.crm.transport', href: '/vehicle' },
   { icon: HandHeart, label: 'sidebar.crm.services', href: '/services' },
+  { icon: Van, label: 'sidebar.crm.transport', href: '/vehicle' },
 ]
 
 const reportsItems: MenuItem[] = [
