@@ -107,10 +107,28 @@ const dropoffIcon = createCustomIcon(
   '<polyline points="20 6 9 17 4 12"/>'
 )
 
-const vehicleIcon = createCustomIcon(
-  '#f59e0b',
-  '<path d="M5 17h14v-2H5v2zm0-4h14V5H5v8z"/>'
-)
+const vehicleIcon = L.divIcon({
+  className: 'custom-marker',
+  html: `
+    <div style="
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    ">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" stroke="#1e293b" stroke-width="1" fill="#22c55e"/>
+        <circle cx="7" cy="17" r="2" stroke="#1e293b" stroke-width="1.5" fill="#ffffff"/>
+        <path d="M9 17h6" stroke="#1e293b" stroke-width="1"/>
+        <circle cx="17" cy="17" r="2" stroke="#1e293b" stroke-width="1.5" fill="#ffffff"/>
+      </svg>
+    </div>
+  `,
+  iconSize: [32, 32],
+  iconAnchor: [16, 16],
+})
 
 interface MapProps {
   // For orders (transport/dispatcher)
