@@ -127,12 +127,12 @@ export default function MapPage({ params }: MapPageProps) {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Main Content */}
-      <div className={`flex-1 flex overflow-hidden ${isPortrait ? 'flex-col' : 'flex-row'}`}>
+      <div className={`flex-1 flex overflow-hidden ${isPortrait ? 'flex-col gap-1' : 'pl-1 flex-row gap-1'}`}>
         {/* List/Sidebar Section - Portrait: top (auto height), Landscape: right (collapsible) */}
-        <div className={`shrink-0 border-default-200 ${
+        <div className={`shrink-0 ${
           isPortrait
-            ? 'w-full border-b'
-            : 'border-l order-2'
+            ? 'w-full'
+            : 'order-2'
         }`}>
           <List
             // Always pass all data to List component

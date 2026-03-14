@@ -449,7 +449,7 @@ const Map = React.memo(function Map({
   const defaultCenter: [number, number] = [50.9375, 6.9603]
 
   return (
-    <div className="h-full w-full relative">
+    <div className="h-full w-full relative rounded-2xl overflow-hidden">
       <MapContainer
         center={defaultCenter}
         zoom={13}
