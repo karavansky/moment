@@ -28,6 +28,7 @@ import type { AppointmentWithClient } from '@/contexts/SchedulingContext'
 import { useLanguage } from '@/hooks/useLanguage'
 import { useTranslation } from '@/components/Providers'
 import { useIsPortrait } from '@/hooks/useMediaQuery'
+import { RouteMarkerIcon } from './RouteMarkers'
 
 interface ListProps {
   // For orders
@@ -734,7 +735,7 @@ export default function List({
                                   <>
                                     {/* Первая точка - откуда */}
                                     <div className="flex items-start gap-2 text-sm">
-                                      <MapPin size={14} className="text-blue-500 shrink-0 mt-0.5" />
+                                      <RouteMarkerIcon type="pickup" size={16} className="shrink-0 mt-0.5" />
                                       <span className="text-default-600 text-xs">
                                         {order.routes[0].pickupAddress}
                                       </span>
@@ -743,7 +744,7 @@ export default function List({
                                     {/* Промежуточные остановки */}
                                     {order.routes.length > 1 && order.routes.slice(0, -1).map((route, index) => (
                                       <div key={route.id} className="flex items-start gap-2 text-sm">
-                                        <MapPin size={14} className="text-amber-500 shrink-0 mt-0.5" />
+                                        <RouteMarkerIcon type="intermediate" size={16} className="shrink-0 mt-0.5" />
                                         <span className="text-default-600 text-xs">
                                           <span className="font-medium">#{index + 1}</span> {route.dropoffAddress}
                                         </span>
@@ -752,7 +753,7 @@ export default function List({
 
                                     {/* Последняя точка - куда */}
                                     <div className="flex items-start gap-2 text-sm">
-                                      <Navigation size={14} className="text-green-500 shrink-0 mt-0.5" />
+                                      <RouteMarkerIcon type="dropoff" size={16} className="shrink-0 mt-0.5" />
                                       <span className="text-default-600 text-xs">
                                         {order.routes[order.routes.length - 1].dropoffAddress}
                                       </span>
@@ -762,13 +763,13 @@ export default function List({
                                   <>
                                     {/* Fallback на упрощенные поля */}
                                     <div className="flex items-start gap-2 text-sm">
-                                      <MapPin size={14} className="text-blue-500 shrink-0 mt-0.5" />
+                                      <RouteMarkerIcon type="pickup" size={16} className="shrink-0 mt-0.5" />
                                       <span className="text-default-600 text-xs">
                                         {order.pickupAddress}
                                       </span>
                                     </div>
                                     <div className="flex items-start gap-2 text-sm">
-                                      <Navigation size={14} className="text-green-500 shrink-0 mt-0.5" />
+                                      <RouteMarkerIcon type="dropoff" size={16} className="shrink-0 mt-0.5" />
                                       <span className="text-default-600 text-xs">
                                         {order.dropoffAddress}
                                       </span>

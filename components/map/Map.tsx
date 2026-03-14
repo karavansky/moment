@@ -12,6 +12,7 @@ import RoutePolyline from '../dispatcher/RoutePolyline'
 import { LogoMoment } from '@/components/icons'
 import { useLanguage } from '@/hooks/useLanguage'
 import { useTranslation } from '@/components/Providers'
+import { createRouteMarkerIcon, MarkerLegendItem } from './RouteMarkers'
 
 // Fix Leaflet default icon issue in Next.js
 delete (L.Icon.Default.prototype as any)._getIconUrl
@@ -57,32 +58,6 @@ const createTimeFormatter = (locale: string) => new Intl.DateTimeFormat(locale, 
   minute: '2-digit',
 })
 
-// Custom marker icons
-const createCustomIcon = (color: string, IconComponent: string) => {
-  return L.divIcon({
-    className: 'custom-marker',
-    html: `
-      <div style="
-        background-color: ${color};
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 2px solid white;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-      ">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2">
-          ${IconComponent}
-        </svg>
-      </div>
-    `,
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-  })
-}
-
 // Appointment icon with LogoMoment
 const createAppointmentIcon = () => {
   const size = 56
@@ -96,16 +71,6 @@ const createAppointmentIcon = () => {
     popupAnchor: [0, -size * 0.75],
   })
 }
-
-const pickupIcon = createCustomIcon(
-  '#0ea5e9',
-  '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>'
-)
-
-const dropoffIcon = createCustomIcon(
-  '#22c55e',
-  '<polyline points="20 6 9 17 4 12"/>'
-)
 
 const vehicleIcon = L.divIcon({
   className: 'custom-marker',
@@ -400,6 +365,11 @@ const Map = React.memo(function Map({
   const timeFormatter = useMemo(() => createTimeFormatter(lang), [lang])
   const appointmentIcon = useRef(createAppointmentIcon())
 
+  // Create route marker icons on client side only (64px = 32px * 2)
+  const pickupIcon = useMemo(() => createRouteMarkerIcon('pickup', 56), [])
+  const intermediateIcon = useMemo(() => createRouteMarkerIcon('intermediate', 56), [])
+  const dropoffIcon = useMemo(() => createRouteMarkerIcon('dropoff', 56), [])
+
   const [mapCenter, setMapCenter] = useState<[number, number] | undefined>()
   const [mapZoom, setMapZoom] = useState<number | undefined>()
   const prevSelectedOrderId = useRef<string | null>(null)
@@ -608,7 +578,7 @@ const Map = React.memo(function Map({
                     {/* Dropoff Marker - show for last route or all intermediate stops */}
                     <OrderMarker
                       position={[route.dropoffLat, route.dropoffLng]}
-                      icon={isLastRoute ? dropoffIcon : pickupIcon}
+                      icon={isLastRoute ? dropoffIcon : intermediateIcon}
                       isSelected={isSelected}
                       onSelect={() => onOrderSelect?.(order.id)}
                     >
@@ -647,19 +617,10 @@ const Map = React.memo(function Map({
       {orders.length > 0 && (
         <div className="absolute bottom-4 left-4 bg-white dark:bg-blue-900/70 rounded-lg shadow-lg p-3 text-xs z-[1000]">
           <p className="font-semibold mb-2">Легенда</p>
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-blue-500" />
-              <span>Пункт отправления</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-green-500" />
-              <span>Пункт прибытия</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-amber-500" />
-              <span>Активное транспортное средство</span>
-            </div>
+          <div className="space-y-1.5">
+            <MarkerLegendItem type="pickup" label="Пункт отправления" />
+            <MarkerLegendItem type="intermediate" label="Промежуточная остановка" />
+            <MarkerLegendItem type="dropoff" label="Пункт прибытия" />
           </div>
         </div>
       )}
