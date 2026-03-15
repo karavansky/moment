@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { use } from 'react'
 import { useScheduling } from '@/contexts/SchedulingContext'
@@ -47,6 +47,14 @@ export default function MapPage({ params }: MapPageProps) {
   // Selection state
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+
+  // Route point focus state
+  const [routePointFocus, setRoutePointFocus] = useState<{
+    orderId: string
+    lat: number
+    lng: number
+    address: string
+  } | null>(null)
 
   // Orientation detection
   const isPortrait = useIsPortrait()
@@ -108,21 +116,32 @@ export default function MapPage({ params }: MapPageProps) {
     }
   }, [slugId, todayAppointments, orders])
 
-  const handleAppointmentSelect = (appointmentId: string) => {
-    setSelectedAppointmentId(appointmentId === selectedAppointmentId ? null : appointmentId)
+  const handleAppointmentSelect = useCallback((appointmentId: string) => {
+    setSelectedAppointmentId(prev => appointmentId === prev ? null : appointmentId)
     setSelectedOrderId(null)
-  }
+  }, [])
 
-  const handleOrderSelect = (orderId: string) => {
-    setSelectedOrderId(orderId === selectedOrderId ? null : orderId)
+  const handleOrderSelect = useCallback((orderId: string) => {
+    setSelectedOrderId(prev => orderId === prev ? null : orderId)
     setSelectedAppointmentId(null)
-  }
+    // Сбрасываем фокус на конкретной точке при клике на карточку
+    setRoutePointFocus(null)
+  }, [])
 
-  const handleOrderUpdate = (updatedOrder: Order) => {
+  const handleOrderUpdate = useCallback((updatedOrder: Order) => {
     setOrders((prev) =>
       prev.map((order) => (order.id === updatedOrder.id ? updatedOrder : order))
     )
-  }
+  }, [])
+
+  const handleRoutePointClick = useCallback((orderId: string, lat: number, lng: number, address: string) => {
+    // Set the route point to focus on the map
+    setRoutePointFocus({ orderId, lat, lng, address })
+    // Auto-select the order
+    setSelectedOrderId(orderId)
+    // НЕ сбрасываем focusedRoutePoint автоматически!
+    // Он будет сброшен при клике на карточку или другую точку
+  }, [])
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -144,6 +163,7 @@ export default function MapPage({ params }: MapPageProps) {
             selectedOrderId={selectedOrderId}
             onOrderSelect={handleOrderSelect}
             onOrderUpdate={handleOrderUpdate}
+            onRoutePointClick={handleRoutePointClick}
             // Pass active tab and handler
             activeTab={activeTab}
             onTabChange={setActiveTab}
@@ -175,6 +195,7 @@ export default function MapPage({ params }: MapPageProps) {
             vehicles={activeTab === 'orders' ? mockData.vehicles : []}
             selectedOrderId={selectedOrderId}
             onOrderSelect={handleOrderSelect}
+            routePointFocus={routePointFocus}
           />
         </div>
       </div>

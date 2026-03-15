@@ -81,7 +81,7 @@ export function createRouteMarkerIcon(type: MarkerType, iconSize: number = 32): 
     html: iconHtml,
     iconSize: [iconSize, iconSize],
     iconAnchor: [iconSize / 2, iconSize],
-    popupAnchor: [0, -iconSize],
+    popupAnchor: [0, -iconSize * 0.75],
   })
 }
 

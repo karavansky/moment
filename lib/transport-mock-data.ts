@@ -201,25 +201,26 @@ export const getAllTransportMockData = () => {
         firmaID,
         order1ID,
         1,
-        'Köln, Domkloster 4',
+        'Domkloster 4, 50667 Köln',
         50.9413,
         6.9581,
-        'Köln, Hohenzollernring 72',
+        'Hohenzollernring 72, 50672 Köln',
         50.9410,
         6.9408
       ),
     ],
     // Упрощенные поля для обратной совместимости (берем первый route)
-    pickupAddress: 'Köln, Domkloster 4',
+    pickupAddress: 'Domkloster 4, 50667 Köln',
     pickupLat: 50.9413,
     pickupLng: 6.9581,
-    dropoffAddress: 'Köln, Hohenzollernring 72',
+    dropoffAddress: 'Hohenzollernring 72, 50672 Köln',
     dropoffLat: 50.9410,
     dropoffLng: 6.9408,
   }
 
+  const order2ID = generateId()
   const order2: Order = {
-    id: generateId(),
+    id: order2ID,
     firmaID: firmaID,
     clientID: generateId(),
     dispatcherID: generateId(),
@@ -228,12 +229,6 @@ export const getAllTransportMockData = () => {
     appointmentID: null,
     status: 'ACCEPTED' as OrderStatus,
     scheduledTime: addHours(currentDate, 1),
-    pickupAddress: 'Köln, Neumarkt 18',
-    pickupLat: 50.9370,
-    pickupLng: 6.9464,
-    dropoffAddress: 'Köln, Heumarkt 25',
-    dropoffLat: 50.9355,
-    dropoffLng: 6.9601,
     passengerName: 'Meryl Streep',
     passengerPhone: '+49 221 234-5678',
     notes: null,
@@ -244,10 +239,30 @@ export const getAllTransportMockData = () => {
     startedAt: null,
     completedAt: null,
     cancelledAt: null,
+    routes: [
+      createRoute(
+        firmaID,
+        order2ID,
+        1,
+        'Neumarkt 18, 50667 Köln',
+        50.9370,
+        6.9464,
+        'Heumarkt 25, 50667 Köln',
+        50.9355,
+        6.9601
+      ),
+    ],
+    pickupAddress: 'Neumarkt 18, 50667 Köln',
+    pickupLat: 50.9370,
+    pickupLng: 6.9464,
+    dropoffAddress: 'Heumarkt 25, 50667 Köln',
+    dropoffLat: 50.9355,
+    dropoffLng: 6.9601,
   }
 
+  const order3ID = generateId()
   const order3: Order = {
-    id: generateId(),
+    id: order3ID,
     firmaID: firmaID,
     clientID: generateId(),
     dispatcherID: generateId(),
@@ -256,12 +271,6 @@ export const getAllTransportMockData = () => {
     appointmentID: null,
     status: 'COMPLETED' as OrderStatus,
     scheduledTime: addHours(currentDate, -3),
-    pickupAddress: 'Köln, Rudolfplatz 1',
-    pickupLat: 50.9364,
-    pickupLng: 6.9402,
-    dropoffAddress: 'Köln, Friesenplatz 14',
-    dropoffLat: 50.9407,
-    dropoffLng: 6.9388,
     passengerName: 'Brad Pitt',
     passengerPhone: '+49 221 345-6789',
     notes: 'Коляска для инвалидов',
@@ -272,10 +281,30 @@ export const getAllTransportMockData = () => {
     startedAt: addHours(currentDate, -3),
     completedAt: addHours(currentDate, -2),
     cancelledAt: null,
+    routes: [
+      createRoute(
+        firmaID,
+        order3ID,
+        1,
+        'Rudolfplatz 1, 50674 Köln',
+        50.9364,
+        6.9402,
+        'Friesenplatz 14, 50672 Köln',
+        50.9407,
+        6.9388
+      ),
+    ],
+    pickupAddress: 'Rudolfplatz 1, 50674 Köln',
+    pickupLat: 50.9364,
+    pickupLng: 6.9402,
+    dropoffAddress: 'Friesenplatz 14, 50672 Köln',
+    dropoffLat: 50.9407,
+    dropoffLng: 6.9388,
   }
 
+  const order4ID = generateId()
   const order4: Order = {
-    id: generateId(),
+    id: order4ID,
     firmaID: firmaID,
     clientID: generateId(),
     dispatcherID: null,
@@ -284,12 +313,6 @@ export const getAllTransportMockData = () => {
     appointmentID: null,
     status: 'CREATED' as OrderStatus,
     scheduledTime: addHours(currentDate, 3),
-    pickupAddress: 'Köln, Eigelstein 135',
-    pickupLat: 50.9491,
-    pickupLng: 6.9567,
-    dropoffAddress: 'Köln, Zülpicher Straße 28',
-    dropoffLat: 50.9296,
-    dropoffLng: 6.9377,
     passengerName: 'George Clooney',
     passengerPhone: '+49 221 456-7890',
     notes: 'Важная встреча, не опаздывать',
@@ -300,6 +323,25 @@ export const getAllTransportMockData = () => {
     startedAt: null,
     completedAt: null,
     cancelledAt: null,
+    routes: [
+      createRoute(
+        firmaID,
+        order4ID,
+        1,
+        'Eigelstein 135, 50668 Köln',
+        50.9491,
+        6.9567,
+        'Zülpicher Straße 28, 50674 Köln',
+        50.9296,
+        6.9377
+      ),
+    ],
+    pickupAddress: 'Eigelstein 135, 50668 Köln',
+    pickupLat: 50.9491,
+    pickupLng: 6.9567,
+    dropoffAddress: 'Zülpicher Straße 28, 50674 Köln',
+    dropoffLat: 50.9296,
+    dropoffLng: 6.9377,
   }
 
   const order5ID = generateId()
@@ -330,10 +372,10 @@ export const getAllTransportMockData = () => {
         firmaID,
         order5ID,
         1,
-        'Köln, Aachener Straße 1253',
+        'Aachener Straße 1253, 50829 Köln',
         50.9380,
         6.8356,
-        'Köln, Barbarossaplatz 2',
+        'Barbarossaplatz 2, 50674 Köln',
         50.9279,
         6.9369
       ),
@@ -342,10 +384,10 @@ export const getAllTransportMockData = () => {
         firmaID,
         order5ID,
         2,
-        'Köln, Barbarossaplatz 2',
+        'Barbarossaplatz 2, 50674 Köln',
         50.9279,
         6.9369,
-        'Köln, Neumarkt 10',
+        'Neumarkt 10, 50667 Köln',
         50.9366,
         6.9473
       ),
@@ -354,25 +396,26 @@ export const getAllTransportMockData = () => {
         firmaID,
         order5ID,
         3,
-        'Köln, Neumarkt 10',
+        'Neumarkt 10, 50667 Köln',
         50.9366,
         6.9473,
-        'Köln, Venloer Straße 241',
+        'Venloer Straße 241, 50823 Köln',
         50.9469,
         6.9232
       ),
     ],
     // Упрощенные поля для обратной совместимости (первая и последняя точка)
-    pickupAddress: 'Köln, Aachener Straße 1253',
+    pickupAddress: 'Aachener Straße 1253, 50829 Köln',
     pickupLat: 50.9380,
     pickupLng: 6.8356,
-    dropoffAddress: 'Köln, Venloer Straße 241',
+    dropoffAddress: 'Venloer Straße 241, 50823 Köln',
     dropoffLat: 50.9469,
     dropoffLng: 6.9232,
   }
 
+  const order6ID = generateId()
   const order6: Order = {
-    id: generateId(),
+    id: order6ID,
     firmaID: firmaID,
     clientID: generateId(),
     dispatcherID: generateId(),
@@ -381,12 +424,6 @@ export const getAllTransportMockData = () => {
     appointmentID: null,
     status: 'ASSIGNED' as OrderStatus,
     scheduledTime: addHours(currentDate, 4),
-    pickupAddress: 'Köln, Ehrenstraße 55',
-    pickupLat: 50.9382,
-    pickupLng: 6.9416,
-    dropoffAddress: 'Köln, Mittelstraße 12',
-    dropoffLat: 50.8941,
-    dropoffLng: 6.9929,
     passengerName: 'Leonardo DiCaprio',
     passengerPhone: '+49 221 678-9012',
     notes: null,
@@ -397,10 +434,30 @@ export const getAllTransportMockData = () => {
     startedAt: null,
     completedAt: null,
     cancelledAt: null,
+    routes: [
+      createRoute(
+        firmaID,
+        order6ID,
+        1,
+        'Ehrenstraße 55, 50672 Köln',
+        50.9382,
+        6.9416,
+        'Mittelstraße 12, 50672 Köln',
+        50.8941,
+        6.9929
+      ),
+    ],
+    pickupAddress: 'Ehrenstraße 55, 50672 Köln',
+    pickupLat: 50.9382,
+    pickupLng: 6.9416,
+    dropoffAddress: 'Mittelstraße 12, 50672 Köln',
+    dropoffLat: 50.8941,
+    dropoffLng: 6.9929,
   }
 
+  const order7ID = generateId()
   const order7: Order = {
-    id: generateId(),
+    id: order7ID,
     firmaID: firmaID,
     clientID: generateId(),
     dispatcherID: generateId(),
@@ -409,12 +466,6 @@ export const getAllTransportMockData = () => {
     appointmentID: null,
     status: 'ARRIVED' as OrderStatus,
     scheduledTime: addHours(currentDate, 0.2),
-    pickupAddress: 'Köln, Rheinauhafen 1',
-    pickupLat: 50.9274,
-    pickupLng: 6.9661,
-    dropoffAddress: 'Köln, Deutz-Mülheimer Straße 183',
-    dropoffLat: 50.9577,
-    dropoffLng: 6.9942,
     passengerName: 'Jennifer Lawrence',
     passengerPhone: '+49 221 789-0123',
     notes: 'С большим багажом',
@@ -425,6 +476,25 @@ export const getAllTransportMockData = () => {
     startedAt: null,
     completedAt: null,
     cancelledAt: null,
+    routes: [
+      createRoute(
+        firmaID,
+        order7ID,
+        1,
+        'Rheinauhafen 1, 50678 Köln',
+        50.9274,
+        6.9661,
+        'Deutz-Mülheimer Straße 183, 51063 Köln',
+        50.9577,
+        6.9942
+      ),
+    ],
+    pickupAddress: 'Rheinauhafen 1, 50678 Köln',
+    pickupLat: 50.9274,
+    pickupLng: 6.9661,
+    dropoffAddress: 'Deutz-Mülheimer Straße 183, 51063 Köln',
+    dropoffLat: 50.9577,
+    dropoffLng: 6.9942,
   }
 
   const orders = [order1, order2, order3, order4, order5, order6, order7]

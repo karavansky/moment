@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useTransition, useRef, useEffect } from 'react'
-import { Card, Button, Chip, Separator, Modal, Badge, Dropdown, DropdownItem } from '@heroui/react'
+import { Card, Button, Chip, Separator, Modal, Badge, Dropdown, DropdownItem, ScrollShadow } from '@heroui/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   AlertCircle,
@@ -35,6 +35,7 @@ interface ListProps {
   selectedOrderId?: string | null
   onOrderSelect?: (orderId: string) => void
   onOrderUpdate?: (order: Order) => void
+  onRoutePointClick?: (orderId: string, lat: number, lng: number, address: string) => void
 
   // For appointments
   appointments?: AppointmentWithClient[]
@@ -62,6 +63,7 @@ export default function List({
   selectedOrderId = null,
   onOrderSelect,
   onOrderUpdate,
+  onRoutePointClick,
   appointments = [],
   selectedAppointmentId = null,
   onAppointmentSelect,
@@ -296,7 +298,7 @@ export default function List({
         duration: 0.3,
         ease: 'easeInOut',
       }}
-      className={`flex flex-col bg-background rounded-l-xl ${isPortrait ? 'w-full' : ''} ${!isPortrait && isCollapsed ? 'overflow-visible' : ''}`}
+      className={`flex flex-col bg-background rounded-l-2xl ${isPortrait ? 'w-full' : ''} ${!isPortrait && isCollapsed ? 'overflow-visible' : ''}`}
     >
       {/* Tabs with collapse button - Always visible */}
       <div
@@ -576,24 +578,24 @@ export default function List({
             </div>
 
             {/* List Content - Scrollable with animation */}
-            <div
-              className={`flex-1 transition-opacity duration-200 ${isPending ? 'opacity-50' : 'opacity-100'} ${
-                isPortrait
-                  ? 'overflow-x-auto overflow-y-hidden pl-4'
-                  : 'overflow-y-auto overflow-x-hidden px-4 pb-4'
-              }`}
+            <ScrollShadow
+              className={`flex-1 transition-opacity duration-200 ${isPending ? 'opacity-50' : 'opacity-100'}`}
+              orientation={isPortrait ? 'horizontal' : 'vertical'}
+              hideScrollBar
+              size={60}
             >
-              <AnimatePresence mode="wait">
-                {activeTab === 'appointments' ? (
-                  // Appointments List
-                  <motion.div
-                    key="appointments"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ duration: 0.3, ease: 'easeInOut' }}
-                    className={isPortrait ? 'flex flex-row gap-3 h-full pr-4' : 'space-y-3'}
-                  >
+              <div className={isPortrait ? 'h-full pl-4' : 'px-4 pb-4'}>
+                  <AnimatePresence mode="wait">
+                    {activeTab === 'appointments' ? (
+                      // Appointments List
+                      <motion.div
+                        key="appointments"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                        className={isPortrait ? 'flex flex-row gap-3 h-full pr-4' : 'space-y-3'}
+                      >
                     {filteredAppointments.length === 0 ? (
                       <div className="text-center py-12 text-default-400">
                         <Calendar size={48} className="mx-auto mb-3 opacity-50" />
@@ -658,7 +660,7 @@ export default function List({
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.3, ease: 'easeInOut' }}
-                    className={isPortrait ? 'flex flex-row gap-3 h-full pr-4 p-1' : 'space-y-3'}
+                    className={isPortrait ? 'flex flex-row gap-3 h-full pr-4 p-1' : 'pt-1 space-y-3'}
                   >
                     {sortedOrders.length === 0 ? (
                       <div className="text-center py-12 text-default-400">
@@ -675,6 +677,7 @@ export default function List({
                           isPortrait={isPortrait}
                           onSelect={onOrderSelect!}
                           onAssignDriver={handleAssignDriver}
+                          onRoutePointClick={onRoutePointClick}
                           getStatusStyle={getStatusStyle}
                           getStatusLabel={getStatusLabel}
                           getStatusIcon={getStatusIcon}
@@ -684,7 +687,8 @@ export default function List({
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+              </div>
+            </ScrollShadow>
           </>
         )}
       </AnimatePresence>

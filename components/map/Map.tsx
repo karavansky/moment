@@ -110,6 +110,14 @@ interface MapProps {
   // Optional: Force specific center and zoom (e.g., for "show on map" button)
   forceCenter?: [number, number]
   forceZoom?: number
+
+  // Optional: Focus on specific route point
+  routePointFocus?: {
+    orderId: string
+    lat: number
+    lng: number
+    address: string
+  } | null
 }
 
 // Appointment Marker Component
@@ -190,28 +198,49 @@ function OrderMarker({
   position,
   icon,
   isSelected,
+  isFocused,
+  hasFocusedPoint,
   onSelect,
   children,
 }: {
   position: [number, number]
   icon: L.DivIcon
   isSelected: boolean
+  isFocused?: boolean
+  hasFocusedPoint?: boolean
   onSelect: () => void
   children: React.ReactNode
 }) {
   const markerRef = useRef<L.Marker>(null)
+  const [shouldShowPopup, setShouldShowPopup] = useState(false)
 
   useEffect(() => {
-    if (isSelected && markerRef.current) {
-      // Открываем popup с небольшой задержкой для pickup маркера
-      setTimeout(() => {
+    if (isFocused) {
+      // Эта точка сфокусирована - показываем ТОЛЬКО её
+      setShouldShowPopup(true)
+    } else if (hasFocusedPoint) {
+      // Есть другая сфокусированная точка в этом заказе - НЕ показываем эту
+      setShouldShowPopup(false)
+    } else if (isSelected) {
+      // Заказ выбран, но нет сфокусированных точек - показываем все точки
+      setShouldShowPopup(true)
+    } else {
+      setShouldShowPopup(false)
+    }
+  }, [isSelected, isFocused, hasFocusedPoint])
+
+  useEffect(() => {
+    if (shouldShowPopup && markerRef.current) {
+      // Открываем popup с небольшой задержкой
+      const timer = setTimeout(() => {
         markerRef.current?.openPopup()
-      }, 50)
-    } else if (!isSelected && markerRef.current) {
-      // Закрываем popup когда маркер не выбран
+      }, isFocused ? 300 : 100) // Больше задержка для focused точки
+      return () => clearTimeout(timer)
+    } else if (!shouldShowPopup && markerRef.current) {
+      // Закрываем popup когда не нужно показывать
       markerRef.current.closePopup()
     }
-  }, [isSelected])
+  }, [shouldShowPopup, isFocused])
 
   return (
     <Marker
@@ -359,6 +388,7 @@ const Map = React.memo(function Map({
   onAppointmentSelect,
   forceCenter,
   forceZoom,
+  routePointFocus,
 }: MapProps) {
   const lang = useLanguage()
   const { t } = useTranslation()
@@ -374,6 +404,7 @@ const Map = React.memo(function Map({
   const [mapZoom, setMapZoom] = useState<number | undefined>()
   const prevSelectedOrderId = useRef<string | null>(null)
   const prevSelectedAppointmentId = useRef<string | null>(null)
+  const [focusedRoutePoint, setFocusedRoutePoint] = useState<{ orderId: string; lat: number; lng: number } | null>(null)
 
   // Apply forced center/zoom (e.g., from "show on map" button)
   useEffect(() => {
@@ -382,6 +413,26 @@ const Map = React.memo(function Map({
       setMapZoom(forceZoom) // Will be undefined if not provided
     }
   }, [forceCenter, forceZoom])
+
+  // Handle route point focus from List component
+  useEffect(() => {
+    if (routePointFocus) {
+      setMapCenter([routePointFocus.lat, routePointFocus.lng])
+      setMapZoom(16) // Zoom in closer for specific point
+      setFocusedRoutePoint({
+        orderId: routePointFocus.orderId,
+        lat: routePointFocus.lat,
+        lng: routePointFocus.lng,
+      })
+      // Also select the order to keep popup open
+      if (onOrderSelect && selectedOrderId !== routePointFocus.orderId) {
+        onOrderSelect(routePointFocus.orderId)
+      }
+    } else if (routePointFocus === null) {
+      // Explicitly clear focused point when set to null
+      setFocusedRoutePoint(null)
+    }
+  }, [routePointFocus, onOrderSelect, selectedOrderId])
 
   // Update map center when appointment selection changes
   useEffect(() => {
@@ -557,6 +608,12 @@ const Map = React.memo(function Map({
                         position={[route.pickupLat, route.pickupLng]}
                         icon={pickupIcon}
                         isSelected={isSelected}
+                        isFocused={
+                          focusedRoutePoint?.orderId === order.id &&
+                          focusedRoutePoint.lat === route.pickupLat &&
+                          focusedRoutePoint.lng === route.pickupLng
+                        }
+                        hasFocusedPoint={focusedRoutePoint?.orderId === order.id}
                         onSelect={() => onOrderSelect?.(order.id)}
                       >
                         <Popup autoClose={false} closeOnClick={false}>
@@ -580,6 +637,12 @@ const Map = React.memo(function Map({
                       position={[route.dropoffLat, route.dropoffLng]}
                       icon={isLastRoute ? dropoffIcon : intermediateIcon}
                       isSelected={isSelected}
+                      isFocused={
+                        focusedRoutePoint?.orderId === order.id &&
+                        focusedRoutePoint.lat === route.dropoffLat &&
+                        focusedRoutePoint.lng === route.dropoffLng
+                      }
+                      hasFocusedPoint={focusedRoutePoint?.orderId === order.id}
                       onSelect={() => onOrderSelect?.(order.id)}
                     >
                       <Popup autoClose={false} closeOnClick={false}>
