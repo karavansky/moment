@@ -1,6 +1,6 @@
 {
   "name": "moment",
-  "version": "0.1.41",
+  "version": "0.1.42",
   "private": true,
   "scripts": {
     "dev": "PORT=3007 NEXT_TELEMETRY_DISABLED=1 next dev",
@@ -50,6 +50,7 @@
     "imap": "^0.8.17",
     "ioredis": "^5.10.0",
     "leaflet": "^1.9.4",
+    "leaflet-drift-marker": "^2.0.0",
     "leaflet-rotate": "^0.2.8",
     "lucide-react": "^0.577.0",
     "mailparser": "^3.9.4",

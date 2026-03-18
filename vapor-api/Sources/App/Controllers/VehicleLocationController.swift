@@ -128,6 +128,23 @@ struct VehicleLocationController: RouteCollection {
         return R * c
     }
 
+    /// Calculate bearing (direction) from point 1 to point 2 in degrees (0-360)
+    private func calculateBearing(lat1: Double, lng1: Double, lat2: Double, lng2: Double) -> Double {
+        let lat1Rad = lat1 * .pi / 180.0
+        let lat2Rad = lat2 * .pi / 180.0
+        let dLng = (lng2 - lng1) * .pi / 180.0
+
+        let y = sin(dLng) * cos(lat2Rad)
+        let x = cos(lat1Rad) * sin(lat2Rad) -
+                sin(lat1Rad) * cos(lat2Rad) * cos(dLng)
+
+        let bearingRad = atan2(y, x)
+        let bearingDeg = bearingRad * 180.0 / .pi
+
+        // Normalize to 0-360
+        return (bearingDeg + 360.0).truncatingRemainder(dividingBy: 360.0)
+    }
+
     // MARK: - POST /api/transport/location
     /// Update vehicle GPS coordinates (for drivers)
     func updateLocation(req: Request) async throws -> Response {
@@ -145,6 +162,61 @@ struct VehicleLocationController: RouteCollection {
 
         let body = try req.content.decode(Body.self)
 
+        guard let sql = req.db as? SQLDatabase else {
+            throw Abort(.internalServerError, reason: "Database does not support SQL")
+        }
+
+        // SERVER-SIDE VALIDATION: Get last position from DB
+        let lastPosition = try await sql.raw("""
+            SELECT "currentLat", "currentLng", "lastLocationUpdate"
+            FROM vehicles
+            WHERE "vehicleID" = \(bind: body.vehicleID)
+              AND "firmaID" = \(bind: firmaID)
+            """).first()
+
+        guard let lastRow = lastPosition else {
+            req.logger.warning("[GPS] Vehicle not found: \(body.vehicleID)")
+            throw Abort(.notFound, reason: "Vehicle not found")
+        }
+
+        // Validate GPS point against last known position
+        var bearing: Double? = nil
+        var speed: Double? = nil
+
+        if let lastLat = try? lastRow.decode(column: "currentLat", as: Double.self),
+           let lastLng = try? lastRow.decode(column: "currentLng", as: Double.self),
+           let lastUpdate = try? lastRow.decode(column: "lastLocationUpdate", as: Date.self) {
+
+            // Calculate distance and time delta
+            let dist = Self.distanceStatic(lat1: lastLat, lng1: lastLng,
+                                          lat2: body.latitude, lng2: body.longitude)
+            let timeDelta = Date().timeIntervalSince(lastUpdate)
+
+            // SERVER-SIDE BUSINESS RULE: Maximum realistic distance based on time
+            // At 130 km/h (highway speed), in 1 second you travel ~36 meters
+            // We allow up to 150 km/h as absolute maximum (42m/sec)
+            let maxDistancePerSecond = 42.0 // meters (150 km/h)
+            let maxRealisticDist = maxDistancePerSecond * max(timeDelta, 1.0)
+
+            if dist > maxRealisticDist {
+                req.logger.warning("[GPS] 🚫 Suspicious GPS jump detected: \(String(format: "%.1f", dist))m in \(String(format: "%.1f", timeDelta))s (max: \(String(format: "%.1f", maxRealisticDist))m)")
+                throw Abort(.badRequest, reason: "Invalid GPS point: unrealistic movement")
+            }
+
+            // Calculate bearing (server-side, hidden from client)
+            if dist > 3.0 { // Only calculate if moved more than 3 meters
+                bearing = calculateBearing(lat1: lastLat, lng1: lastLng,
+                                          lat2: body.latitude, lng2: body.longitude)
+            }
+
+            // Calculate speed (server-side, hidden from client)
+            if timeDelta > 0 {
+                speed = (dist / 1000.0) / (timeDelta / 3600.0) // km/h
+            }
+
+            req.logger.debug("[GPS] ✅ Validated: dist=\(String(format: "%.1f", dist))m, time=\(String(format: "%.1f", timeDelta))s, speed=\(String(format: "%.1f", speed ?? 0))km/h, bearing=\(String(format: "%.1f", bearing ?? 0))°")
+        }
+
         // Try to snap to road using OSRM
         let osrmURL = Environment.get("OSRM_URL") ?? "http://osrm:5000"
 
@@ -158,12 +230,8 @@ struct VehicleLocationController: RouteCollection {
             wasSnapped = true
         }
 
-        // Use raw SQL UPDATE for better performance (single DB operation instead of find + save)
+        // Update vehicle position
         let timestamp = Date()
-
-        guard let sql = req.db as? SQLDatabase else {
-            throw Abort(.internalServerError, reason: "Database does not support SQL")
-        }
 
         let updated = try await sql.raw("""
             UPDATE vehicles
@@ -176,7 +244,7 @@ struct VehicleLocationController: RouteCollection {
             """).first()
 
         guard let row = updated else {
-            req.logger.warning("[GPS] Vehicle not found: \(body.vehicleID)")
+            req.logger.warning("[GPS] Vehicle not found after update: \(body.vehicleID)")
             throw Abort(.notFound, reason: "Vehicle not found")
         }
 
@@ -196,6 +264,8 @@ struct VehicleLocationController: RouteCollection {
             var currentLng: Double
             var lastLocationUpdate: Date
             var wasSnapped: Bool
+            var bearing: Double?  // Server-calculated bearing (hidden business logic)
+            var speed: Double?    // Server-calculated speed in km/h (hidden business logic)
         }
 
         let dto = ResponseDTO(
@@ -204,7 +274,9 @@ struct VehicleLocationController: RouteCollection {
             currentLat: updatedLat,
             currentLng: updatedLng,
             lastLocationUpdate: updatedTime,
-            wasSnapped: wasSnapped
+            wasSnapped: wasSnapped,
+            bearing: bearing,
+            speed: speed
         )
 
         return try await dto.encodeResponse(for: req)

@@ -24,18 +24,27 @@ export function useVisibilityRefresh(onForegroundRefresh?: () => void) {
   }, [onForegroundRefresh])
 
   useEffect(() => {
+    console.log('[useVisibilityRefresh] Hook initialized')
+
     const handleVisibilityChange = () => {
+      console.log('[useVisibilityRefresh] visibilityState:', document.visibilityState)
+
       if (document.visibilityState === 'visible') {
+        console.log('[useVisibilityRefresh] 👁️ App became visible!')
         const currentDate = new Date()
 
         // 1. Проверяем, не наступил ли новый день за время "сна"
         if (currentDate.toDateString() !== today.toDateString()) {
+          console.log('[useVisibilityRefresh] 📅 Date changed! Updating today.')
           setToday(currentDate)
         }
 
         // 2. Выполняем фоновое обновление данных для восстановления актуального стейта (Double-Check 패턴)
         if (callbackRef.current) {
+          console.log('[useVisibilityRefresh] ✅ Calling onForegroundRefresh callback')
           callbackRef.current()
+        } else {
+          console.log('[useVisibilityRefresh] ⚠️ No callback provided')
         }
       }
     }
@@ -45,7 +54,10 @@ export function useVisibilityRefresh(onForegroundRefresh?: () => void) {
     // Также можно добавить обработчик 'focus' окна для десктопных браузеров как fallback
     window.addEventListener('focus', handleVisibilityChange)
 
+    console.log('[useVisibilityRefresh] Event listeners attached')
+
     return () => {
+      console.log('[useVisibilityRefresh] Cleaning up event listeners')
       document.removeEventListener('visibilitychange', handleVisibilityChange)
       window.removeEventListener('focus', handleVisibilityChange)
     }

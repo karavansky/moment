@@ -112,6 +112,25 @@ export default function DriverPage({ params }: DriverPageProps) {
   const BUFFER_SIZE = 2 // Wait for 2 points before starting animation
   const isBufferReadyRef = useRef(false) // Track if we've started animating
 
+  // Track current interpolated position in a ref (to avoid stale closure in setLocalVehicle callback)
+  const currentInterpolatedPosRef = useRef<{ lat: number; lng: number } | null>(null)
+
+  // Track if interpolation animation is currently running
+  const isInterpolatingRef = useRef<boolean>(false)
+
+  // 🛠️ FIX: Use refs for interpolation params to avoid React re-render delays
+  const interpolationParamsRef = useRef<{
+    startPos: { lat: number; lng: number } | null
+    endPos: { lat: number; lng: number } | null
+    startTime: number | null
+    duration: number
+  }>({
+    startPos: null,
+    endPos: null,
+    startTime: null,
+    duration: GPS_UPDATE_INTERVAL,
+  })
+
   // Interpolation state for smooth marker movement
   const [interpolatedPosition, setInterpolatedPosition] = useState<{ lat: number; lng: number } | null>(null)
   const [interpolationParams, setInterpolationParams] = useState<{
@@ -154,26 +173,76 @@ export default function DriverPage({ params }: DriverPageProps) {
 
   // Smooth interpolation animation for marker movement
   useEffect(() => {
+    // 🔍 DIAGNOSTIC: Log every time useEffect runs (even if early return)
+    console.log('[Test Interpolation] 🔄 useEffect RAN (dependencies changed):', {
+      hasStartPos: !!interpolationParams.startPos,
+      hasEndPos: !!interpolationParams.endPos,
+      hasStartTime: !!interpolationParams.startTime,
+      startPosLat: interpolationParams.startPos?.lat,
+      startPosLng: interpolationParams.startPos?.lng,
+      endPosLat: interpolationParams.endPos?.lat,
+      endPosLng: interpolationParams.endPos?.lng,
+      startTime: interpolationParams.startTime,
+      duration: interpolationParams.duration,
+    })
+
     if (!interpolationParams.startPos || !interpolationParams.endPos || !interpolationParams.startTime) {
+      console.log('[Test Interpolation] ⏸️ Early return - missing required params')
       return // No interpolation active
     }
 
+    console.log('[Test Interpolation] 🎬 Starting NEW interpolation (useEffect triggered):', {
+      from: interpolationParams.startPos,
+      to: interpolationParams.endPos,
+      duration: interpolationParams.duration,
+      startTime: new Date(interpolationParams.startTime).toISOString(),
+    })
+
+    // 🛠️ FIX: Sync ref with state
+    interpolationParamsRef.current = {
+      startPos: interpolationParams.startPos,
+      endPos: interpolationParams.endPos,
+      startTime: interpolationParams.startTime,
+      duration: interpolationParams.duration,
+    }
+
+    // 🛠️ FIX: Mark interpolation as active
+    isInterpolatingRef.current = true
+
     let animationFrameId: number
+    let lastFrameTime = Date.now()
+    let frameCount = 0
 
     const animate = () => {
       const now = Date.now()
-      const elapsed = now - interpolationParams.startTime!
-      const progress = Math.min(elapsed / interpolationParams.duration, 1) // Clamp to [0, 1]
+      const params = interpolationParamsRef.current // 🛠️ FIX: Read from ref!
+      const elapsed = now - params.startTime!
+      const progress = Math.min(elapsed / params.duration, 1) // Clamp to [0, 1]
 
-      // Easing function (ease-out-quad) for smooth deceleration
-      const easeOutQuad = (t: number) => t * (2 - t)
-      const easedProgress = easeOutQuad(progress)
+      // 🔍 DIAGNOSTIC: Log frame timing to detect pauses
+      const timeSinceLastFrame = now - lastFrameTime
+      if (timeSinceLastFrame > 30) { // More than 30ms between frames = pause!
+        console.log('[Test Interpolation] ⚠️ FRAME PAUSE DETECTED:', {
+          timeSinceLastFrame: `${timeSinceLastFrame}ms`,
+          progress: `${(progress * 100).toFixed(1)}%`,
+          elapsed: `${elapsed}ms`,
+        })
+      }
+      lastFrameTime = now
+      frameCount++
+
+      // 🛠️ FIX: Use LINEAR easing for constant speed (no deceleration)
+      // This prevents visual pauses when transitioning between GPS points
+      const easedProgress = progress
 
       // Linear interpolation (lerp) between start and end positions
-      const lat = interpolationParams.startPos!.lat + (interpolationParams.endPos!.lat - interpolationParams.startPos!.lat) * easedProgress
-      const lng = interpolationParams.startPos!.lng + (interpolationParams.endPos!.lng - interpolationParams.startPos!.lng) * easedProgress
+      const lat = params.startPos!.lat + (params.endPos!.lat - params.startPos!.lat) * easedProgress
+      const lng = params.startPos!.lng + (params.endPos!.lng - params.startPos!.lng) * easedProgress
 
       setInterpolatedPosition({ lat, lng })
+
+      // 🛠️ FIX: Store interpolated position in ref so it can be read synchronously
+      currentInterpolatedPosRef.current = { lat, lng }
 
       // Update localVehicle with interpolated position for map display
       setLocalVehicle(prev => prev ? {
@@ -187,9 +256,49 @@ export default function DriverPage({ params }: DriverPageProps) {
         animationFrameId = requestAnimationFrame(animate)
       } else {
         // Animation complete
-        console.log('✅ Interpolation complete:', {
+        console.log('[Test Interpolation] ✅ Interpolation complete:', {
           finalPosition: { lat, lng },
+          totalElapsed: `${elapsed}ms`,
+          expectedDuration: `${params.duration}ms`,
+          bufferSize: gpsBufferRef.current.length,
         })
+
+        // 🛠️ FIX: If there are more points in buffer, continue animation seamlessly!
+        if (gpsBufferRef.current.length > 0) {
+          const nextPoint = gpsBufferRef.current.shift()!
+
+          // 🛠️ FIX: Calculate duration based on time between GPS points
+          const timeBetweenPoints = lastGPSTimestampRef.current > 0 && nextPoint.timestamp
+            ? nextPoint.timestamp - lastGPSTimestampRef.current
+            : GPS_UPDATE_INTERVAL
+          const nextDuration = Math.min(Math.max(timeBetweenPoints, 100), 10000) // Clamp between 100ms and 10s
+
+          console.log('[Test Interpolation] ⏭️ Continuing animation with next point from buffer (UPDATING REF ONLY):', {
+            bufferRemaining: gpsBufferRef.current.length,
+            nextPoint,
+            duration: `${nextDuration}ms`,
+            timeBetweenPoints: `${timeBetweenPoints}ms`,
+            lastTimestamp: lastGPSTimestampRef.current,
+            nextTimestamp: nextPoint.timestamp,
+          })
+
+          // Update last timestamp for next calculation
+          lastGPSTimestampRef.current = nextPoint.timestamp
+
+          // 🛠️ FIX: Update REF directly (NOT state!) to avoid React re-render
+          interpolationParamsRef.current = {
+            startPos: { lat, lng },
+            endPos: { lat: nextPoint.lat, lng: nextPoint.lng },
+            startTime: Date.now(),
+            duration: nextDuration,
+          }
+
+          // Continue animation loop seamlessly
+          animationFrameId = requestAnimationFrame(animate)
+        } else {
+          // No more points in buffer - stop animation
+          isInterpolatingRef.current = false
+        }
       }
     }
 
@@ -198,10 +307,20 @@ export default function DriverPage({ params }: DriverPageProps) {
 
     return () => {
       if (animationFrameId) {
+        console.log('[Test Interpolation] 🛑 Cancelling previous interpolation animation (new one starting)')
         cancelAnimationFrame(animationFrameId)
+        // 🛠️ FIX: Mark interpolation as inactive when cancelled
+        isInterpolatingRef.current = false
       }
     }
-  }, [interpolationParams.startTime]) // Re-run when new interpolation starts
+  }, [
+    interpolationParams.startTime,
+    interpolationParams.startPos?.lat,
+    interpolationParams.startPos?.lng,
+    interpolationParams.endPos?.lat,
+    interpolationParams.endPos?.lng,
+    interpolationParams.duration
+  ]) // 🛠️ FIX: Depend on primitive values (lat/lng), not object references!
 
   // Orders assigned to this driver
   const myOrders = useMemo(() => {
@@ -216,22 +335,33 @@ export default function DriverPage({ params }: DriverPageProps) {
   const isPortrait = useIsPortrait()
 
   // Handle app returning from background (PWA visibility change)
-  useVisibilityRefresh(() => {
-    console.log('👁️ App returned to foreground - checking GPS tracking')
+  // 🛠️ FIX: Use useCallback to ensure callback has fresh values
+  const handleForegroundRefresh = useCallback(() => {
+    console.log('[Driver] 👁️ App returned to foreground - checking GPS tracking', {
+      hasVehicle: !!myVehicle,
+      isTracking,
+      vehicleID: myVehicle?.id,
+    })
 
     // Restart GPS tracking if it stopped
     if (myVehicle && !isTracking) {
-      console.log('🔄 GPS tracking stopped - restarting...')
+      console.log('[Driver] 🔄 GPS tracking stopped - restarting...', myVehicle.id)
       requestPermission().then((granted) => {
         if (granted) {
-          console.log('✅ GPS permission granted, restarting tracking...')
+          console.log('[Driver] ✅ GPS permission granted, restarting tracking...')
           startTracking(myVehicle.id)
+        } else {
+          console.log('[Driver] ❌ GPS permission denied')
         }
       })
     } else if (isTracking) {
-      console.log('✅ GPS tracking still active')
+      console.log('[Driver] ✅ GPS tracking still active')
+    } else if (!myVehicle) {
+      console.log('[Driver] ⚠️ No vehicle assigned to driver')
     }
-  })
+  }, [myVehicle, isTracking, requestPermission, startTracking])
+
+  useVisibilityRefresh(handleForegroundRefresh)
 
   // Order status filter state
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'ALL'>('ALL')
@@ -592,17 +722,6 @@ export default function DriverPage({ params }: DriverPageProps) {
               timestamp: data.lastLocationUpdate,
             })
 
-            // Send GPS log event for debug logger
-            window.dispatchEvent(new CustomEvent('gps-log-event', {
-              detail: {
-                browserLat: position.latitude,
-                browserLng: position.longitude,
-                snapLat: newLat,
-                snapLng: newLng,
-                wasSnapped: data.wasSnapped,
-              }
-            }))
-
             // Add point to buffer
             gpsBufferRef.current.push({
               lat: newLat,
@@ -775,13 +894,28 @@ export default function DriverPage({ params }: DriverPageProps) {
           <button
             onClick={async () => {
               // Load test route from JSON file
-              console.log('🧪 Loading test route...')
+              console.log('[Test] 🧪 Loading test route...')
+
+              // 🛠️ FIX: Reset all GPS state before starting test route
+              console.log('[Test] 🔄 Resetting GPS state...')
+              gpsBufferRef.current = []
+              isBufferReadyRef.current = false
+              lastGPSTimestampRef.current = 0
+              currentInterpolatedPosRef.current = null // Reset interpolated position ref
+              isInterpolatingRef.current = false // Reset interpolation state
+              setInterpolationParams({
+                startPos: null,
+                endPos: null,
+                startTime: null,
+                duration: GPS_UPDATE_INTERVAL,
+              })
+              console.log('[Test] ✅ GPS state reset complete')
 
               try {
                 const response = await fetch('/test-routes/burgstrasse-route.json')
                 const route = await response.json()
 
-                console.log('🧪 Test route loaded:', {
+                console.log('[Test] 🧪 Test route loaded:', {
                   name: route.name,
                   points: route.points.length,
                   speedKmh: route.speedKmh,
@@ -790,7 +924,7 @@ export default function DriverPage({ params }: DriverPageProps) {
                 // Convert route points to coordinate array for polyline display
                 const routeCoords: Array<[number, number]> = route.points.map((p: any) => [p.lat, p.lng])
                 setTestRouteCoordinates(routeCoords)
-                console.log('🗺️ Route polyline set with', routeCoords.length, 'points')
+                console.log('[Test] 🗺️ Route polyline set with', routeCoords.length, 'points')
 
                 let currentIndex = 0
                 const updateInterval = route.updateIntervalMs || 2000
@@ -798,15 +932,17 @@ export default function DriverPage({ params }: DriverPageProps) {
                 let lastTestTime = Date.now()
 
                 const testInterval = setInterval(() => {
+                  // 🛠️ FIX: Capture interval fire time (not fetch completion time!)
+                  const intervalFireTime = Date.now()
                   if (currentIndex >= route.points.length) {
                     clearInterval(testInterval)
                     setTestRouteCoordinates(null) // Clear route from map
-                    console.log('🧪 ✅ Test route complete! Route cleared from map.')
+                    console.log('[Test] 🧪 ✅ Test route complete! Route cleared from map.')
                     return
                   }
 
                   const currentPoint = route.points[currentIndex]
-                  console.log(`🧪 [${currentIndex + 1}/${route.points.length}] GPS:`, {
+                  console.log(`[Test] 🧪 [${currentIndex + 1}/${route.points.length}] GPS:`, {
                     lat: currentPoint.lat,
                     lng: currentPoint.lng,
                   })
@@ -822,7 +958,7 @@ export default function DriverPage({ params }: DriverPageProps) {
 
                     if (dist > 5) {
                       const newBearing = bearing(from, to)
-                      console.log('🧪 🧭 Bearing & Speed:', {
+                      console.log('[Test] 🧪 🧭 Bearing & Speed:', {
                         distance: `${dist.toFixed(1)}m`,
                         speed: `${speedKmH.toFixed(1)} km/h`,
                         bearing: `${newBearing.toFixed(1)}°`,
@@ -850,42 +986,125 @@ export default function DriverPage({ params }: DriverPageProps) {
                       .then(res => res.json())
                       .then(data => {
                         if (data.success) {
-                          console.log(`🧪 ✅ Point ${currentIndex + 1} updated, wasSnapped: ${data.wasSnapped}`)
+                          console.log(`[Test] 🧪 ✅ Point ${currentIndex + 1} updated, wasSnapped: ${data.wasSnapped}`)
 
                           const newLat = data.currentLat || currentPoint.lat
                           const newLng = data.currentLng || currentPoint.lng
 
-                          // Send GPS log event for debug logger
-                          window.dispatchEvent(new CustomEvent('gps-log-event', {
-                            detail: {
-                              browserLat: currentPoint.lat,
-                              browserLng: currentPoint.lng,
-                              snapLat: newLat,
-                              snapLng: newLng,
-                              wasSnapped: data.wasSnapped,
-                            }
-                          }))
+                          // 🛠️ FIX: Use intervalFireTime for consistent timing (not fetch completion time!)
+                          const fetchCompleteTime = Date.now()
+                          const networkLatency = fetchCompleteTime - intervalFireTime
 
-                          // Start interpolation (same logic as GPS update)
+                          console.log('[Test] 🧪 📦 Point received:', {
+                            index: currentIndex,
+                            networkLatency: `${networkLatency}ms`,
+                            wasSnapped: data.wasSnapped,
+                          })
+
+                          // Use SAME buffering logic as real GPS
+                          gpsBufferRef.current.push({
+                            lat: newLat,
+                            lng: newLng,
+                            timestamp: intervalFireTime, // 🛠️ FIX: Use interval fire time, not fetch completion!
+                          })
+
+                          console.log('[Test] 🧪 📥 GPS point added to buffer:', {
+                            bufferSize: gpsBufferRef.current.length,
+                            bufferReady: isBufferReadyRef.current,
+                          })
+
+                          // Wait until we have at least BUFFER_SIZE points before starting animation
+                          if (!isBufferReadyRef.current && gpsBufferRef.current.length < BUFFER_SIZE) {
+                            console.log('[Test] 🧪 ⏳ Buffering GPS points... waiting for', BUFFER_SIZE - gpsBufferRef.current.length, 'more points')
+
+                            // Set initial position without animation
+                            // 🛠️ FIX: Update interpolated position ref during buffering
+                            currentInterpolatedPosRef.current = { lat: newLat, lng: newLng }
+
+                            setLocalVehicle(prev => prev ? {
+                              ...prev,
+                              currentLat: newLat,
+                              currentLng: newLng,
+                              lastLocationUpdate: new Date(data.lastLocationUpdate),
+                            } : null)
+
+                            return
+                          }
+
+                          // Buffer is ready - start continuous animation
+                          if (!isBufferReadyRef.current) {
+                            console.log('[Test] 🧪 ✅ Buffer ready - starting continuous animation with', gpsBufferRef.current.length, 'points')
+                            isBufferReadyRef.current = true
+                          }
+
+                          // 🛠️ FIX: Don't start new interpolation if current one is still running!
+                          if (isInterpolatingRef.current) {
+                            console.log('[Test] 🧪 ⏭️ Interpolation already running - point queued in buffer:', {
+                              bufferSize: gpsBufferRef.current.length,
+                              currentlyInterpolating: true,
+                            })
+                            return // Wait for current interpolation to complete
+                          }
+
+                          // Get the next point to animate to (oldest in buffer)
+                          const targetPoint = gpsBufferRef.current.shift()! // Remove first point
+
+                          // 🛠️ FIX: Calculate dynamic interpolation duration based on target point timestamp
+                          const timeSinceLastUpdate = lastGPSTimestampRef.current > 0 && targetPoint.timestamp
+                            ? targetPoint.timestamp - lastGPSTimestampRef.current
+                            : GPS_UPDATE_INTERVAL
+
+                          const interpolationDuration = Math.min(Math.max(timeSinceLastUpdate, 100), 10000) // Clamp between 100ms and 10s
+                          lastGPSTimestampRef.current = targetPoint.timestamp // 🛠️ FIX: Save target point timestamp!
+
+                          // 🛠️ FIX: Get current position from ref (updated by interpolation animation)
+                          // Fallback chain: ref → localVehicle → targetPoint
+                          const currentPos = currentInterpolatedPosRef.current
+                            ? { lat: currentInterpolatedPosRef.current.lat, lng: currentInterpolatedPosRef.current.lng }
+                            : localVehicle && localVehicle.currentLat && localVehicle.currentLng
+                            ? { lat: localVehicle.currentLat, lng: localVehicle.currentLng }
+                            : { lat: targetPoint.lat, lng: targetPoint.lng }
+
+                          // 🛠️ FIX: Call setInterpolationParams OUTSIDE setLocalVehicle!
+                          if (currentPos.lat !== targetPoint.lat || currentPos.lng !== targetPoint.lng) {
+                            console.log('[Test] 🧪 🎬 Starting interpolation:', {
+                              from: currentPos,
+                              to: { lat: targetPoint.lat, lng: targetPoint.lng },
+                              duration: `${interpolationDuration}ms`,
+                              timeSinceLastUpdate: `${timeSinceLastUpdate}ms`,
+                              bufferRemaining: gpsBufferRef.current.length,
+                              expectedDuration: `${updateInterval}ms`, // Should match this!
+                            })
+
+                            // 🔍 DIAGNOSTIC: Log what we're about to set and what dependencies would be
+                            console.log('[Test] 🔍 setInterpolationParams will be called with:', {
+                              startPos: currentPos,
+                              endPos: { lat: targetPoint.lat, lng: targetPoint.lng },
+                              startTime: Date.now(),
+                              duration: interpolationDuration,
+                              prevStartPosLat: interpolationParams.startPos?.lat,
+                              prevStartPosLng: interpolationParams.startPos?.lng,
+                              prevEndPosLat: interpolationParams.endPos?.lat,
+                              prevEndPosLng: interpolationParams.endPos?.lng,
+                              prevDuration: interpolationParams.duration,
+                              willTriggerUseEffect:
+                                currentPos.lat !== interpolationParams.startPos?.lat ||
+                                currentPos.lng !== interpolationParams.startPos?.lng ||
+                                targetPoint.lat !== interpolationParams.endPos?.lat ||
+                                targetPoint.lng !== interpolationParams.endPos?.lng ||
+                                interpolationDuration !== interpolationParams.duration
+                            })
+
+                            setInterpolationParams({
+                              startPos: currentPos,
+                              endPos: { lat: targetPoint.lat, lng: targetPoint.lng },
+                              startTime: Date.now(),
+                              duration: interpolationDuration,
+                            })
+                          }
+
+                          // Update localVehicle state
                           setLocalVehicle(prev => {
-                            const currentPos = prev && prev.currentLat && prev.currentLng
-                              ? { lat: prev.currentLat, lng: prev.currentLng }
-                              : { lat: newLat, lng: newLng }
-
-                            if (currentPos.lat !== newLat || currentPos.lng !== newLng) {
-                              console.log('🎬 Test: Starting interpolation:', {
-                                from: currentPos,
-                                to: { lat: newLat, lng: newLng },
-                              })
-
-                              setInterpolationParams({
-                                startPos: currentPos,
-                                endPos: { lat: newLat, lng: newLng },
-                                startTime: Date.now(),
-                                duration: 2000,
-                              })
-                            }
-
                             return prev ? {
                               ...prev,
                               lastLocationUpdate: new Date(data.lastLocationUpdate),
@@ -893,15 +1112,15 @@ export default function DriverPage({ params }: DriverPageProps) {
                           })
                         }
                       })
-                      .catch(err => console.error('🧪 ❌ Error:', err))
+                      .catch(err => console.error('[Test] 🧪 ❌ Error:', err))
                   }
 
                   currentIndex++
                 }, updateInterval)
 
-                console.log(`🧪 Starting route playback (${route.points.length} points, ${updateInterval}ms interval)`)
+                console.log(`[Test] 🧪 Starting route playback (${route.points.length} points, ${updateInterval}ms interval)`)
               } catch (error) {
-                console.error('🧪 ❌ Failed to load test route:', error)
+                console.error('[Test] 🧪 ❌ Failed to load test route:', error)
               }
             }}
             className="px-3 py-1 text-xs bg-purple-500 text-white rounded-md hover:bg-purple-600"

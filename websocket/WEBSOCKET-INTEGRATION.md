@@ -1584,6 +1584,607 @@ SAVINGS: $2,074 - $509 = $1,565/month 🎉
 
 ---
 
+## 🛡️ Server-Side Validation для WebSocket (20k водителей)
+
+### Проблема: Валидация только на клиенте - угроза безопасности
+
+В текущей реализации (HTTP REST `/api/transport/location`) все GPS валидации и расчеты уже **ПРАВИЛЬНО** выполняются на сервере:
+
+**✅ Что УЖЕ защищено** ([VehicleLocationController.swift:152-218](../vapor-api/Sources/App/Controllers/VehicleLocationController.swift#L152-L218)):
+
+```swift
+// SERVER-SIDE VALIDATION (текущая HTTP реализация)
+
+// 1. Получаем последнюю известную позицию из DB
+let lastPosition = try await sql.raw("""
+    SELECT "currentLat", "currentLng", "lastLocationUpdate"
+    FROM vehicles
+    WHERE "vehicleID" = \(bind: body.vehicleID)
+      AND "firmaID" = \(bind: firmaID)
+    """).first()
+
+// 2. Проверка реалистичности перемещения
+let dist = Self.distanceStatic(lat1: lastLat, lng1: lastLng,
+                              lat2: body.latitude, lng2: body.longitude)
+let timeDelta = Date().timeIntervalSince(lastUpdate)
+
+// SERVER-SIDE BUSINESS RULE: Maximum realistic distance based on time
+// At 130 km/h (highway speed), in 1 second you travel ~36 meters
+// We allow up to 150 km/h as absolute maximum (42m/sec)
+let maxDistancePerSecond = 42.0 // meters (150 km/h)
+let maxRealisticDist = maxDistancePerSecond * max(timeDelta, 1.0)
+
+if dist > maxRealisticDist {
+    req.logger.warning("[GPS] 🚫 Suspicious GPS jump detected")
+    throw Abort(.badRequest, reason: "Invalid GPS point: unrealistic movement")
+}
+
+// 3. Server-calculated bearing (hidden from client - business logic)
+if dist > 3.0 {
+    bearing = calculateBearing(lat1: lastLat, lng1: lastLng,
+                              lat2: body.latitude, lng2: body.longitude)
+}
+
+// 4. Server-calculated speed (hidden from client - business logic)
+if timeDelta > 0 {
+    speed = (dist / 1000.0) / (timeDelta / 3600.0) // km/h
+}
+```
+
+**Почему это критично?**
+- ❌ Клиентский код (JavaScript/TypeScript) легко деобфусцируется
+- ❌ DevTools позволяют модифицировать любые переменные
+- ❌ Service Worker может подменять fetch() запросы
+- ✅ **Вся бизнес-логика ДОЛЖНА быть на сервере!**
+
+---
+
+### WebSocket реализация с валидацией (идентично HTTP)
+
+При переходе на WebSocket **ОБЯЗАТЕЛЬНО** сохранить все серверные валидации:
+
+```swift
+// websocket/Sources/Hello/routes.swift
+
+app.webSocket("driver") { req, ws in
+    // 1. Аутентификация (см. выше)
+    guard let authUser = try await authMiddleware.validateToken(token, req: req) else {
+        _ = ws.close(code: .policyViolation)
+        return
+    }
+
+    // 2. Обработка GPS точек
+    ws.onText { ws, text in
+        guard let data = text.data(using: .utf8),
+              let message = try? JSONDecoder().decode(ClientMessage.self, from: data) else {
+            return
+        }
+
+        switch message.type {
+        case "location":
+            // 🛡️ SERVER-SIDE VALIDATION (КРИТИЧНО!)
+            try await validateAndSaveGPSPoint(
+                userId: authUser.userId,
+                firmaID: authUser.firmaID,
+                vehicleID: message.vehicleID,
+                lat: message.lat,
+                lng: message.lng,
+                req: req
+            )
+        }
+    }
+}
+```
+
+**Функция валидации (идентична HTTP версии)**:
+
+```swift
+// websocket/Sources/Hello/Controllers/GPSValidator.swift
+
+import Vapor
+import Fluent
+
+struct GPSValidator {
+    /// Validate and save GPS point with server-side business rules
+    static func validateAndSaveGPSPoint(
+        userId: String,
+        firmaID: String,
+        vehicleID: String,
+        lat: Double,
+        lng: Double,
+        req: Request
+    ) async throws -> GPSValidationResult {
+
+        guard let sql = req.db as? SQLDatabase else {
+            throw Abort(.internalServerError)
+        }
+
+        // 1. GET LAST KNOWN POSITION FROM DB (SERVER SOURCE OF TRUTH)
+        let lastPosition = try await sql.raw("""
+            SELECT "currentLat", "currentLng", "lastLocationUpdate"
+            FROM vehicles
+            WHERE "vehicleID" = \(bind: vehicleID)
+              AND "firmaID" = \(bind: firmaID)
+            """).first()
+
+        guard let lastRow = lastPosition else {
+            req.logger.warning("[GPS] Vehicle not found: \(vehicleID)")
+            throw Abort(.notFound, reason: "Vehicle not found")
+        }
+
+        var bearing: Double? = nil
+        var speed: Double? = nil
+
+        if let lastLat = try? lastRow.decode(column: "currentLat", as: Double.self),
+           let lastLng = try? lastRow.decode(column: "currentLng", as: Double.self),
+           let lastUpdate = try? lastRow.decode(column: "lastLocationUpdate", as: Date.self) {
+
+            // 2. CALCULATE DISTANCE AND TIME (SERVER-SIDE)
+            let dist = VehicleLocationController.distanceStatic(
+                lat1: lastLat, lng1: lastLng,
+                lat2: lat, lng2: lng
+            )
+            let timeDelta = Date().timeIntervalSince(lastUpdate)
+
+            // 3. BUSINESS RULE: MAXIMUM SPEED VALIDATION (SERVER-SIDE)
+            // At 130 km/h (highway speed), in 1 second you travel ~36 meters
+            // We allow up to 150 km/h as absolute maximum (42m/sec)
+            let maxDistancePerSecond = 42.0 // meters (150 km/h)
+            let maxRealisticDist = maxDistancePerSecond * max(timeDelta, 1.0)
+
+            if dist > maxRealisticDist {
+                req.logger.warning("""
+                    [GPS] 🚫 Suspicious GPS jump detected: \
+                    \(String(format: "%.1f", dist))m in \(String(format: "%.1f", timeDelta))s \
+                    (max: \(String(format: "%.1f", maxRealisticDist))m)
+                    """)
+
+                throw Abort(.badRequest, reason: "Invalid GPS point: unrealistic movement")
+            }
+
+            // 4. CALCULATE BEARING (SERVER-SIDE, HIDDEN FROM CLIENT)
+            if dist > 3.0 {
+                bearing = VehicleLocationController.calculateBearing(
+                    lat1: lastLat, lng1: lastLng,
+                    lat2: lat, lng2: lng
+                )
+            }
+
+            // 5. CALCULATE SPEED (SERVER-SIDE, HIDDEN FROM CLIENT)
+            if timeDelta > 0 {
+                speed = (dist / 1000.0) / (timeDelta / 3600.0) // km/h
+            }
+
+            req.logger.debug("""
+                [GPS] ✅ Validated: dist=\(String(format: "%.1f", dist))m, \
+                time=\(String(format: "%.1f", timeDelta))s, \
+                speed=\(String(format: "%.1f", speed ?? 0))km/h, \
+                bearing=\(String(format: "%.1f", bearing ?? 0))°
+                """)
+        }
+
+        // 6. SNAP TO ROAD (SERVER-SIDE, OSRM)
+        let osrmURL = Environment.get("OSRM_URL") ?? "http://osrm:5000"
+        var finalLat = lat
+        var finalLng = lng
+        var wasSnapped = false
+
+        if let snapped = try await VehicleLocationController.snapToRoadStatic(
+            lat: lat, lng: lng, osrmURL: osrmURL, req: req
+        ) {
+            finalLat = snapped.lat
+            finalLng = snapped.lng
+            wasSnapped = true
+        }
+
+        // 7. UPDATE DATABASE (SERVER-SIDE, ATOMIC)
+        let timestamp = Date()
+
+        _ = try await sql.raw("""
+            UPDATE vehicles
+            SET "currentLat" = \(bind: finalLat),
+                "currentLng" = \(bind: finalLng),
+                "lastLocationUpdate" = \(bind: timestamp)
+            WHERE "vehicleID" = \(bind: vehicleID)
+              AND "firmaID" = \(bind: firmaID)
+            RETURNING "vehicleID", "plateNumber"
+            """).first()
+
+        req.logger.debug("[GPS] Updated vehicle: \(vehicleID), snapped=\(wasSnapped)")
+
+        // 8. RETURN SERVER-CALCULATED VALUES
+        return GPSValidationResult(
+            success: true,
+            vehicleID: vehicleID,
+            currentLat: finalLat,
+            currentLng: finalLng,
+            lastLocationUpdate: timestamp,
+            wasSnapped: wasSnapped,
+            bearing: bearing,  // Server-calculated (hidden business logic)
+            speed: speed       // Server-calculated (hidden business logic)
+        )
+    }
+}
+
+struct GPSValidationResult: Content {
+    var success: Bool
+    var vehicleID: String
+    var currentLat: Double
+    var currentLng: Double
+    var lastLocationUpdate: Date
+    var wasSnapped: Bool
+    var bearing: Double?  // Server-calculated (NOT from client!)
+    var speed: Double?    // Server-calculated (NOT from client!)
+}
+```
+
+---
+
+### Сравнение: HTTP vs WebSocket валидация
+
+| Aspect | HTTP REST | WebSocket | Difference |
+|--------|-----------|-----------|------------|
+| **Аутентификация** | JWT в header | JWT в query/cookie | ✅ Идентично |
+| **GPS validation** | Server-side | Server-side | ✅ Идентично |
+| **Max speed check** | 150 km/h (42m/s) | 150 km/h (42m/s) | ✅ Идентично |
+| **Bearing calc** | Server-side | Server-side | ✅ Идентично |
+| **Speed calc** | Server-side | Server-side | ✅ Идентично |
+| **OSRM snap** | Server-side cache | Server-side cache | ✅ Идентично |
+| **DB update** | UPDATE...RETURNING | UPDATE...RETURNING | ✅ Идентично |
+| **Response** | JSON DTO | JSON через WebSocket | ✅ Идентично |
+
+**ВЫВОД**: WebSocket НЕ меняет security model! Все валидации остаются на сервере.
+
+---
+
+### Архитектура валидации для 20k водителей
+
+```
+┌──────────────────┐
+│  20k Drivers     │
+│  (Browser/PWA)   │
+└────────┬─────────┘
+         │ wss://ws.moment-lbs.app/driver?token=JWT
+         │
+         ▼
+┌────────────────────────────────────────┐
+│    Nginx Load Balancer (ip_hash)      │
+│                                        │
+│  🛡️ SECURITY LAYER 1:                 │
+│    - Rate limiting (1000 conn/IP)     │
+│    - SSL/TLS termination              │
+│    - DDoS protection                  │
+└────────┬───────────────────────────────┘
+         │
+    ┌────┴────┬────────┬────────┐
+    ▼         ▼        ▼        ▼
+┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐
+│ WS-1   │ │ WS-2   │ │ WS-3   │ │ WS-4   │
+│ (5k)   │ │ (5k)   │ │ (5k)   │ │ (5k)   │
+│        │ │        │ │        │ │        │
+│ 🛡️ SEC │ │ 🛡️ SEC │ │ 🛡️ SEC │ │ 🛡️ SEC │
+│ LAY 2: │ │ LAY 2: │ │ LAY 2: │ │ LAY 2: │
+│        │ │        │ │        │ │        │
+│ - JWT  │ │ - JWT  │ │ - JWT  │ │ - JWT  │
+│ - Sess │ │ - Sess │ │ - Sess │ │ - Sess │
+│   val  │ │   val  │ │   val  │ │   val  │
+└────┬───┘ └────┬───┘ └────┬───┘ └────┬───┘
+     │          │          │          │
+     └──────────┴──────────┴──────────┘
+                │
+                ▼
+     ┌──────────────────────┐
+     │  GPSValidator.swift  │
+     │                      │
+     │  🛡️ SECURITY LAYER 3:│
+     │                      │
+     │  1. Get last pos     │
+     │     from DB          │
+     │                      │
+     │  2. Validate dist    │
+     │     (max 42m/sec)    │
+     │                      │
+     │  3. Calculate        │
+     │     bearing (server) │
+     │                      │
+     │  4. Calculate        │
+     │     speed (server)   │
+     │                      │
+     │  5. OSRM snap        │
+     │     (server cache)   │
+     │                      │
+     │  6. DB UPDATE        │
+     │     (atomic)         │
+     └──────────┬───────────┘
+                │
+                ▼
+     ┌──────────────────────┐
+     │    PostgreSQL        │
+     │  (Connection Pool)   │
+     │                      │
+     │  64 connections      │
+     │  66 UPDATE/sec       │
+     │  (batched)           │
+     └──────────────────────┘
+```
+
+**3 уровня защиты**:
+
+1. **Nginx Layer**: DDoS, rate limiting, SSL
+2. **WebSocket Layer**: JWT auth, session validation
+3. **Business Logic Layer**: GPS validation, server-side calculations
+
+---
+
+### Что НЕ ДОЛЖНО быть на клиенте
+
+**❌ НИКОГДА не доверяйте клиенту**:
+
+```typescript
+// ❌ WRONG - клиент отправляет bearing и speed (легко подделать!)
+const message = {
+  type: "location",
+  lat: position.coords.latitude,
+  lng: position.coords.longitude,
+  bearing: calculatedBearing,  // ❌ Клиент может врать!
+  speed: position.coords.speed, // ❌ Может быть подделано!
+}
+ws.send(JSON.stringify(message))
+```
+
+**✅ ПРАВИЛЬНО - клиент отправляет ТОЛЬКО координаты**:
+
+```typescript
+// ✅ CORRECT - клиент отправляет только raw GPS данные
+const message = {
+  type: "location",
+  lat: position.coords.latitude,
+  lng: position.coords.longitude,
+  vehicleID: localVehicle.id,  // Для идентификации (validated against JWT)
+
+  // Опционально (для logs, НЕ для business logic):
+  accuracy: position.coords.accuracy,  // Browser-reported accuracy
+  timestamp: Date.now(),               // Client timestamp (NOT used for speed calc!)
+}
+ws.send(JSON.stringify(message))
+```
+
+**Сервер рассчитывает всё остальное**:
+- ✅ Bearing (направление движения)
+- ✅ Speed (реальная скорость на основе DB timestamps)
+- ✅ Snap-to-road (OSRM)
+- ✅ Validation (max 150 km/h)
+
+---
+
+### Rate Limiting для WebSocket (защита от спама)
+
+```swift
+// websocket/Sources/Hello/Middleware/RateLimitMiddleware.swift
+
+import Vapor
+import Redis
+
+class GPSRateLimiter {
+    private let redis: RedisClient
+
+    /// Rate limit: max 1 GPS point per second per vehicle
+    /// (Prevents spam attacks where malicious client sends 1000 points/sec)
+    func checkRateLimit(vehicleID: String) async throws -> Bool {
+        let key = "gps:ratelimit:\(vehicleID)"
+
+        // Increment counter (expires in 1 second)
+        let count = try await redis.incr(key).get()
+
+        if count == 1 {
+            // First request in this second - set TTL
+            try await redis.expire(key, after: .seconds(1)).get()
+        }
+
+        // Allow max 2 points per second (tolerance for network jitter)
+        if count > 2 {
+            return false  // Rate limit exceeded
+        }
+
+        return true  // OK
+    }
+}
+
+// Usage в routes.swift:
+ws.onText { ws, text in
+    let message = try JSONDecoder().decode(ClientMessage.self, from: data)
+
+    // Rate limit check (BEFORE validation!)
+    let rateLimiter = GPSRateLimiter(redis: req.redis)
+    guard try await rateLimiter.checkRateLimit(vehicleID: message.vehicleID) else {
+        req.logger.warning("[GPS] 🚫 Rate limit exceeded for vehicle: \(message.vehicleID)")
+        ws.send("""
+            {"type":"error","message":"Too many GPS updates. Max 1 point/second."}
+            """)
+        return
+    }
+
+    // Proceed with validation...
+}
+```
+
+**Защита от атак**:
+- ✅ Max 1-2 GPS points/sec per vehicle
+- ✅ Prevents client from spamming 1000 points/sec
+- ✅ Redis TTL auto-cleanup (no manual cleanup needed)
+- ✅ При 20k водителей: 40k writes/sec in Redis (легко!)
+
+---
+
+### Monitoring для security (20k водителей)
+
+**Критичные метрики для безопасности**:
+
+```bash
+# 1. Suspicious GPS jumps (validation failures)
+docker logs websocket-1 | grep "Suspicious GPS jump" | wc -l
+
+# Если > 100/hour → возможно malicious client или GPS spoofing
+
+# 2. Rate limit hits
+docker logs websocket-1 | grep "Rate limit exceeded" | wc -l
+
+# Если > 500/hour → DDoS attack или buggy client
+
+# 3. Invalid tokens (failed auth)
+docker logs websocket-1 | grep "Invalid token" | wc -l
+
+# Если > 1000/hour → brute force attack
+
+# 4. OSRM failures (snap-to-road errors)
+docker logs websocket-1 | grep "OSRM Request failed" | wc -l
+
+# Если > 50/hour → OSRM сервер проблемы
+
+# 5. Database errors
+docker logs websocket-1 | grep "Failed to save location" | wc -l
+
+# Если > 10/hour → DB connection pool exhausted
+```
+
+**Alerts в production**:
+
+```typescript
+// /lib/monitoring/gps-security-alerts.ts
+
+export const securityMetrics = {
+  suspiciousJumps: {
+    threshold: 100,  // per hour
+    action: "Block vehicle + notify admin",
+  },
+  rateLimitHits: {
+    threshold: 500,  // per hour
+    action: "Temporarily ban IP for 15 minutes",
+  },
+  authFailures: {
+    threshold: 1000,  // per hour
+    action: "Block IP permanently",
+  },
+  osrmFailures: {
+    threshold: 50,  // per hour
+    action: "Fallback to raw GPS (no snap-to-road)",
+  },
+}
+```
+
+---
+
+### Performance vs Security trade-offs
+
+**Проблема**: Каждая GPS точка требует 2 DB запроса:
+1. SELECT (get last position)
+2. UPDATE (save new position)
+
+**Масштаб 20k водителей**:
+- 20,000 водителей × 1 точка/2 сек = 10,000 точек/сек
+- 10,000 × 2 queries = **20,000 DB queries/sec** 💥
+
+**Решения**:
+
+#### Option 1: In-Memory Cache (Redis)
+
+```swift
+// Cache last position in Redis (TTL 60 seconds)
+func getLastPosition(vehicleID: String) async throws -> Position? {
+    let cacheKey = "gps:last:\(vehicleID)"
+
+    // Try cache first
+    if let cached = try await redis.get(cacheKey, asJSON: Position.self).get() {
+        return cached
+    }
+
+    // Cache miss - query DB
+    let dbPosition = try await sql.raw("""
+        SELECT "currentLat", "currentLng", "lastLocationUpdate"
+        FROM vehicles WHERE "vehicleID" = \(bind: vehicleID)
+        """).first()
+
+    if let pos = dbPosition {
+        // Store in cache for 60 seconds
+        try await redis.setex(cacheKey, toJSON: pos, expirationInSeconds: 60).get()
+    }
+
+    return dbPosition
+}
+```
+
+**Эффект**:
+- Cache hit rate 90% (водитель отправляет точки каждые 2 сек)
+- DB reads: 20,000/sec → **2,000/sec** (-90%)
+- Латенси валидации: 50ms (DB) → **5ms** (Redis)
+
+#### Option 2: Server-Side Batching (агрегация)
+
+```swift
+// Validate EVERY point (security), but UPDATE DB only every 30 seconds
+func handleGPSPoint(point: GPSPoint) async throws {
+    // 1. ALWAYS validate (use cached last position)
+    let lastPos = try await getLastPosition(vehicleID: point.vehicleID)
+    let isValid = validateMovement(from: lastPos, to: point)
+
+    guard isValid else {
+        throw Abort(.badRequest, reason: "Invalid GPS point")
+    }
+
+    // 2. Calculate bearing/speed (server-side)
+    let bearing = calculateBearing(from: lastPos, to: point)
+    let speed = calculateSpeed(from: lastPos, to: point)
+
+    // 3. Update in-memory cache (IMMEDIATELY for next validation)
+    try await updateLastPositionCache(vehicleID: point.vehicleID, position: point)
+
+    // 4. Broadcast to dispatchers (IMMEDIATELY for real-time UX)
+    broadcastToDispatchers(point)
+
+    // 5. UPDATE DB only every 30 seconds (BATCHED)
+    if shouldFlushToDatabase(vehicleID: point.vehicleID) {
+        try await saveToDatabase(point)
+    }
+}
+```
+
+**Эффект**:
+- Валидация: КАЖДАЯ точка (security preserved!)
+- DB writes: 10,000/sec → **333/sec** (-97%)
+- Real-time UX: Диспетчер видит каждую точку
+- History: DB содержит только ключевые точки (экономия storage)
+
+---
+
+### Резюме: Security для WebSocket GPS Tracking
+
+| Принцип | HTTP REST | WebSocket | Status |
+|---------|-----------|-----------|--------|
+| **Server-side auth** | ✅ JWT | ✅ JWT | ✅ Идентично |
+| **Server-side GPS validation** | ✅ Max 150km/h | ✅ Max 150km/h | ✅ Идентично |
+| **Server-side bearing calc** | ✅ Hidden | ✅ Hidden | ✅ Идентично |
+| **Server-side speed calc** | ✅ Hidden | ✅ Hidden | ✅ Идентично |
+| **OSRM snap-to-road** | ✅ Server cache | ✅ Server cache | ✅ Идентично |
+| **Rate limiting** | ❌ Нет | ✅ Redis (1 pt/sec) | ✅ Улучшение! |
+| **Last position cache** | ❌ Нет | ✅ Redis (TTL 60s) | ✅ Улучшение! |
+| **DB batching** | ❌ Нет | ✅ Агрегация 30s | ✅ Улучшение! |
+| **Monitoring** | ❌ Нет | ✅ Security alerts | ✅ Улучшение! |
+
+**КРИТИЧНО**:
+1. ✅ **ВСЯ бизнес-логика на сервере** (bearing, speed, validation)
+2. ✅ **Клиент отправляет ТОЛЬКО raw GPS** (lat, lng)
+3. ✅ **Rate limiting** (защита от спама)
+4. ✅ **Redis cache** (снижение DB нагрузки на 90%)
+5. ✅ **Monitoring** (alerts для suspicious activity)
+
+**Для 20k водителей**:
+- WebSocket **НЕ СНИЖАЕТ** security (все валидации сохранены!)
+- WebSocket **УЛУЧШАЕТ** performance (кэш, батчинг)
+- WebSocket **ДОБАВЛЯЕТ** rate limiting (защита от DDoS)
+- WebSocket **СНИЖАЕТ** DB нагрузку на 90-97%
+
+---
+
 ## Контакты и документация
 
 ### 📁 Основные файлы проекта
