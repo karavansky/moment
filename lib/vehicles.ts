@@ -59,14 +59,24 @@ export async function createVehicle(data: {
 // GET VEHICLES
 // ================================================
 
-export async function getVehiclesByFirmaID(firmaID: string): Promise<VehicleDB[]> {
+export interface VehicleWithDriver extends VehicleDB {
+  driverName: string | null
+  driverSurname: string | null
+}
+
+export async function getVehiclesByFirmaID(firmaID: string): Promise<VehicleWithDriver[]> {
   const query = `
-    SELECT * FROM vehicles
-    WHERE "firmaID" = $1
-    ORDER BY "plateNumber" ASC
+    SELECT
+      v.*,
+      w.name as "driverName",
+      w.surname as "driverSurname"
+    FROM vehicles v
+    LEFT JOIN workers w ON v."currentDriverID" = w."workerID"
+    WHERE v."firmaID" = $1
+    ORDER BY v."plateNumber" ASC
   `
 
-  const result = await pool.query(query, [firmaID])
+  const result = await pool.query<VehicleWithDriver>(query, [firmaID])
   return result.rows
 }
 

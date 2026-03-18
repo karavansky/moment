@@ -70,5 +70,15 @@ final class Worker: Model, @unchecked Sendable, Content {
     @OptionalField(key: "createdAt")
     var createdAt: Date?
 
+    // Transport-related fields
+    @Field(key: "hasVehicle")
+    var hasVehicle: Bool
+
+    @OptionalField(key: "vehicleID")
+    var vehicleID: String?
+
+    @Field(key: "isOnline")
+    var isOnline: Bool
+
     init() {}
 }

@@ -1,18 +1,24 @@
 'use client'
 
 import React, { useEffect, useState, useRef, useMemo } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, Polyline, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import ReactDOMServer from 'react-dom/server'
 import type { Order, Vehicle } from '@/types/transport'
 import type { AppointmentWithClient } from '@/contexts/SchedulingContext'
-import { Package, Navigation, CheckCircle2, MapPin } from 'lucide-react'
+import { Package, Navigation, CheckCircle2, MapPin, Car, ArrowBigUp } from 'lucide-react'
 import RoutePolyline from '../dispatcher/RoutePolyline'
 import { LogoMoment } from '@/components/icons'
 import { useLanguage } from '@/hooks/useLanguage'
 import { useTranslation } from '@/components/Providers'
-import { createRouteMarkerIcon, MarkerLegendItem } from './RouteMarkers'
+import { createRouteMarkerIcon, MarkerLegendItem, MARKER_COLORS } from './RouteMarkers'
+
+// Import leaflet-rotate on client side only
+if (typeof window !== 'undefined') {
+  require('leaflet-rotate')
+  console.log('📦 leaflet-rotate required')
+}
 
 // Fix Leaflet default icon issue in Next.js
 delete (L.Icon.Default.prototype as any)._getIconUrl
@@ -72,28 +78,68 @@ const createAppointmentIcon = () => {
   })
 }
 
-const vehicleIcon = L.divIcon({
-  className: 'custom-marker',
-  html: `
-    <div style="
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-    ">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" stroke="#1e293b" stroke-width="1" fill="#22c55e"/>
-        <circle cx="7" cy="17" r="2" stroke="#1e293b" stroke-width="1.5" fill="#ffffff"/>
-        <path d="M9 17h6" stroke="#1e293b" stroke-width="1"/>
-        <circle cx="17" cy="17" r="2" stroke="#1e293b" stroke-width="1.5" fill="#ffffff"/>
-      </svg>
+// Create vehicle icon based on status (for dispatcher view - car with status color)
+const createVehicleIcon = (status: 'ACTIVE' | 'INACTIVE' | 'MAINTENANCE') => {
+  const fillColor = status === 'ACTIVE' ? '#22c55e' : status === 'INACTIVE' ? '#94a3b8' : '#f59e0b'
+
+  const iconHtml = ReactDOMServer.renderToString(
+    <div style={{ filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.4))' }}>
+      <Car
+        size={40}
+        fill={fillColor}
+        stroke="#000000"
+        strokeWidth={1.5}
+      />
     </div>
-  `,
-  iconSize: [32, 32],
-  iconAnchor: [16, 16],
-})
+  )
+
+  return L.divIcon({
+    className: 'custom-marker',
+    html: iconHtml,
+    iconSize: [40, 40],
+    iconAnchor: [20, 20],
+  })
+}
+
+// Create driver arrow icon with speed (for driver view - blue arrow pointing up)
+const createDriverArrowIcon = (speed?: number) => {
+  const iconHtml = ReactDOMServer.renderToString(
+    <div style={{
+      filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.4))',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    }}>
+      <ArrowBigUp
+        size={40}
+        fill={MARKER_COLORS.pickup}
+        stroke="#000000"
+        strokeWidth={1.5}
+      />
+      {speed !== undefined && speed > 0 && (
+        <div style={{
+          background: 'rgba(0, 0, 0, 0.75)',
+          color: 'white',
+          padding: '2px 6px',
+          borderRadius: '4px',
+          fontSize: '12px',
+          fontWeight: 'bold',
+          marginTop: '-8px',
+          whiteSpace: 'nowrap',
+        }}>
+          {Math.round(speed)} км/ч
+        </div>
+      )}
+    </div>
+  )
+
+  return L.divIcon({
+    className: 'custom-marker',
+    html: iconHtml,
+    iconSize: speed !== undefined && speed > 0 ? [60, 60] : [40, 40],
+    iconAnchor: speed !== undefined && speed > 0 ? [30, 30] : [20, 20],
+  })
+}
 
 interface MapProps {
   // For orders (transport/dispatcher)
@@ -118,6 +164,19 @@ interface MapProps {
     lng: number
     address: string
   } | null
+
+  // Driver mode - shows only driver's location and assigned orders
+  isDriverMode?: boolean
+  currentDriverID?: string
+
+  // Map rotation (bearing) for navigation mode
+  mapBearing?: number
+
+  // Current speed (km/h) for driver mode
+  currentSpeed?: number
+
+  // Navigation route coordinates for driver mode
+  navigationRoute?: Array<[number, number]> | null
 }
 
 // Appointment Marker Component
@@ -256,21 +315,112 @@ function OrderMarker({
   )
 }
 
+// Component to handle map rotation (bearing) for navigation
+function MapRotation({ bearing }: { bearing?: number }) {
+  const map = useMap()
+  const animationRef = useRef<number | null>(null)
+  const currentBearingRef = useRef<number>(0)
+
+  // Check if rotation is supported on mount
+  useEffect(() => {
+    const rotateMap = map as any
+    if (typeof rotateMap.setBearing === 'function') {
+      console.log('✅ Map rotation API enabled (leaflet-rotate)')
+
+      // Enable touch rotation
+      if (rotateMap.touchRotate) {
+        rotateMap.touchRotate.enable()
+        console.log('✅ Touch rotation enabled')
+      }
+
+      // Get initial bearing
+      currentBearingRef.current = rotateMap.getBearing ? rotateMap.getBearing() : 0
+    } else {
+      console.error('❌ setBearing not found - leaflet-rotate not loaded!')
+      console.log('Available methods:', Object.keys(rotateMap).filter(k => k.includes('bear') || k.includes('rotat')))
+    }
+  }, [map])
+
+  // Animate bearing changes smoothly
+  useEffect(() => {
+    if (bearing === undefined) return
+
+    const rotateMap = map as any
+    if (typeof rotateMap.setBearing !== 'function') return
+
+    // Cancel any ongoing animation
+    if (animationRef.current !== null) {
+      cancelAnimationFrame(animationRef.current)
+    }
+
+    // IMPORTANT: Invert bearing so movement direction points upward
+    const targetBearing = -bearing
+    const startBearing = currentBearingRef.current
+
+    // Calculate shortest rotation path (handle 360° wrap)
+    let diff = targetBearing - startBearing
+    if (diff > 180) diff -= 360
+    if (diff < -180) diff += 360
+
+    const duration = 1000 // 1 second animation
+    const startTime = Date.now()
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime
+      const progress = Math.min(elapsed / duration, 1)
+
+      // Ease-out-quad function for smooth deceleration
+      const easeOutQuad = (t: number) => t * (2 - t)
+      const easedProgress = easeOutQuad(progress)
+
+      const newBearing = startBearing + diff * easedProgress
+      rotateMap.setBearing(newBearing)
+      currentBearingRef.current = newBearing
+
+      if (progress < 1) {
+        animationRef.current = requestAnimationFrame(animate)
+      } else {
+        animationRef.current = null
+        console.log('🧭 Map rotation complete:', {
+          movementBearing: bearing.toFixed(1) + '°',
+          mapRotation: targetBearing.toFixed(1) + '°',
+        })
+      }
+    }
+
+    animate()
+
+    return () => {
+      if (animationRef.current !== null) {
+        cancelAnimationFrame(animationRef.current)
+      }
+    }
+  }, [bearing, map])
+
+  return null
+}
+
 // Component to handle map centering and bounds
 function MapController({
   center,
   zoom,
   orders = [],
   appointments = [],
+  vehicles = [],
   selectedOrderId,
-  selectedAppointmentId
+  selectedAppointmentId,
+  isDriverMode = false,
+  mapBearing,
 }: {
   center?: [number, number]
   zoom?: number
   orders?: Order[]
   appointments?: AppointmentWithClient[]
+  vehicles?: Vehicle[]
   selectedOrderId?: string | null
   selectedAppointmentId?: string | null
+  isDriverMode?: boolean
+  mapBearing?: number
 }) {
   const map = useMap()
 
@@ -354,6 +504,72 @@ function MapController({
     return () => clearTimeout(timer)
   }, [map, center, zoom, ordersCount, appointmentsCount])
 
+  // Handle driver mode - center on vehicle with offset
+  const driverModeInitialized = useRef(false)
+  const animationFrameRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (isDriverMode && vehicles.length > 0) {
+      const vehicle = vehicles[0] // Driver has only one vehicle
+
+      // Set initial zoom for driver mode (only once)
+      if (!driverModeInitialized.current && vehicle.currentLat && vehicle.currentLng) {
+        const mapSize = map.getSize()
+        const offsetY = mapSize.y * -0.3 // Negative to shift up
+
+        const targetPoint = map.project([vehicle.currentLat, vehicle.currentLng], 18)
+        targetPoint.y -= offsetY
+        const targetLatLng = map.unproject(targetPoint, 18)
+
+        map.setView(targetLatLng, 18, { animate: false })
+        driverModeInitialized.current = true
+        console.log('🎯 Driver mode initialized: zoom 18, vehicle at 80% from top')
+      }
+
+      // Continuous tracking loop using requestAnimationFrame
+      const trackVehicle = () => {
+        if (!vehicle.currentLat || !vehicle.currentLng) {
+          animationFrameRef.current = requestAnimationFrame(trackVehicle)
+          return
+        }
+
+        const mapSize = map.getSize()
+
+        // Get current vehicle position in screen pixels
+        const vehiclePoint = map.latLngToContainerPoint([vehicle.currentLat, vehicle.currentLng])
+
+        // Calculate where vehicle SHOULD be (center X, 80% Y)
+        const targetX = mapSize.x / 2
+        const targetY = mapSize.y * 0.8
+
+        // Calculate how much we need to move the map
+        const deltaX = vehiclePoint.x - targetX
+        const deltaY = vehiclePoint.y - targetY
+
+        // Only pan if delta is significant (> 1 pixel)
+        if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
+          map.panBy([deltaX, deltaY], { animate: false, noMoveStart: true })
+        }
+
+        animationFrameRef.current = requestAnimationFrame(trackVehicle)
+      }
+
+      animationFrameRef.current = requestAnimationFrame(trackVehicle)
+
+      return () => {
+        if (animationFrameRef.current !== null) {
+          cancelAnimationFrame(animationFrameRef.current)
+        }
+      }
+    } else {
+      driverModeInitialized.current = false
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current)
+        animationFrameRef.current = null
+      }
+    }
+  }, [isDriverMode, vehicles, map])
+
   // Handle selected order - fit bounds to show entire route
   useEffect(() => {
     if (selectedOrderId) {
@@ -375,7 +591,14 @@ function MapController({
     }
   }, [selectedOrderId, orders, map])
 
-  return null
+  return (
+    <>
+      {/* Map rotation for driver navigation mode */}
+      {isDriverMode && mapBearing !== undefined && (
+        <MapRotation bearing={mapBearing} />
+      )}
+    </>
+  )
 }
 
 const Map = React.memo(function Map({
@@ -389,6 +612,11 @@ const Map = React.memo(function Map({
   forceCenter,
   forceZoom,
   routePointFocus,
+  isDriverMode = false,
+  currentDriverID,
+  mapBearing,
+  currentSpeed,
+  navigationRoute,
 }: MapProps) {
   const lang = useLanguage()
   const { t } = useTranslation()
@@ -510,14 +738,22 @@ const Map = React.memo(function Map({
         zoomSnap={0.5}
         zoomDelta={0.5}
         closePopupOnClick={false}
+        // @ts-ignore - leaflet-rotate options
+        rotate={isDriverMode}
+        bearing={0}
+        touchRotate={isDriverMode}
+        rotateControl={isDriverMode ? { closeOnZeroBearing: false } : false}
       >
         <MapController
           center={mapCenter}
           zoom={mapZoom}
           orders={orders}
           appointments={appointments}
+          vehicles={vehicles}
           selectedOrderId={selectedOrderId}
           selectedAppointmentId={selectedAppointmentId}
+          isDriverMode={isDriverMode}
+          mapBearing={mapBearing}
         />
 
         <TileLayer
@@ -525,28 +761,48 @@ const Map = React.memo(function Map({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
+        {/* Navigation Route Polyline (for driver mode) */}
+        {isDriverMode && navigationRoute && navigationRoute.length > 1 && (
+          <Polyline
+            positions={navigationRoute}
+            pathOptions={{
+              color: '#3b82f6', // Blue color for navigation
+              weight: 6,
+              opacity: 0.8,
+              dashArray: '10, 5', // Dashed line
+            }}
+          />
+        )}
+
         {/* Active Vehicles */}
         {vehicles
           .filter((v) => v.currentLat && v.currentLng && v.status === 'ACTIVE')
-          .map((vehicle) => (
-            <Marker
-              key={vehicle.id}
-              position={[vehicle.currentLat!, vehicle.currentLng!]}
-              icon={vehicleIcon}
-            >
-              <Popup>
-                <div className="text-sm">
-                  <p className="font-semibold">{vehicle.plateNumber}</p>
-                  <p className="text-xs text-default-500">{vehicle.type}</p>
-                  {vehicle.lastLocationUpdate && (
-                    <p className="text-xs text-default-400 mt-1">
-                      Обновлено: {new Date(vehicle.lastLocationUpdate).toLocaleTimeString('ru-RU')}
-                    </p>
-                  )}
-                </div>
-              </Popup>
-            </Marker>
-          ))}
+          .map((vehicle) => {
+            // Use arrow icon for driver mode, car icon with status color for dispatcher
+            const icon = isDriverMode
+              ? createDriverArrowIcon(currentSpeed)
+              : createVehicleIcon(vehicle.status as 'ACTIVE' | 'INACTIVE' | 'MAINTENANCE')
+
+            return (
+              <Marker
+                key={vehicle.id}
+                position={[vehicle.currentLat!, vehicle.currentLng!]}
+                icon={icon}
+              >
+                <Popup>
+                  <div className="text-sm">
+                    <p className="font-semibold">{vehicle.plateNumber}</p>
+                    <p className="text-xs text-default-500">{vehicle.type}</p>
+                    {vehicle.lastLocationUpdate && (
+                      <p className="text-xs text-default-400 mt-1">
+                        Обновлено: {new Date(vehicle.lastLocationUpdate).toLocaleTimeString('ru-RU')}
+                      </p>
+                    )}
+                  </div>
+                </Popup>
+              </Marker>
+            )
+          })}
 
         {/* Appointments */}
         {appointments.map((apt) => (

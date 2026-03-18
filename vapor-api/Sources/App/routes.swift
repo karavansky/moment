@@ -40,6 +40,9 @@ func routes(_ app: Application) throws {
     // Transport routes (all under /api/transport/*)
     try protected.register(collection: OrdersController())            // CRUD /api/transport/orders
     try protected.register(collection: VehiclesController())          // CRUD /api/transport/vehicles
+    try protected.register(collection: VehicleLocationController())   // POST /api/transport/location (GPS updates)
+    try protected.register(collection: VehicleLocationBatchController()) // POST /api/transport/location/batch (Batch GPS)
+    try protected.register(collection: VehicleDriverController())     // /api/transport/vehicles/:id/history, assign-driver, unassign-driver
     try protected.register(collection: TransportRoutesController())   // CRUD /api/transport/routes
     try protected.register(collection: RejectReasonsController())     // CRUD /api/transport/reject-reasons
 

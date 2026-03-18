@@ -48,6 +48,8 @@ struct WorkerController: RouteCollection {
             var pushNotificationsEnabled: Bool?; var geolocationEnabled: Bool?
             var hasPushSubscription: Bool?; var pwaVersion: String?
             var osVersion: String?; var batteryLevel: Double?; var batteryStatus: String?
+            // Transport fields
+            var hasVehicle: Bool?; var vehicleID: String?; var isOnline: Bool?
         }
         struct TeamDTO: Content {
             var id: String; var teamName: String; var firmaID: String
@@ -92,7 +94,11 @@ struct WorkerController: RouteCollection {
                 pwaVersion: try? row.decode(column: "pwaVersion", as: String?.self),
                 osVersion: try? row.decode(column: "osVersion", as: String?.self),
                 batteryLevel: try? row.decode(column: "batteryLevel", as: Double?.self),
-                batteryStatus: try? row.decode(column: "batteryStatus", as: String?.self)
+                batteryStatus: try? row.decode(column: "batteryStatus", as: String?.self),
+                // Transport fields
+                hasVehicle: try? row.decode(column: "hasVehicle", as: Bool?.self),
+                vehicleID: try? row.decode(column: "vehicleID", as: String?.self),
+                isOnline: try? row.decode(column: "isOnline", as: Bool?.self)
             ))
         }
 

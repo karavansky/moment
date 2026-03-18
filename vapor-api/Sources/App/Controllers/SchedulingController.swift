@@ -110,6 +110,23 @@ struct SchedulingController: RouteCollection {
             GROUP BY r."reportID"
             """).all()
 
+        // Vehicles with driver info
+        async let vehiclesRows = db.raw("""
+            SELECT v.*,
+                   w.name as "driverName",
+                   w.surname as "driverSurname"
+            FROM vehicles v
+            LEFT JOIN workers w ON v."currentDriverID" = w."workerID"
+            WHERE v."firmaID" = \(bind: firmaID)
+            ORDER BY v."plateNumber" ASC
+            """).all()
+
+        // Reject reasons
+        async let rejectReasonsRaw = RejectReason.query(on: req.db)
+            .filter(\.$firmaID == firmaID)
+            .filter(\.$isActive == true)
+            .all()
+
         // Await all
         let teams = try await teamsRaw
         let groupes = try await groupesRaw
@@ -118,6 +135,8 @@ struct SchedulingController: RouteCollection {
         let cRows = try await clientsRows
         let aRows = try await appointmentsRows
         let rRows = try await reportsRows
+        let vRows = try await vehiclesRows
+        let rejectReasons = try await rejectReasonsRaw
 
         // Map teams
         let teamsDTO = teams.map { t -> [String: String] in
@@ -156,6 +175,8 @@ struct SchedulingController: RouteCollection {
             var pushNotificationsEnabled: Bool?; var geolocationEnabled: Bool?
             var hasPushSubscription: Bool?; var pwaVersion: String?
             var osVersion: String?; var batteryLevel: Double?; var batteryStatus: String?
+            // Transport fields
+            var hasVehicle: Bool?; var vehicleID: String?; var isOnline: Bool?
         }
         struct TeamOutDTO: Content {
             var id: String; var teamName: String; var firmaID: String
@@ -198,7 +219,11 @@ struct SchedulingController: RouteCollection {
                 pwaVersion: try? row.decode(column: "pwaVersion", as: String?.self),
                 osVersion: try? row.decode(column: "osVersion", as: String?.self),
                 batteryLevel: try? row.decode(column: "batteryLevel", as: Double?.self),
-                batteryStatus: try? row.decode(column: "batteryStatus", as: String?.self)
+                batteryStatus: try? row.decode(column: "batteryStatus", as: String?.self),
+                // Transport fields
+                hasVehicle: try? row.decode(column: "hasVehicle", as: Bool?.self),
+                vehicleID: try? row.decode(column: "vehicleID", as: String?.self),
+                isOnline: try? row.decode(column: "isOnline", as: Bool?.self)
             ))
         }
 
@@ -314,6 +339,38 @@ struct SchedulingController: RouteCollection {
             ))
         }
 
+        // Map vehicles
+        struct VehicleOutDTO: Content {
+            var id: String; var firmaID: String
+            var plateNumber: String; var type: String; var status: String
+            var currentDriverID: String?
+            var currentDriverName: String?
+            var currentDriverSurname: String?
+            var currentLat: Double?; var currentLng: Double?
+            var lastLocationUpdate: Date?; var createdAt: Date?
+        }
+
+        var vehiclesDTO: [VehicleOutDTO] = []
+        for row in vRows {
+            vehiclesDTO.append(VehicleOutDTO(
+                id: try row.decode(column: "vehicleID", as: String.self),
+                firmaID: firmaID,
+                plateNumber: try row.decode(column: "plateNumber", as: String.self),
+                type: try row.decode(column: "type", as: String.self),
+                status: try row.decode(column: "status", as: String.self),
+                currentDriverID: try? row.decode(column: "currentDriverID", as: String?.self),
+                currentDriverName: try? row.decode(column: "driverName", as: String?.self),
+                currentDriverSurname: try? row.decode(column: "driverSurname", as: String?.self),
+                currentLat: try? row.decode(column: "currentLat", as: Double?.self),
+                currentLng: try? row.decode(column: "currentLng", as: Double?.self),
+                lastLocationUpdate: try? row.decode(column: "lastLocationUpdate", as: Date?.self),
+                createdAt: try? row.decode(column: "createdAt", as: Date?.self)
+            ))
+        }
+
+        // Map reject reasons
+        let rejectReasonsDTO = try rejectReasons.map { try RejectReasonDTO(from: $0) }
+
         // User info
         struct UserDTO: Content {
             var id: String; var firmaID: String; var userName: String
@@ -353,6 +410,8 @@ struct SchedulingController: RouteCollection {
             var teams: [[String: String]]; var groupes: [[String: String]]
             var services: [ServiceOutDTO]
             var reports: [ReportOutDTO]
+            var vehicles: [VehicleOutDTO]
+            var rejectReasons: [RejectReasonDTO]
             var firmaID: String
         }
 
@@ -362,6 +421,8 @@ struct SchedulingController: RouteCollection {
             teams: teamsDTO, groupes: groupesDTO,
             services: servicesDTO,
             reports: reportsDTO,
+            vehicles: vehiclesDTO,
+            rejectReasons: rejectReasonsDTO,
             firmaID: firmaID
         )
 

@@ -1,19 +1,21 @@
 'use client'
 
-import { useState, memo } from 'react'
+import { useState, memo, useMemo } from 'react'
 import { Button, Spinner, toast, Modal } from '@heroui/react'
 import { Plus, Pencil, Trash2, Truck } from 'lucide-react'
 import { useDisclosure } from '@/lib/useDisclosure'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { generateId } from '@/lib/generate-id'
 import type { VehicleType, VehicleStatus } from '@/types/transport'
+import WorkerSelect from '@/components/scheduling/WorkerSelect'
+import type { WorkersForSelect } from '@/components/scheduling/WorkerSelect'
 
 interface VehicleOverviewProps {
   className?: string
 }
 
 function VehicleOverview({ className }: VehicleOverviewProps) {
-  const { vehicles, isLoading, isLiveMode, addVehicle, updateVehicle, deleteVehicle } = useScheduling()
+  const { vehicles, workers, teams, isLoading, isLiveMode, addVehicle, updateVehicle, deleteVehicle } = useScheduling()
   const [isSaving, setIsSaving] = useState(false)
   const [editingVehicle, setEditingVehicle] = useState<any>(null)
   const [isCreating, setIsCreating] = useState(false)
@@ -24,6 +26,35 @@ function VehicleOverview({ className }: VehicleOverviewProps) {
   const [plateNumber, setPlateNumber] = useState('')
   const [vehicleType, setVehicleType] = useState<VehicleType>('STANDARD')
   const [status, setStatus] = useState<VehicleStatus>('ACTIVE')
+  const [selectedDriverID, setSelectedDriverID] = useState<string | null>(null)
+
+  // Prepare workers for WorkerSelect
+  const workersForSelect: WorkersForSelect = useMemo(() => {
+    const rootWorkers = workers
+      .filter(w => !w.teamId)
+      .map(w => ({
+        id: w.id,
+        name: w.name,
+        surname: w.surname || '',
+        fullName: `${w.name} ${w.surname || ''}`.trim(),
+      }))
+
+    const groups = teams.map(team => ({
+      id: team.id,
+      label: team.teamName,
+      options: workers
+        .filter(w => w.teamId === team.id)
+        .map(w => ({
+          id: w.id,
+          name: w.name,
+          surname: w.surname || '',
+          fullName: `${w.name} ${w.surname || ''}`.trim(),
+          teamName: team.teamName,
+        })),
+    })).filter(group => group.options.length > 0)
+
+    return { rootWorkers, groups }
+  }, [workers, teams])
 
   const handleCreate = () => {
     setIsCreating(true)
@@ -31,6 +62,7 @@ function VehicleOverview({ className }: VehicleOverviewProps) {
     setPlateNumber('')
     setVehicleType('STANDARD')
     setStatus('ACTIVE')
+    setSelectedDriverID(null)
     onOpen()
   }
 
@@ -40,6 +72,7 @@ function VehicleOverview({ className }: VehicleOverviewProps) {
     setPlateNumber(vehicle.plateNumber)
     setVehicleType(vehicle.type)
     setStatus(vehicle.status)
+    setSelectedDriverID(vehicle.currentDriverID || null)
     onOpen()
   }
 
@@ -59,7 +92,7 @@ function VehicleOverview({ className }: VehicleOverviewProps) {
           plateNumber: plateNumber.trim(),
           type: vehicleType,
           status,
-          currentDriverID: null,
+          currentDriverID: selectedDriverID,
           currentLat: null,
           currentLng: null,
           lastLocationUpdate: null,
@@ -67,13 +100,31 @@ function VehicleOverview({ className }: VehicleOverviewProps) {
         })
         toast.success('Транспорт добавлен')
       } else if (editingVehicle) {
+        // Detect driver change
+        const driverChanged = editingVehicle.currentDriverID !== selectedDriverID
+
+        // Find selected driver to get name and surname
+        const selectedDriver = selectedDriverID
+          ? workers.find(w => w.id === selectedDriverID)
+          : null
+
         updateVehicle({
           ...editingVehicle,
           plateNumber: plateNumber.trim(),
           type: vehicleType,
           status,
+          currentDriverID: selectedDriverID,
+          currentDriverName: selectedDriver?.name || null,
+          currentDriverSurname: selectedDriver?.surname || null,
         })
-        toast.success('Транспорт обновлен')
+
+        if (driverChanged && selectedDriverID) {
+          toast.success('Транспорт и водитель обновлены')
+        } else if (driverChanged && !selectedDriverID) {
+          toast.success('Транспорт обновлен, водитель снят')
+        } else {
+          toast.success('Транспорт обновлен')
+        }
       }
 
       onClose()
@@ -162,7 +213,9 @@ function VehicleOverview({ className }: VehicleOverviewProps) {
                     </span>
                   </td>
                   <td className="py-3 pr-4 text-default-500">
-                    {vehicle.currentDriverID || '—'}
+                    {vehicle.currentDriverID
+                      ? `${vehicle.currentDriverName || ''} ${vehicle.currentDriverSurname || ''}`.trim()
+                      : '—'}
                   </td>
                   <td className="py-3 text-right">
                     <div className="flex gap-2 justify-end">
@@ -195,7 +248,7 @@ function VehicleOverview({ className }: VehicleOverviewProps) {
                   <label className="text-sm font-medium">Гос. номер</label>
                   <input
                     type="text"
-                    placeholder="A123BC777"
+                    placeholder="B-AB 1234"
                     value={plateNumber}
                     onChange={e => setPlateNumber(e.target.value)}
                     className="w-full px-3 py-2 border border-default-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -224,6 +277,21 @@ function VehicleOverview({ className }: VehicleOverviewProps) {
                     <option value="REPAIR">Ремонт</option>
                     <option value="INACTIVE">Неактивный</option>
                   </select>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <WorkerSelect
+                    workersForSelect={workersForSelect}
+                    selectedWorkerID={selectedDriverID}
+                    onSelectionChange={setSelectedDriverID}
+                    label="Водитель"
+                    placeholder="Выберите водителя (необязательно)"
+                    clearable
+                  />
+                  {!isCreating && editingVehicle?.currentDriverID && editingVehicle.currentDriverID !== selectedDriverID && (
+                    <p className="text-xs text-warning-600">
+                      ⚠️ Смена водителя будет записана в историю
+                    </p>
+                  )}
                 </div>
               </Modal.Body>
               <Modal.Footer>

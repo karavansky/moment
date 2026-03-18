@@ -34,6 +34,7 @@ RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         libcurl4 \
         ca-certificates \
+        curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user

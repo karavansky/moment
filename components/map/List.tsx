@@ -55,6 +55,9 @@ interface ListProps {
   onStatusFilterChange?: (filter: OrderStatus | 'ALL') => void
   searchQuery?: string
   onSearchQueryChange?: (query: string) => void
+
+  // Driver mode - hides tabs and shows only orders
+  isDriverMode?: boolean
 }
 
 export default function List({
@@ -75,6 +78,7 @@ export default function List({
   onStatusFilterChange: externalOnStatusFilterChange,
   searchQuery: externalSearchQuery,
   onSearchQueryChange: externalOnSearchQueryChange,
+  isDriverMode = false,
 }: ListProps) {
   const lang = useLanguage()
   const { t } = useTranslation()
@@ -300,10 +304,11 @@ export default function List({
       }}
       className={`flex flex-col bg-background rounded-l-2xl ${isPortrait ? 'w-full' : ''} ${!isPortrait && isCollapsed ? 'overflow-visible' : ''}`}
     >
-      {/* Tabs with collapse button - Always visible */}
-      <div
-        className={`shrink-0 ${isPortrait ? 'px-4 pt-3' : isCollapsed ? 'w-full h-full py-4 flex flex-col items-center justify-between gap-4 overflow-visible' : 'px-4 pt-3'}`}
-      >
+      {/* Tabs with collapse button - Always visible (hidden in driver mode) */}
+      {!isDriverMode && (
+        <div
+          className={`shrink-0 ${isPortrait ? 'px-4 pt-3' : isCollapsed ? 'w-full h-full py-4 flex flex-col items-center justify-between gap-4 overflow-visible' : 'px-4 pt-3'}`}
+        >
         {!isPortrait && isCollapsed ? (
           <>
             {/* Collapse button */}
@@ -477,6 +482,7 @@ export default function List({
           </div>
         )}
       </div>
+      )}
 
       {/* Content - only visible when expanded */}
       <AnimatePresence>
@@ -586,7 +592,7 @@ export default function List({
             >
               <div className={isPortrait ? 'h-full pl-4' : 'px-4 pb-4'}>
                   <AnimatePresence mode="wait">
-                    {activeTab === 'appointments' ? (
+                    {(activeTab === 'appointments' && !isDriverMode) ? (
                       // Appointments List
                       <motion.div
                         key="appointments"

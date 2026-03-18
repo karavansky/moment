@@ -23,7 +23,13 @@
       "Read(//etc/nginx/sites-available/**)",
       "Bash(docker compose exec -T postgres psql -U hronop -d moment -c \"\\d routes\")",
       "Bash(docker compose exec -T postgres psql -U hronop -d moment -c \"SELECT table_name FROM information_schema.tables WHERE table_schema = ''public'' AND table_name LIKE ''%firm%'';\")",
-      "Bash(docker compose exec -T postgres psql -U hronop -d moment -c \"\\d ticket\")"
+      "Bash(docker compose exec -T postgres psql -U hronop -d moment -c \"\\d ticket\")",
+      "Bash(docker compose exec -T postgres psql -U hronop -d moment -c \"\\d workers\")",
+      "Bash(docker compose exec -T postgres psql -U hronop -d moment -c \"\\d vehicles\")",
+      "Bash(sudo cat /etc/nginx/sites-available/default)",
+      "Bash(curl -s \"https://photon.komoot.io/api/?q=Burgstrasse%20156%2053177%20Bonn&limit=1\")",
+      "Bash(curl -s \"https://photon.komoot.io/api/?q=Burgstrasse%2069%2053177%20Bonn&limit=1\")",
+      "Bash(curl -s \"http://localhost:5000/route/v1/driving/7.1467959,50.6802196;7.1499507,50.6829828?overview=full&geometries=geojson&steps=true\")"
     ]
   }
 }

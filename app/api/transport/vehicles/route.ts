@@ -5,7 +5,9 @@ import {
   updateVehicle,
   deleteVehicle,
   getVehiclesByFirmaID,
+  getVehicleByID,
 } from '@/lib/vehicles'
+import { assignDriver, changeDriver, unassignDriver } from '@/lib/vehicle-drivers'
 import { generateId } from '@/lib/generate-id'
 
 export async function GET() {
@@ -22,6 +24,8 @@ export async function GET() {
       type: v.type,
       status: v.status,
       currentDriverID: v.currentDriverID,
+      currentDriverName: v.driverName,
+      currentDriverSurname: v.driverSurname,
       currentLat: v.currentLat,
       currentLng: v.currentLng,
       lastLocationUpdate: v.lastLocationUpdate,
@@ -68,13 +72,59 @@ export async function PUT(request: Request) {
     const session = await getSchedulingSession()
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { id, ...data } = await request.json()
+    const { id, currentDriverID, ...data } = await request.json()
     if (!id) return NextResponse.json({ error: 'Vehicle ID required' }, { status: 400 })
 
-    const vehicle = await updateVehicle(id, session.user.firmaID!, data)
+    const firmaID = session.user.firmaID!
+
+    // Get current vehicle state to detect driver change
+    const currentVehicle = await getVehicleByID(id, firmaID)
+    if (!currentVehicle) return NextResponse.json({ error: 'Vehicle not found' }, { status: 404 })
+
+    // Handle driver assignment changes
+    if (currentDriverID !== undefined && currentDriverID !== currentVehicle.currentDriverID) {
+      if (currentVehicle.currentDriverID === null && currentDriverID !== null) {
+        // First assignment
+        await assignDriver(id, currentDriverID, session.user.id, 'Assigned via UI')
+      } else if (currentDriverID === null && currentVehicle.currentDriverID !== null) {
+        // Unassign driver
+        await unassignDriver(id, 'Unassigned via UI')
+      } else if (currentDriverID !== null && currentVehicle.currentDriverID !== null) {
+        // Change driver
+        await changeDriver(id, currentDriverID, session.user.id, 'Changed via UI')
+      }
+    }
+
+    // Update other vehicle fields
+    const vehicle = await updateVehicle(id, firmaID, data)
     if (!vehicle) return NextResponse.json({ error: 'Vehicle not found' }, { status: 404 })
 
-    return NextResponse.json(vehicle)
+    // Get updated vehicle with driver info
+    const updatedVehicles = await getVehiclesByFirmaID(firmaID)
+    const updatedVehicle = updatedVehicles.find(v => v.vehicleID === id)
+
+    if (!updatedVehicle) {
+      return NextResponse.json({ error: 'Vehicle not found after update' }, { status: 404 })
+    }
+
+    const response = {
+      vehicle: {
+        id: updatedVehicle.vehicleID,
+        firmaID: updatedVehicle.firmaID,
+        plateNumber: updatedVehicle.plateNumber,
+        type: updatedVehicle.type,
+        status: updatedVehicle.status,
+        currentDriverID: updatedVehicle.currentDriverID,
+        currentDriverName: updatedVehicle.driverName,
+        currentDriverSurname: updatedVehicle.driverSurname,
+        currentLat: updatedVehicle.currentLat,
+        currentLng: updatedVehicle.currentLng,
+        lastLocationUpdate: updatedVehicle.lastLocationUpdate,
+        createdAt: updatedVehicle.createdAt,
+      },
+    }
+
+    return NextResponse.json(response)
   } catch (error) {
     console.error('[Transport Vehicles] PUT error:', error)
     return NextResponse.json({ error: 'Failed to update vehicle' }, { status: 500 })

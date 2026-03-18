@@ -60,7 +60,7 @@ export function LoginLogout() {
           router.push(`/${lang}/s3-storage`)
           break
         case 'logout':
-            signOut(`/${lang}/auth/signin`)
+          signOut(`/${lang}/auth/signin`)
           break
         default:
           break
@@ -79,7 +79,7 @@ export function LoginLogout() {
           router.push(`/${lang}/settings`)
           break
         case 'logout':
-          signOut(`/${lang}/auth/signin`  )
+          signOut(`/${lang}/auth/signin`)
           break
         default:
           break
@@ -96,6 +96,9 @@ export function LoginLogout() {
       switch (selectedKey) {
         case 'plan':
           router.push(`/${lang}/dienstplan`)
+          break
+        case 'driver':
+          router.push(`/${lang}/driver`)
           break
         case 'settings':
           router.push(`/${lang}/settings`)
@@ -199,6 +202,12 @@ export function LoginLogout() {
             <Dropdown.Item id="plan" textValue="Terminplan">
               <div className="flex w-full items-center justify-between gap-2">
                 <Label>Terminplan</Label>
+                <Calendar1 className="size-3.5 " />
+              </div>
+            </Dropdown.Item>
+            <Dropdown.Item id="driver" textValue="Fahrplan">
+              <div className="flex w-full items-center justify-between gap-2">
+                <Label>Fahrplan</Label>
                 <Calendar1 className="size-3.5 " />
               </div>
             </Dropdown.Item>

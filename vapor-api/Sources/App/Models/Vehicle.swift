@@ -49,12 +49,14 @@ struct VehicleDTO: Content {
     let type: String
     let status: String
     let currentDriverID: String?
+    let currentDriverName: String?
+    let currentDriverSurname: String?
     let currentLat: Double?
     let currentLng: Double?
     let lastLocationUpdate: Date?
     let createdAt: Date?
 
-    init(from vehicle: Vehicle) throws {
+    init(from vehicle: Vehicle, driverName: String? = nil, driverSurname: String? = nil) throws {
         guard let id = vehicle.id else {
             throw Abort(.internalServerError, reason: "Vehicle ID is nil")
         }
@@ -64,6 +66,8 @@ struct VehicleDTO: Content {
         self.type = vehicle.type
         self.status = vehicle.status
         self.currentDriverID = vehicle.currentDriverID
+        self.currentDriverName = driverName
+        self.currentDriverSurname = driverSurname
         self.currentLat = vehicle.currentLat
         self.currentLng = vehicle.currentLng
         self.lastLocationUpdate = vehicle.lastLocationUpdate

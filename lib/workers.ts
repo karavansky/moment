@@ -43,6 +43,10 @@ export interface WorkerRecord {
   osVersion?: string | null
   batteryLevel?: number | null
   batteryStatus?: string | null
+  // Transport fields
+  hasVehicle?: boolean | null
+  vehicleID?: string | null
+  isOnline?: boolean | null
 }
 
 export async function createWorker(data: {
@@ -116,7 +120,8 @@ export async function createWorker(data: {
 
 export async function getWorkersByFirmaID(firmaID: string): Promise<WorkerRecord[]> {
   const query = `
-    SELECT w.*, t."teamName",
+    SELECT w.*,
+           t."teamName",
            u."date" AS "lastLoginAt",
            u."pushNotificationsEnabled",
            u."geolocationEnabled",
@@ -124,7 +129,10 @@ export async function getWorkersByFirmaID(firmaID: string): Promise<WorkerRecord
            u."osVersion",
            u."batteryLevel",
            u."batteryStatus",
-           EXISTS(SELECT 1 FROM push_subscriptions ps WHERE ps."userID" = w."userID") AS "hasPushSubscription"
+           EXISTS(SELECT 1 FROM push_subscriptions ps WHERE ps."userID" = w."userID") AS "hasPushSubscription",
+           w."hasVehicle",
+           w."vehicleID",
+           w."isOnline"
     FROM workers w
     LEFT JOIN teams t ON w."teamId" = t."teamID"
     LEFT JOIN users u ON w."userID" = u."userID"

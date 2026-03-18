@@ -107,6 +107,10 @@ export interface Worker {
   osVersion?: string | null
   batteryLevel?: number | null
   batteryStatus?: string | null
+  // Transport fields
+  hasVehicle?: boolean
+  vehicleID?: string | null
+  isOnline?: boolean
 }
 
 // Тип назначения

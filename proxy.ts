@@ -186,8 +186,9 @@ export default async function proxy(request: NextRequest) {
     const currentLocale = path.split("/")[1];
     const pathAfterLocale = path.substring(currentLocale.length + 1); // e.g. "/dienstplan" or "/staff"
 
-    // Role guard: worker (status=1) and client (status=2) can only access /dienstplan and /auth/*
+    // Role guard: worker (status=1) and client (status=2) can only access /dienstplan, /driver and /auth/*
     const isAllowedForRestricted = pathAfterLocale.startsWith('/dienstplan')
+      || pathAfterLocale.startsWith('/driver')
       || pathAfterLocale.startsWith('/auth')
       || pathAfterLocale.startsWith('/settings')
 

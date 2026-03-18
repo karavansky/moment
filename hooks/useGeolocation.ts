@@ -7,6 +7,10 @@ type GeoPermissionState = 'prompt' | 'granted' | 'denied' | 'unsupported'
 interface Position {
   latitude: number
   longitude: number
+  timestamp?: number // GPS timestamp in milliseconds
+  accuracy?: number  // Position accuracy in meters
+  speed?: number | null     // Speed in m/s (null if not available)
+  heading?: number | null   // Heading in degrees (null if not available)
 }
 
 const SEND_INTERVAL_MS = 30_000 // Send location to server every 30 seconds
@@ -91,31 +95,80 @@ export function useGeolocation() {
   }, [])
 
   const requestPermission = useCallback(async (): Promise<boolean> => {
-    if (!('geolocation' in navigator)) return false
+    if (!('geolocation' in navigator)) {
+      console.warn('[useGeolocation] Geolocation API not supported')
+      return false
+    }
+
+    // Check if we're on HTTP (not HTTPS) - geolocation requires HTTPS except on localhost
+    if (typeof window !== 'undefined' && window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
+      console.error('[useGeolocation] Geolocation requires HTTPS (or localhost). Current protocol:', window.location.protocol)
+      setPermission('denied')
+      return false
+    }
+
+    console.log('[useGeolocation] Requesting geolocation permission...')
 
     return new Promise((resolve) => {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
+          console.log('[useGeolocation] ✅ Permission granted')
           setPermission('granted')
           localStorage.setItem('geo-permission', 'granted')
           setPosition({
             latitude: pos.coords.latitude,
             longitude: pos.coords.longitude,
+            timestamp: pos.timestamp,
+            accuracy: pos.coords.accuracy,
+            speed: pos.coords.speed,
+            heading: pos.coords.heading,
           })
           resolve(true)
         },
         (err) => {
-          console.error('[useGeolocation] Permission request error:', {
+          // Enhanced error logging
+          const errorInfo = {
             code: err?.code,
             message: err?.message,
-          })
-          if (err?.code === err.PERMISSION_DENIED) {
+            type: err?.constructor?.name,
+            // Map error codes to readable names
+            errorName: err?.code === 1 ? 'PERMISSION_DENIED' :
+                      err?.code === 2 ? 'POSITION_UNAVAILABLE' :
+                      err?.code === 3 ? 'TIMEOUT' : 'UNKNOWN',
+            isSecureContext: window?.isSecureContext,
+            protocol: window?.location?.protocol,
+            hostname: window?.location?.hostname,
+          }
+
+          // POSITION_UNAVAILABLE (code 2) and TIMEOUT (code 3) are temporary errors
+          // They don't mean permission was denied - just that we can't get location right now
+          if (err?.code === 1) { // PERMISSION_DENIED - permanent error
+            console.error('[useGeolocation] ❌ Permission DENIED by user:', errorInfo)
             setPermission('denied')
             localStorage.setItem('geo-permission', 'denied')
+            resolve(false)
+          } else if (err?.code === 2) { // POSITION_UNAVAILABLE - temporary error
+            console.warn('[useGeolocation] ⚠️ Position unavailable (temporary - will retry):', errorInfo)
+            // Grant permission anyway - watchPosition will keep trying
+            setPermission('granted')
+            localStorage.setItem('geo-permission', 'granted')
+            resolve(true) // Continue with tracking - watchPosition will handle retries
+          } else if (err?.code === 3) { // TIMEOUT - temporary error
+            console.warn('[useGeolocation] ⚠️ Request timed out (temporary - will retry):', errorInfo)
+            // Grant permission anyway - watchPosition will keep trying
+            setPermission('granted')
+            localStorage.setItem('geo-permission', 'granted')
+            resolve(true) // Continue with tracking - watchPosition will handle retries
+          } else {
+            console.error('[useGeolocation] ❌ Unknown error:', errorInfo)
+            resolve(false)
           }
-          resolve(false)
         },
-        { enableHighAccuracy: true, timeout: 10000 }
+        {
+          enableHighAccuracy: true,   // Use real GPS hardware for driver navigation
+          timeout: 10000,             // 10 seconds timeout
+          maximumAge: 0               // Force fresh position (no cache)
+        }
       )
     })
   }, [])
@@ -151,10 +204,22 @@ export function useGeolocation() {
 
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
-        const newPos = {
+        const newPos: Position = {
           latitude: pos.coords.latitude,
           longitude: pos.coords.longitude,
+          timestamp: pos.timestamp,
+          accuracy: pos.coords.accuracy,
+          speed: pos.coords.speed,
+          heading: pos.coords.heading,
         }
+        console.log('[useGeolocation] 📍 Position updated:', {
+          lat: newPos.latitude,
+          lng: newPos.longitude,
+          accuracy: newPos.accuracy,
+          timestamp: new Date(pos.timestamp).toLocaleTimeString(),
+          speed: newPos.speed,
+          heading: newPos.heading,
+        })
         setPosition(newPos)
         latestPositionRef.current = newPos
       },
@@ -194,9 +259,9 @@ export function useGeolocation() {
         }
       },
       {
-        enableHighAccuracy: false,  // FALSE for desktop - use Wi-Fi/IP location (faster, less accurate)
-        timeout: 30000,             // 30 seconds - desktop needs more time for Wi-Fi positioning
-        maximumAge: 300000,         // 5 minutes - accept older cached position on desktop
+        enableHighAccuracy: true,   // TRUE - use real GPS hardware for accurate position
+        timeout: 5000,              // 5 seconds timeout - force frequent updates
+        maximumAge: 0,              // 0 - never use cached position, always get fresh GPS data
       }
     )
 
@@ -207,9 +272,13 @@ export function useGeolocation() {
     // Send immediately on start using getCurrentPosition
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const newPos = {
+        const newPos: Position = {
           latitude: pos.coords.latitude,
           longitude: pos.coords.longitude,
+          timestamp: pos.timestamp,
+          accuracy: pos.coords.accuracy,
+          speed: pos.coords.speed,
+          heading: pos.coords.heading,
         }
         latestPositionRef.current = newPos
         setPosition(newPos)
@@ -226,9 +295,9 @@ export function useGeolocation() {
         }
       },
       {
-        enableHighAccuracy: false,  // FALSE for desktop - use Wi-Fi/IP location
-        timeout: 20000,             // 20 seconds for initial position
-        maximumAge: 300000,         // 5 minutes - accept older cached position
+        enableHighAccuracy: true,   // TRUE - use real GPS hardware
+        timeout: 10000,             // 10 seconds for initial position
+        maximumAge: 0,              // Force fresh position (no cache)
       }
     )
 

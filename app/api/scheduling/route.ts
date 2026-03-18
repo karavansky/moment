@@ -7,6 +7,8 @@ import { getGroupesByFirmaID } from '@/lib/groupes'
 import { getServicesByFirmaID } from '@/lib/services'
 import { getAppointmentsByFirmaID } from '@/lib/appointments'
 import { getReportsByFirmaID } from '@/lib/reports'
+import { getVehiclesByFirmaID } from '@/lib/vehicles'
+import { getRejectReasonsByFirmaID } from '@/lib/reject-reasons'
 import { mapAppointmentToFrontend } from './_helpers'
 
 export async function GET() {
@@ -30,7 +32,7 @@ export async function GET() {
       userStatus
     )
 
-    const [workersRaw, clientsRaw, teamsRaw, groupesRaw, servicesRaw, appointmentsRaw, reportsRaw] =
+    const [workersRaw, clientsRaw, teamsRaw, groupesRaw, servicesRaw, appointmentsRaw, reportsRaw, vehiclesRaw, rejectReasonsRaw] =
       await Promise.all([
         getWorkersByFirmaID(firmaID),
         getClientsByFirmaID(firmaID),
@@ -39,6 +41,8 @@ export async function GET() {
         getServicesByFirmaID(firmaID),
         getAppointmentsByFirmaID(firmaID),
         getReportsByFirmaID(firmaID),
+        getVehiclesByFirmaID(firmaID),
+        getRejectReasonsByFirmaID(firmaID),
       ])
 
     // Фильтрация appointments по роли
@@ -120,6 +124,10 @@ export async function GET() {
         osVersion: w.osVersion ?? null,
         batteryLevel: w.batteryLevel ?? null,
         batteryStatus: w.batteryStatus ?? null,
+        // Transport fields
+        hasVehicle: w.hasVehicle ?? false,
+        vehicleID: w.vehicleID ?? null,
+        isOnline: w.isOnline ?? false,
       }
     })
 
@@ -204,6 +212,31 @@ export async function GET() {
       myClientID,
     }
 
+    // Map vehicles to frontend format (vehicleID → id) with driver info
+    const vehicles = vehiclesRaw.map(v => ({
+      id: v.vehicleID,
+      firmaID: v.firmaID,
+      plateNumber: v.plateNumber,
+      type: v.type,
+      status: v.status,
+      currentDriverID: v.currentDriverID,
+      currentDriverName: v.driverName,
+      currentDriverSurname: v.driverSurname,
+      currentLat: v.currentLat,
+      currentLng: v.currentLng,
+      lastLocationUpdate: v.lastLocationUpdate ? new Date(v.lastLocationUpdate).toISOString() : null,
+      createdAt: new Date(v.createdAt).toISOString(),
+    }))
+
+    // Map reject reasons to frontend format (reasonID → id)
+    const rejectReasons = rejectReasonsRaw.map(r => ({
+      id: r.reasonID,
+      firmaID: r.firmaID,
+      reasonText: r.reasonText,
+      isActive: r.isActive,
+      createdAt: new Date(r.createdAt).toISOString(),
+    }))
+
     return NextResponse.json({
       user,
       workers,
@@ -213,6 +246,8 @@ export async function GET() {
       services,
       appointments,
       reports,
+      vehicles,
+      rejectReasons,
       firmaID,
     })
   } catch (error) {

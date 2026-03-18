@@ -1,6 +1,6 @@
 {
   "name": "moment",
-  "version": "0.1.40",
+  "version": "0.1.41",
   "private": true,
   "scripts": {
     "dev": "PORT=3007 NEXT_TELEMETRY_DISABLED=1 next dev",
@@ -33,6 +33,8 @@
     "@next/third-parties": "^16.1.6",
     "@tailwindcss/postcss": "^4.2.1",
     "@tanstack/react-virtual": "^3.13.21",
+    "@turf/bearing": "^7.3.4",
+    "@turf/distance": "^7.3.4",
     "@types/imap": "^0.8.43",
     "@types/leaflet": "^1.9.21",
     "@types/mailparser": "^3.4.6",
@@ -48,6 +50,7 @@
     "imap": "^0.8.17",
     "ioredis": "^5.10.0",
     "leaflet": "^1.9.4",
+    "leaflet-rotate": "^0.2.8",
     "lucide-react": "^0.577.0",
     "mailparser": "^3.9.4",
     "negotiator": "^1.0.0",

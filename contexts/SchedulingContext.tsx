@@ -22,7 +22,7 @@ import {
   ServiceTreeItem,
   Notif,
 } from '@/types/scheduling'
-import type { Vehicle, RejectReason } from '@/types/transport'
+import type { Vehicle, RejectReason, Order } from '@/types/transport'
 import getAllSampleObjects from '@/lib/scheduling-mock-data'
 import { useNotifications } from '@/contexts/NotificationContext'
 import { generateId } from '@/lib/generate-id'
@@ -106,6 +106,7 @@ interface SchedulingState {
   services: ServiceTreeItem[]
   vehicles: Vehicle[]
   rejectReasons: RejectReason[]
+  orders: Order[]
   firmaID: string
   isLoading: boolean
   isLiveMode: boolean
@@ -223,6 +224,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     services: [],
     vehicles: [],
     rejectReasons: [],
+    orders: [],
     firmaID: '',
     isLoading: true,
     isLiveMode: false,
@@ -1303,12 +1305,37 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
       },
 
       updateVehicle: (updatedVehicle: Vehicle) => {
-        setState(prev => ({
-          ...prev,
-          vehicles: prev.vehicles.map(vehicle =>
-            vehicle.id === updatedVehicle.id ? updatedVehicle : vehicle
-          ),
-        }))
+        // Optimistic update
+        setState(prev => {
+          // Find the previous vehicle to detect driver changes
+          const prevVehicle = prev.vehicles.find(v => v.id === updatedVehicle.id)
+          const driverChanged = prevVehicle?.currentDriverID !== updatedVehicle.currentDriverID
+
+          let updatedWorkers = prev.workers
+
+          if (driverChanged) {
+            // Update workers when driver assignment changes
+            updatedWorkers = prev.workers.map(worker => {
+              // Remove vehicle from old driver
+              if (worker.id === prevVehicle?.currentDriverID) {
+                return { ...worker, vehicleID: null, hasVehicle: false }
+              }
+              // Assign vehicle to new driver
+              if (worker.id === updatedVehicle.currentDriverID) {
+                return { ...worker, vehicleID: updatedVehicle.id, hasVehicle: true }
+              }
+              return worker
+            })
+          }
+
+          return {
+            ...prev,
+            vehicles: prev.vehicles.map(vehicle =>
+              vehicle.id === updatedVehicle.id ? updatedVehicle : vehicle
+            ),
+            workers: updatedWorkers,
+          }
+        })
 
         if (isLiveModeRef.current) {
           apiFetch('/api/transport/vehicles', {
@@ -1320,7 +1347,23 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
               status: updatedVehicle.status,
               currentDriverID: updatedVehicle.currentDriverID,
             }),
-          }).catch(error => console.error('[updateVehicle] API error:', error))
+          })
+            .then(data => {
+              // apiFetch already returns parsed JSON
+              if (data.vehicle) {
+                // Update with server response (includes driverName/driverSurname from API)
+                setState(prev => ({
+                  ...prev,
+                  vehicles: prev.vehicles.map(vehicle =>
+                    vehicle.id === data.vehicle.id ? data.vehicle : vehicle
+                  ),
+                }))
+              }
+            })
+            .catch(error => {
+              console.error('[updateVehicle] API error:', error)
+              // On error, optimistic update stays (could reload vehicles here if needed)
+            })
         }
       },
 

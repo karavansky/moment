@@ -445,8 +445,7 @@ vapor-api:
 cd /home/hronop/node/moment/vapor-api
 docker build -t vapor-api:latest .
 
-cd /home/hronop/mailserver
-docker compose up -d vapor-api
+cd /home/hronop/mailserver && docker compose up -d vapor-api
 ```
 
 ---

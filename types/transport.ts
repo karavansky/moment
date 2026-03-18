@@ -16,10 +16,12 @@ export interface Vehicle {
   type: VehicleType
   status: VehicleStatus
   currentDriverID?: string | null
+  currentDriverName?: string | null
+  currentDriverSurname?: string | null
   currentLat?: number | null
   currentLng?: number | null
   lastLocationUpdate?: Date | null
-  createdAt: Date
+  createdAt: Date | string
   // Relations
   currentDriver?: Worker | null
 }
