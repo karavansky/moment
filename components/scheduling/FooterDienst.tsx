@@ -6,7 +6,6 @@ import { Button, Card, ScrollShadow, Separator } from '@heroui/react'
 import { Client, Worker } from '@/types/scheduling'
 import { usePlatformContext } from '@/contexts/PlatformContext'
 import { useScheduling } from '@/contexts/SchedulingContext'
-import { lightLayout } from '@heroui/theme'
 import { Space } from 'lucide-react'
 
 interface FooterDienstProps {

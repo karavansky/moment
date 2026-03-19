@@ -1,5 +1,4 @@
 /* eslint-disable import/no-anonymous-default-export */
-import { heroui } from '@heroui/theme'
 import typography from '@tailwindcss/typography'
 
 /** @type {import('tailwindcss').Config} */
@@ -7,7 +6,6 @@ export default {
   content: [
     './app/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}',
   ],
   darkMode: 'class',
   theme: {
@@ -21,7 +19,7 @@ export default {
       },
     },
   },
-  plugins: [heroui(), typography],
+  plugins: [typography],
 }
 /*
 import { heroui } from "@heroui/theme"

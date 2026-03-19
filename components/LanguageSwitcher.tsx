@@ -11,6 +11,7 @@ import * as flags from 'country-flag-icons/react/3x2'
 import type { Selection } from '@heroui/react'
 import { linkVariants } from '@heroui/react'
 import NextLink from 'next/link'
+import { useAuth } from '@/components/AuthProvider'
 
 // ... (оставьте languageNames и flagComponents как есть) ...
 const languageNames: Record<SupportedLocale, string> = {
@@ -49,6 +50,7 @@ interface LanguageSwitcherProps {
 
 export default function LanguageSwitcher({ currentLang }: LanguageSwitcherProps) {
   const pathname = usePathname()
+  const { session } = useAuth()
   const effectiveLang = currentLang as SupportedLocale
   const CurrentFlagIcon = flagComponents[effectiveLang]
   const [selected, setSelected] = useState<Selection>(new Set([effectiveLang]))
@@ -65,14 +67,43 @@ export default function LanguageSwitcher({ currentLang }: LanguageSwitcherProps)
     setSelected(new Set([effectiveLang]))
   }, [effectiveLang])
 
-  // Sync cookie with current language (only on client)
+  // Sync cookie and DB with current language (only on client)
   useEffect(() => {
     console.log('[LanguageSwitcher] Setting language cookie:', effectiveLang)
     setLanguageCookie(effectiveLang)
     // Verify cookie was set
     const savedCookie = document.cookie.split(';').find(c => c.trim().startsWith('preferred-language='))
     console.log('[LanguageSwitcher] Cookie after set:', savedCookie)
-  }, [effectiveLang])
+
+    // Save language to database (only if user is authenticated)
+    const updateLanguageInDB = async () => {
+      // Skip if user is not logged in
+      if (!session?.user) {
+        console.log('[LanguageSwitcher] Skipping DB update - user not authenticated')
+        return
+      }
+
+      try {
+        const response = await fetch('/api/settings', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ lang: effectiveLang }),
+        })
+
+        if (!response.ok) {
+          console.error('[LanguageSwitcher] Failed to update language in DB:', await response.text())
+        } else {
+          console.log('[LanguageSwitcher] Language updated in DB:', effectiveLang)
+        }
+      } catch (error) {
+        console.error('[LanguageSwitcher] Error updating language in DB:', error)
+      }
+    }
+
+    updateLanguageInDB()
+  }, [effectiveLang, session?.user])
 
   // Функция расчета пути (Memoized для производительности)
   // Вычисляет пути для ВСЕХ языков сразу, чтобы вставить их в href

@@ -10,7 +10,7 @@ export async function GET() {
     }
 
     const result = await pool.query(
-      `SELECT "pushNotificationsEnabled", "geolocationEnabled" FROM users WHERE "userID" = $1`,
+      `SELECT "pushNotificationsEnabled", "geolocationEnabled", "lang", "country", "citiesID" FROM users WHERE "userID" = $1`,
       [session.user.id]
     )
 
@@ -33,7 +33,7 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json()
-    const { pushNotificationsEnabled, geolocationEnabled } = body
+    const { pushNotificationsEnabled, geolocationEnabled, lang, country, citiesID } = body
 
     const setClauses: string[] = []
     const values: any[] = []
@@ -47,13 +47,29 @@ export async function PATCH(request: Request) {
       setClauses.push(`"geolocationEnabled" = $${paramIndex++}`)
       values.push(geolocationEnabled)
     }
+    if (typeof lang === 'string') {
+      setClauses.push(`"lang" = $${paramIndex++}`)
+      values.push(lang)
+    }
+    // Only Director (status 0 or null) can update country and citiesID
+    const isDirector = session.user.status === 0 || session.user.status === null || session.user.status === undefined
+    if (isDirector) {
+      if (typeof country === 'string') {
+        setClauses.push(`"country" = $${paramIndex++}`)
+        values.push(country)
+      }
+      if (Array.isArray(citiesID)) {
+        setClauses.push(`"citiesID" = $${paramIndex++}`)
+        values.push(citiesID.length > 0 ? citiesID : null)
+      }
+    }
 
     if (setClauses.length === 0) {
       return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
     }
 
     values.push(session.user.id)
-    const query = `UPDATE users SET ${setClauses.join(', ')} WHERE "userID" = $${paramIndex} RETURNING "pushNotificationsEnabled", "geolocationEnabled"`
+    const query = `UPDATE users SET ${setClauses.join(', ')} WHERE "userID" = $${paramIndex} RETURNING "pushNotificationsEnabled", "geolocationEnabled", "lang", "country", "citiesID"`
 
     const result = await pool.query(query, values)
 

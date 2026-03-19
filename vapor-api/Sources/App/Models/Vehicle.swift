@@ -31,6 +31,9 @@ final class Vehicle: Model, @unchecked Sendable, Content {
     @OptionalField(key: "currentLng")
     var currentLng: Double?
 
+    @OptionalField(key: "currentSpeed")
+    var currentSpeed: Double?
+
     @OptionalField(key: "lastLocationUpdate")
     var lastLocationUpdate: Date?
 
@@ -53,6 +56,7 @@ struct VehicleDTO: Content {
     let currentDriverSurname: String?
     let currentLat: Double?
     let currentLng: Double?
+    let currentSpeed: Double?
     let lastLocationUpdate: Date?
     let createdAt: Date?
 
@@ -70,6 +74,7 @@ struct VehicleDTO: Content {
         self.currentDriverSurname = driverSurname
         self.currentLat = vehicle.currentLat
         self.currentLng = vehicle.currentLng
+        self.currentSpeed = vehicle.currentSpeed
         self.lastLocationUpdate = vehicle.lastLocationUpdate
         self.createdAt = vehicle.createdAt
     }

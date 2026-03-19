@@ -107,7 +107,7 @@ function RouteEditor({ points, onChange, error }: RouteEditorProps) {
           </div>
 
           {/* Point Number */}
-          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-semibold">
+          <div className="shrink-0 w-6 h-6 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-semibold">
             {index + 1}
           </div>
 

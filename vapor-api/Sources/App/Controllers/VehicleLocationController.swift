@@ -168,7 +168,7 @@ struct VehicleLocationController: RouteCollection {
 
         // SERVER-SIDE VALIDATION: Get last position from DB
         let lastPosition = try await sql.raw("""
-            SELECT "currentLat", "currentLng", "lastLocationUpdate"
+            SELECT "currentLat", "currentLng", "lastLocationUpdate", "currentSpeed"
             FROM vehicles
             WHERE "vehicleID" = \(bind: body.vehicleID)
               AND "firmaID" = \(bind: firmaID)
@@ -192,15 +192,32 @@ struct VehicleLocationController: RouteCollection {
                                           lat2: body.latitude, lng2: body.longitude)
             let timeDelta = Date().timeIntervalSince(lastUpdate)
 
-            // SERVER-SIDE BUSINESS RULE: Maximum realistic distance based on time
-            // At 130 km/h (highway speed), in 1 second you travel ~36 meters
-            // We allow up to 150 km/h as absolute maximum (42m/sec)
-            let maxDistancePerSecond = 42.0 // meters (150 km/h)
-            let maxRealisticDist = maxDistancePerSecond * max(timeDelta, 1.0)
+            // Calculate new speed (km/h)
+            if timeDelta > 0 {
+                speed = (dist / 1000.0) / (timeDelta / 3600.0)
+            }
+
+            // SERVER-SIDE BUSINESS RULE: Dynamic GPS noise filter based on realistic acceleration
+            // A sports car can accelerate 0-100 km/h in ~3 seconds (max ~9 m/s²)
+            // Emergency braking: ~10 m/s²
+            // We use generous limit: 12 m/s² to account for GPS inaccuracy
+            let MAX_ACCELERATION = 12.0 // m/s² (very generous, allows sports car acceleration)
+
+            // Get previous speed from database (or 0 if not available)
+            let prevSpeedKmh = (try? lastRow.decode(column: "currentSpeed", as: Double.self)) ?? 0.0
+            let prevSpeedMs = prevSpeedKmh / 3.6 // Convert km/h to m/s
+
+            // Calculate max realistic distance based on previous speed + max acceleration
+            // Using kinematic equation: distance = v0*t + 0.5*a*t²
+            let maxRealisticDist = (prevSpeedMs * timeDelta) +
+                                   (0.5 * MAX_ACCELERATION * timeDelta * timeDelta)
 
             if dist > maxRealisticDist {
-                req.logger.warning("[GPS] 🚫 Suspicious GPS jump detected: \(String(format: "%.1f", dist))m in \(String(format: "%.1f", timeDelta))s (max: \(String(format: "%.1f", maxRealisticDist))m)")
-                throw Abort(.badRequest, reason: "Invalid GPS point: unrealistic movement")
+                let newSpeedMs = (speed ?? 0) / 3.6
+                let accelerationMs2 = abs(newSpeedMs - prevSpeedMs) / timeDelta
+
+                req.logger.warning("[GPS] 🚫 Unrealistic acceleration detected: dist=\(String(format: "%.1f", dist))m in \(String(format: "%.1f", timeDelta))s, prevSpeed=\(String(format: "%.1f", prevSpeedKmh))km/h, newSpeed=\(String(format: "%.1f", speed ?? 0))km/h, accel=\(String(format: "%.1f", accelerationMs2))m/s² (max: \(String(format: "%.1f", maxRealisticDist))m)")
+                throw Abort(.badRequest, reason: "Invalid GPS point: unrealistic acceleration")
             }
 
             // Calculate bearing (server-side, hidden from client)
@@ -209,12 +226,7 @@ struct VehicleLocationController: RouteCollection {
                                           lat2: body.latitude, lng2: body.longitude)
             }
 
-            // Calculate speed (server-side, hidden from client)
-            if timeDelta > 0 {
-                speed = (dist / 1000.0) / (timeDelta / 3600.0) // km/h
-            }
-
-            req.logger.debug("[GPS] ✅ Validated: dist=\(String(format: "%.1f", dist))m, time=\(String(format: "%.1f", timeDelta))s, speed=\(String(format: "%.1f", speed ?? 0))km/h, bearing=\(String(format: "%.1f", bearing ?? 0))°")
+            req.logger.debug("[GPS] ✅ Validated: dist=\(String(format: "%.1f", dist))m, time=\(String(format: "%.1f", timeDelta))s, prevSpeed=\(String(format: "%.1f", prevSpeedKmh))km/h, speed=\(String(format: "%.1f", speed ?? 0))km/h, bearing=\(String(format: "%.1f", bearing ?? 0))°")
         }
 
         // Try to snap to road using OSRM
@@ -237,10 +249,11 @@ struct VehicleLocationController: RouteCollection {
             UPDATE vehicles
             SET "currentLat" = \(bind: finalLat),
                 "currentLng" = \(bind: finalLng),
+                "currentSpeed" = \(bind: speed),
                 "lastLocationUpdate" = \(bind: timestamp)
             WHERE "vehicleID" = \(bind: body.vehicleID)
               AND "firmaID" = \(bind: firmaID)
-            RETURNING "vehicleID", "plateNumber", "currentLat", "currentLng", "lastLocationUpdate"
+            RETURNING "vehicleID", "plateNumber", "currentLat", "currentLng", "currentSpeed", "lastLocationUpdate"
             """).first()
 
         guard let row = updated else {

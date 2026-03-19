@@ -26,6 +26,7 @@ import dynamic from 'next/dynamic'
 import { useAsyncList } from '@react-stately/data'
 import { ChevronDown, List } from 'lucide-react'
 import { useTranslation } from '@/components/Providers'
+import { useAuth } from '@/components/AuthProvider'
 
 // Динамический импорт карты для избежания SSR проблем
 const AddressMap = dynamic(() => import('./AddressMap'), { ssr: false })
@@ -45,13 +46,20 @@ export const ClientAdress = memo(function ClientAdress({
   className,
 }: ClientAdressProps) {
   const { t } = useTranslation()
+  const { session } = useAuth()
   const { updateClient, addClient } = useScheduling()
+
+  // Pre-fill country from session for new clients
+  const defaultCountry = isCreateNew && session?.user?.country
+    ? session.user.country
+    : (client.country || '')
+
   const [addressData, setAddressData] = useState({
     street: client.street || '',
     city: client.city || '',
     zipCode: client.postalCode || '',
     houseNumber: client.houseNumber || '',
-    country: client.country || '',
+    country: defaultCountry,
     district: client.district || '',
     latitude: client.latitude || 0,
     longitude: client.longitude || 0,
@@ -81,11 +89,11 @@ export const ClientAdress = memo(function ClientAdress({
     client.latitude && client.longitude ? { lat: client.latitude, lng: client.longitude } : null
   )
 
-  // Resolve country: client.country may be a code ('de') or a full name ('Germany')
+  // Resolve country: defaultCountry may be a code ('de') or a full name ('Germany')
   const resolvedCountryCode =
-    CountriesHelper.getCountryByCode(client.country)
-      ? client.country.toLowerCase()
-      : CountriesHelper.getCodeByName(client.country) ?? ''
+    CountriesHelper.getCountryByCode(defaultCountry)
+      ? defaultCountry.toLowerCase()
+      : CountriesHelper.getCodeByName(defaultCountry) ?? ''
   const normalizedCountry = CountriesHelper.getNameByCode(resolvedCountryCode)
   const [countryCode, setCountryCode] = useState(resolvedCountryCode)
 

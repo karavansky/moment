@@ -1,7 +1,17 @@
 import {chain} from "@react-aria/utils";
 import {useControlledState} from "@react-stately/utils";
-import {useCallbackRef} from "@heroui/use-callback-ref";
-import {useCallback, useId} from "react";
+import {useCallback, useId, useRef, useEffect} from "react";
+
+// useCallbackRef polyfill (replaced @heroui/use-callback-ref)
+function useCallbackRef<T extends (...args: any[]) => any>(callback: T | undefined): T | undefined {
+  const callbackRef = useRef(callback);
+
+  useEffect(() => {
+    callbackRef.current = callback;
+  });
+
+  return useCallback(((...args) => callbackRef.current?.(...args)) as T, []);
+}
 
 export interface UseDisclosureProps {
   isOpen?: boolean;

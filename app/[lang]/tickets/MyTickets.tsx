@@ -21,7 +21,7 @@ import { MessageSquare, MessageSquarePlus, MessagesSquare, Plus, SquarePen } fro
 import type { Ticket } from '@/lib/interface'
 import type { ButtonProps } from '@heroui/react'
 import { cn } from 'tailwind-variants'
-import { Badge } from '@heroui/badge' // Правильно
+import { Badge } from '@heroui/react' // Правильно
 import { PressableCard } from '@/components/PressableCard'
 import { on } from 'node:cluster'
 
@@ -143,7 +143,7 @@ export default function MyTickets({ lang, tickets, userEmail, isDemo = false, on
         <Disclosure key="2" id="2" aria-label="My Tickets">
           <Disclosure.Heading>
             <div className="flex flex-col items-start justify-start gap-2">
-              <Badge color="success" variant="solid" content={`${tickets.length}`} size="lg">
+              <Badge.Anchor>
                 <Button
                   variant={
                     selectedKeys instanceof Set && selectedKeys.has('2') ? 'tertiary' : 'primary'
@@ -155,7 +155,10 @@ export default function MyTickets({ lang, tickets, userEmail, isDemo = false, on
                   <MessagesSquare className="min-w-7.5 min-h-7.5 mx-1" />
                   {'My Tickets'}
                 </Button>
-              </Badge>
+                <Badge color="success" variant="primary" size="lg">
+                  {tickets.length}
+                </Badge>
+              </Badge.Anchor>
             </div>
           </Disclosure.Heading>
           <Disclosure.Content className="duration-420 ease-out-quad py-2">

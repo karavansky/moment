@@ -25,6 +25,9 @@ struct SettingsController: RouteCollection {
                   u."geolocationEnabled",
                   u."name",
                   u."email",
+                  u."lang",
+                  u."country",
+                  u."citiesID",
                   o."name" AS "organisationName",
                   o."firmaID"
                 FROM users u
@@ -38,6 +41,9 @@ struct SettingsController: RouteCollection {
                     var geolocationEnabled: Bool?
                     var name: String?
                     var email: String?
+                    var lang: String?
+                    var country: String?
+                    var citiesID: [Int]?
                     var organisationName: String?
                     var firmaID: String?
                 }
@@ -46,6 +52,9 @@ struct SettingsController: RouteCollection {
                     geolocationEnabled: try? row.decode(column: "geolocationEnabled", as: Bool?.self),
                     name: try? row.decode(column: "name", as: String?.self),
                     email: try? row.decode(column: "email", as: String?.self),
+                    lang: try? row.decode(column: "lang", as: String?.self),
+                    country: try? row.decode(column: "country", as: String?.self),
+                    citiesID: try? row.decode(column: "citiesID", as: [Int]?.self),
                     organisationName: try? row.decode(column: "organisationName", as: String?.self),
                     firmaID: try? row.decode(column: "firmaID", as: String?.self)
                 )
@@ -59,6 +68,9 @@ struct SettingsController: RouteCollection {
                     u."geolocationEnabled",
                     u."name",
                     u."email",
+                    u."lang",
+                    u."country",
+                    u."citiesID",
                     o."name" AS "organisationName",
                     o."firmaID",
                     w."name" AS "workerName",
@@ -69,13 +81,16 @@ struct SettingsController: RouteCollection {
                 LEFT JOIN workers w ON u."userID" = w."userID" AND w."firmaID" = \(bind: firmaID)
                 WHERE u."userID" = \(bind: user.userId)
                 """).first()
-            
+
             if let row = row {
                 struct WorkerSettingsOut: Content {
                     var pushNotificationsEnabled: Bool?
                     var geolocationEnabled: Bool?
                     var name: String?
                     var email: String?
+                    var lang: String?
+                    var country: String?
+                    var citiesID: [Int]?
                     var organisationName: String?
                     var firmaID: String?
                     var workerName: String?
@@ -87,6 +102,9 @@ struct SettingsController: RouteCollection {
                     geolocationEnabled: try? row.decode(column: "geolocationEnabled", as: Bool?.self),
                     name: try? row.decode(column: "name", as: String?.self),
                     email: try? row.decode(column: "email", as: String?.self),
+                    lang: try? row.decode(column: "lang", as: String?.self),
+                    country: try? row.decode(column: "country", as: String?.self),
+                    citiesID: try? row.decode(column: "citiesID", as: [Int]?.self),
                     organisationName: try? row.decode(column: "organisationName", as: String?.self),
                     firmaID: try? row.decode(column: "firmaID", as: String?.self),
                     workerName: try? row.decode(column: "workerName", as: String?.self),
@@ -108,11 +126,14 @@ struct SettingsController: RouteCollection {
         struct Body: Content {
             var pushNotificationsEnabled: Bool?
             var geolocationEnabled: Bool?
+            var lang: String?
+            var country: String?
+            var citiesID: [Int]?
         }
         let body = try req.content.decode(Body.self)
 
         let db = req.db as! any SQLDatabase
-        
+
         if let push = body.pushNotificationsEnabled {
             try await db.raw("""
                 UPDATE users SET "pushNotificationsEnabled" = \(bind: push) WHERE "userID" = \(bind: user.userId)
@@ -122,6 +143,26 @@ struct SettingsController: RouteCollection {
             try await db.raw("""
                 UPDATE users SET "geolocationEnabled" = \(bind: geo) WHERE "userID" = \(bind: user.userId)
                 """).run()
+        }
+        if let lang = body.lang {
+            try await db.raw("""
+                UPDATE users SET "lang" = \(bind: lang) WHERE "userID" = \(bind: user.userId)
+                """).run()
+        }
+        // Only Director (status 0 or null) can update country and citiesID
+        if user.status == nil || user.status == 0 {
+            if let country = body.country {
+                try await db.raw("""
+                    UPDATE users SET "country" = \(bind: country) WHERE "userID" = \(bind: user.userId)
+                    """).run()
+            }
+            if let citiesID = body.citiesID {
+                // Convert array to PostgreSQL array format
+                let citiesArray = citiesID.isEmpty ? nil : citiesID
+                try await db.raw("""
+                    UPDATE users SET "citiesID" = \(bind: citiesArray) WHERE "userID" = \(bind: user.userId)
+                    """).run()
+            }
         }
 
         // Find worker to update lastLogin / push state and notify

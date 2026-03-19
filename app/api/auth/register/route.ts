@@ -8,6 +8,8 @@ import { getInviteByToken } from '@/lib/invites'
 import { createWorker } from '@/lib/workers'
 import { createClient } from '@/lib/clients'
 import { generateId } from '@/lib/generate-id'
+import { getLocale } from '@/lib/get-locale'
+import { detectCountryByIP } from '@/lib/detect-country'
 
 export async function POST(request: Request) {
   try {
@@ -49,6 +51,13 @@ export async function POST(request: Request) {
       }
     }
 
+    // Detect language and country for new user
+    const lang = await getLocale()
+    const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+                     request.headers.get('x-real-ip') ||
+                     null
+    const country = await detectCountryByIP(clientIP)
+
     const passwordHash = await hashPassword(password)
     const existingUser = await getUserByEmail(email)
 
@@ -71,7 +80,7 @@ export async function POST(request: Request) {
       if (!invite) {
         return NextResponse.json({ error: 'Invalid invite token' }, { status: 400 })
       }
-      user = await createUserWithPassword(name, email, passwordHash, invite.firmaID, invite.status)
+      user = await createUserWithPassword(name, email, passwordHash, invite.firmaID, invite.status, lang, country)
 
       // Создаём запись в workers/clients в зависимости от роли
       if (invite.status === 1) {
@@ -82,7 +91,7 @@ export async function POST(request: Request) {
     } else {
       // Обычная регистрация — создаём организацию, status=0 (директор)
       const org = await createOrganisation(organisation)
-      user = await createUserWithPassword(name, email, passwordHash, org.firmaID, 0)
+      user = await createUserWithPassword(name, email, passwordHash, org.firmaID, 0, lang, country)
     }
 
     const token = await createVerificationToken(user.userID, 'email_verify')

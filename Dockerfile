@@ -31,6 +31,8 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/.env ./
+# Copy package.json for APP_VERSION env variable
+COPY --from=builder /app/package.json ./package.json
 
 # Пробрасываем порт
 EXPOSE 3002

@@ -52,6 +52,7 @@ func routes(_ app: Application) throws {
     try protected.register(collection: SettingsController())          // /api/settings
     try protected.register(collection: LocationController())          // /api/location
     try protected.register(collection: StaffController())             // /api/staff
+    try protected.register(collection: CityController())              // CRUD /api/cities
 
     // Admin routes (JWT auth + isAdmin required)
     let admin = protected.grouped(AdminMiddleware())

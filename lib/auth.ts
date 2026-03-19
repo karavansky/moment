@@ -2,12 +2,14 @@ import NextAuth from 'next-auth'
 import Google from 'next-auth/providers/google'
 import Apple from 'next-auth/providers/apple'
 import Credentials from 'next-auth/providers/credentials'
-import { headers } from 'next/headers'
+import { headers, cookies } from 'next/headers'
 import { createUser, getUserByEmail, updateUserToken, updateLastLogin } from './users'
 import { sendNewUserNotification } from './email'
 import { verifyPassword } from './password'
 import { createSession, getSession, deleteSession } from './sessions'
 import { getOrganisationById } from './organisations'
+import { getLocale } from './get-locale'
+import { detectCountryByIP } from './detect-country'
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   debug: process.env.NODE_ENV === 'development',
@@ -61,6 +63,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           isAdmin: user.isAdmin,
           firmaID: user.firmaID ?? undefined,
           status: user.status,
+          lang: user.lang,
+          country: user.country,
+          citiesID: user.citiesID ?? undefined,
         }
       },
     }),
@@ -95,6 +100,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.isAdmin = user.isAdmin
           token.firmaID = user.firmaID
           token.status = user.status
+          token.lang = user.lang
+          token.country = user.country
+          token.citiesID = user.citiesID
           if (user.firmaID) {
             try {
               const org = await getOrganisationById(user.firmaID)
@@ -102,6 +110,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             } catch {
               // ignore
             }
+          }
+
+          // Set language cookie from DB
+          try {
+            const cookieStore = await cookies()
+            cookieStore.set('preferred-language', user.lang as string, {
+              httpOnly: false,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax',
+              maxAge: 60 * 60 * 24 * 365, // 1 year
+            })
+            console.log('[JWT Callback] Set language cookie from DB (credentials):', user.lang)
+          } catch (error) {
+            console.error('[JWT Callback] Failed to set language cookie:', error)
           }
         } else {
           // OAuth: создаем/обновляем пользователя в БД
@@ -122,25 +144,76 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 token.isAdmin = existingUser.isAdmin
                 token.firmaID = existingUser.firmaID ?? undefined
                 token.status = existingUser.status
+                token.lang = existingUser.lang
+                token.country = existingUser.country
+                token.citiesID = existingUser.citiesID ?? undefined
                 if (existingUser.firmaID) {
                   const org = await getOrganisationById(existingUser.firmaID)
                   token.organisationName = org?.name
                 }
+
+                // Set language cookie from DB
+                try {
+                  const cookieStore = await cookies()
+                  cookieStore.set('preferred-language', existingUser.lang, {
+                    httpOnly: false,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    maxAge: 60 * 60 * 24 * 365, // 1 year
+                  })
+                  console.log('[JWT Callback] Set language cookie from DB:', existingUser.lang)
+                } catch (error) {
+                  console.error('[JWT Callback] Failed to set language cookie:', error)
+                }
               } else {
                 console.log('[JWT Callback] User does not exist, creating new user...')
+
+                // Detect language and country for new user
+                const lang = await getLocale()
+                let country = ''
+                try {
+                  const headersList = await headers()
+                  const ip =
+                    headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+                    headersList.get('x-real-ip') ||
+                    null
+                  country = await detectCountryByIP(ip)
+                } catch (error) {
+                  console.error('[JWT Callback] Failed to detect country:', error)
+                }
+
                 const newUser = await createUser(
                   user.name,
                   user.email,
                   account.access_token || '',
-                  account.provider
+                  account.provider,
+                  lang,
+                  country
                 )
-                console.log('[JWT Callback] New user created. UserID:', newUser.userID)
+                console.log('[JWT Callback] New user created. UserID:', newUser.userID, 'lang:', lang, 'country:', country)
                 token.userId = newUser.userID
                 token.isAdmin = newUser.isAdmin
                 token.status = newUser.status
+                token.lang = newUser.lang
+                token.country = newUser.country
+                token.citiesID = newUser.citiesID ?? undefined
                 if (newUser.firmaID) {
                   const org = await getOrganisationById(newUser.firmaID)
                   token.organisationName = org?.name
+                }
+
+                // Set language cookie for new user
+                try {
+                  const cookieStore = await cookies()
+                  cookieStore.set('preferred-language', lang, {
+                    httpOnly: false,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    maxAge: 60 * 60 * 24 * 365, // 1 year
+                  })
+                  console.log('[JWT Callback] Set language cookie for new user:', lang)
+                } catch (error) {
+                  console.error('[JWT Callback] Failed to set language cookie:', error)
                 }
                 try {
                   await sendNewUserNotification({
@@ -228,6 +301,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
         if (token.status !== undefined) {
           session.user.status = token.status as number
+        }
+        if (token.lang !== undefined) {
+          session.user.lang = token.lang as string
+        }
+        if (token.country !== undefined) {
+          session.user.country = token.country as string
+        }
+        if (token.citiesID !== undefined) {
+          session.user.citiesID = token.citiesID as number[]
         }
       }
       return session

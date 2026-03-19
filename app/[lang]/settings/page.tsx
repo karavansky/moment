@@ -1,17 +1,29 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Switch, Spinner } from '@heroui/react'
-import { Bell, MapPin, ShieldAlert, Share, Plus, Download } from 'lucide-react'
+import { Switch, Spinner, Select, Button, Label, ListBox } from '@heroui/react'
+import { Bell, MapPin, ShieldAlert, Share, Plus, Download, Globe, Trash2 } from 'lucide-react'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { useAuth } from '@/components/AuthProvider'
 import { usePWAInstall } from '@/contexts/PWAInstallContext'
 import { useTranslation } from '@/components/Providers'
+import { CountriesHelper } from '@/lib/countries'
+import { supportedLocales } from '@/config/locales'
+import CityAutocomplete from '@/components/settings/CityAutocomplete'
 
 interface UserSettings {
   pushNotificationsEnabled: boolean
   geolocationEnabled: boolean
+  lang?: string
+  country?: string
+  citiesID?: number[]
+}
+
+interface City {
+  id: number
+  city: string
+  firmaID: number
 }
 
 export default function SettingsPage() {
@@ -26,6 +38,14 @@ export default function SettingsPage() {
   const [policyError, setPolicyError] = useState(false)
   const { t } = useTranslation()
 
+  // Regional settings state
+  const [cities, setCities] = useState<City[]>([])
+  const [loadingCities, setLoadingCities] = useState(false)
+  const [newCityName, setNewCityName] = useState('')
+  const [addingCity, setAddingCity] = useState(false)
+
+  const isDirector = session?.user?.status === 0 || session?.user?.status === null
+
   // Fetch settings from server
   useEffect(() => {
     if (authStatus !== 'authenticated') return
@@ -38,6 +58,18 @@ export default function SettingsPage() {
       .catch(err => console.error('[Settings] Fetch error:', err))
       .finally(() => setLoading(false))
   }, [authStatus])
+
+  // Fetch cities list if Director
+  useEffect(() => {
+    if (authStatus !== 'authenticated' || !isDirector) return
+
+    setLoadingCities(true)
+    fetch('/api/cities')
+      .then(res => (res.ok ? res.json() : []))
+      .then(data => setCities(data))
+      .catch(err => console.error('[Settings] Fetch cities error:', err))
+      .finally(() => setLoadingCities(false))
+  }, [authStatus, isDirector])
 
   // Debug: Check actual permission status
   useEffect(() => {
@@ -73,7 +105,7 @@ export default function SettingsPage() {
     }
   }, [push.isReady, push.isSubscribed, push.syncSubscription])
 
-  const updateSetting = async (key: keyof UserSettings, value: boolean) => {
+  const updateSetting = async (key: keyof UserSettings, value: boolean | string | number[]) => {
     setSaving(true)
     try {
       const res = await fetch('/api/settings', {
@@ -92,6 +124,46 @@ export default function SettingsPage() {
     }
   }
 
+  const handleAddCity = async () => {
+    if (!newCityName.trim() || !session?.user?.firmaID) return
+
+    setAddingCity(true)
+    try {
+      const res = await fetch('/api/cities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city: newCityName.trim() }),
+      })
+      if (res.ok) {
+        const newCity = await res.json()
+        setCities([...cities, newCity])
+        setNewCityName('')
+      }
+    } catch (err) {
+      console.error('[Settings] Add city error:', err)
+    } finally {
+      setAddingCity(false)
+    }
+  }
+
+  const handleDeleteCity = async (cityId: number) => {
+    try {
+      const res = await fetch(`/api/cities/${cityId}`, {
+        method: 'DELETE',
+      })
+      if (res.ok) {
+        setCities(cities.filter(c => c.id !== cityId))
+        // Remove city from citiesID if it was selected
+        if (settings?.citiesID?.includes(cityId)) {
+          const newCitiesID = settings.citiesID.filter(id => id !== cityId)
+          await updateSetting('citiesID', newCitiesID)
+        }
+      }
+    } catch (err) {
+      console.error('[Settings] Delete city error:', err)
+    }
+  }
+
   if (authStatus === 'loading' || loading) {
     return (
       <div className="flex items-center justify-center p-12">
@@ -107,6 +179,212 @@ export default function SettingsPage() {
   return (
     <div className="max-w-2xl mx-auto p-4 sm:p-6 space-y-6">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
+
+      {/* Regional Settings Section */}
+      <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 space-y-4">
+        <div className="flex items-center gap-3">
+          <Globe className="w-5 h-5 text-purple-500" />
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Regional Settings</h2>
+        </div>
+
+        {settings && (
+          <div className="space-y-4">
+            {/* Language Selection - All users */}
+            <div>
+              <Select
+                value={settings.lang || null}
+                onChange={(value) => {
+                  if (value) updateSetting('lang', value as string)
+                }}
+                isDisabled={saving}
+                className="max-w-xs"
+                placeholder="Select language"
+              >
+                <Label>Interface Language</Label>
+                <Select.Trigger>
+                  <Select.Value />
+                  <Select.Indicator />
+                </Select.Trigger>
+                <Select.Popover>
+                  <ListBox>
+                    {supportedLocales.map(locale => (
+                      <ListBox.Item key={locale} id={locale} textValue={locale.toUpperCase()}>
+                        {locale.toUpperCase()}
+                        <ListBox.ItemIndicator />
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
+              </Select>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Choose your preferred interface language
+              </p>
+            </div>
+
+            {/* Country Selection - Director only */}
+            {isDirector && (
+              <div>
+                <Select
+                  value={settings.country || null}
+                  onChange={(value) => {
+                    if (value) updateSetting('country', value as string)
+                  }}
+                  isDisabled={saving}
+                  className="max-w-xs"
+                  placeholder="Select country"
+                >
+                  <Label>
+                    Country
+                    <span className="ml-2 text-xs font-normal text-purple-600 dark:text-purple-400">
+                      (Director only)
+                    </span>
+                  </Label>
+                  <Select.Trigger>
+                    <Select.Value />
+                    <Select.Indicator />
+                  </Select.Trigger>
+                  <Select.Popover>
+                    <ListBox>
+                      {CountriesHelper.getAllCountries().map(({ code, data }) => {
+                        const FlagIcon = data.flag
+                        return (
+                          <ListBox.Item key={code} id={code} textValue={data.name}>
+                            <div className="flex items-center gap-2">
+                              <FlagIcon className="w-4 h-3 rounded-sm" />
+                              {data.name}
+                            </div>
+                            <ListBox.ItemIndicator />
+                          </ListBox.Item>
+                        )
+                      })}
+                    </ListBox>
+                  </Select.Popover>
+                </Select>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Select your country for better address suggestions
+                </p>
+              </div>
+            )}
+
+            {/* Cities Management - Director only */}
+            {isDirector && (
+              <div>
+                <label className="text-sm font-medium text-gray-900 dark:text-white block mb-2">
+                  City Filtering
+                  <span className="ml-2 text-xs font-normal text-purple-600 dark:text-purple-400">
+                    (Director only)
+                  </span>
+                </label>
+
+                {/* City List */}
+                {loadingCities ? (
+                  <Spinner size="sm" />
+                ) : (
+                  <div className="space-y-2">
+                    {cities.length > 0 ? (
+                      <>
+                        <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto">
+                          {cities.map(city => (
+                            <div
+                              key={city.id}
+                              className="flex items-center justify-between bg-gray-50 dark:bg-gray-700/50 p-2 rounded-lg"
+                            >
+                              <span className="text-sm text-gray-700 dark:text-gray-300">
+                                {city.city}
+                              </span>
+                              <Button
+                                variant="tertiary"
+                                size="sm"
+                                onPress={() => handleDeleteCity(city.id)}
+                                aria-label={`Delete ${city.city}`}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Cities Selection */}
+                        <div className="mt-3">
+                          <Select
+                            selectionMode="multiple"
+                            value={settings.citiesID?.map(id => id.toString()) || []}
+                            onChange={(keys) => {
+                              const citiesID = Array.from(keys as Iterable<string>).map(k => parseInt(k))
+                              updateSetting('citiesID', citiesID)
+                            }}
+                            isDisabled={saving || cities.length === 0}
+                            className="max-w-xs"
+                            placeholder="Select cities to filter"
+                          >
+                            <Label>Filter addresses by cities</Label>
+                            <Select.Trigger>
+                              <Select.Value />
+                              <Select.Indicator />
+                            </Select.Trigger>
+                            <Select.Popover>
+                              <ListBox selectionMode="multiple">
+                                {cities.map(city => (
+                                  <ListBox.Item key={city.id.toString()} id={city.id.toString()} textValue={city.city}>
+                                    {city.city}
+                                    <ListBox.ItemIndicator />
+                                  </ListBox.Item>
+                                ))}
+                              </ListBox>
+                            </Select.Popover>
+                          </Select>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                        No cities added yet
+                      </p>
+                    )}
+
+                    {/* Add City Form */}
+                    {settings?.country ? (
+                      <div className="space-y-2 mt-3">
+                        <Label className="text-sm font-medium text-gray-900 dark:text-white">
+                          Add City
+                        </Label>
+                        <div className="flex gap-2">
+                          <div className="flex-1">
+                            <CityAutocomplete
+                              value={newCityName}
+                              onChange={setNewCityName}
+                              placeholder="Search and add a city..."
+                              countryCode={settings.country}
+                              aria-label="Search for a city"
+                            />
+                          </div>
+                          <Button
+                            variant="primary"
+                            size="md"
+                            onPress={handleAddCity}
+                            isDisabled={addingCity || !newCityName.trim()}
+                          >
+                            {addingCity ? 'Adding...' : 'Add'}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                        <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                          Please select a country first to add cities
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  Manage cities for address filtering
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </section>
 
       {/* Push Notifications Section */}
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 space-y-4">

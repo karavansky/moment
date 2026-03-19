@@ -1,11 +1,10 @@
 'use client'
 
-import { HeroUIProvider } from '@heroui/system'
+// HeroUI v3 doesn't require a provider for most components
 import { ThemeProvider as NextThemesProvider, ThemeProviderProps, useTheme } from 'next-themes'
 import React, { createContext, useContext, useMemo, useEffect, useRef } from 'react'
 import { SessionProvider } from 'next-auth/react'
 import { AuthProvider } from './AuthProvider'
-import { useRouter } from 'next/navigation'
 import { SidebarProvider } from '@/contexts/SidebarContext'
 import { SchedulingProvider } from '@/contexts/SchedulingContext'
 import { NotificationProvider } from '@/contexts/NotificationContext'
@@ -95,8 +94,8 @@ export const useTranslation = () => {
 }
 
 function HeroUIThemeWrapper({ children }: { children: React.ReactNode }) {
-  const router = useRouter()
-  return <HeroUIProvider navigate={router.push}>{children}</HeroUIProvider>
+  // HeroUI v3 doesn't require a provider wrapper
+  return <>{children}</>
 }
 
 // Separate component so useAppVersion runs inside all necessary context providers (like ToastProvider)

@@ -12,7 +12,7 @@ import {
   TextField,
   InputGroup,
 } from '@heroui/react'
-import { SortDescriptor } from '@heroui/table'
+import { SortDescriptor } from '@heroui/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDownIcon, SearchIcon } from '@/components/icons'
 import { Users } from 'lucide-react'

@@ -10,6 +10,9 @@ declare module 'next-auth' {
       firmaID?: string
       organisationName?: string
       status?: number
+      lang?: string
+      country?: string
+      citiesID?: number[]
     } & DefaultSession['user']
   }
 
@@ -19,6 +22,9 @@ declare module 'next-auth' {
     isAdmin?: boolean
     firmaID?: string
     status?: number
+    lang?: string
+    country?: string
+    citiesID?: number[]
   }
 }
 
@@ -32,5 +38,8 @@ declare module 'next-auth/jwt' {
     firmaID?: string
     organisationName?: string
     status?: number
+    lang?: string
+    country?: string
+    citiesID?: number[]
   }
 }

@@ -629,7 +629,7 @@ export default function List({
                               <div className="flex items-start gap-2 text-xs text-default-600">
                                 <MapPin
                                   size={14}
-                                  className="text-default-400 flex-shrink-0 mt-0.5"
+                                  className="text-default-400 shrink-0 mt-0.5"
                                 />
                                 <span>
                                   {apt.client.street} {apt.client.houseNumber}

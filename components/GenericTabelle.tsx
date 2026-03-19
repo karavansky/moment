@@ -17,7 +17,7 @@ import {
   Chip,
   InputGroup,
 } from '@heroui/react'
-import { SortDescriptor } from '@heroui/table'
+import { SortDescriptor } from '@heroui/react'
 
 import {
   ChevronDownIcon,

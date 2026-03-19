@@ -60,5 +60,14 @@ final class User: Model, @unchecked Sendable {
     @OptionalField(key: "batteryStatus")
     var batteryStatus: String?
 
+    @Field(key: "lang")
+    var lang: String
+
+    @Field(key: "country")
+    var country: String
+
+    @OptionalField(key: "citiesID")
+    var citiesID: [Int]?
+
     init() {}
 }

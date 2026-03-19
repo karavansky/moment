@@ -1,8 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell } from '@heroui/table'
-import { Pagination } from '@heroui/pagination'
+import { Table, Pagination } from '@heroui/react'
 import {
   Input,
   Button,
@@ -520,149 +519,169 @@ const DictionaryTable: React.FC<DictionaryTableProps> = ({
 
       {/* Таблица с горизонтальной прокруткой */}
       <div className="overflow-x-auto">
-        <Table
-          aria-label="Таблица словарей"
-          className="min-w-max"
-          bottomContent={
-            pages > 1 ? (
-              <div className="flex w-full justify-center">
-                <Pagination
-                  isCompact
-                  showControls
-                  showShadow
-                  color="primary"
-                  page={page}
-                  total={pages}
-                  onChange={setPage}
-                />
-              </div>
-            ) : null
-          }
-        >
-          <TableHeader columns={columns}>
-            {column => (
-              <TableColumn
-                key={column.key}
-                className={
-                  column.key === 'keyColumn'
-                    ? 'sticky left-0 bg-default-50 z-10'
-                    : column.key === 'actions'
-                      ? 'sticky right-0 bg-default-50 z-10'
-                      : ''
-                }
-              >
-                {column.label}
-              </TableColumn>
-            )}
-          </TableHeader>
+        <Table className="min-w-max">
+          <Table.ScrollContainer>
+            <Table.Content aria-label="Таблица словарей">
+              <Table.Header>
+                {columns.map(column => (
+                  <Table.Column
+                    key={column.key}
+                    id={column.key}
+                    className={
+                      column.key === 'keyColumn'
+                        ? 'sticky left-0 bg-default-50 z-10'
+                        : column.key === 'actions'
+                          ? 'sticky right-0 bg-default-50 z-10'
+                          : ''
+                    }
+                  >
+                    {column.label}
+                  </Table.Column>
+                ))}
+              </Table.Header>
 
-          <TableBody items={items}>
-            {item => (
-              <TableRow key={item.key}>
-                {columnKey => {
-                  // Колонка с ключом
-                  if (columnKey === 'keyColumn') {
-                    return (
-                      <TableCell className="sticky left-0 bg-default-50 z-10">
-                        <div className="flex flex-col gap-1">
-                          <span className="font-medium">{item.key}</span>
-                          <div className="flex gap-2">
-                            {getValueTypeChip(item.type)}
-                            <Chip size="sm" variant="soft" color="default">
-                              {item.path.length} ур.
-                            </Chip>
-                          </div>
+              <Table.Body>
+                {items.map(item => (
+                  <Table.Row key={item.key} id={item.key}>
+                    {/* Колонка с ключом */}
+                    <Table.Cell className="sticky left-0 bg-default-50 z-10">
+                      <div className="flex flex-col gap-1">
+                        <span className="font-medium">{item.key}</span>
+                        <div className="flex gap-2">
+                          {getValueTypeChip(item.type)}
+                          <Chip size="sm" variant="soft" color="default">
+                            {item.path.length} ур.
+                          </Chip>
                         </div>
-                      </TableCell>
-                    )
-                  }
+                      </div>
+                    </Table.Cell>
 
-                  // Колонка с действиями
-                  if (columnKey === 'actions') {
-                    return (
-                      <TableCell className="sticky right-0 bg-default-50 z-10">
-                        <Dropdown>
-                          <Button isIconOnly size="sm" variant="tertiary">
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                          <Dropdown.Popover>
-                            <Dropdown.Menu aria-label="Действия">
-                              <Dropdown.Item key="edit" onPress={() => handleEditKey(item)}>
-                                <Edit className="w-4 h-4" />
-                                Редактировать все языки
-                              </Dropdown.Item>
-                              <Dropdown.Item
-                                key="delete"
-                                onPress={() => handleDeleteKey(item.path)}
-                              >
-                                <Trash2 className="w-4 h-4" /> Удалить
-                              </Dropdown.Item>
-                            </Dropdown.Menu>
-                          </Dropdown.Popover>
-                        </Dropdown>
-                      </TableCell>
-                    )
-                  }
+                    {/* Колонки с языками */}
+                    {languages.map(lang => {
+                      const isEditing = editingCell?.key === item.key && editingCell?.lang === lang
+                      const value = item.values[lang] || ''
+                      const displayValue = truncateText(value, maxPreviewLength)
 
-                  // Колонки с языками
-                  const lang = columnKey as string
-                  const isEditing = editingCell?.key === item.key && editingCell?.lang === lang
-                  const value = item.values[lang] || ''
-                  const displayValue = truncateText(value, maxPreviewLength)
-
-                  return (
-                    <TableCell>
-                      {isEditing ? (
-                        <div className="flex flex-col gap-2">
-                          <TextArea
-                            value={editValue}
-                            onChange={e => setEditValue(e.target.value)}
-                            rows={3}
-                            className="min-h-10"
-                          />
-                          <div className="flex gap-1">
-                            <Button size="sm" isIconOnly onPress={saveEditing}>
-                              <Check className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="danger-soft"
-                              isIconOnly
-                              onPress={cancelEditing}
-                            >
-                              <X className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <Tooltip
-                          key={item.key + lang}
-                          delay={0}
-                          content={
-                            <div className="max-w-xs">
-                              <div className="font-medium mb-1">Полное значение:</div>
-                              <div className="whitespace-pre-wrap wrap-break-word">{value || '(пусто)'}</div>
+                      return (
+                        <Table.Cell key={lang}>
+                          {isEditing ? (
+                            <div className="flex flex-col gap-2">
+                              <TextArea
+                                value={editValue}
+                                onChange={e => setEditValue(e.target.value)}
+                                rows={3}
+                                className="min-h-10"
+                              />
+                              <div className="flex gap-1">
+                                <Button size="sm" isIconOnly onPress={saveEditing}>
+                                  <Check className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="danger-soft"
+                                  isIconOnly
+                                  onPress={cancelEditing}
+                                >
+                                  <X className="w-3 h-3" />
+                                </Button>
+                              </div>
                             </div>
-                          }
-                        >
-                          <div
-                            className="p-2 rounded-md hover:bg-default-100 cursor-pointer min-h-10 flex items-center"
-                            onClick={() => startEditing(item.key, lang, value)}
-                          >
-                            {value ? (
-                              displayValue
-                            ) : (
-                              <span className="text-default-400">(пусто)</span>
-                            )}
-                          </div>
-                        </Tooltip>
-                      )}
-                    </TableCell>
-                  )
-                }}
-              </TableRow>
-            )}
-          </TableBody>
+                          ) : (
+                            <Tooltip
+                              key={item.key + lang}
+                              delay={0}
+                              content={
+                                <div className="max-w-xs">
+                                  <div className="font-medium mb-1">Полное значение:</div>
+                                  <div className="whitespace-pre-wrap wrap-break-word">
+                                    {value || '(пусто)'}
+                                  </div>
+                                </div>
+                              }
+                            >
+                              <div
+                                className="p-2 rounded-md hover:bg-default-100 cursor-pointer min-h-10 flex items-center"
+                                onClick={() => startEditing(item.key, lang, value)}
+                              >
+                                {value ? (
+                                  displayValue
+                                ) : (
+                                  <span className="text-default-400">(пусто)</span>
+                                )}
+                              </div>
+                            </Tooltip>
+                          )}
+                        </Table.Cell>
+                      )
+                    })}
+
+                    {/* Колонка с действиями */}
+                    <Table.Cell className="sticky right-0 bg-default-50 z-10">
+                      <Dropdown>
+                        <Button isIconOnly size="sm" variant="tertiary">
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                        <Dropdown.Popover>
+                          <Dropdown.Menu aria-label="Действия">
+                            <Dropdown.Item key="edit" onPress={() => handleEditKey(item)}>
+                              <Edit className="w-4 h-4" />
+                              Редактировать все языки
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              key="delete"
+                              onPress={() => handleDeleteKey(item.path)}
+                            >
+                              <Trash2 className="w-4 h-4" /> Удалить
+                            </Dropdown.Item>
+                          </Dropdown.Menu>
+                        </Dropdown.Popover>
+                      </Dropdown>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Content>
+          </Table.ScrollContainer>
+
+          {pages > 1 && (
+            <Table.Footer>
+              <div className="flex w-full justify-center py-2">
+                <Pagination size="sm">
+                  <Pagination.Content>
+                    <Pagination.Item>
+                      <Pagination.Previous isDisabled={page === 1} onPress={() => setPage(p => p - 1)}>
+                        <Pagination.PreviousIcon />
+                      </Pagination.Previous>
+                    </Pagination.Item>
+                    {Array.from({ length: Math.min(pages, 5) }, (_, i) => {
+                      let pageNum: number
+                      if (pages <= 5) {
+                        pageNum = i + 1
+                      } else if (page <= 3) {
+                        pageNum = i + 1
+                      } else if (page >= pages - 2) {
+                        pageNum = pages - 4 + i
+                      } else {
+                        pageNum = page - 2 + i
+                      }
+                      return (
+                        <Pagination.Item key={pageNum}>
+                          <Pagination.Link isActive={pageNum === page} onPress={() => setPage(pageNum)}>
+                            {pageNum}
+                          </Pagination.Link>
+                        </Pagination.Item>
+                      )
+                    })}
+                    <Pagination.Item>
+                      <Pagination.Next isDisabled={page === pages} onPress={() => setPage(p => p + 1)}>
+                        <Pagination.NextIcon />
+                      </Pagination.Next>
+                    </Pagination.Item>
+                  </Pagination.Content>
+                </Pagination>
+              </div>
+            </Table.Footer>
+          )}
         </Table>
       </div>
 

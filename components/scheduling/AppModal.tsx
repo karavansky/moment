@@ -358,7 +358,7 @@ function AppModal({
                 </div>
               </div>
             </Modal.Header>
-            <Modal.Body className="p-0 overflow-hidden">
+            <Modal.Body className="p-0 overflow-y-auto max-h-[80vh]">
               <motion.div
                 animate={{ height: height > 0 ? height : 'auto' }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}

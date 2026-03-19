@@ -84,7 +84,8 @@ export default function DriverPage({ params }: DriverPageProps) {
   // Track last N positions for more accurate bearing calculation at low speeds
   const positionHistoryRef = useRef<Array<{ lat: number; lng: number; timestamp: number }>>([])
   const POSITION_HISTORY_SIZE = 5 // Keep last 5 positions (~10-15 seconds of data)
-  const MIN_BEARING_DISTANCE = 3 // Minimum 3 meters total to update bearing
+  const MIN_BEARING_DISTANCE = 10 // Minimum 10 meters total to update bearing (avoid GPS drift)
+  const MIN_MOVEMENT_SPEED = 3 // Minimum 3 km/h to consider vehicle moving (filter GPS drift)
 
   // Current bearing (heading) in degrees
   const [mapBearing, setMapBearing] = useState<number>(0)
@@ -94,6 +95,10 @@ export default function DriverPage({ params }: DriverPageProps) {
 
   // Test route coordinates for display on map
   const [testRouteCoordinates, setTestRouteCoordinates] = useState<Array<[number, number]> | null>(null)
+  // Test route ID - unique for each test run to force polyline recreation
+  const [testRouteId, setTestRouteId] = useState<string | null>(null)
+  // Flag to track if test route is currently playing (to disable Real GPS processing)
+  const isTestRouteActiveRef = useRef<boolean>(false)
 
   // Track last GPS update time for throttling and dynamic interpolation
   const lastGPSUpdateRef = useRef<number>(0)
@@ -454,6 +459,12 @@ export default function DriverPage({ params }: DriverPageProps) {
     const vehicle = myVehicleRef.current
     if (!vehicle || !position || !isTracking) return
 
+    // Skip Real GPS processing if Test Route is active
+    if (isTestRouteActiveRef.current) {
+      console.log('⏭️ Skipping Real GPS processing - Test Route is active')
+      return
+    }
+
     // Throttle GPS updates to every 2 seconds
     const now = Date.now()
     if (now - lastGPSUpdateRef.current < GPS_UPDATE_INTERVAL) {
@@ -495,19 +506,46 @@ export default function DriverPage({ params }: DriverPageProps) {
       const timeElapsedSec = (now - lastGPSUpdateRef.current) / 1000
 
       // Calculate current speed (km/h)
-      const speedKmH = (dist / 1000) / (timeElapsedSec / 3600)
+      let speedKmH = (dist / 1000) / (timeElapsedSec / 3600)
 
-      // FILTER GPS NOISE: Reject unrealistic jumps
-      // At 5 km/h (walking speed), in 2 seconds you travel ~2.78 meters
-      // At 50 km/h (city driving), in 2 seconds you travel ~27.8 meters
-      // Reject anything > 50 meters in 2 seconds (= 90 km/h, unrealistic for city)
-      const maxRealisticDist = 50 // meters
+      // FILTER GPS DRIFT: If speed is below minimum threshold, consider vehicle stationary
+      if (speedKmH < MIN_MOVEMENT_SPEED) {
+        console.log('🅿️ GPS drift detected - vehicle appears stationary:', {
+          distance: `${dist.toFixed(1)}m`,
+          timeElapsed: `${timeElapsedSec.toFixed(1)}s`,
+          calculatedSpeed: `${speedKmH.toFixed(1)} km/h`,
+          threshold: `${MIN_MOVEMENT_SPEED} km/h`,
+        })
+        speedKmH = 0 // Set speed to 0 (stationary)
+        setCurrentSpeed(0)
+        return // Don't update position or bearing (GPS drift)
+      }
+
+      // FILTER GPS NOISE: Dynamic filter based on realistic acceleration
+      // A sports car can accelerate 0-100 km/h in ~3 seconds (max ~9 m/s²)
+      // Emergency braking: ~10 m/s²
+      // We use generous limit: 12 m/s² to account for GPS inaccuracy
+      const MAX_ACCELERATION = 12.0 // m/s² (very generous, allows sports car acceleration)
+
+      // Calculate speed change in m/s
+      const prevSpeedMs = (currentSpeed || 0) / 3.6 // Convert km/h to m/s
+      const newSpeedMs = speedKmH / 3.6
+      const speedChangeMs = Math.abs(newSpeedMs - prevSpeedMs)
+      const accelerationMs2 = speedChangeMs / timeElapsedSec
+
+      // Calculate max realistic distance based on previous speed + max acceleration
+      // distance = v0*t + 0.5*a*t² (kinematic equation)
+      const maxRealisticDist = (prevSpeedMs * timeElapsedSec) +
+                                (0.5 * MAX_ACCELERATION * timeElapsedSec * timeElapsedSec)
 
       if (dist > maxRealisticDist) {
-        console.warn('🚫 GPS NOISE detected - rejecting update:', {
+        console.warn('🚫 GPS NOISE detected - unrealistic acceleration:', {
           distance: `${dist.toFixed(1)}m`,
-          speed: `${speedKmH.toFixed(1)} km/h`,
-          maxAllowed: `${maxRealisticDist}m`,
+          timeElapsed: `${timeElapsedSec.toFixed(1)}s`,
+          prevSpeed: `${currentSpeed.toFixed(1)} km/h`,
+          newSpeed: `${speedKmH.toFixed(1)} km/h`,
+          acceleration: `${accelerationMs2.toFixed(1)} m/s²`,
+          maxAllowed: `${maxRealisticDist.toFixed(1)}m (${MAX_ACCELERATION} m/s² limit)`,
           from: { lat: prevPos.lat, lng: prevPos.lng },
           to: { lat: position.latitude, lng: position.longitude },
         })
@@ -903,6 +941,7 @@ export default function DriverPage({ params }: DriverPageProps) {
               lastGPSTimestampRef.current = 0
               currentInterpolatedPosRef.current = null // Reset interpolated position ref
               isInterpolatingRef.current = false // Reset interpolation state
+              isTestRouteActiveRef.current = false // Reset test route flag
               setInterpolationParams({
                 startPos: null,
                 endPos: null,
@@ -923,13 +962,18 @@ export default function DriverPage({ params }: DriverPageProps) {
 
                 // Convert route points to coordinate array for polyline display
                 const routeCoords: Array<[number, number]> = route.points.map((p: any) => [p.lat, p.lng])
+                const newRouteId = `test-route-${Date.now()}`
                 setTestRouteCoordinates(routeCoords)
-                console.log('[Test] 🗺️ Route polyline set with', routeCoords.length, 'points')
+                setTestRouteId(newRouteId)
+
+                // 🔒 Disable Real GPS processing during Test Route
+                isTestRouteActiveRef.current = true
+                console.log('[Test] 🗺️ Route polyline set with', routeCoords.length, 'points, ID:', newRouteId)
+                console.log('[Test] 🔒 Real GPS processing DISABLED during test')
 
                 let currentIndex = 0
                 const updateInterval = route.updateIntervalMs || 2000
                 let lastTestPos: { lat: number; lng: number } | null = null
-                let lastTestTime = Date.now()
 
                 const testInterval = setInterval(() => {
                   // 🛠️ FIX: Capture interval fire time (not fetch completion time!)
@@ -937,7 +981,13 @@ export default function DriverPage({ params }: DriverPageProps) {
                   if (currentIndex >= route.points.length) {
                     clearInterval(testInterval)
                     setTestRouteCoordinates(null) // Clear route from map
-                    console.log('[Test] 🧪 ✅ Test route complete! Route cleared from map.')
+                    setTestRouteId(null) // Clear route ID
+                    setCurrentSpeed(0) // Reset speed to 0 (vehicle stopped)
+
+                    // 🔓 Re-enable Real GPS processing
+                    isTestRouteActiveRef.current = false
+                    console.log('[Test] 🧪 ✅ Test route complete! Route cleared, speed reset to 0.')
+                    console.log('[Test] 🔓 Real GPS processing RE-ENABLED')
                     return
                   }
 
@@ -948,26 +998,31 @@ export default function DriverPage({ params }: DriverPageProps) {
                   })
 
                   // Calculate bearing and speed from previous point
+                  // ✅ FIX: Always set speed from route config, even on tight turns
+                  const speedKmH = route.speedKmh  // || 30
+                  setCurrentSpeed(speedKmH)
+
                   if (lastTestPos) {
                     const from = point([lastTestPos.lng, lastTestPos.lat])
                     const to = point([currentPoint.lng, currentPoint.lat])
                     const dist = distance(from, to, { units: 'meters' })
-                    const now = Date.now()
-                    const timeElapsedSec = (now - lastTestTime) / 1000
-                    const speedKmH = (dist / 1000) / (timeElapsedSec / 3600)
 
-                    if (dist > 5) {
+                    // Only update bearing if we moved significantly (but always keep speed!)
+                    if (dist > 3) {
                       const newBearing = bearing(from, to)
+
                       console.log('[Test] 🧪 🧭 Bearing & Speed:', {
                         distance: `${dist.toFixed(1)}m`,
-                        speed: `${speedKmH.toFixed(1)} km/h`,
+                        speed: `${speedKmH.toFixed(1)} km/h (from route config)`,
                         bearing: `${newBearing.toFixed(1)}°`,
                       })
                       setMapBearing(newBearing)
-                      setCurrentSpeed(speedKmH)
+                    } else {
+                      console.log('[Test] 🧪 ⚡ Small movement - keeping speed, skipping bearing update:', {
+                        distance: `${dist.toFixed(1)}m`,
+                        speed: `${speedKmH.toFixed(1)} km/h`,
+                      })
                     }
-
-                    lastTestTime = now
                   }
 
                   lastTestPos = { lat: currentPoint.lat, lng: currentPoint.lng }
@@ -1204,6 +1259,7 @@ export default function DriverPage({ params }: DriverPageProps) {
             currentSpeed={currentSpeed}
             // Navigation route polyline
             navigationRoute={testRouteCoordinates}
+            navigationRouteId={testRouteId}
           />
         </div>
       </div>

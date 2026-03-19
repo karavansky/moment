@@ -11,8 +11,8 @@ import {
   Chip,
   Checkbox,
 } from '@heroui/react'
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@heroui/table'
-import { Pagination } from '@heroui/pagination'
+import { Table } from '@heroui/react'
+import { Pagination } from '@heroui/react'
 import { Search, ChevronDown, Mail, MessageSquare, Plus, Upload, Columns3 } from 'lucide-react'
 
 export interface Contact {
@@ -176,89 +176,88 @@ export default function ContactsTable({
 
       {/* Table */}
       <div className="border border-divider rounded-lg overflow-hidden">
-        <Table
-          aria-label="Contacts table"
-          removeWrapper
-          classNames={{
-            th: 'bg-default-100 text-default-700 font-semibold',
-            td: 'border-b border-divider',
-          }}
-        >
-          <TableHeader columns={columns.filter(c => visibleColumns.has(c.key))}>
-            {column => (
-              <TableColumn key={column.key}>
-                {column.key === 'email' ? (
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      isSelected={
-                        selectedKeys.size === paginatedContacts.length &&
-                        paginatedContacts.length > 0
-                      }
-                      isIndeterminate={
-                        selectedKeys.size > 0 && selectedKeys.size < paginatedContacts.length
-                      }
-                      onChange={handleSelectAll}
-                    />
-                    <span>{column.label}</span>
-                  </div>
-                ) : (
-                  column.label
-                )}
-              </TableColumn>
-            )}
-          </TableHeader>
-          <TableBody items={paginatedContacts}>
-            {contact => (
-              <TableRow key={contact.id}>
+        <Table>
+          <Table.ScrollContainer>
+            <Table.Content aria-label="Contacts table">
+              <Table.Header>
                 {columns
                   .filter(c => visibleColumns.has(c.key))
                   .map(column => (
-                    <TableCell key={column.key}>
+                    <Table.Column key={column.key} id={column.key}>
                       {column.key === 'email' ? (
                         <div className="flex items-center gap-2">
                           <Checkbox
-                            isSelected={selectedKeys.has(contact.id)}
-                            onChange={() => handleSelectContact(contact.id)}
+                            isSelected={
+                              selectedKeys.size === paginatedContacts.length &&
+                              paginatedContacts.length > 0
+                            }
+                            isIndeterminate={
+                              selectedKeys.size > 0 && selectedKeys.size < paginatedContacts.length
+                            }
+                            onChange={handleSelectAll}
                           />
-                          <a
-                            href={`mailto:${contact.email}`}
-                            className="text-primary hover:underline"
-                          >
-                            {contact.email}
-                          </a>
+                          <span>{column.label}</span>
                         </div>
-                      ) : column.key === 'subscribed' ? (
-                        <div className="flex gap-2">
-                          {contact.subscribed.email && (
-                            <Chip size="sm" variant="soft">
-                              <Mail className="w-3 h-3" />
-                              Email
-                            </Chip>
-                          )}
-                          {contact.subscribed.sms && (
-                            <Chip size="sm" variant="soft">
-                              <MessageSquare className="w-3 h-3" /> SMS
-                            </Chip>
-                          )}
-                        </div>
-                      ) : column.key === 'blocklisted' ? (
-                        contact.blocklisted ? (
-                          <Chip size="sm" color="danger" variant="soft">
-                            Yes
-                          </Chip>
-                        ) : null
-                      ) : column.key === 'landline' ? (
-                        <span className="text-default-500">{contact.landlineNumber || '-'}</span>
-                      ) : column.key === 'lastChanged' ? (
-                        <span className="text-default-500">
-                          {contact.lastChanged.toLocaleDateString('de-DE')}
-                        </span>
-                      ) : null}
-                    </TableCell>
+                      ) : (
+                        column.label
+                      )}
+                    </Table.Column>
                   ))}
-              </TableRow>
-            )}
-          </TableBody>
+              </Table.Header>
+              <Table.Body>
+                {paginatedContacts.map(contact => (
+                  <Table.Row key={contact.id} id={contact.id}>
+                    {columns
+                      .filter(c => visibleColumns.has(c.key))
+                      .map(column => (
+                        <Table.Cell key={column.key}>
+                          {column.key === 'email' ? (
+                            <div className="flex items-center gap-2">
+                              <Checkbox
+                                isSelected={selectedKeys.has(contact.id)}
+                                onChange={() => handleSelectContact(contact.id)}
+                              />
+                              <a
+                                href={`mailto:${contact.email}`}
+                                className="text-primary hover:underline"
+                              >
+                                {contact.email}
+                              </a>
+                            </div>
+                          ) : column.key === 'subscribed' ? (
+                            <div className="flex gap-2">
+                              {contact.subscribed.email && (
+                                <Chip size="sm" variant="soft">
+                                  <Mail className="w-3 h-3" />
+                                  Email
+                                </Chip>
+                              )}
+                              {contact.subscribed.sms && (
+                                <Chip size="sm" variant="soft">
+                                  <MessageSquare className="w-3 h-3" /> SMS
+                                </Chip>
+                              )}
+                            </div>
+                          ) : column.key === 'blocklisted' ? (
+                            contact.blocklisted ? (
+                              <Chip size="sm" color="danger" variant="soft">
+                                Yes
+                              </Chip>
+                            ) : null
+                          ) : column.key === 'landline' ? (
+                            <span className="text-default-500">{contact.landlineNumber || '-'}</span>
+                          ) : column.key === 'lastChanged' ? (
+                            <span className="text-default-500">
+                              {contact.lastChanged.toLocaleDateString('de-DE')}
+                            </span>
+                          ) : null}
+                        </Table.Cell>
+                      ))}
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Content>
+          </Table.ScrollContainer>
         </Table>
       </div>
 
@@ -292,7 +291,39 @@ export default function ContactsTable({
           </span>
         </div>
 
-        <Pagination total={pages} page={page} onChange={setPage} showControls size="sm" />
+        <Pagination size="sm">
+          <Pagination.Content>
+            <Pagination.Item>
+              <Pagination.Previous isDisabled={page === 1} onPress={() => setPage(p => p - 1)}>
+                <Pagination.PreviousIcon />
+              </Pagination.Previous>
+            </Pagination.Item>
+            {Array.from({ length: Math.min(pages, 5) }, (_, i) => {
+              let pageNum: number
+              if (pages <= 5) {
+                pageNum = i + 1
+              } else if (page <= 3) {
+                pageNum = i + 1
+              } else if (page >= pages - 2) {
+                pageNum = pages - 4 + i
+              } else {
+                pageNum = page - 2 + i
+              }
+              return (
+                <Pagination.Item key={pageNum}>
+                  <Pagination.Link isActive={pageNum === page} onPress={() => setPage(pageNum)}>
+                    {pageNum}
+                  </Pagination.Link>
+                </Pagination.Item>
+              )
+            })}
+            <Pagination.Item>
+              <Pagination.Next isDisabled={page === pages} onPress={() => setPage(p => p + 1)}>
+                <Pagination.NextIcon />
+              </Pagination.Next>
+            </Pagination.Item>
+          </Pagination.Content>
+        </Pagination>
 
         <span className="text-sm text-default-500">of {pages} pages</span>
       </div>

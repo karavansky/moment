@@ -13,6 +13,9 @@ export interface User {
   isAdmin: boolean
   firmaID: string | null
   status: number
+  lang: string
+  country: string
+  citiesID: number[] | null
   pwaVersion?: string | null
   osVersion?: string | null
   batteryLevel?: number | null
@@ -21,25 +24,28 @@ export interface User {
 
 /**
  * Создает нового пользователя через OAuth
+ * lang and country should be detected via detectBrowserLanguage() and detectCountryByIP()
  */
 export async function createUser(
   name: string,
   email: string,
   token: string,
-  provider: string
+  provider: string,
+  lang: string,
+  country: string
 ): Promise<User> {
   const userID = generateId()
   const date = new Date()
 
   const query = `
-    INSERT INTO users ("userID", "name", "email", "token", "date", "provider", "emailVerified")
-    VALUES ($1, $2, $3, $4, $5, $6, TRUE)
+    INSERT INTO users ("userID", "name", "email", "token", "date", "provider", "emailVerified", "lang", "country")
+    VALUES ($1, $2, $3, $4, $5, $6, TRUE, $7, $8)
     RETURNING *
   `
 
-  const values = [userID, name, email, token, date, provider]
+  const values = [userID, name, email, token, date, provider, lang, country]
 
-  console.log('[createUser] Creating user with values:', { userID, name, email, provider })
+  console.log('[createUser] Creating user with values:', { userID, name, email, provider, lang, country })
 
   try {
     const result = await pool.query(query, values)
@@ -53,24 +59,27 @@ export async function createUser(
 
 /**
  * Создает нового пользователя с email+password
+ * lang and country should be detected via detectBrowserLanguage() and detectCountryByIP()
  */
 export async function createUserWithPassword(
   name: string,
   email: string,
   passwordHash: string,
   firmaID: string,
-  status: number = 0
+  status: number,
+  lang: string,
+  country: string
 ): Promise<User> {
   const userID = generateId()
   const date = new Date()
 
   const query = `
-    INSERT INTO users ("userID", "name", "email", "passwordHash", "date", "provider", "emailVerified", "firmaID", "status")
-    VALUES ($1, $2, $3, $4, $5, 'credentials', FALSE, $6, $7)
+    INSERT INTO users ("userID", "name", "email", "passwordHash", "date", "provider", "emailVerified", "firmaID", "status", "lang", "country")
+    VALUES ($1, $2, $3, $4, $5, 'credentials', FALSE, $6, $7, $8, $9)
     RETURNING *
   `
 
-  const values = [userID, name, email, passwordHash, date, firmaID, status]
+  const values = [userID, name, email, passwordHash, date, firmaID, status, lang, country]
 
   console.log('[createUserWithPassword] Creating credentials user:', {
     userID,
@@ -78,6 +87,8 @@ export async function createUserWithPassword(
     email,
     firmaID,
     status,
+    lang,
+    country,
   })
 
   try {

@@ -18,7 +18,7 @@ import {
   Chip,
   InputGroup,
 } from '@heroui/react'
-import { SortDescriptor } from '@heroui/table'
+import { SortDescriptor } from '@heroui/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
 

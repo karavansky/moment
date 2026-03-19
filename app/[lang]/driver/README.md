@@ -4,11 +4,12 @@
 
 1. [Обзор](#обзор)
 2. [Архитектура GPS трекинга](#архитектура-gps-трекинга)
-3. [Оптимизации](#оптимизации)
-4. [Режимы работы](#режимы-работы)
-5. [UI компоненты](#ui-компоненты)
-6. [Тестирование](#тестирование)
-7. [Технические детали](#технические-детали)
+3. [GPS Interpolation (v3.0)](#gps-interpolation-v30)
+4. [Оптимизации](#оптимизации)
+5. [Режимы работы](#режимы-работы)
+6. [UI компоненты](#ui-компоненты)
+7. [Тестирование](#тестирование)
+8. [Технические детали](#технические-детали)
 
 ---
 
@@ -19,13 +20,52 @@
 **Файл**: `app/[lang]/driver/page.tsx`
 
 **Основные возможности**:
-- ✅ Real-time GPS трекинг (обновление каждые 2 секунды)
-- ✅ Плавное движение маркера (interpolation)
+- ✅ Real-time GPS трекинг (Test Route: 1 сек, Real GPS: 2 секунды)
+- ✅ **Абсолютно плавное движение** маркера без остановок и рывков (v3.0)
 - ✅ Вращение карты по направлению движения
 - ✅ Snap-to-road (OSRM)
 - ✅ Батчинг GPS точек (опционально)
 - ✅ Фильтрация GPS шума
 - ✅ Расчет скорости и bearing
+- ✅ **Идентичная плавность** для Test Route и Real GPS (v3.0)
+
+---
+
+## GPS Interpolation (v3.0)
+
+### 🎯 Ключевые улучшения
+
+**Новая архитектура интерполяции (2026-03-18)**:
+- ✅ **Линейная интерполяция** вместо ease-out-quad → нет визуальных "остановок"
+- ✅ **Seamless continuation** через refs → нет пауз между GPS точками
+- ✅ **Server timestamps** → точная синхронизация
+- ✅ **Duration clamp (100ms-10s)** → предотвращение слишком быстрой/медленной анимации
+- ✅ **GPS Buffering (2 точки)** → плавный старт анимации
+- ✅ **PersistentPolyline** → стабильная линия маршрута (не "ползёт")
+- ✅ **Unified algorithm** → все 3 режима работают идентично
+
+### 📖 Детальная документация
+
+**См. [GPS_INTERPOLATION_ARCHITECTURE.md](./GPS_INTERPOLATION_ARCHITECTURE.md)**
+
+Детальное описание:
+- Ключевые проблемы и решения
+- Архитектура буферизации
+- Непрерывная анимация (60 FPS)
+- Сравнение режимов (Test Route / Real GPS Immediate / Real GPS Batch)
+- Диагностика проблем
+
+### Быстрая справка
+
+**Три режима с идентичным поведением**:
+
+| Режим | Интервал GPS | Алгоритм | Плавность |
+|-------|--------------|----------|-----------|
+| Test Route | 1-2 сек | GPS Buffer → Linear Interpolation | ⭐⭐⭐⭐⭐ |
+| Real GPS (Immediate) | 2 сек | GPS Buffer → Linear Interpolation | ⭐⭐⭐⭐⭐ |
+| Real GPS (Batch) | 2 сек | GPS Buffer → Linear Interpolation | ⭐⭐⭐⭐⭐ |
+
+**Все три режима выглядят АБСОЛЮТНО ОДИНАКОВО** - плавное движение без остановок!
 
 ---
 
@@ -88,9 +128,9 @@
 └─────────────────────────────────────────────────────────────────┘
 
     [Interpolation Animation]
-    - requestAnimationFrame
-    - Ease-out-quad easing
-    - Duration: 2 секунды
+    - requestAnimationFrame (60 FPS)
+    - Linear easing (константная скорость)
+    - Dynamic duration: based on GPS timestamps
          ↓
     [Map Rotation]
     - requestAnimationFrame
@@ -654,33 +694,63 @@ POST /api/transport/location/batch
 
 ### Анимации (60 FPS)
 
-#### Marker Interpolation
+#### Marker Interpolation (v3.0 - Linear + Seamless)
 ```typescript
 useEffect(() => {
   if (!interpolationParams.startPos || !interpolationParams.endPos) return
 
+  // Sync ref with state for first run
+  interpolationParamsRef.current = interpolationParams
+  isInterpolatingRef.current = true
+
   const animate = () => {
-    const elapsed = Date.now() - interpolationParams.startTime
-    const progress = Math.min(elapsed / interpolationParams.duration, 1)
+    const params = interpolationParamsRef.current  // Read from ref!
 
-    // Ease-out-quad
-    const eased = progress * (2 - progress)
+    const elapsed = Date.now() - params.startTime
+    const progress = Math.min(elapsed / params.duration, 1)
 
-    const lat = interpolationParams.startPos.lat +
-      (interpolationParams.endPos.lat - interpolationParams.startPos.lat) * eased
-    const lng = interpolationParams.startPos.lng +
-      (interpolationParams.endPos.lng - interpolationParams.startPos.lng) * eased
+    // ✅ LINEAR easing (constant speed - no visual pauses!)
+    const easedProgress = progress
 
-    setInterpolatedPosition({ lat, lng })
+    const lat = params.startPos.lat +
+      (params.endPos.lat - params.startPos.lat) * easedProgress
+    const lng = params.startPos.lng +
+      (params.endPos.lng - params.startPos.lng) * easedProgress
+
+    currentInterpolatedPosRef.current = { lat, lng }
+    setLocalVehicle(prev => prev ? { ...prev, currentLat: lat, currentLng: lng } : null)
 
     if (progress < 1) {
       requestAnimationFrame(animate)
+    } else {
+      // ✅ SEAMLESS CONTINUATION - check buffer for next point
+      if (gpsBufferRef.current.length > 0) {
+        const nextPoint = gpsBufferRef.current.shift()!
+        const nextDuration = calculateDuration(nextPoint.timestamp)
+
+        // Update REF directly (NOT state!) - avoid React delay
+        interpolationParamsRef.current = {
+          startPos: { lat, lng },
+          endPos: { lat: nextPoint.lat, lng: nextPoint.lng },
+          startTime: Date.now(),
+          duration: nextDuration,
+        }
+
+        requestAnimationFrame(animate)  // Continue without pause!
+      } else {
+        isInterpolatingRef.current = false
+      }
     }
   }
 
   requestAnimationFrame(animate)
 }, [interpolationParams])
 ```
+
+**Ключевые изменения v3.0**:
+- Linear easing вместо ease-out-quad → нет замедления
+- Refs вместо state для continuation → нет React delays
+- Seamless continuation при наличии следующей точки в буфере
 
 ---
 
@@ -912,6 +982,28 @@ docker logs vapor-api 2>&1 | grep -c "Cache hit"
 
 ## Changelog
 
+### v3.0.0 (2026-03-18) - Smooth Interpolation Release 🎯
+
+**Changed**:
+- 🎯 **Linear interpolation** instead of ease-out-quad → no visual "stops"
+- 🎯 **Refs for seamless continuation** instead of state → no React delays
+- 🎯 **Server timestamps** instead of Date.now() → accurate timing
+- 🎯 **Duration clamp (100ms-10s)** → prevents too fast/slow animation
+- 🎯 **PersistentPolyline** for navigation route → no "crawling caterpillar"
+- 🎯 **Unified algorithm** for all 3 modes → identical behavior
+
+**Added**:
+- ✅ GPS Buffering (2 points) before animation starts
+- ✅ Seamless continuation between GPS points (no pauses!)
+- ✅ GPS_INTERPOLATION_ARCHITECTURE.md documentation
+
+**Result**:
+- 🌟 **Absolutely smooth movement** without stops or jerks
+- 🌟 **Identical smoothness** for Test Route / Real GPS Immediate / Real GPS Batch
+- 🌟 **Stable navigation route** polyline (no visual "crawl")
+
+---
+
 ### v2.0.0 (2026-03-17) - GPS Optimization Release
 
 **Added**:
@@ -963,5 +1055,5 @@ Proprietary - Internal Use Only
 
 ---
 
-**Last Updated**: 2026-03-17
-**Version**: 2.0.0
+**Last Updated**: 2026-03-18
+**Version**: 3.0.0 - Smooth Interpolation Release

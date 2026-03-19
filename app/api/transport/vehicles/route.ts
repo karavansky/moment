@@ -28,6 +28,7 @@ export async function GET() {
       currentDriverSurname: v.driverSurname,
       currentLat: v.currentLat,
       currentLng: v.currentLng,
+      currentSpeed: v.currentSpeed,
       lastLocationUpdate: v.lastLocationUpdate,
       createdAt: v.createdAt,
     }))
@@ -119,6 +120,7 @@ export async function PUT(request: Request) {
         currentDriverSurname: updatedVehicle.driverSurname,
         currentLat: updatedVehicle.currentLat,
         currentLng: updatedVehicle.currentLng,
+        currentSpeed: updatedVehicle.currentSpeed,
         lastLocationUpdate: updatedVehicle.lastLocationUpdate,
         createdAt: updatedVehicle.createdAt,
       },

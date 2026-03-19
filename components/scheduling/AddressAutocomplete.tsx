@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { ComboBox, Input, ListBox, Spinner, EmptyState, Label, Collection } from '@heroui/react'
 import { MapPin } from 'lucide-react'
 import { useDebounce } from '@/hooks/useDebounce'
+import { useAuth } from '@/components/AuthProvider'
 
 interface PhotonFeature {
   properties: {
@@ -13,8 +14,11 @@ interface PhotonFeature {
     postcode?: string
     city?: string
     country?: string
+    countrycode?: string
     osm_id: number
     osm_type: string
+    osm_key?: string
+    osm_value?: string
   }
   geometry: {
     coordinates: [number, number] // [lng, lat]
@@ -47,12 +51,25 @@ function AddressAutocomplete({
   fullWidth,
   'aria-label': ariaLabel,
 }: AddressAutocompleteProps) {
+  const { session } = useAuth()
   const [inputValue, setInputValue] = useState(value)
   const [suggestions, setSuggestions] = useState<PhotonFeature[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const inputRef = useRef<HTMLDivElement>(null)
 
   // Debounce input для уменьшения количества запросов
   const debouncedInput = useDebounce(inputValue, 300)
+
+  // Scroll input into view when focused (important for mobile when keyboard opens)
+  const handleFocus = useCallback(() => {
+    setTimeout(() => {
+      inputRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'nearest',
+      })
+    }, 300) // Delay to allow keyboard animation to complete
+  }, [])
 
   // Fetch suggestions from Photon API
   const fetchSuggestions = useCallback(async (query: string) => {
@@ -64,13 +81,22 @@ function AddressAutocomplete({
     setIsLoading(true)
 
     try {
+      // Get user's language preference from session (Photon supports: de, en, fr)
+      const userLang = session?.user?.lang || 'en'
+      // Map user language to Photon-supported languages
+      const photonLang = ['de', 'en', 'fr'].includes(userLang) ? userLang : 'en'
+
       const params = new URLSearchParams({
         q: query,
         limit: '10',
-        lang: 'de', // Photon supports: default, de, en, fr (ru not supported)
+        lang: photonLang,
       })
 
-      console.log('🔍 Fetching suggestions for:', query)
+      // Add country filter if available
+      if (session?.user?.country) {
+        params.append('country', session.user.country.toUpperCase())
+      }
+
       const response = await fetch(`/api/photon?${params}`)
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
@@ -79,7 +105,6 @@ function AddressAutocomplete({
       }
 
       const data: PhotonResponse = await response.json()
-      console.log('✅ Received suggestions:', data.features?.length || 0, data.features)
       setSuggestions(data.features || [])
     } catch (error) {
       console.error('Address autocomplete error:', error)
@@ -87,7 +112,7 @@ function AddressAutocomplete({
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [session?.user?.lang, session?.user?.country])
 
   // Trigger fetch when debounced input changes
   useEffect(() => {
@@ -98,17 +123,18 @@ function AddressAutocomplete({
     }
   }, [debouncedInput, fetchSuggestions])
 
-  // Debug: log suggestions changes
-  useEffect(() => {
-    console.log('📋 Suggestions state updated:', suggestions.length, suggestions)
-  }, [suggestions])
-
   // Format address from Photon feature
   const formatAddress = (feature: PhotonFeature): string => {
     const p = feature.properties
+
+    // For places (cities/towns), use name instead of street
+    // For addresses (streets/buildings), use street + housenumber
+    const addressPart = p.street
+      ? [p.street, p.housenumber].filter(Boolean).join(' ')
+      : p.name
+
     const parts = [
-      p.street,
-      p.housenumber,
+      addressPart,
       p.postcode,
       p.city,
       p.country,
@@ -161,12 +187,15 @@ function AddressAutocomplete({
       items={items}
     >
       <Label className="sr-only">{ariaLabel || placeholder}</Label>
-      <ComboBox.InputGroup>
-        <Input
-          placeholder={placeholder}
-          fullWidth={fullWidth}
-        />
-      </ComboBox.InputGroup>
+      <div ref={inputRef}>
+        <ComboBox.InputGroup>
+          <Input
+            placeholder={placeholder}
+            fullWidth={fullWidth}
+            onFocus={handleFocus}
+          />
+        </ComboBox.InputGroup>
+      </div>
       <ComboBox.Popover>
         <ListBox
           renderEmptyState={() => (

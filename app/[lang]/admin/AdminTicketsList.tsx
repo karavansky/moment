@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell } from '@heroui/table'
+import { Table, TableHeader, TableBody, TableColumn, TableRow, TableCell } from '@heroui/react'
 
 import { Chip, Button, Modal, ModalHeader, ModalBody, Spinner } from '@heroui/react'
 import TicketChat from '@/components/TicketChat'

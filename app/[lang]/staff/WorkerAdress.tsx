@@ -26,6 +26,7 @@ import dynamic from 'next/dynamic'
 import { useAsyncList } from '@react-stately/data'
 import { ChevronDown, List } from 'lucide-react'
 import { useTranslation } from '@/components/Providers'
+import { useAuth } from '@/components/AuthProvider'
 
 // Динамический импорт карты для избежания SSR проблем
 const AddressMap = dynamic(() => import('./AddressMap'), { ssr: false })
@@ -45,13 +46,20 @@ export const WorkerAdress = memo(function WorkerAdress({
   className,
 }: WorkerAdressProps) {
   const { t } = useTranslation()
+  const { session } = useAuth()
   const { updateWorker, addWorker } = useScheduling()
+
+  // Pre-fill country from session for new workers
+  const defaultCountry = isCreateNew && session?.user?.country
+    ? session.user.country
+    : (worker.country || '')
+
   const [addressData, setAddressData] = useState({
     street: worker.street || '',
     city: worker.city || '',
     zipCode: worker.postalCode || '',
     houseNumber: worker.houseNumber || '',
-    country: worker.country || '',
+    country: defaultCountry,
     district: worker.district || '',
     latitude: worker.latitude || 0,
     longitude: worker.longitude || 0,
@@ -81,11 +89,11 @@ export const WorkerAdress = memo(function WorkerAdress({
     worker.latitude && worker.longitude ? { lat: worker.latitude, lng: worker.longitude } : null
   )
 
-  // Resolve country: worker.country may be a code ('de') or a full name ('Germany')
+  // Resolve country: defaultCountry may be a code ('de') or a full name ('Germany')
   const resolvedCountryCode =
-    CountriesHelper.getCountryByCode(worker.country ?? '')
-      ? (worker.country ?? '').toLowerCase()
-      : CountriesHelper.getCodeByName(worker.country ?? '') ?? ''
+    CountriesHelper.getCountryByCode(defaultCountry ?? '')
+      ? (defaultCountry ?? '').toLowerCase()
+      : CountriesHelper.getCodeByName(defaultCountry ?? '') ?? ''
   const normalizedCountry = CountriesHelper.getNameByCode(resolvedCountryCode)
   const [countryCode, setCountryCode] = useState(resolvedCountryCode)
 

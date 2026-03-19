@@ -13,6 +13,7 @@ import { LogoMoment } from '@/components/icons'
 import { useLanguage } from '@/hooks/useLanguage'
 import { useTranslation } from '@/components/Providers'
 import { createRouteMarkerIcon, MarkerLegendItem, MARKER_COLORS } from './RouteMarkers'
+import { PersistentPolyline } from './PersistentPolyline'
 
 // Import leaflet-rotate on client side only
 if (typeof window !== 'undefined') {
@@ -177,6 +178,8 @@ interface MapProps {
 
   // Navigation route coordinates for driver mode
   navigationRoute?: Array<[number, number]> | null
+  // Navigation route ID - unique for each route to force polyline recreation
+  navigationRouteId?: string | null
 }
 
 // Appointment Marker Component
@@ -617,6 +620,7 @@ const Map = React.memo(function Map({
   mapBearing,
   currentSpeed,
   navigationRoute,
+  navigationRouteId,
 }: MapProps) {
   const lang = useLanguage()
   const { t } = useTranslation()
@@ -761,16 +765,16 @@ const Map = React.memo(function Map({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {/* Navigation Route Polyline (for driver mode) */}
-        {isDriverMode && navigationRoute && navigationRoute.length > 1 && (
-          <Polyline
+        {/* Navigation Route Polyline (for driver mode) - using PersistentPolyline to prevent "crawling caterpillar" effect */}
+        {isDriverMode && navigationRoute && navigationRoute.length > 1 && navigationRouteId && (
+          <PersistentPolyline
+            routeId={navigationRouteId}
             positions={navigationRoute}
-            pathOptions={{
-              color: '#3b82f6', // Blue color for navigation
-              weight: 6,
-              opacity: 0.8,
-              dashArray: '10, 5', // Dashed line
-            }}
+            color="#3b82f6"
+            weight={6}
+            opacity={0.8}
+            // 🧪 TEST: Temporarily disable dashArray to check if it causes the crawling effect
+            // dashArray="10, 5"
           />
         )}
 
@@ -934,7 +938,7 @@ const Map = React.memo(function Map({
 
       {/* Legend - показываем только если есть orders */}
       {orders.length > 0 && (
-        <div className="absolute bottom-4 left-4 bg-white dark:bg-blue-900/70 rounded-lg shadow-lg p-3 text-xs z-[1000]">
+        <div className="absolute bottom-4 left-4 bg-white dark:bg-blue-900/70 rounded-lg shadow-lg p-3 text-xs z-1000">
           <p className="font-semibold mb-2">Легенда</p>
           <div className="space-y-1.5">
             <MarkerLegendItem type="pickup" label="Пункт отправления" />

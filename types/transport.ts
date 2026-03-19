@@ -20,6 +20,7 @@ export interface Vehicle {
   currentDriverSurname?: string | null
   currentLat?: number | null
   currentLng?: number | null
+  currentSpeed?: number | null
   lastLocationUpdate?: Date | null
   createdAt: Date | string
   // Relations
@@ -36,6 +37,7 @@ export interface VehicleDB {
   currentDriverID?: string | null
   currentLat?: number | null
   currentLng?: number | null
+  currentSpeed?: number | null
   lastLocationUpdate?: Date | null
   createdAt: Date
 }

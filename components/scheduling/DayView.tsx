@@ -366,8 +366,8 @@ function DayView({
             ${
               isDragOver
                 ? canDrop
-                  ? '!bg-success/50'
-                  : '!bg-danger/50'
+                  ? 'bg-success/50!'
+                  : 'bg-danger/50!'
                 : isSelected
                   ? 'bg-primary/5'
                   : ''
