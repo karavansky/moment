@@ -241,11 +241,13 @@ struct AppointmentController: RouteCollection {
         try await req.db.transaction { database in
             let sqlDB = database as! any SQLDatabase
 
+            let createdAt = Date()
+
             try await sqlDB.raw("""
                 INSERT INTO appointments (
                     "appointmentID", "firmaID", "userID", "clientID", "workerId",
                     "date", "isFixedTime", "startTime", "endTime", "duration", "fahrzeit",
-                    "latitude", "longitude"
+                    "latitude", "longitude", "createdAt"
                 )
                 VALUES (
                     \(bind: appointmentID), \(bind: firmaID), \(bind: user.userId),
@@ -253,7 +255,7 @@ struct AppointmentController: RouteCollection {
                     \(bind: body.date)::timestamptz, \(bind: body.isFixedTime ?? false),
                     \(bind: body.startTime)::timestamptz, \(bind: body.endTime)::timestamptz,
                     \(bind: body.duration), \(bind: body.fahrzeit ?? 0),
-                    \(bind: body.latitude), \(bind: body.longitude)
+                    \(bind: body.latitude), \(bind: body.longitude), \(bind: createdAt)
                 )
                 """).run()
 
@@ -350,6 +352,9 @@ struct AppointmentController: RouteCollection {
             guard body.isOpen != nil || body.openedAt != nil || body.closedAt != nil else {
                 throw Abort(.badRequest, reason: "No allowed fields to update")
             }
+
+            // Set editedAt timestamp
+            appointment.editedAt = Date()
 
             try await appointment.save(on: req.db)
 
@@ -455,6 +460,9 @@ struct AppointmentController: RouteCollection {
             if let wids = body.workerIds, let first = wids.first {
                 appt.workerId = first
             }
+
+            // Set editedAt timestamp
+            appt.editedAt = Date()
 
             req.logger.info("After modifications -> Appt date: \(appt.date), startTime: \(appt.startTime)")
             req.logger.info("Appt hasChanges: \(appt.hasChanges)")
@@ -614,6 +622,8 @@ struct AppointmentDTO: Content {
     var closedAt: Date?
     var latitude: Double?
     var longitude: Double?
+    var createdAt: Date
+    var editedAt: Date?
     var services: AnyCodable?
     var worker: AnyCodable?
     var client: AnyCodable?
@@ -650,6 +660,8 @@ func decodeAppointmentRow(_ row: any SQLRow) throws -> AppointmentDTO {
         closedAt: try? row.decode(column: "closedAt", as: Date?.self),
         latitude: try? row.decode(column: "latitude", as: Double?.self),
         longitude: try? row.decode(column: "longitude", as: Double?.self),
+        createdAt: (try? row.decode(column: "createdAt", as: Date.self)) ?? Date(),
+        editedAt: try? row.decode(column: "editedAt", as: Date?.self),
         services: try? row.decode(column: "services", as: AnyCodable?.self),
         worker: try? row.decode(column: "workers_data", as: AnyCodable?.self),
         client: try? row.decode(column: "client", as: AnyCodable?.self)

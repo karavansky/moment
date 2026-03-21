@@ -149,7 +149,20 @@ export interface Appointment {
   longitude?: number
   openedAt?: Date
   closedAt?: Date
+  createdAt: Date // Дата и время создания записи (обязательное поле)
+  editedAt?: Date // Дата и время последнего редактирования (опциональное)
   orderID?: string // Связь с транспортным заказом (если type=1)
+  isClosed: boolean
+  notes?: Note[]
+}
+
+export interface Note {
+  id: string
+  firmaID: string
+  userID: string
+  appointmentID: string
+  note: string
+  date: Date
 }
 
 export interface Photo {

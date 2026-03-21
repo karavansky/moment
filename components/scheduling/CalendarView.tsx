@@ -64,10 +64,11 @@ function CalendarView({
 }: CalendarViewProps) {
   const { t } = useTranslation()
   const { isMobile, isIpad, windowWidth } = usePlatformContext()
-  const isCompact = useMediaQuery('(max-width: 640px)')
+  const isCompact = useMediaQuery('(max-width: 1023px)')
 
-  // iPad определяется как isMobile, но если ширина >= 768px, используем десктопный layout
-  const isMobileLayout = (isMobile && windowWidth < 768) || isCompact
+  // iPad определяется как isMobile, но если ширина >= 1024px, используем десктопный layout
+  // Sync with DayView: use mobile layout for widths < 1024px
+  const isMobileLayout = (isMobile && windowWidth < 1024) || isCompact
 
   const MIN_WEEK_HEIGHT = isMobileLayout ? 60 : 104
   const HEADER_HEIGHT = isMobileLayout ? 38 : 52
@@ -87,30 +88,64 @@ function CalendarView({
       let height = MIN_WEEK_HEIGHT
 
       if (isMobileLayout) {
-        // Mobile/Compact logic: max 2 appointments + "..."
+        // Mobile/Compact logic: max 3 appointments + "..." (DayView shows slice(0, 3))
         let maxDayHeight = 0
-        const APP_HEIGHT_MOBILE = 40 // Compact appointment height for mobile
-        const DOTS_HEIGHT = 15 // Height for "..."
+        let maxDayInfo = { day: 0, appointmentsCount: 0, calculatedHeight: 0 }
+        // AppointmentCard mobile: TruncatedChip size="sm" (~24px height) + mb-0.5 (2px) + space-y-2 (8px gap)
+        const CHIP_HEIGHT = 24 // HeroUI Chip size="sm" base height
+        const CHIP_MARGIN = 2 // mb-0.5 from AppointmentCard line 438
+        const SPACE_Y_GAP = 8 // space-y-2 from DayView line 410
+        const APP_HEIGHT_MOBILE = CHIP_HEIGHT + CHIP_MARGIN + SPACE_Y_GAP // ~34px per appointment
+        const DOTS_HEIGHT = 8 // Height for "..." (h-2 from DayView line 463)
+        const DAY_NUMBER_HEIGHT = 22 // Day number + mb-0.5 from DayView line 378
 
         week.days.forEach(day => {
-          let currentDayHeight = 20 // Base padding/header for mobile day
+          let currentDayHeight = DAY_NUMBER_HEIGHT // Base padding/header for mobile day
 
           if (day.appointments && day.appointments.length > 0) {
-            const count = Math.min(day.appointments.length, 2)
+            // DayView shows max 3 appointments (slice(0, 3))
+            const count = Math.min(day.appointments.length, 3)
             currentDayHeight += count * APP_HEIGHT_MOBILE
 
-            if (day.appointments.length > 2) {
+            // Add "..." indicator if more than 3
+            if (day.appointments.length > 3) {
               currentDayHeight += DOTS_HEIGHT
             }
-            // Add some bottom padding
-            currentDayHeight += 5
+            // Add padding
+            currentDayHeight += 6
           }
 
           if (currentDayHeight > maxDayHeight) {
             maxDayHeight = currentDayHeight
+            maxDayInfo = {
+              day: Number(day.day) || 0,
+              appointmentsCount: day.appointments?.length || 0,
+              calculatedHeight: currentDayHeight
+            }
           }
         })
+
         height = Math.max(MIN_WEEK_HEIGHT, maxDayHeight)
+
+        // Debug logging
+        if (index === 0) {
+          console.log('[CalendarView] Week height calculation (mobile):', {
+            weekId: week.id,
+            MIN_WEEK_HEIGHT,
+            maxDayHeight,
+            finalHeight: height,
+            hasHeader: hasHeader,
+            headerHeight: hasHeader ? HEADER_HEIGHT : 0,
+            maxDay: maxDayInfo,
+            breakdown: {
+              DAY_NUMBER_HEIGHT,
+              APP_HEIGHT_MOBILE,
+              appointmentsShown: Math.min(maxDayInfo.appointmentsCount, 3),
+              dotsHeight: maxDayInfo.appointmentsCount > 3 ? DOTS_HEIGHT : 0,
+              padding: 6
+            }
+          })
+        }
       } else {
         // Desktop logic: fit all appointments
         // Find the tallest day in this week

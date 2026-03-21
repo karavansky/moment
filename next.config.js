@@ -22,6 +22,11 @@ const nextConfig = {
     optimizePackageImports: ['framer-motion', '@heroui/react'],
   },
 
+  // Enable browser logs forwarding to terminal for AI agents
+  logging: {
+    browserToTerminal: true,
+  },
+
   // Performance optimizations
   poweredByHeader: false,
   compress: true,

@@ -72,7 +72,7 @@ interface GroupedClients {
   clients: Client[]
 }
 
-interface TeamsWithWorkers {
+export interface TeamsWithWorkers {
   team: Team
   workers: Worker[]
 }
@@ -715,6 +715,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
               latitude: appointment.latitude,
               longitude: appointment.longitude,
               serviceIds: appointment.services?.map(s => s.id),
+              createdAt: appointment.createdAt, // Дата создания
             }),
           })
             .then(result => {
@@ -736,13 +737,19 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
       },
 
       updateAppointment: (updatedAppointment: Appointment, skipNetwork = false) => {
+        // Add editedAt timestamp when updating
+        const appointmentWithEditTime = {
+          ...updatedAppointment,
+          editedAt: new Date(),
+        }
+
         setState(prev => ({
           ...prev,
           appointments: prev.appointments.map(apt =>
-            apt.id === updatedAppointment.id ? updatedAppointment : apt
+            apt.id === updatedAppointment.id ? appointmentWithEditTime : apt
           ),
         }))
-        console.log(`[updateAppointment] Updated appointment:`, updatedAppointment)
+        console.log(`[updateAppointment] Updated appointment:`, appointmentWithEditTime)
         console.log(`[updateAppointment] skipNetwork:`, skipNetwork)
         console.log(`[updateAppointment] isLiveMode:`, isLiveModeRef.current)
         if (isLiveModeRef.current && !skipNetwork) {
@@ -765,6 +772,7 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
               longitude: updatedAppointment.longitude,
               serviceIds: updatedAppointment.services?.map(s => s.id),
               reports: updatedAppointment.reports,
+              editedAt: appointmentWithEditTime.editedAt, // Дата последнего редактирования
             }),
           }).catch(error => console.error('[updateAppointment] API error:', error))
         }

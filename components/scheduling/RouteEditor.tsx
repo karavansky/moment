@@ -16,9 +16,10 @@ interface RouteEditorProps {
   points: RoutePoint[]
   onChange: (points: RoutePoint[]) => void
   error?: string
+  isReadOnly?: boolean
 }
 
-function RouteEditor({ points, onChange, error }: RouteEditorProps) {
+function RouteEditor({ points, onChange, error, isReadOnly = false }: RouteEditorProps) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
 
   // Добавить новый пункт
@@ -93,18 +94,20 @@ function RouteEditor({ points, onChange, error }: RouteEditorProps) {
       {points.map((point, index) => (
         <div
           key={point.id}
-          draggable
-          onDragStart={() => handleDragStart(index)}
-          onDragOver={(e) => handleDragOver(e, index)}
+          draggable={!isReadOnly}
+          onDragStart={() => !isReadOnly && handleDragStart(index)}
+          onDragOver={(e) => !isReadOnly && handleDragOver(e, index)}
           onDragEnd={handleDragEnd}
           className={`flex items-center gap-2 ${
             draggedIndex === index ? 'opacity-50' : ''
           }`}
         >
           {/* Drag Handle */}
-          <div className="cursor-move text-default-400 hover:text-default-600">
-            <GripVertical size={18} />
-          </div>
+          {!isReadOnly && (
+            <div className="cursor-move text-default-400 hover:text-default-600">
+              <GripVertical size={18} />
+            </div>
+          )}
 
           {/* Point Number */}
           <div className="shrink-0 w-6 h-6 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-semibold">
@@ -125,11 +128,12 @@ function RouteEditor({ points, onChange, error }: RouteEditorProps) {
               onChange={(address, lat, lng) => updatePoint(index, address, lat, lng)}
               fullWidth
               aria-label={`Route point ${index + 1}`}
+              isDisabled={isReadOnly}
             />
           </div>
 
           {/* Add Intermediate Point Button */}
-          {index < points.length - 1 && (
+          {!isReadOnly && index < points.length - 1 && (
             <Button
               isIconOnly
               size="sm"
@@ -142,7 +146,7 @@ function RouteEditor({ points, onChange, error }: RouteEditorProps) {
           )}
 
           {/* Remove Point Button */}
-          {points.length > 2 && (
+          {!isReadOnly && points.length > 2 && (
             <Button
               isIconOnly
               size="sm"
@@ -157,24 +161,28 @@ function RouteEditor({ points, onChange, error }: RouteEditorProps) {
       ))}
 
       {/* Add Final Point Button */}
-      <Button
-        size="sm"
-        variant="outline"
-        onPress={() => addPoint()}
-        className="w-full"
-      >
-        <Plus size={16} />
-        Добавить пункт в конец
-      </Button>
+      {!isReadOnly && (
+        <Button
+          size="sm"
+          variant="outline"
+          onPress={() => addPoint()}
+          className="w-full"
+        >
+          <Plus size={16} />
+          Добавить пункт в конец
+        </Button>
+      )}
 
       {error && <p className="text-xs text-danger-500 mt-1">{error}</p>}
 
       {/* Info Text */}
-      <div className="text-xs text-default-400 mt-2">
-        <p>• Перетаскивайте пункты для изменения порядка</p>
-        <p>• Нажмите <Plus size={12} className="inline" /> между пунктами для добавления промежуточных</p>
-        <p>• Минимум 2 пункта (отправление и прибытие)</p>
-      </div>
+      {!isReadOnly && (
+        <div className="text-xs text-default-400 mt-2">
+          <p>• Перетаскивайте пункты для изменения порядка</p>
+          <p>• Нажмите <Plus size={12} className="inline" /> между пунктами для добавления промежуточных</p>
+          <p>• Минимум 2 пункта (отправление и прибытие)</p>
+        </div>
+      )}
     </div>
   )
 }

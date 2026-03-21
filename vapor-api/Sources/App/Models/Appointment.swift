@@ -54,8 +54,11 @@ final class Appointment: Model, @unchecked Sendable, Content {
     @OptionalField(key: "longitude")
     var longitude: Double?
 
-    @OptionalField(key: "createdAt")
-    var createdAt: Date?
+    @Field(key: "createdAt")
+    var createdAt: Date
+
+    @OptionalField(key: "editedAt")
+    var editedAt: Date?
 
     init() {}
 }

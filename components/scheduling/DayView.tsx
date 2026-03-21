@@ -226,13 +226,12 @@ function DayView({
     >
       <div
         role="button"
-        tabIndex={isPast ? -1 : 0}
-        onClick={!isPast ? handleDayClick : undefined}
+        tabIndex={0}
+        onClick={handleDayClick}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeaveBtn}
-        aria-disabled={isPast}
-        className={`w-full h-full text-left rounded-xl ${isPast ? 'cursor-not-allowed' : ''}`}
+        className="w-full h-full text-left rounded-xl cursor-pointer"
       >
         {/* Desktop версия (≥ 800px) - красивый Card */}
         <Card

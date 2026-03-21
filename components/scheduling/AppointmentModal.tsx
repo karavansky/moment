@@ -244,6 +244,9 @@ export default function AppointmentModal({
       isOpen: false,
       services: formData.services,
       firmaID: appointment?.firmaID || '',
+      isClosed: appointment?.isClosed || false,
+      createdAt: appointment?.createdAt || new Date(),
+      editedAt: appointment?.editedAt,
     }
 
     if (isEditMode) {

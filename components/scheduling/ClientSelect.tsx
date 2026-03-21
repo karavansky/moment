@@ -26,6 +26,8 @@ interface ClientSelectProps {
   error?: string
   className?: string
   isNew?: boolean
+  isReadOnly?: boolean
+  isRequired?: boolean
 }
 
 function ClientSelect({
@@ -36,6 +38,8 @@ function ClientSelect({
   error,
   className,
   isNew = false,
+  isReadOnly = false,
+  isRequired = false,
 }: ClientSelectProps) {
   const { isMobile, isReady } = usePlatformContext()
   const { t } = useTranslation()
@@ -84,12 +88,15 @@ function ClientSelect({
       <Label className="text-base font-normal flex items-center gap-2">
         <UserStar className="w-6 h-6" />
         {t('appointment.edit.client.label')}
+        {isRequired && !isReadOnly && <span className="text-danger ml-0.5">*</span>}
       </Label>
-      <div className="ml-auto">
-        <Button variant="primary" size="sm" isIconOnly onPress={handleAddClient}>
-          <Plus className="w-4 h-4" />
-        </Button>
-      </div>
+      {!isReadOnly && (
+        <div className="ml-auto">
+          <Button variant="primary" size="sm" isIconOnly onPress={handleAddClient}>
+            <Plus className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
     </div>
   )
   // --- RENDER FOR MOBILE (iOS/Android) ---
@@ -123,6 +130,7 @@ function ClientSelect({
               WebkitTouchCallout: 'none',
             }}
             required
+            disabled={isReadOnly}
           >
             {isNew && !isNewSelected && (
               <option value={t('appointment.edit.client.selectClient')} disabled>
@@ -176,23 +184,24 @@ function ClientSelect({
 
   // --- RENDER FOR DESKTOP ---
   return (
-    <div className="space-y-2 ">
+    <div className={`space-y-2 ${className}`} >
+      {addClient}
       <ComboBox
-        isRequired
+        isRequired={isRequired && !isReadOnly}
         className="w-[256px]"
         name="client"
         selectedKey={selectedClientId}
-        onSelectionChange={handleDesktopChange}
+        onSelectionChange={isReadOnly ? undefined : handleDesktopChange}
       >
-        <Label className="text-base font-normal flex items-center gap-2">
-          <UserStar className="w-6 h-6" />
-          {t('appointment.edit.client.label')}
-        </Label>
         <ComboBox.InputGroup>
-          <Input placeholder={t('appointment.edit.client.searchPlaceholder')} />
-          <ComboBox.Trigger />
+          <Input
+            placeholder={t('appointment.edit.client.searchPlaceholder')}
+            value={selectedClient ? `${selectedClient.surname} ${selectedClient.name}` : ''}
+            readOnly={isReadOnly}
+          />
+          {!isReadOnly && <ComboBox.Trigger />}
         </ComboBox.InputGroup>
-        <ComboBox.Popover>
+        {!isReadOnly && <ComboBox.Popover>
           <ListBox>
             {groupedClients.flatMap(({ group, clients: groupClients }, index) => [
               <ListBox.Section key={group.id}>
@@ -211,7 +220,7 @@ function ClientSelect({
               ...(index < groupedClients.length - 1 ? [<Separator key={`sep-${group.id}`} />] : []),
             ])}
           </ListBox>
-        </ComboBox.Popover>
+        </ComboBox.Popover>}
       </ComboBox>
       {error && <p className="text-xs text-danger">{error}</p>}
 

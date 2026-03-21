@@ -1,7 +1,7 @@
 'use client'
 
-import { Button, Modal, Separator } from '@heroui/react'
-import { startTransition, useCallback, useEffect, useRef, useState } from 'react'
+import { Button, Modal, Separator, Badge } from '@heroui/react'
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Appointment, Service, Worker, Report } from '@/types/scheduling'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { useTranslation } from '@/components/Providers'
@@ -11,7 +11,9 @@ import AppNotes from './AppNotes'
 import { AnimatePresence, motion } from 'framer-motion'
 import useMeasure from 'react-use-measure'
 import type { ServiceTreeItem } from '@/types/scheduling'
-import { X } from 'lucide-react'
+import { X, Save, Trash2 } from 'lucide-react'
+import { generateId } from '@/lib/generate-id'
+import { getOnlyDate } from '@/lib/calendar-utils'
 
 interface AppModalProps {
   isOpen: boolean
@@ -47,14 +49,22 @@ function AppModal({
     getAppointmentWithOverrides,
     clearAppointmentOverride,
   } = useScheduling()
+  const { t } = useTranslation()
   const [viewTab, setViewTab] = useState<'view' | 'report' | 'edit' | 'new' | 'notes'>(() => {
     // Try to restore viewTab from sessionStorage on initial render
     if (typeof window !== 'undefined') {
-      const savedTab = sessionStorage.getItem('dienstplan_activeTab') as 'view' | 'report' | 'edit' | 'new' | 'notes' | null
+      const savedTab = sessionStorage.getItem('dienstplan_activeTab') as
+        | 'view'
+        | 'report'
+        | 'edit'
+        | 'new'
+        | 'notes'
+        | null
       return savedTab || activeTab
     }
     return activeTab
   })
+
   const [ref, { height }] = useMeasure()
   const appViewRef = useRef<HTMLButtonElement>(null)
   const appReportRef = useRef<HTMLButtonElement>(null)
@@ -84,10 +94,18 @@ function AppModal({
     workerId: '',
     isOpen: false,
     endTime: undefined,
+    isClosed: false,
+    createdAt: new Date(), // Дата создания записи
   }
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const [formData, setFormData] = useState<Appointment>(emptyForm)
+
+  // Appointment type label for button text
+  const appointmentTypeLabel = useMemo(() => {
+    const type = formData?.type ?? 0
+    return type === 1 ? 'Поездка' : 'Встреча'
+  }, [formData?.type])
   const formDataRef = useRef<Appointment>(emptyForm)
   const initializedAppointmentIdRef = useRef<string>('')
 
@@ -98,39 +116,22 @@ function AppModal({
       formDataRef.current = formData
       // Save only ID - we'll get fresh data from context on restore
       setAppointmentOverride(formData.id, { id: formData.id })
-      console.log('[AppModal] Saved appointment ID to overrides:', formData.id)
     }
   }, [formData, appointment?.id, setAppointmentOverride])
 
   useEffect(() => {
-    console.log('[AppModal] Initialization effect:', {
-      isOpen,
-      appointmentId: appointment?.id,
-      activeTab,
-    })
-
     if (isOpen && appointment) {
       // Check if this appointment was being edited (has ID in overrides)
       const withOverrides = getAppointmentWithOverrides(appointment.id)
       const wasBeingEdited = withOverrides && withOverrides.id === appointment.id
 
-      console.log('[AppModal] Restore check:', {
-        appointmentId: appointment.id,
-        hasOverrides: !!withOverrides,
-        wasBeingEdited,
-        formDataId: formData.id,
-        formDataHasReports: formData.reports && formData.reports.length > 0,
-      })
-
       // If formData already has correct ID and reports, skip reinit (already initialized)
       if (formData.id === appointment.id && formData.reports && formData.reports.length > 0) {
-        console.log('[AppModal] FormData already initialized with reports for this appointment, skipping')
         return
       }
 
       if (wasBeingEdited) {
         // Restore from FRESH appointment data (to get latest reports), not from saved overrides
-        console.log('[AppModal] Was being edited, initializing from FRESH appointment:', appointment.id, 'appointment.reports:', appointment.reports?.length)
         initializedAppointmentIdRef.current = appointment.id
         const common = {
           workers: appointment.worker || [],
@@ -157,7 +158,6 @@ function AppModal({
           id: appointment.id,
         } as unknown as Appointment)
       } else {
-        console.log('[AppModal] No overrides found, initializing fresh formData')
         initializedAppointmentIdRef.current = appointment.id
         const common = {
           workers: appointment.worker || [],
@@ -201,13 +201,11 @@ function AppModal({
       if (typeof window !== 'undefined') {
         const hasOverridesInStorage = sessionStorage.getItem('appointmentOverrides')
         if (hasOverridesInStorage) {
-          console.log('[AppModal] Modal closed but has overrides in storage, keeping formData for restore')
           return
         }
       }
       // Don't clear appointmentOverrides here - it will be cleared on explicit close via handleClose
       // This allows data to persist when tab is switched and SSE reconnects
-      console.log('[AppModal] Modal closed, clearing formData (formData.id was:', formData.id, ')')
       initializedAppointmentIdRef.current = ''
       setFormData(emptyForm)
     } else if (isOpen && !appointment) {
@@ -220,7 +218,6 @@ function AppModal({
   useEffect(() => {
     if (isOpen && appointment && formData.id === appointment.id) {
       // Update formData with latest reports from appointment
-      console.log('[AppModal] Updating formData with latest appointment data, reports:', appointment.reports?.length)
       setFormData(prev => ({
         ...prev,
         reports: appointment.reports || [],
@@ -287,7 +284,6 @@ function AppModal({
     // Clear appointmentOverrides on explicit close
     if (formData.id) {
       clearAppointmentOverride(formData.id)
-      console.log('[AppModal] Cleared appointmentOverrides on explicit close:', formData.id)
     }
 
     setFormData(emptyForm)
@@ -299,12 +295,103 @@ function AppModal({
     }, 300)
   }, [onClose, emptyForm, formData.id, clearAppointmentOverride])
 
+  // Determine if appointment is readonly
+  const isReadOnly = useMemo(() => {
+    if (!appointment) return false
+
+    // Closed appointments are always readonly
+    if (appointment.isClosed) return true
+
+    // Past appointments are readonly
+    const appointmentDate = getOnlyDate(new Date(appointment.date))
+    const today = getOnlyDate(new Date())
+    if (appointmentDate < today) return true
+
+    return false
+  }, [appointment])
+
+  // Get selected client info for saving
+  const selectedClient = useMemo(
+    () => clients.find(c => c.id === formData.clientID),
+    [clients, formData.clientID]
+  )
+
+  // Validation
+  const validateForm = useCallback((): boolean => {
+    const newErrors: Record<string, string> = {}
+
+    if (!formData.clientID) {
+      newErrors.clientID = t('appointment.edit.validation.clientRequired')
+    }
+    if (formData.worker.length === 0) {
+      newErrors.worker = t('appointment.edit.validation.workerRequired')
+    }
+    if (formData.duration > 0 && formData.duration <= 0) {
+      newErrors.duration = t('appointment.edit.validation.durationRequired')
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }, [formData, t])
+
+  // Calculate end time
+  const endTime = useMemo(() => {
+    if (!formData.startTime) return undefined
+    const start = new Date(formData.startTime)
+    const end = new Date(start.getTime() + formData.duration * 60000)
+    return end
+  }, [formData.startTime, formData.duration])
+
+  // Handle save
+  const handleSave = useCallback(() => {
+    if (!validateForm() || !user) return
+
+    const isEditMode = !!appointment && appointment.id === formData.id
+
+    const appointmentData: Appointment = {
+      ...formData,
+      id: formData.id || generateId(),
+      userID: user.id,
+      firmaID: appointment?.firmaID || user.firmaID || '',
+      endTime,
+      workerId: formData.worker[0]?.id || '',
+      workerIds: formData.worker.map(w => w.id),
+      client: selectedClient,
+      isClosed: appointment?.isClosed || false,
+    }
+
+    if (isEditMode) {
+      updateAppointment(appointmentData)
+    } else {
+      addAppointment(appointmentData)
+    }
+
+    handleClose()
+  }, [
+    validateForm,
+    user,
+    appointment,
+    formData,
+    endTime,
+    selectedClient,
+    updateAppointment,
+    addAppointment,
+    handleClose,
+  ])
+
+  // Handle delete
+  const handleDelete = useCallback(() => {
+    if (appointment && confirm(t('appointment.edit.confirmDelete'))) {
+      deleteAppointment(appointment.id)
+      handleClose()
+    }
+  }, [appointment, deleteAppointment, handleClose, t])
+
+  const isEditMode = !!appointment && appointment.id === formData.id
+
   return (
     <Modal>
-      <Modal.Backdrop
-        isOpen={isOpen}
-        variant="blur"
-      >
+      <Modal.Backdrop isOpen={isOpen} variant="blur">
         <Modal.Container placement="center">
           <Modal.Dialog>
             <Button
@@ -329,15 +416,30 @@ function AppModal({
                     }
                     onPress={onPressView}
                   >
-                    Termin {viewTab}
+                    {appointmentTypeLabel}
                   </Button>
-                  <Button
-                    ref={appReportRef}
-                    variant={viewTab === 'report' ? 'tertiary' : 'ghost'}
-                    onPress={onPressReport}
-                  >
-                    Bericht
-                  </Button>
+                  {!isNewAppointment &&
+                    (formData.reports && formData.reports.length > 0 ? (
+                      <Badge.Anchor ref={appReportRef}>
+                        <Button
+                          variant={viewTab === 'report' ? 'tertiary' : 'ghost'}
+                          onPress={onPressReport}
+                        >
+                          Bericht
+                        </Button>
+                        <Badge size="sm" color="warning">
+                          {formData.reports.length}
+                        </Badge>
+                      </Badge.Anchor>
+                    ) : (
+                      <Button
+                        ref={appReportRef}
+                        variant={viewTab === 'report' ? 'tertiary' : 'ghost'}
+                        onPress={onPressReport}
+                      >
+                        Bericht
+                      </Button>
+                    ))}
                   <Button
                     ref={appNotesRef}
                     variant={viewTab === 'notes' ? 'tertiary' : 'ghost'}
@@ -364,7 +466,7 @@ function AppModal({
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
                 className="overflow-hidden relative"
               >
-                <div ref={ref} className="p-6">
+                <div ref={ref} className="p-1">
                   <AnimatePresence mode="popLayout" initial={false}>
                     {viewTab === 'view' || viewTab === 'edit' || viewTab === 'new' ? (
                       <motion.div
@@ -388,6 +490,8 @@ function AppModal({
                           isNewAppointment={isNewAppointment}
                           appointment={appointment}
                           viewTab={viewTab}
+                          teamsWithWorkers={teamsWithWorkers}
+                          isReadOnly={isReadOnly}
                         />
                       </motion.div>
                     ) : viewTab === 'report' ? (
@@ -436,7 +540,30 @@ function AppModal({
                 </div>
               </motion.div>
             </Modal.Body>
-            <Modal.Footer></Modal.Footer>
+            <Modal.Footer>
+              <div className="flex items-center justify-between w-full">
+                {/* Delete button - only show for existing appointments and when not readonly */}
+                {isEditMode && !isReadOnly && (
+                  <Button variant="danger" onPress={handleDelete} size="sm" className="gap-2">
+                    <Trash2 className="w-4 h-4" />
+                    {t('appointment.edit.delete')}
+                  </Button>
+                )}
+
+                {/* Save button - only show when not readonly */}
+                {!isReadOnly && (
+                  <Button
+                    variant="primary"
+                    onPress={handleSave}
+                    size="sm"
+                    className="gap-2 ml-auto"
+                  >
+                    <Save className="w-4 h-4" />
+                    {isEditMode ? t('appointment.edit.save') : t('appointment.edit.create')}
+                  </Button>
+                )}
+              </div>
+            </Modal.Footer>
           </Modal.Dialog>
         </Modal.Container>
       </Modal.Backdrop>

@@ -428,4 +428,149 @@ Users have regional preferences stored in database:
 
 ---
 
+## AI Agent Integration (MCP Servers)
+
+This project is configured to work with AI coding agents through **Model Context Protocol (MCP)** servers.
+
+### Available MCP Servers
+
+#### 1. Next.js Built-in MCP (Next.js 16.2+)
+
+**Endpoint**: `http://localhost:3007/_next/mcp`
+
+**Status**: ✅ Active (built-in, no installation needed)
+
+**Configuration** (`next.config.js`):
+```javascript
+logging: {
+  browserToTerminal: true  // Client-side errors forwarded to terminal
+}
+```
+
+**Capabilities**:
+- 📁 Project structure and file organization
+- 🛣️ All Next.js routes (pages and API endpoints)
+- ⚛️ React DevTools integration
+- 🔍 Next.js diagnostics and build info
+- 🌳 Component trees, props, and hooks
+- ⚠️ Browser console logs in terminal
+- 🐛 Real-time error detection (build/runtime/type errors)
+
+**Usage**: Active during `npm run dev` on port 3007
+
+---
+
+#### 2. HeroUI React MCP Server
+
+**Package**: `@heroui/react-mcp`
+
+**Status**: ✅ Active
+
+**Run command**:
+```bash
+npm exec @heroui/react-mcp@latest
+```
+
+**Capabilities**:
+- 📚 HeroUI v3 component documentation
+- 🎨 Component props and API reference
+- 💅 Styling and theming information
+- 🔧 Usage examples and patterns
+- 📖 Migration guides from v2 to v3
+
+**When to use**:
+- Working with HeroUI components
+- Need component documentation
+- Customizing themes
+- Checking available props/variants
+
+**Important**: This provides **v3 Beta documentation only** (not v2)
+
+---
+
+#### 3. Next.js DevTools MCP Server (Optional)
+
+**Package**: `next-devtools-mcp`
+
+**Status**: ✅ Installed globally
+
+**Installation**:
+```bash
+npm install -g next-devtools-mcp@latest
+# or
+npx next-devtools-mcp@latest
+```
+
+**Capabilities** (extends built-in MCP):
+- 📚 Search Next.js official documentation
+- 🔄 Automated codemod execution for upgrades
+- 🔍 Enhanced runtime diagnostics
+- ⚠️ Advanced error detection and analysis
+- 🛠️ Development tools for AI agents
+
+**Usage**:
+```bash
+# Run the MCP server
+next-devtools-mcp
+
+# Or use via npx
+npx next-devtools-mcp@latest
+```
+
+---
+
+### How AI Agents Use MCP
+
+```
+AI Agent (Claude Code, Cursor, etc.)
+    ↓
+MCP Protocol (SSE/JSON-RPC)
+    ↓
+┌─────────────────────────────────────┐
+│  Next.js Built-in MCP               │ → Project metadata, routes, errors
+│  http://localhost:3007/_next/mcp    │
+└─────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────┐
+│  HeroUI React MCP                   │ → Component docs, examples
+│  @heroui/react-mcp                  │
+└─────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────┐
+│  Next.js DevTools MCP (optional)    │ → Docs search, codemods
+│  next-devtools-mcp                  │
+└─────────────────────────────────────┘
+```
+
+### Benefits for AI Development
+
+✅ **Better Context**: AI understands project structure automatically
+✅ **Faster Development**: Direct access to documentation and diagnostics
+✅ **Error Prevention**: Real-time error detection and suggestions
+✅ **Accurate Suggestions**: Framework-aware code completions
+✅ **Documentation Access**: Instant access to Next.js and HeroUI docs
+
+### Debugging MCP Servers
+
+**Check Next.js MCP endpoint**:
+```bash
+curl http://localhost:3007/_next/mcp
+# Should return: {"jsonrpc":"2.0","error":{"code":-32000,...}}
+# (Error is normal - requires SSE connection)
+```
+
+**Check running MCP processes**:
+```bash
+ps aux | grep -i mcp
+# Should show: heroui-react-mcp and optionally next-devtools-mcp
+```
+
+**View browser logs in terminal**:
+```bash
+npm run dev
+# Open browser → Console errors will appear in terminal
+```
+
+---
+
 **When starting a new session, read this file first to understand the project architecture!**

@@ -27,6 +27,8 @@ interface StaffSelectProps {
   onWorkerCreated?: (worker: Worker) => void
   error?: string
   className?: string
+  isReadOnly?: boolean
+  isRequired?: boolean
 }
 
 function StaffSelect({
@@ -36,6 +38,8 @@ function StaffSelect({
   onWorkerCreated,
   error,
   className,
+  isReadOnly = false,
+  isRequired = false,
 }: StaffSelectProps) {
   const { isMobile, isReady, isIOS } = usePlatformContext()
   const { t } = useTranslation()
@@ -141,48 +145,52 @@ function StaffSelect({
                 className="inline-flex items-center gap-1 px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-sm"
               >
                 {fullPath}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveWorker(id)}
-                  className="p-0.5 hover:bg-primary-200 rounded-full"
-                >
-                  <X size={14} />
-                </button>
+                {!isReadOnly && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveWorker(id)}
+                    className="p-0.5 hover:bg-primary-200 rounded-full"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
               </span>
             ))}
           </div>
         )}
 
-        <div className="flex items-center gap-2 w-full">
-          {/* Скрытый нативный select для iOS */}
-          <div className="relative flex-1">
-            <select
-              name="staff"
-              onChange={handleMobileChange}
-              multiple
-              value={selectedWorkerIds}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            >
-              {teamsWithWorkers.map(({ team, workers: teamWorkers }) => (
-                <optgroup key={team.id} label={team.teamName}>
-                  {teamWorkers.map(worker => (
-                    <option key={worker.id} value={worker.id}>
-                      {worker.surname} {worker.name}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-            {/* Видимая кнопка */}
-            <Button variant="secondary" size="sm" className="w-full pointer-events-none">
-              <Plus size={16} />
-              {t('appointment.edit.staff.addStaff')}
+        {!isReadOnly && (
+          <div className="flex items-center gap-2 w-full">
+            {/* Скрытый нативный select для iOS */}
+            <div className="relative flex-1">
+              <select
+                name="staff"
+                onChange={handleMobileChange}
+                multiple
+                value={selectedWorkerIds}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              >
+                {teamsWithWorkers.map(({ team, workers: teamWorkers }) => (
+                  <optgroup key={team.id} label={team.teamName}>
+                    {teamWorkers.map(worker => (
+                      <option key={worker.id} value={worker.id}>
+                        {worker.surname} {worker.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+              {/* Видимая кнопка */}
+              <Button variant="secondary" size="sm" className="w-full pointer-events-none">
+                <Plus size={16} />
+                {t('appointment.edit.staff.addStaff')}
+              </Button>
+            </div>
+            <Button variant="primary" size="sm" isIconOnly onPress={handleAddWorker}>
+              <Plus className="w-4 h-4" />
             </Button>
           </div>
-          <Button variant="primary" size="sm" isIconOnly onPress={handleAddWorker}>
-            <Plus className="w-4 h-4" />
-          </Button>
-        </div>
+        )}
         {error && <p className="text-xs text-danger mt-1">{error}</p>}
         <StaffAdd
           isOpen={isAddOpen}
@@ -198,24 +206,26 @@ function StaffSelect({
     <div className="space-y-2">
       {/* Label row with "+" button — outside Autocomplete to avoid popover z-order issues */}
       <div className="flex flex-row w-full gap-2">
-        <Label className="text-base font-normal flex items-center gap-2">
+        <Label className="text-sm font-medium flex items-center gap-2">
           <Users className="w-6 h-6" />
           {t('appointment.edit.staff.label')}
+          {isRequired && !isReadOnly && <span className="text-danger ml-0.5">*</span>}
         </Label>
-        <div className="ml-auto">
-          <Button variant="primary" size="sm" isIconOnly onPress={handleAddWorker}>
-            <Plus className="w-4 h-4" />
-          </Button>
-        </div>
+        {!isReadOnly && (
+          <div className="ml-auto">
+            <Button variant="primary" size="sm" isIconOnly onPress={handleAddWorker}>
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
       </div>
 
       <Autocomplete
-        isRequired
+        isRequired={isRequired && !isReadOnly}
         fullWidth
         name="worker"
-        aria-label={t('appointment.edit.staff.label')}
         value={selectedWorkerIds || null}
-        onChange={handleDesktopChange}
+        onChange={isReadOnly ? undefined : handleDesktopChange}
         placeholder={t('appointment.edit.staff.selectPlaceholder')}
         selectionMode="multiple"
       >
@@ -232,10 +242,14 @@ function StaffSelect({
               return (
                 <TagGroup
                   size="lg"
-                  onRemove={(keys: Set<React.Key>) => {
-                    const newSelection = selectedWorkerIds.filter(id => !keys.has(id))
-                    onSelectionChange(newSelection)
-                  }}
+                  onRemove={
+                    isReadOnly
+                      ? undefined
+                      : (keys: Set<React.Key>) => {
+                          const newSelection = selectedWorkerIds.filter(id => !keys.has(id))
+                          onSelectionChange(newSelection)
+                        }
+                  }
                 >
                   <TagGroup.List>
                     {selectedWorkerObjects.map(({ id, fullPath }) => (
@@ -248,10 +262,10 @@ function StaffSelect({
               )
             }}
           </Autocomplete.Value>
-          <Autocomplete.ClearButton />
-          <Autocomplete.Indicator />
+          {!isReadOnly && <Autocomplete.ClearButton />}
+          {!isReadOnly && <Autocomplete.Indicator />}
         </Autocomplete.Trigger>
-        <Autocomplete.Popover>
+        {!isReadOnly && <Autocomplete.Popover>
           <Autocomplete.Filter filter={contains}>
             <SearchField autoFocus name="search">
               <SearchField.Group>
@@ -281,7 +295,7 @@ function StaffSelect({
               ])}
             </ListBox>
           </Autocomplete.Filter>
-        </Autocomplete.Popover>
+        </Autocomplete.Popover>}
       </Autocomplete>
       {error && <p className="text-xs text-danger">{error}</p>}
       <StaffAdd

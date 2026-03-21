@@ -599,6 +599,8 @@ export const getAllSampleObjects = () => {
     worker: [worker_1],
     isOpen: false,
     services: [],
+    isClosed: false,
+    createdAt: addDays(appointmentDate_1, -7), // Создано за неделю до встречи
     firmaID,
   }
 
@@ -617,6 +619,8 @@ export const getAllSampleObjects = () => {
     worker: [worker_2],
     isOpen: false,
     services: [],
+      isClosed: false,
+    createdAt: addDays(currentDate, -7), // Created 7 days ago
     firmaID,
   }
 
@@ -635,6 +639,8 @@ export const getAllSampleObjects = () => {
     worker: [worker_3],
     isOpen: false,
     services: [],
+      isClosed: false,
+    createdAt: addDays(currentDate, -7), // Created 7 days ago
     firmaID,
   }
 
@@ -653,6 +659,8 @@ export const getAllSampleObjects = () => {
     worker: [worker_4],
     isOpen: false,
     services: [],
+      isClosed: false,
+    createdAt: addDays(currentDate, -7), // Created 7 days ago
     firmaID,
   }
 
@@ -671,6 +679,8 @@ export const getAllSampleObjects = () => {
     worker: [worker_5],
     isOpen: false,
     services: [],
+      isClosed: false,
+    createdAt: addDays(currentDate, -7), // Created 7 days ago
     firmaID,
   }
 
@@ -692,6 +702,8 @@ export const getAllSampleObjects = () => {
     longitude: 6.9977416,
     services: [service_12],
     firmaID,
+    isClosed: false,
+    createdAt: addDays(currentDate, -7), // Created 7 days ago
     // openedAt: addMinutes(appointmentDate_6, -3),
   }
 
@@ -710,6 +722,8 @@ export const getAllSampleObjects = () => {
     worker: [worker_7],
     isOpen: false,
     services: [],
+      isClosed: false,
+    createdAt: addDays(currentDate, -7), // Created 7 days ago
     firmaID,
   }
 
@@ -728,6 +742,8 @@ export const getAllSampleObjects = () => {
     worker: [worker_8],
     isOpen: false,
     services: [],
+      isClosed: false,
+    createdAt: addDays(currentDate, -7), // Created 7 days ago
     firmaID,
   }
 
@@ -747,6 +763,8 @@ export const getAllSampleObjects = () => {
     worker: [worker_11],
     isOpen: false,
     services: [],
+      isClosed: false,
+    createdAt: addDays(currentDate, -7), // Created 7 days ago
     firmaID,
   }
 
@@ -765,6 +783,8 @@ export const getAllSampleObjects = () => {
     worker: [worker_21],
     isOpen: false,
     services: [],
+      isClosed: false,
+    createdAt: addDays(currentDate, -7), // Created 7 days ago
     firmaID,
   }
 
@@ -783,6 +803,8 @@ export const getAllSampleObjects = () => {
     worker: [worker_31],
     isOpen: false,
     services: [],
+      isClosed: false,
+    createdAt: addDays(currentDate, -7), // Created 7 days ago
     firmaID,
   }
 
@@ -801,6 +823,8 @@ export const getAllSampleObjects = () => {
     worker: [worker_41],
     isOpen: false,
     services: [],
+      isClosed: false,
+    createdAt: addDays(currentDate, -7), // Created 7 days ago
     firmaID,
   }
 
@@ -819,6 +843,8 @@ export const getAllSampleObjects = () => {
     worker: [worker_51],
     isOpen: false,
     services: [],
+      isClosed: false,
+    createdAt: addDays(currentDate, -7), // Created 7 days ago
     firmaID,
   }
 
@@ -837,6 +863,8 @@ export const getAllSampleObjects = () => {
     worker: [worker_61],
     isOpen: false,
     services: [],
+      isClosed: false,
+    createdAt: addDays(currentDate, -7), // Created 7 days ago
     firmaID,
   }
 
@@ -855,6 +883,8 @@ export const getAllSampleObjects = () => {
     worker: [worker_71],
     isOpen: false,
     services: [],
+      isClosed: false,
+    createdAt: addDays(currentDate, -7), // Created 7 days ago
     firmaID,
   }
 
@@ -873,6 +903,8 @@ export const getAllSampleObjects = () => {
     worker: [worker_81],
     isOpen: false,
     services: [],
+      isClosed: false,
+    createdAt: addDays(currentDate, -7), // Created 7 days ago
     firmaID,
   }
 
@@ -891,6 +923,8 @@ export const getAllSampleObjects = () => {
     worker: [worker_1],
     isOpen: false,
     services: [],
+      isClosed: false,
+    createdAt: addDays(currentDate, -7), // Created 7 days ago
     firmaID,
   }
 
@@ -909,6 +943,8 @@ export const getAllSampleObjects = () => {
     worker: [worker_2],
     isOpen: false,
     services: [],
+      isClosed: false,
+    createdAt: addDays(currentDate, -7), // Created 7 days ago
     firmaID,
   }
 
@@ -927,6 +963,8 @@ export const getAllSampleObjects = () => {
     worker: [worker_3],
     isOpen: false,
     services: [],
+      isClosed: false,
+    createdAt: addDays(currentDate, -7), // Created 7 days ago
     firmaID,
   }
 
@@ -945,6 +983,8 @@ export const getAllSampleObjects = () => {
     worker: [worker_4],
     isOpen: false,
     services: [],
+      isClosed: false,
+    createdAt: addDays(currentDate, -7), // Created 7 days ago
     firmaID,
   }
 

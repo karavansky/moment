@@ -64,6 +64,8 @@ export function mapAppointmentToFrontend(a: AppointmentDBRow) {
     isOpen: a.isOpen,
     openedAt: a.openedAt ? new Date(a.openedAt).toISOString() : undefined,
     closedAt: a.closedAt ? new Date(a.closedAt).toISOString() : undefined,
+    createdAt: a.createdAt ? new Date(a.createdAt).toISOString() : new Date().toISOString(),
+    editedAt: a.editedAt ? new Date(a.editedAt).toISOString() : undefined,
     latitude: a.latitude,
     longitude: a.longitude,
     services: (a.services || []).map((s: any) => ({

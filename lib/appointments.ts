@@ -204,6 +204,7 @@ export async function createAppointment(
     latitude?: number
     longitude?: number
     serviceIds?: string[]
+    createdAt?: Date | string
   }
 ): Promise<AppointmentRecord> {
   const appointmentID = generateId()
@@ -217,9 +218,9 @@ export async function createAppointment(
       INSERT INTO appointments (
         "appointmentID", "firmaID", "userID", "clientID", "workerId",
         "date", "isFixedTime", "startTime", "endTime", "duration", "fahrzeit",
-        "latitude", "longitude"
+        "latitude", "longitude", "createdAt"
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       RETURNING *
     `
 
@@ -237,6 +238,7 @@ export async function createAppointment(
       data.fahrzeit || 0,
       data.latitude || null,
       data.longitude || null,
+      data.createdAt || new Date(),
     ]
 
     const result = await client.query(query, values)
@@ -365,6 +367,7 @@ export async function updateAppointment(
     latitude?: number | null
     longitude?: number | null
     serviceIds?: string[]
+    editedAt?: Date | string
   }
 ): Promise<AppointmentRecord | null> {
   const dbClient = await pool.connect()
@@ -480,6 +483,9 @@ export async function updateAppointment(
       setClauses.push(`"longitude" = $${idx++}`)
       values.push(data.longitude)
     }
+    // Always set editedAt when updating
+    setClauses.push(`"editedAt" = $${idx++}`)
+    values.push(data.editedAt || new Date())
     // Обновляем workerId (legacy) первым из массива
     if (data.workerIds !== undefined && data.workerIds.length > 0) {
       setClauses.push(`"workerId" = $${idx++}`)

@@ -35,6 +35,7 @@ interface AddressAutocompleteProps {
   placeholder?: string
   fullWidth?: boolean
   'aria-label'?: string
+  isDisabled?: boolean
 }
 
 interface AddressItem {
@@ -50,6 +51,7 @@ function AddressAutocomplete({
   placeholder = 'Введите адрес...',
   fullWidth,
   'aria-label': ariaLabel,
+  isDisabled = false,
 }: AddressAutocompleteProps) {
   const { session } = useAuth()
   const [inputValue, setInputValue] = useState(value)
@@ -185,6 +187,7 @@ function AddressAutocomplete({
       onSelectionChange={handleSelect}
       menuTrigger="focus"
       items={items}
+      isDisabled={isDisabled}
     >
       <Label className="sr-only">{ariaLabel || placeholder}</Label>
       <div ref={inputRef}>

@@ -29,6 +29,8 @@ interface ServiceSelectProps {
   onSelectionChange: (serviceIds: string[]) => void
   error?: string
   className?: string
+  isReadOnly?: boolean
+  isRequired?: boolean
 }
 
 function ServiceSelect({
@@ -37,6 +39,8 @@ function ServiceSelect({
   onSelectionChange,
   error,
   className,
+  isReadOnly = false,
+  isRequired = false,
 }: ServiceSelectProps) {
   const { isMobile, isReady, isIOS } = usePlatformContext()
   const { t } = useTranslation()
@@ -106,7 +110,6 @@ function ServiceSelect({
   // (isReady && isMobile)
   //   <TextField className="w-full min-w-0" isRequired name="service" type="text">
   //               <option value="">Bitte wählen...</option>
-  console.log('isReady:', isReady, 'isMobile:', isMobile)
   if (isReady && isMobile && isIOS) {
     return (
       <div className="w-full min-w-0">
@@ -124,55 +127,59 @@ function ServiceSelect({
                 className="inline-flex items-center gap-1 px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-sm"
               >
                 {fullPath}
-                <Button
-                  isIconOnly
-                  size="sm"
-                  variant="tertiary"
-                  onPress={() => handleRemoveService(id)}
-                  className="w-5 h-5 p-0.5 rounded-full"
-                >
-                  <X size={4} />
-                </Button>
+                {!isReadOnly && (
+                  <Button
+                    isIconOnly
+                    size="sm"
+                    variant="tertiary"
+                    onPress={() => handleRemoveService(id)}
+                    className="w-5 h-5 p-0.5 rounded-full"
+                  >
+                    <X size={4} />
+                  </Button>
+                )}
               </span>
             ))}
           </div>
         )}
 
-        <div className="flex items-center gap-2 w-full">
-          {/* Скрытый нативный select для iOS/Android */}
-          <div className="relative flex-1">
-            <select
-              ref={selectRef}
-              name="service"
-              onChange={handleMobileChange}
-              multiple
-              value={selectedServices}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            >
-              {/* Корневые услуги без группы */}
-              {servicesForSelect.rootServices.map(({ id, name }) => (
-                <option key={id} value={id}>
-                  {name}
-                </option>
-              ))}
-              {/* Группы с услугами */}
-              {servicesForSelect.groups.map(({ id, label, options }) => (
-                <optgroup key={id} label={label}>
-                  {options.map(({ id: optionId, name }) => (
-                    <option key={optionId} value={optionId}>
-                      {name}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-            {/* Видимая кнопка */}
-            <Button variant="secondary" size="sm" className="w-full pointer-events-none">
-              <Plus size={16} />
-              {t('appointment.edit.service.addService')}
-            </Button>
+        {!isReadOnly && (
+          <div className="flex items-center gap-2 w-full">
+            {/* Скрытый нативный select для iOS/Android */}
+            <div className="relative flex-1">
+              <select
+                ref={selectRef}
+                name="service"
+                onChange={handleMobileChange}
+                multiple
+                value={selectedServices}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              >
+                {/* Корневые услуги без группы */}
+                {servicesForSelect.rootServices.map(({ id, name }) => (
+                  <option key={id} value={id}>
+                    {name}
+                  </option>
+                ))}
+                {/* Группы с услугами */}
+                {servicesForSelect.groups.map(({ id, label, options }) => (
+                  <optgroup key={id} label={label}>
+                    {options.map(({ id: optionId, name }) => (
+                      <option key={optionId} value={optionId}>
+                        {name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+              {/* Видимая кнопка */}
+              <Button variant="secondary" size="sm" className="w-full pointer-events-none">
+                <Plus size={16} />
+                {t('appointment.edit.service.addService')}
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
         {error && <p className="text-xs text-danger mt-1">{error}</p>}
       </div>
     )
@@ -185,11 +192,11 @@ function ServiceSelect({
   return (
     <div className="space-y-2 ">
       <Autocomplete
-        isRequired
+        isRequired={isRequired && !isReadOnly}
         fullWidth
         name="service"
         value={selectedServices || null}
-        onChange={handleDesktopChange}
+        onChange={isReadOnly ? undefined : handleDesktopChange}
         placeholder={t('appointment.edit.service.selectPlaceholder')}
         selectionMode="multiple"
       >
@@ -207,10 +214,14 @@ function ServiceSelect({
               return (
                 <TagGroup
                   size="lg"
-                  onRemove={(keys: Set<React.Key>) => {
-                    const newSelection = selectedServices.filter(id => !keys.has(id))
-                    onSelectionChange(newSelection)
-                  }}
+                  onRemove={
+                    isReadOnly
+                      ? undefined
+                      : (keys: Set<React.Key>) => {
+                          const newSelection = selectedServices.filter(id => !keys.has(id))
+                          onSelectionChange(newSelection)
+                        }
+                  }
                 >
                   <TagGroup.List>
                     {state.selectedItems.map((item: any) => {
@@ -226,10 +237,10 @@ function ServiceSelect({
               )
             }}
           </Autocomplete.Value>
-          <Autocomplete.ClearButton />
-          <Autocomplete.Indicator />
+          {!isReadOnly && <Autocomplete.ClearButton />}
+          {!isReadOnly && <Autocomplete.Indicator />}
         </Autocomplete.Trigger>
-        <Autocomplete.Popover className="w-full max-w-sm">
+        {!isReadOnly && <Autocomplete.Popover className="w-full max-w-sm">
           <Autocomplete.Filter filter={contains}>
             <SearchField autoFocus name="search">
               <SearchField.Group>
@@ -268,7 +279,7 @@ function ServiceSelect({
               ))}
             </ListBox>
           </Autocomplete.Filter>
-        </Autocomplete.Popover>
+        </Autocomplete.Popover>}
       </Autocomplete>
       {error && <p className="text-xs text-danger">{error}</p>}
     </div>
