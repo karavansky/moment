@@ -16,6 +16,7 @@ import {
 import { Plus, X, HandHeart } from 'lucide-react'
 import { usePlatformContext } from '@/contexts/PlatformContext'
 import { useTranslation } from '@/components/Providers'
+import { useAuth } from '@/components/AuthProvider'
 
 import type {
   ServicesForSelect,
@@ -44,6 +45,7 @@ function ServiceSelect({
 }: ServiceSelectProps) {
   const { isMobile, isReady, isIOS } = usePlatformContext()
   const { t } = useTranslation()
+  const { session } = useAuth()
   const selectRef = useRef<HTMLSelectElement>(null)
   const { contains } = useFilter({ sensitivity: 'base' })
 
@@ -115,7 +117,7 @@ function ServiceSelect({
       <div className="w-full min-w-0">
         <Label className="text-base font-normal flex items-center gap-2" isRequired={isRequired && !isReadOnly}>
           <HandHeart className="w-6 h-6" />
-          {t('appointment.edit.service.label')}
+          {session?.user?.status === 7 ? 'Ziele' : t('appointment.edit.service.label')}
         </Label>
 
         {/* Чипы с выбранными услугами */}
@@ -202,7 +204,7 @@ function ServiceSelect({
       >
         <Label className="text-sm font-medium flex items-center gap-2">
           <HandHeart className="w-6 h-6" />
-          {t('appointment.edit.service.label')}
+          {session?.user?.status === 7 ? 'Ziele' : t('appointment.edit.service.label')}
         </Label>
         <Autocomplete.Trigger>
           <Autocomplete.Value>

@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth'
 
 /**
- * Только директор (status=0) или до миграции (null/undefined) с firmaID.
+ * Только директор (status=0), Sport- und Bäderamt (status=7) или до миграции (null/undefined) с firmaID.
  * Для CRUD операций (create/update/delete).
  */
 export async function getSchedulingSession() {
@@ -11,9 +11,9 @@ export async function getSchedulingSession() {
     return null
   }
 
-  // status=0 (директор) или undefined/null (до миграции) — разрешаем
+  // status=0 (директор), status=7 (Sport- und Bäderamt) или undefined/null (до миграции) — разрешаем
   const status = session.user.status
-  if (status != null && status !== 0) {
+  if (status != null && status !== 0 && status !== 7) {
     return null
   }
 

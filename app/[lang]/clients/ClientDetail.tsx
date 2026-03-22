@@ -10,6 +10,7 @@ import ClientOverview from './ClientOverview'
 import ClientHistory from './ClientHistory'
 import { useTranslation } from '@/components/Providers'
 import { useDisclosure } from '@/lib/useDisclosure'
+import { useAuth } from '@/components/AuthProvider'
 
 interface ClientDetailProps {
   client: Client
@@ -22,8 +23,15 @@ export default memo(ClientDetail)
 function ClientDetail({ client, onClose, isCreateNew = false, className }: ClientDetailProps) {
   const { appointments, updateClient, deleteClient } = useScheduling()
   const { t } = useTranslation()
+  const { session } = useAuth()
   const clientFullName = `${client.surname} ${client.name}`
   const [activeTab, setActiveTab] = useState<'overview' | 'history'>('overview')
+
+  // Условные labels для status=7 (Sport- und Bäderamt)
+  const isStatus7 = session?.user?.status === 7
+  const newClientLabel = isStatus7 ? 'Neues Objekt' : t('clients.detail.newClient')
+  const overviewLabel = isStatus7 ? 'Übersicht' : t('clients.detail.overview')
+  const historyLabel = isStatus7 ? 'Historie' : t('clients.detail.history')
   const [isPending, startTransition] = useTransition()
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -169,7 +177,7 @@ function ClientDetail({ client, onClose, isCreateNew = false, className }: Clien
           <Undo2 className="w-5 h-5 text-primary" />
         </Button>
         <h2 className="text-2xl font-semibold">
-          {isCreateNew ? t('clients.detail.newClient') : `${client.surname} ${client.name}`}
+          {isCreateNew ? newClientLabel : `${client.surname} ${client.name}`}
         </h2>
       </div>
       <div className="flex flex-col relative mb-4 shrink-0">
@@ -179,14 +187,14 @@ function ClientDetail({ client, onClose, isCreateNew = false, className }: Clien
             variant={activeTab === 'overview' ? 'tertiary' : 'outline'}
             onPress={onPressOverview}
           >
-            <FilePenLine className="w-5 h-5 mr-2" /> {t('clients.detail.overview')}
+            <FilePenLine className="w-5 h-5 mr-2" /> {overviewLabel}
           </Button>
           <Button
             ref={historyRef}
             variant={activeTab === 'history' ? 'tertiary' : 'outline'}
             onPress={onPressHistory}
           >
-            <History className="w-5 h-5 mr-2" /> {t('clients.detail.history')}
+            <History className="w-5 h-5 mr-2" /> {historyLabel}
           </Button>
           {!isCreateNew && (
             <div className="ml-auto">

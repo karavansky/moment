@@ -34,6 +34,7 @@ import scrollIntoView from 'scroll-into-view-if-needed'
 import { Client, Groupe } from '@/types/scheduling'
 import { QrCode, UserStar, Share2 } from 'lucide-react'
 import { useTranslation } from '@/components/Providers'
+import { useAuth } from '@/components/AuthProvider'
 
 interface GenericTabelleProps {
   //  list: Record<string, any>[]
@@ -51,6 +52,7 @@ interface GenericTabelleProps {
 
 const columnDefs = [
   { uid: 'client', sortable: true },
+  { uid: 'address', sortable: false },
   { uid: 'status', sortable: true },
   { uid: 'groupe', sortable: true },
   { uid: 'email', sortable: true },
@@ -68,6 +70,7 @@ const statusDefs = [
 
 const columnNameKeys: Record<string, string> = {
   client: 'clients.table.columns.client',
+  address: 'clients.table.columns.address',
   status: 'clients.table.columns.status',
   groupe: 'clients.table.columns.group',
   email: 'clients.table.columns.email',
@@ -81,13 +84,19 @@ const statusColorMap: Record<string, ChipProps['color']> = {
   paused: 'warning',
   archive: 'danger',
 }
-const INITIAL_VISIBLE_COLUMNS = ['client', 'status', 'groupe']
+const INITIAL_VISIBLE_COLUMNS = ['client', 'address', 'status', 'groupe']
 
 const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
   const { isShowColumns = false } = props
   const { t } = useTranslation()
+  const { session } = useAuth()
   const [filterValue, setFilterValue] = React.useState('')
   const [isPending, startTransition] = useTransition()
+
+  // Условные labels для status=7 (Sport- und Bäderamt)
+  const isStatus7 = session?.user?.status === 7
+  const clientLabel = isStatus7 ? 'Objekt' : t('clients.title')
+  const clientsLabel = isStatus7 ? 'Objekte' : t('clients.title')
 
   // Invite QR modal state
   const [inviteModalOpen, setInviteModalOpen] = React.useState(false)
@@ -143,8 +152,19 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
   }
 
   const columns = React.useMemo(
-    () => columnDefs.map(col => ({ ...col, name: t(columnNameKeys[col.uid]) })),
-    [t]
+    () => columnDefs.map(col => {
+      // Получаем имя из локализации
+      let name = t(columnNameKeys[col.uid]) || (col.uid === 'address' ? 'Adresse' : col.uid)
+
+      // Условная замена для status=7
+      if (isStatus7) {
+        if (col.uid === 'client') {
+          name = 'Objekt'
+        }
+      }
+      return { ...col, name }
+    }),
+    [t, isStatus7]
   )
 
   const statusOptions = React.useMemo(
@@ -371,6 +391,23 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
             </p>
           </div>
         )
+      case 'address':
+        const addressParts = []
+        if (user.street) addressParts.push(user.street)
+        if (user.houseNumber) addressParts.push(user.houseNumber)
+        const addressLine1 = addressParts.join(' ')
+
+        const cityParts = []
+        if (user.postalCode) cityParts.push(user.postalCode)
+        if (user.city) cityParts.push(user.city)
+        const addressLine2 = cityParts.join(' ')
+
+        return (
+          <div className="flex flex-col">
+            <p className="text-small">{addressLine1}</p>
+            {addressLine2 && <p className="text-small text-default-400">{addressLine2}</p>}
+          </div>
+        )
       case 'status':
         let statusText = cellValue === 0 ? 'active' : cellValue === 1 ? 'paused' : 'archive'
         return (
@@ -544,14 +581,14 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
               {isGeneratingInvite ? <Spinner size="sm" /> : <QrCode />}
             </Button>
             <Button variant="primary" className="ml-auto sm:ml-0" onPress={props.onAddNew}>
-              {t('clients.table.addNew')}
+              {isStatus7 ? 'Neu hinzufügen' : t('clients.table.addNew')}
               <PlusIcon />
             </Button>
           </div>
         </div>
       </div>
     )
-  }, [filterValue, onSearchChange, statusFilter, groupFilter, groupItems, t, statusOptions])
+  }, [filterValue, onSearchChange, statusFilter, groupFilter, groupItems, t, statusOptions, isStatus7])
 
   if (!isMounted) {
     return null
@@ -561,7 +598,7 @@ const ClientsTable = function ClientsTable(props: GenericTabelleProps) {
     <div className={`flex flex-col gap-4 h-full ${props.className || ''} select-none`}>
       <div className="flex items-center pl-4 gap-2 shrink-0">
         <UserStar className="w-6 h-6 sm:w-6 sm:h-6  text-primary" />
-        <h1 className="text-lg sm:text-2xl font-bold text-foreground">{t('clients.title')}</h1>
+        <h1 className="text-lg sm:text-2xl font-bold text-foreground">{clientsLabel}</h1>
         <TextField
           className="block sm:hidden w-full pl-4 max-w-70"
           name="filter"

@@ -206,11 +206,11 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
   const { session, status: authStatus } = useAuth()
 
   // Определяем режим: live (авторизованный с firmaID) или mock (демо)
-  // status=0 (директор), 1 (worker), 2 (client), null/undefined (до миграции)
+  // status=0 (директор), 1 (worker), 2 (client), 7 (Sport- und Bäderamt), null/undefined (до миграции)
   const userStatus = session?.user?.status
   const isLiveMode =
     authStatus === 'authenticated' &&
-    (userStatus === 0 || userStatus === 1 || userStatus === 2 || userStatus == null) &&
+    (userStatus === 0 || userStatus === 1 || userStatus === 2 || userStatus === 7 || userStatus == null) &&
     !!session?.user?.firmaID
 
   console.log('[SchedulingProvider] Mode check:', {
@@ -912,11 +912,36 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
               }))
             })
             .catch(error => {
-              console.error('[addClient] API error:', error)
+              // Log permission errors as warnings, others as errors
+              if (error.message.includes('NO_PERMISSION') || error.message.includes('Unauthorized')) {
+                console.warn('[addClient] Permission denied:', error.message)
+              } else {
+                console.error('[addClient] API error:', error)
+              }
+
+              // Remove failed client from state
               setState(prev => ({
                 ...prev,
                 clients: prev.clients.filter(c => c.id !== client.id),
               }))
+
+              // Show user-friendly error notification
+              const isPermissionError = error.message.includes('NO_PERMISSION') || error.message.includes('Unauthorized')
+              const errorMessage = isPermissionError
+                ? session?.user?.status === 7
+                  ? 'Sie haben keine Berechtigung, Objekte zu erstellen.'
+                  : 'Sie haben keine Berechtigung, Kunden zu erstellen. Nur Direktoren können Kunden erstellen.'
+                : 'Fehler beim Speichern des Kunden'
+
+              addNotification({
+                id: generateId(),
+                userID: session?.user?.id || 'system',
+                type: 'error',
+                title: isPermissionError ? 'Keine Berechtigung' : 'Fehler',
+                message: errorMessage,
+                date: new Date(),
+                isRead: false,
+              })
             })
         }
       },

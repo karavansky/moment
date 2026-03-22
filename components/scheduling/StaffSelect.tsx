@@ -134,7 +134,7 @@ function StaffSelect({
       <div className="w-full min-w-0">
         <Label className="text-base font-normal flex items-center gap-2" isRequired={isRequired && !isReadOnly}>
           <Users className="w-6 h-6" />
-          {t('appointment.edit.staff.labelPlural')}</Label>
+          {session?.user?.status === 7 ? 'Teilnehmer' : t('appointment.edit.staff.labelPlural')}</Label>
 
         {/* Чипы с выбранными workers */}
         {selectedWorkerObjects.length > 0 && (
@@ -208,7 +208,7 @@ function StaffSelect({
       <div className="flex flex-row w-full gap-2">
         <Label className="text-sm font-medium flex items-center gap-2" isRequired={isRequired && !isReadOnly}>
           <Users className="w-6 h-6" />
-          {t('appointment.edit.staff.label')}
+          {session?.user?.status === 7 ? 'Teilnehmer' : t('appointment.edit.staff.label')}
         </Label>
         {!isReadOnly && (
           <div className="ml-auto">

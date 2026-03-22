@@ -10,6 +10,7 @@ import WorkerOverview from './WorkerOverview'
 import WorkerHistory from './WorkerHistory'
 import StaffSelect from '@/components/scheduling/StaffSelect'
 import { useDisclosure } from '@/lib/useDisclosure'
+import { useAuth } from '@/components/AuthProvider'
 
 interface WorkerDetailProps {
   worker: Worker
@@ -22,8 +23,15 @@ export default memo(WorkerDetail)
 function WorkerDetail({ worker, onClose, isCreateNew = false, className }: WorkerDetailProps) {
   const { appointments, workers, teamsWithWorkers, updateWorker, updateAppointment, deleteWorker } =
     useScheduling()
+  const { session } = useAuth()
   const workerFullName = `${worker.surname} ${worker.name}`
   const [activeTab, setActiveTab] = useState<'overview' | 'history'>('overview')
+
+  // Условные labels для status=7 (Sport- und Bäderamt)
+  const isStatus7 = session?.user?.status === 7
+  const newWorkerLabel = isStatus7 ? 'Neuer Teilnehmer' : 'New Worker'
+  const overviewLabel = isStatus7 ? 'Übersicht' : 'Overview'
+  const historyLabel = isStatus7 ? 'Historie' : 'History'
   const [isPending, startTransition] = useTransition()
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -216,7 +224,7 @@ function WorkerDetail({ worker, onClose, isCreateNew = false, className }: Worke
           <Undo2 className="w-5 h-5 text-primary" />
         </Button>
         <h2 className="text-2xl font-semibold">
-          {isCreateNew ? 'New Worker' : `${worker.surname} ${worker.name}`}
+          {isCreateNew ? newWorkerLabel : `${worker.surname} ${worker.name}`}
         </h2>
       </div>
       <div className="flex flex-col relative mb-4 shrink-0">
@@ -226,14 +234,14 @@ function WorkerDetail({ worker, onClose, isCreateNew = false, className }: Worke
             variant={activeTab === 'overview' ? 'tertiary' : 'ghost'}
             onPress={onPressOverview}
           >
-            <FilePenLine className="w-5 h-5 mr-2" /> Overview
+            <FilePenLine className="w-5 h-5 mr-2" /> {overviewLabel}
           </Button>
           <Button
             ref={historyRef}
             variant={activeTab === 'history' ? 'tertiary' : 'ghost'}
             onPress={onPressHistory}
           >
-            <History className="w-5 h-5 mr-2" /> History
+            <History className="w-5 h-5 mr-2" /> {historyLabel}
           </Button>
           {!isCreateNew && (
             <div className="ml-auto">

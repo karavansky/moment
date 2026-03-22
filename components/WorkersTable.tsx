@@ -26,6 +26,7 @@ import { ChevronDownIcon, PlusIcon, SearchIcon, VerticalDotsIcon } from '@/compo
 import scrollIntoView from 'scroll-into-view-if-needed'
 import { Client, Worker, Team } from '@/types/scheduling'
 import { QrCode, Users, Share2 } from 'lucide-react'
+import { useAuth } from '@/components/AuthProvider'
 
 
 interface WorkersTableProps {
@@ -42,8 +43,9 @@ interface WorkersTableProps {
   className?: string
 }
 
-export const columns = [
-  { name: 'Worker', uid: 'worker', sortable: true },
+// Функция для получения columns с учетом userStatus
+const getColumns = (isStatus7: boolean) => [
+  { name: isStatus7 ? 'Teilnehmer' : 'Worker', uid: 'worker', sortable: true },
   { name: 'Status', uid: 'status', sortable: true },
   { name: 'Team', uid: 'team', sortable: true },
   { name: 'E-Mail', uid: 'email', sortable: true },
@@ -52,6 +54,9 @@ export const columns = [
   { name: 'PLZ', uid: 'plz', sortable: true },
   { name: 'Ort', uid: 'ort', sortable: true },
 ]
+
+// Export для обратной совместимости
+export const columns = getColumns(false)
 
 export const statusOptions = [
   { name: 'Active', uid: '0', value: 0 },
@@ -67,8 +72,17 @@ const INITIAL_VISIBLE_COLUMNS = ['worker', 'status', 'team']
 
 const WorkersTable = function WorkersTable(props: WorkersTableProps) {
   const { isShowColumns = false } = props
+  const { session } = useAuth()
   const [filterValue, setFilterValue] = React.useState('')
   const [isPending, startTransition] = useTransition()
+
+  // Условные labels для status=7 (Sport- und Bäderamt)
+  const isStatus7 = session?.user?.status === 7
+  const workerLabel = isStatus7 ? 'Teilnehmer' : 'Fachkräfte'
+  const addNewLabel = isStatus7 ? 'Neu hinzufügen' : 'Add New'
+
+  // Динамические columns в зависимости от userStatus
+  const columns = React.useMemo(() => getColumns(isStatus7), [isStatus7])
 
   // Invite QR modal state
   const [inviteModalOpen, setInviteModalOpen] = React.useState(false)
@@ -516,14 +530,14 @@ const WorkersTable = function WorkersTable(props: WorkersTableProps) {
               size="sm"
               onPress={props.onAddNew}
             >
-              Add New
+              {addNewLabel}
               <PlusIcon />
             </Button>
           </div>
         </div>
       </div>
     )
-  }, [filterValue, onSearchChange, statusFilter, teamFilter, teamItems])
+  }, [filterValue, onSearchChange, statusFilter, teamFilter, teamItems, isStatus7, addNewLabel])
 
   if (!isMounted) {
     return null
@@ -533,7 +547,7 @@ const WorkersTable = function WorkersTable(props: WorkersTableProps) {
     <div className={`flex flex-col gap-4 h-full ${props.className || ''} select-none`}>
       <div className="flex items-center pl-4 gap-2 shrink-0">
         <Users className="w-6 h-6 sm:w-6 sm:h-6  text-primary" />
-        <h1 className="text-lg sm:text-2xl font-bold text-foreground">Fachkräfte</h1>
+        <h1 className="text-lg sm:text-2xl font-bold text-foreground">{workerLabel}</h1>
         <TextField
           className="block sm:hidden w-full pl-4 max-w-70"
           name="filter"

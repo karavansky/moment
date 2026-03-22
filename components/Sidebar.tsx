@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, memo } from 'react'
+import { useState, useEffect, useCallback, memo, useMemo } from 'react'
 import { Button, Card, Separator } from '@heroui/react'
 import {
   Home,
@@ -29,6 +29,7 @@ import { useSidebar } from '@/contexts/SidebarContext'
 import { SimpleTooltip } from './SimpleTooltip'
 import { useLanguage } from '@/hooks/useLanguage'
 import { useTranslation } from '@/components/Providers'
+import { useAuth } from '@/components/AuthProvider'
 
 interface MenuItem {
   icon: React.ElementType
@@ -46,20 +47,20 @@ interface MenuSection {
 
 // Вынесли данные за пределы компонента для предотвращения пересоздания
 // label и title хранят ключи локализации, которые разрешаются через t() в компонентах
-const menuItems: MenuItem[] = [
+const allMenuItems: MenuItem[] = [
   { icon: Home, label: 'sidebar.menu.home', href: '/' },
   { icon: Calendar1, label: 'sidebar.menu.schedule', href: '/dienstplan' },
   { icon: Radio, label: 'sidebar.menu.dispatcher', href: '/dispatcher' },
 ]
 
-const crmSubItems: MenuItem[] = [
+const allCrmSubItems: MenuItem[] = [
   { icon: UserStar, label: 'sidebar.crm.clients', href: '/clients' },
   { icon: Users, label: 'sidebar.crm.staff', href: '/staff' },
   { icon: HandHeart, label: 'sidebar.crm.services', href: '/services' },
   { icon: Van, label: 'sidebar.crm.transport', href: '/vehicle' },
 ]
 
-const reportsItems: MenuItem[] = [
+const allReportsItems: MenuItem[] = [
   { icon: ClipboardPlus, label: 'sidebar.reports.clients', href: '/reports/clients' },
   { icon: ClipboardMinus, label: 'sidebar.reports.staff', href: '/reports/staff' },
   { icon: BookOpen, label: 'sidebar.reports.logbook', href: '/reports/transport' },
@@ -69,11 +70,38 @@ const settingsItems: MenuItem[] = [
   { icon: UserCog, label: 'sidebar.settings.personal', href: '/settings' },
 ]
 
-const menuSections: MenuSection[] = [
-  { title: 'sidebar.crm.title', items: crmSubItems, activeColor: 'bg-success/10 text-success' },
-  { title: 'sidebar.reports.title', items: reportsItems, activeColor: 'bg-primary/10 text-primary' },
-  { title: 'sidebar.settings.title', items: settingsItems, activeColor: 'bg-primary/10 text-primary' },
-]
+// Функции для фильтрации меню в зависимости от userStatus
+const getMenuItems = (userStatus?: number | null): MenuItem[] => {
+  if (userStatus === 7) {
+    // Для Sport- und Bäderamt убираем dispatcher
+    return allMenuItems.filter(item => item.href !== '/dispatcher')
+  }
+  return allMenuItems
+}
+
+const getCrmItems = (userStatus?: number | null): MenuItem[] => {
+  if (userStatus === 7) {
+    // Для Sport- und Bäderamt убираем transport
+    return allCrmSubItems.filter(item => item.href !== '/vehicle')
+  }
+  return allCrmSubItems
+}
+
+const getReportsItems = (userStatus?: number | null): MenuItem[] => {
+  if (userStatus === 7) {
+    // Для Sport- und Bäderamt убираем logbook
+    return allReportsItems.filter(item => item.href !== '/reports/transport')
+  }
+  return allReportsItems
+}
+
+const getMenuSections = (userStatus?: number | null): MenuSection[] => {
+  return [
+    { title: 'sidebar.crm.title', items: getCrmItems(userStatus), activeColor: 'bg-success/10 text-success' },
+    { title: 'sidebar.reports.title', items: getReportsItems(userStatus), activeColor: 'bg-primary/10 text-primary' },
+    { title: 'sidebar.settings.title', items: settingsItems, activeColor: 'bg-primary/10 text-primary' },
+  ]
+}
 
 // Мемоизированный компонент для элементов меню
 const MenuItemComponent = memo(({
@@ -82,7 +110,8 @@ const MenuItemComponent = memo(({
   onClick,
   activeClassName = 'bg-primary/10 text-primary',
   isExpanded = true,
-  lang
+  lang,
+  userStatus
 }: {
   item: MenuItem
   isActive: boolean
@@ -90,10 +119,30 @@ const MenuItemComponent = memo(({
   activeClassName?: string
   isExpanded?: boolean
   lang: string
+  userStatus?: number | null
 }) => {
   const Icon = item.icon
   const { t } = useTranslation()
-  const label = t(item.label)
+
+  // Условная замена labels для status=7
+  let label = t(item.label)
+  if (userStatus === 7) {
+    // Замена для Sport- und Bäderamt
+    if (item.label === 'sidebar.menu.schedule') {
+      label = 'Buchungen'
+    } else if (item.label === 'sidebar.crm.clients') {
+      label = 'Objekte'
+    } else if (item.label === 'sidebar.crm.staff') {
+      label = 'Teilnehmer'
+    } else if (item.label === 'sidebar.crm.services') {
+      label = 'Ziele'
+    } else if (item.label === 'sidebar.reports.clients') {
+      label = 'Objekte'
+    } else if (item.label === 'sidebar.reports.staff') {
+      label = 'Teilnehmer'
+    }
+  }
+
   // Добавляем языковой префикс к href
   const localizedHref = item.href === '/' ? `/${lang}` : `/${lang}${item.href}`
 
@@ -127,13 +176,15 @@ const MenuSectionComponent = memo(({
   isActive,
   onLinkClick,
   isExpanded = true,
-  lang
+  lang,
+  userStatus
 }: {
   section: MenuSection
   isActive: (href: string) => boolean
   onLinkClick: () => void
   isExpanded?: boolean
   lang: string
+  userStatus?: number | null
 }) => {
   const { t } = useTranslation()
   return (
@@ -151,6 +202,7 @@ const MenuSectionComponent = memo(({
           activeClassName={section.activeColor}
           isExpanded={isExpanded}
           lang={lang}
+          userStatus={userStatus}
         />
       ))}
     </div>
@@ -206,12 +258,20 @@ ToggleButton.displayName = 'ToggleButton'
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const { session } = useAuth()
 
   // Извлекаем язык из pathname (первый сегмент после /)
   const lang = useLanguage()
 
   // Получаем состояние из контекста
   const { isOpen, isExpanded, toggleOpen, toggleExpanded } = useSidebar()
+
+  // Получаем статус пользователя для условной терминологии
+  const userStatus = session?.user?.status
+
+  // Фильтруем меню в зависимости от userStatus
+  const menuItems = useMemo(() => getMenuItems(userStatus), [userStatus])
+  const menuSections = useMemo(() => getMenuSections(userStatus), [userStatus])
 
   // Для SSR всегда начинаем с false (desktop режим)
   const [isMobile, setIsMobile] = useState(false)
@@ -314,6 +374,7 @@ export default function Sidebar() {
                 onClick={handleLinkClick}
                 isExpanded={displayExpanded}
                 lang={lang}
+                userStatus={userStatus}
               />
             ))}
 
@@ -326,6 +387,7 @@ export default function Sidebar() {
                 onLinkClick={handleLinkClick}
                 isExpanded={displayExpanded}
                 lang={lang}
+                userStatus={userStatus}
               />
             ))}
           </div>

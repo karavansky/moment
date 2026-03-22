@@ -169,29 +169,12 @@ export default async function RootLayout({
         {/* Google Analytics */}
         {isProduction && <GoogleAnalytics gaId="G-HB6BYNFW9F" />}
 
-        {/* Blocking script to prevent flash - executes BEFORE any rendering */}
+        {/* Inline script to prevent flash - will be rendered as string in SSR */}
         <script
-          // Без defer/async - блокирующий скрипт, выполнится немедленно
           dangerouslySetInnerHTML={{
-            __html: `
-              const theme = localStorage.getItem('theme') || 'dark';
-              document.documentElement.classList.add(theme);
-
-              // Читаем состояние из localStorage (приоритет) или используем SSR значение
-              const sidebarExpanded = localStorage.getItem('sidebar-expanded');
-              const initialExpanded = ${JSON.stringify(initialSidebarExpanded)};
-
-              // Если в localStorage нет значения, используем SSR cookie
-              const isExpanded = sidebarExpanded !== null
-                ? sidebarExpanded === 'true'
-                : initialExpanded;
-
-              // Применяем класс если sidebar свернут
-              if (!isExpanded) {
-                document.documentElement.classList.add('sidebar-collapsed');
-              }
-            `,
+            __html: `(function(){try{const theme=localStorage.getItem('theme')||'dark';document.documentElement.classList.add(theme);const sidebarExpanded=localStorage.getItem('sidebar-expanded');const initialExpanded=${JSON.stringify(initialSidebarExpanded)};const isExpanded=sidebarExpanded!==null?sidebarExpanded==='true':initialExpanded;if(!isExpanded){document.documentElement.classList.add('sidebar-collapsed');}}catch(e){}})();`,
           }}
+          suppressHydrationWarning
         />
       </head>
       <body

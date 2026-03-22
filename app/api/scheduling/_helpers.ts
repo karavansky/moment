@@ -35,6 +35,8 @@ interface AppointmentDBRow {
   isOpen?: boolean
   openedAt?: Date | string
   closedAt?: Date | string
+  createdAt?: Date | string
+  editedAt?: Date | string
   latitude?: number
   longitude?: number
   services?: any[]

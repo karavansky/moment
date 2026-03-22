@@ -34,8 +34,8 @@ function DienstplanView() {
     user,
   } = useScheduling()
 
-  // Check if user can create appointments (Director only)
-  const canCreateAppointments = session?.user?.status === 0 || session?.user?.status == null
+  // Check if user can create appointments (Director or Sport- und Bäderamt)
+  const canCreateAppointments = session?.user?.status === 0 || session?.user?.status === 7 || session?.user?.status == null
   const [viewMode, setViewMode] = useState<ViewMode>('month')
   const [isPending, startTransition] = useTransition()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -365,7 +365,7 @@ function DienstplanView() {
           <div className="flex items-center gap-2">
             <CalendarIcon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             <h1 className="text-lg sm:text-2xl font-bold text-foreground">
-              {t('dienstplan.title')}
+              {session?.user?.status === 7 ? 'Buchungen' : t('dienstplan.title')}
             </h1>
           </div>
           {/* View mode switcher */}

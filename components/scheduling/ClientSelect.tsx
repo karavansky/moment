@@ -87,7 +87,7 @@ function ClientSelect({
     <div className="flex flex-row w-full gap-2 mb-2">
       <Label className="text-base font-normal flex items-center gap-2">
         <UserStar className="w-6 h-6" />
-        {t('appointment.edit.client.label')}
+        {session?.user?.status === 7 ? 'Objekte' : t('appointment.edit.client.label')}
         {isRequired && !isReadOnly && <span className="text-danger ml-0.5">*</span>}
       </Label>
       {!isReadOnly && (

@@ -694,6 +694,7 @@
     "table": {
       "columns": {
         "client": "Kunde",
+        "address": "Adresse",
         "status": "Status",
         "group": "Gruppe",
         "email": "E-Mail",
