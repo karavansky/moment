@@ -168,11 +168,7 @@ export default async function RootLayout({
 
         {/* Google Analytics */}
         {isProduction && <GoogleAnalytics gaId="G-HB6BYNFW9F" />}
-      </head>
-      <body
-        suppressHydrationWarning
-        className="h-dvh overflow-hidden antialiased md:subpixel-antialiased"
-      >
+
         {/* Blocking script to prevent flash - executes BEFORE any rendering */}
         <script
           // Без defer/async - блокирующий скрипт, выполнится немедленно
@@ -197,6 +193,11 @@ export default async function RootLayout({
             `,
           }}
         />
+      </head>
+      <body
+        suppressHydrationWarning
+        className="h-dvh overflow-hidden antialiased md:subpixel-antialiased"
+      >
         <WebVitals />
         <Providers
           themeProps={{

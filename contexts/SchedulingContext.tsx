@@ -180,10 +180,20 @@ const SchedulingContext = createContext<SchedulingContextType | undefined>(undef
 async function apiFetch(url: string, options?: RequestInit) {
   const res = await fetch(url, {
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include', // Include session cookies for authentication
     ...options,
   })
+
   if (!res.ok) {
     const data = await res.json().catch(() => ({}))
+
+    // For permission errors (403), log as warning instead of error
+    if (res.status === 403 && data.error === 'NO_PERMISSION') {
+      console.warn('[apiFetch] Permission denied:', data.message)
+    } else {
+      console.error('[apiFetch] Error response:', { url, status: res.status, error: data.error || data })
+    }
+
     throw new Error(data.error || `API error ${res.status}`)
   }
   return res.json()
@@ -727,11 +737,33 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
               }))
             })
             .catch(error => {
-              console.error('[addAppointment] API error:', error)
+              // Log permission errors as warnings, others as errors
+              if (error.message.includes('NO_PERMISSION')) {
+                console.warn('[addAppointment] Permission denied:', error.message)
+              } else {
+                console.error('[addAppointment] API error:', error)
+              }
+
+              // Remove failed appointment from state
               setState(prev => ({
                 ...prev,
                 appointments: prev.appointments.filter(a => a.id !== appointment.id),
               }))
+
+              // Show user-friendly error notification
+              const errorMessage = error.message.includes('NO_PERMISSION')
+                ? 'Sie haben keine Berechtigung, Termine zu erstellen. Nur Direktoren können Termine erstellen.'
+                : 'Fehler beim Speichern des Termins'
+
+              addNotification({
+                id: generateId(),
+                userID: session?.user?.id || 'system',
+                type: 'error',
+                title: error.message.includes('NO_PERMISSION') ? 'Keine Berechtigung' : 'Fehler',
+                message: errorMessage,
+                date: new Date(),
+                isRead: false,
+              })
             })
         }
       },

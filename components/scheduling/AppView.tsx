@@ -1,6 +1,6 @@
-import React, { memo, useCallback } from 'react'
+import React, { memo, useCallback, useState, useRef } from 'react'
 import ClientSelect from './ClientSelect'
-import { Separator, RadioGroup, Radio, Label, Description, Chip } from '@heroui/react'
+import { Separator, RadioGroup, Radio, Label, Description, Chip, TextField, FieldError, Switch } from '@heroui/react'
 import ServiceSelect from './ServiceSelect'
 import RouteEditor from './RouteEditor'
 import {
@@ -16,6 +16,9 @@ import type { ServiceTreeItem } from '@/types/scheduling'
 import { useTranslation } from '../Providers'
 import StaffSelect from './StaffSelect'
 import { useAuth } from '@/components/AuthProvider'
+import { parseDate, Time, today, getLocalTimeZone } from '@internationalized/date'
+import DatePicker from '@/components/ui/DatePicker'
+import { TimeField } from '@heroui/react'
 
 interface AppViewProps {
   formData: Appointment
@@ -52,6 +55,23 @@ function AppView({
 }: AppViewProps) {
   const { t } = useTranslation()
   const { session } = useAuth()
+
+  const [isDateInvalid, setIsDateInvalid] = useState(false)
+
+  // Refs for TimeField to scroll into view on mobile
+  const startTimeRef = useRef<HTMLDivElement>(null)
+  const endTimeRef = useRef<HTMLDivElement>(null)
+
+  // Scroll input into view when focused (important for mobile when keyboard opens)
+  const handleTimeFieldFocus = useCallback((ref: React.RefObject<HTMLDivElement | null>) => {
+    setTimeout(() => {
+      ref.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'nearest',
+      })
+    }, 300) // Delay to allow keyboard animation to complete
+  }, [])
 
   const appointmentType: AppointmentType = (formData.type ?? 0) as AppointmentType
   const isTransportType = appointmentType === 1
@@ -243,10 +263,11 @@ function AppView({
             isRequired={true}
           />
 
-          {/* Date */}
-          <div className="flex items-center justify-between flex-row gap-2 w-full">
-            <TextField isRequired name="date" type="date" isInvalid={isDateInvalid}>
-              <Label className="text-base font-medium flex items-center gap-2">
+          {/* Date and Time Fields in one row */}
+          <div className="flex items-center gap-4 w-full pt-2 ">
+            {/* Date */}
+            <TextField isRequired name="date" type="date" isInvalid={isDateInvalid} className="flex-1">
+              <Label className="text-base font-medium flex items-center ">
                 {t('appointment.edit.date')}
               </Label>
               <DatePicker
@@ -281,88 +302,65 @@ function AppView({
                   setFormData(prev => ({ ...prev, date: newDate }))
                 }}
                 minValue={today(getLocalTimeZone())}
-                isDisabled={readOnly}
-                //  className="max-w-[256px]"
+                isDisabled={isReadOnly}
                 showTime={false}
-                timeValue={
-                  formData.startHour === 0 && formData.startMinute === 0
-                    ? null
-                    : new Time(formData.startHour, formData.startMinute)
-                }
-                onTimeChange={time => {
-                  if (time) {
-                    setFormData(prev => ({
-                      ...prev,
-                      startHour: time.hour,
-                      startMinute: time.minute,
-                    }))
-                  } else {
-                    setFormData(prev => ({
-                      ...prev,
-                      startHour: 0,
-                      startMinute: 0,
-                    }))
-                  }
-                }}
               />
               <FieldError>{isDateInvalid ? t('appointment.edit.dateInPast') : null}</FieldError>
             </TextField>
-            {/* Time picker with Switch overlay trick for iOS */}
-            <div className="relative">
-              {/* Hidden time input - always rendered, receives clicks when Switch is disabled */}
-              <input
-                ref={timeInputRef}
-                type="time"
-                value={`${String(formData.startHour).padStart(2, '0')}:${String(formData.startMinute).padStart(2, '0')}`}
-                onChange={e => {
-                  const [hours, minutes] = e.target.value.split(':').map(Number)
-                  setFormData(prev => ({
-                    ...prev,
-                    startHour: hours || 0,
-                    startMinute: minutes || 0,
-                    isFixedTime: true, // Auto-enable when time is selected
-                  }))
+
+            {/* von (Start Time) */}
+            <div ref={startTimeRef} className="flex-1">
+              <TimeField
+                className="w-full"
+                name="startTime"
+                value={formData.startTime ? new Time(formData.startTime.getHours(), formData.startTime.getMinutes()) : null}
+                onChange={time => {
+                  if (time) {
+                    // Create new Date with the selected time
+                    const newStartTime = new Date(formData.date)
+                    newStartTime.setHours(time.hour, time.minute, 0, 0)
+                    setFormData(prev => ({ ...prev, startTime: newStartTime, isFixedTime: true }))
+                  } else {
+                    // Clear start time
+                    setFormData(prev => ({ ...prev, startTime: undefined, endTime: undefined, isFixedTime: false }))
+                  }
                 }}
-                disabled={readOnly}
-                className={`absolute inset-0 w-full h-full ${formData.isFixedTime ? 'opacity-0 pointer-events-none' : 'opacity-0 cursor-pointer'}`}
-              />
-              {/* Visible Switch - pointer-events-none when isFixedTime is false */}
-              <Switch
-                size="lg"
-                isSelected={formData.isFixedTime}
-                onChange={value => {
-                  setFormData(prev => ({
-                    ...prev,
-                    isFixedTime: value,
-                    // Reset time when disabled
-                    ...(value ? {} : { startHour: 0, startMinute: 0 }),
-                  }))
-                }}
-                className={formData.isFixedTime ? '' : 'pointer-events-none'}
+                isDisabled={isReadOnly}
+                hourCycle={24}
               >
-                <Label className="text-sm">{t('appointment.edit.fixedTime')}</Label>
-                <Switch.Control>
-                  <Switch.Thumb />
-                </Switch.Control>
-              </Switch>
+                <Label>von</Label>
+                <TimeField.Group onFocus={() => handleTimeFieldFocus(startTimeRef)}>
+                  <TimeField.Input>{segment => <TimeField.Segment segment={segment} />}</TimeField.Input>
+                </TimeField.Group>
+              </TimeField>
             </div>
-            {/* Visible time display when enabled */}
-            {formData.isFixedTime && (
-              <input
-                type="time"
-                value={`${String(formData.startHour).padStart(2, '0')}:${String(formData.startMinute).padStart(2, '0')}`}
-                onChange={e => {
-                  const [hours, minutes] = e.target.value.split(':').map(Number)
-                  setFormData(prev => ({
-                    ...prev,
-                    startHour: hours || 0,
-                    startMinute: minutes || 0,
-                  }))
+
+            {/* bis (End Time) */}
+            <div ref={endTimeRef} className="flex-1">
+              <TimeField
+                className="w-full"
+                name="endTime"
+                value={formData.endTime ? new Time(formData.endTime.getHours(), formData.endTime.getMinutes()) : null}
+                onChange={time => {
+                  if (time && formData.startTime) {
+                    // Create new Date with the selected time
+                    const newEndTime = new Date(formData.date)
+                    newEndTime.setHours(time.hour, time.minute, 0, 0)
+                    setFormData(prev => ({ ...prev, endTime: newEndTime }))
+                  } else {
+                    // Clear end time
+                    setFormData(prev => ({ ...prev, endTime: undefined }))
+                  }
                 }}
-                disabled={readOnly}
-                className="px-3 py-2 border border-divider rounded-lg bg-default-50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-70 disabled:cursor-not-allowed"
-              />
-            )}
+                isDisabled={isReadOnly || !formData.startTime}
+                hourCycle={24}
+              >
+                <Label>bis</Label>
+                <TimeField.Group onFocus={() => handleTimeFieldFocus(endTimeRef)}>
+                  <TimeField.Input>{segment => <TimeField.Segment segment={segment} />}</TimeField.Input>
+                </TimeField.Group>
+              </TimeField>
+            </div>
           </div>
         </>
       )}

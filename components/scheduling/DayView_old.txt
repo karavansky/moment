@@ -299,14 +299,55 @@ function DayView({
             {/* Appointments */}
             <div className="space-y-1 " onMouseDown={e => e.stopPropagation()}>
               {day.appointments.map(appointment => (
-                <div key={appointment.id} className="relative">
+                isToday && onEditAppointment && onAddReport && (authStatus === 'unauthenticated' || (authStatus === 'authenticated' && session?.user?.status === 0)) ? (
+                  <div key={appointment.id} className="relative">
+                    <AppointmentCard
+                      appointment={appointment}
+                      onAppointmentClick={() => {}}
+                      onShortPress={handleShortPress}
+                      isDraggable={!isPast}
+                    />
+                    {!isCompact && (
+                    <Dropdown
+                      isOpen={openDropdownId === appointment.id}
+                      onOpenChange={(open) => setOpenDropdownId(open ? appointment.id : null)}
+                    >
+                      <Dropdown.Trigger className="sr-only">
+                        <span>Menu</span>
+                      </Dropdown.Trigger>
+                      <Dropdown.Popover>
+                      <Dropdown.Menu
+                        onAction={(key) => {
+                          setOpenDropdownId(null)
+                          if (key === 'edit') onEditAppointment(appointment)
+                          if (key === 'report') onAddReport(appointment)
+                        }}
+                      >
+                        <Dropdown.Item id="edit" textValue="Termin bearbeiten">
+                          <div className="flex items-center gap-2">
+                            <Edit className="w-4 h-4" />
+                            <Label>Termin bearbeiten</Label>
+                          </div>
+                        </Dropdown.Item>
+                        <Dropdown.Item id="report" textValue="Bericht hinzufügen">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-4 h-4" />
+                            <Label>Bericht hinzufügen</Label>
+                          </div>
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown.Popover>
+                  </Dropdown>
+                    )}
+                  </div>
+                ) : (
                   <AppointmentCard
                     key={appointment.id}
                     appointment={appointment}
                     onAppointmentClick={handleAppointmentClick}
                     isDraggable={!isPast}
                   />
-                </div>
+                )
               ))}
             </div>
           </Card.Content>
@@ -367,12 +408,55 @@ function DayView({
           {/* Appointments */}
           <div className="space-y-2 flex-1" onMouseDown={e => e.stopPropagation()}>
             {day.appointments.slice(0, 3).map(appointment => (
-              <AppointmentCard
-                key={appointment.id}
-                appointment={appointment}
-                onAppointmentClick={handleAppointmentClick}
-                isDraggable={!isPast}
-              />
+              isToday && onEditAppointment && onAddReport && (authStatus === 'unauthenticated' || (authStatus === 'authenticated' && session?.user?.status === 0)) ? (
+                <div key={appointment.id} className="relative">
+                  <AppointmentCard
+                    appointment={appointment}
+                    onAppointmentClick={() => {}}
+                    onShortPress={handleShortPress}
+                    isDraggable={!isPast}
+                  />
+                  {isCompact && (
+                  <Dropdown
+                    isOpen={openDropdownId === appointment.id}
+                    onOpenChange={(open) => setOpenDropdownId(open ? appointment.id : null)}
+                  >
+                    <Dropdown.Trigger className="sr-only">
+                      <span>Menu</span>
+                    </Dropdown.Trigger>
+                    <Dropdown.Popover>
+                      <Dropdown.Menu
+                        onAction={(key) => {
+                          setOpenDropdownId(null)
+                          if (key === 'edit') onEditAppointment(appointment)
+                          if (key === 'report') onAddReport(appointment)
+                        }}
+                      >
+                        <Dropdown.Item id="edit" textValue="Termin bearbeiten">
+                          <div className="flex items-center gap-2">
+                            <Edit className="w-4 h-4" />
+                            <Label>Termin bearbeiten</Label>
+                          </div>
+                        </Dropdown.Item>
+                        <Dropdown.Item id="report" textValue="Bericht hinzufügen">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-4 h-4" />
+                            <Label>Bericht hinzufügen</Label>
+                          </div>
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown.Popover>
+                  </Dropdown>
+                  )}
+                </div>
+              ) : (
+                <AppointmentCard
+                  key={appointment.id}
+                  appointment={appointment}
+                  onAppointmentClick={handleAppointmentClick}
+                  isDraggable={!isPast}
+                />
+              )
             ))}
             {day.appointments.length > 3 && (
               <div className="flex justify-center h-2 items-start">

@@ -132,7 +132,7 @@ function StaffSelect({
   if (isReady && isMobile && isIOS) {
     return (
       <div className="w-full min-w-0">
-        <Label className="text-base font-normal flex items-center gap-2">
+        <Label className="text-base font-normal flex items-center gap-2" isRequired={isRequired && !isReadOnly}>
           <Users className="w-6 h-6" />
           {t('appointment.edit.staff.labelPlural')}</Label>
 
@@ -206,10 +206,9 @@ function StaffSelect({
     <div className="space-y-2">
       {/* Label row with "+" button — outside Autocomplete to avoid popover z-order issues */}
       <div className="flex flex-row w-full gap-2">
-        <Label className="text-sm font-medium flex items-center gap-2">
+        <Label className="text-sm font-medium flex items-center gap-2" isRequired={isRequired && !isReadOnly}>
           <Users className="w-6 h-6" />
           {t('appointment.edit.staff.label')}
-          {isRequired && !isReadOnly && <span className="text-danger ml-0.5">*</span>}
         </Label>
         {!isReadOnly && (
           <div className="ml-auto">

@@ -13,6 +13,7 @@ import AppModal from './AppModal'
 import AppointmentReport from './AppointmentReport'
 import { useLanguage } from '@/hooks/useLanguage'
 import { useTranslation } from '@/components/Providers'
+import { useAuth } from '@/components/AuthProvider'
 import FooterDienst from './FooterDienst'
 import TodayDienst from './TodayDienst'
 import { useVisibilityRefresh } from '@/hooks/useVisibilityRefresh'
@@ -22,6 +23,7 @@ type ViewMode = 'month' | 'week'
 function DienstplanView() {
   const lang = useLanguage()
   const { t } = useTranslation()
+  const { session } = useAuth()
   const {
     appointments,
     isLoading,
@@ -31,6 +33,9 @@ function DienstplanView() {
     setSelectedDate,
     user,
   } = useScheduling()
+
+  // Check if user can create appointments (Director only)
+  const canCreateAppointments = session?.user?.status === 0 || session?.user?.status == null
   const [viewMode, setViewMode] = useState<ViewMode>('month')
   const [isPending, startTransition] = useTransition()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -138,7 +143,7 @@ function DienstplanView() {
   // Обработчик клика на appointment - для не сегодняшних дней
   const handlePressOnAppointment = useCallback(
     (appointment: NonNullable<typeof selectedAppointment>) => {
-      console.log('handlePressOnAppointment:', appointment)
+     // console.log('handlePressOnAppointment:', appointment)
       setSelectedAppointment(appointment)
       setIsNewAppointment(false)
 
@@ -402,16 +407,18 @@ function DienstplanView() {
               <span className="font-semibold">{appointments.length}</span>
             </div>
 
-            {/* Кнопка добавления */}
-            <Button
-              variant="primary"
-              size="sm"
-              onPress={handleAddNew}
-              className="gap-1 rounded-full"
-            >
-              <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">{t('dienstplan.new')}</span>
-            </Button>
+            {/* Кнопка добавления - только для директоров */}
+            {canCreateAppointments && (
+              <Button
+                variant="primary"
+                size="sm"
+                onPress={handleAddNew}
+                className="gap-1 rounded-full"
+              >
+                <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">{t('dienstplan.new')}</span>
+              </Button>
+            )}
 
             {/* Кнопка обновления */}
             <Button variant="tertiary" size="sm" onPress={handleRefresh} className="gap-1">

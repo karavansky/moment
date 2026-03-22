@@ -7,11 +7,15 @@ import { auth } from '@/lib/auth'
 export async function getSchedulingSession() {
   const session = await auth()
 
-  if (!session?.user?.firmaID) return null
+  if (!session?.user?.firmaID) {
+    return null
+  }
 
   // status=0 (директор) или undefined/null (до миграции) — разрешаем
   const status = session.user.status
-  if (status != null && status !== 0) return null
+  if (status != null && status !== 0) {
+    return null
+  }
 
   return session
 }

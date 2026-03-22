@@ -166,8 +166,7 @@ export default async function RootPage() {
 
         {/* Google Analytics */}
         {isProduction && <GoogleAnalytics gaId="G-HB6BYNFW9F" />}
-      </head>
-      <body suppressHydrationWarning className="h-dvh overflow-hidden">
+
         {/* Blocking script to prevent flash - executes BEFORE any rendering */}
         <script
           // Без defer/async - блокирующий скрипт, выполнится немедленно
@@ -192,6 +191,8 @@ export default async function RootPage() {
             `,
           }}
         />
+      </head>
+      <body suppressHydrationWarning className="h-dvh overflow-hidden">
         <WebVitals />
         <Providers
           themeProps={{

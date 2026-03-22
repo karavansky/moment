@@ -86,7 +86,10 @@ export async function POST(request: Request) {
   try {
     const session = await getSchedulingSession()
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({
+        error: 'NO_PERMISSION',
+        message: 'Sie haben keine Berechtigung, Termine zu erstellen. Nur Direktoren können Termine erstellen.'
+      }, { status: 403 })
     }
 
     const body = await request.json()
