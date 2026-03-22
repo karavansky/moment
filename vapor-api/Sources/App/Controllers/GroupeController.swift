@@ -27,7 +27,10 @@ struct GroupeController: RouteCollection {
 
     func create(req: Request) async throws -> Response {
         let user = try req.auth.require(AuthenticatedUser.self)
-        guard user.status == nil || user.status == 0 else { throw Abort(.forbidden) }
+        // Allow: status=0 (Director), status=7 (Sport- und Bäderamt), or nil (pre-migration)
+        guard user.status == nil || user.status == 0 || user.status == 7 else {
+            throw Abort(.forbidden, reason: "NO_PERMISSION: Sie haben keine Berechtigung, Gruppen zu erstellen.")
+        }
         guard let firmaID = user.firmaID else { throw Abort(.forbidden) }
 
         struct Body: Content { var groupeName: String }
@@ -44,7 +47,10 @@ struct GroupeController: RouteCollection {
 
     func update(req: Request) async throws -> Response {
         let user = try req.auth.require(AuthenticatedUser.self)
-        guard user.status == nil || user.status == 0 else { throw Abort(.forbidden) }
+        // Allow: status=0 (Director), status=7 (Sport- und Bäderamt), or nil (pre-migration)
+        guard user.status == nil || user.status == 0 || user.status == 7 else {
+            throw Abort(.forbidden, reason: "NO_PERMISSION: Sie haben keine Berechtigung, Gruppen zu bearbeiten.")
+        }
         guard let firmaID = user.firmaID else { throw Abort(.forbidden) }
 
         struct Body: Content { var id: String; var groupeName: String }
@@ -65,7 +71,10 @@ struct GroupeController: RouteCollection {
 
     func remove(req: Request) async throws -> Response {
         let user = try req.auth.require(AuthenticatedUser.self)
-        guard user.status == nil || user.status == 0 else { throw Abort(.forbidden) }
+        // Allow: status=0 (Director), status=7 (Sport- und Bäderamt), or nil (pre-migration)
+        guard user.status == nil || user.status == 0 || user.status == 7 else {
+            throw Abort(.forbidden, reason: "NO_PERMISSION: Sie haben keine Berechtigung, Gruppen zu löschen.")
+        }
         guard let firmaID = user.firmaID else { throw Abort(.forbidden) }
 
         struct Body: Content { var id: String }

@@ -104,8 +104,8 @@ function AppModal({
   // Appointment type label for button text
   const appointmentTypeLabel = useMemo(() => {
     const type = formData?.type ?? 0
-    return type === 1 ? 'Поездка' : 'Встреча'
-  }, [formData?.type])
+    return type === 1 ? t('appointment.types.trip') : t('appointment.types.meeting')
+  }, [formData?.type, t])
   const formDataRef = useRef<Appointment>(emptyForm)
   const initializedAppointmentIdRef = useRef<string>('')
 
@@ -425,7 +425,7 @@ function AppModal({
                           variant={viewTab === 'report' ? 'tertiary' : 'ghost'}
                           onPress={onPressReport}
                         >
-                          Bericht
+                          {t('appointment.tabs.report')}
                         </Button>
                         <Badge size="sm" color="warning">
                           {formData.reports.length}
@@ -437,7 +437,7 @@ function AppModal({
                         variant={viewTab === 'report' ? 'tertiary' : 'ghost'}
                         onPress={onPressReport}
                       >
-                        Bericht
+                        {t('appointment.tabs.report')}
                       </Button>
                     ))}
                   <Button
@@ -445,7 +445,7 @@ function AppModal({
                     variant={viewTab === 'notes' ? 'tertiary' : 'ghost'}
                     onPress={onPressNotes}
                   >
-                    Kommentar
+                    {t('appointment.tabs.notes')}
                   </Button>
                 </div>
                 <div className="relative w-full">

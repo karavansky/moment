@@ -135,7 +135,7 @@ struct VehicleDriverController: RouteCollection {
 
         // Use transaction for consistency
         try await req.db.transaction { database in
-            let transactionDB = database as! any SQLDatabase
+            let _ = database as! any SQLDatabase
 
             // Check if there's an active assignment
             let existingAssignments = try await VehicleDriver.query(on: database)

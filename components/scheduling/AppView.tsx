@@ -153,7 +153,7 @@ function AppView({
           </p>
         )}
         <Chip color="success" size="md" variant="primary">
-          <Chip.Label>Status</Chip.Label>
+          <Chip.Label>{t('appointment.status')}</Chip.Label>
         </Chip>
       </div>
 
@@ -172,8 +172,8 @@ function AppView({
                   <Radio.Indicator />
                 </Radio.Control>
                 <Radio.Content>
-                  <Label>Визит</Label>
-                  <Description>Встреча с клиентом</Description>
+                  <Label>{t('appointment.types.visit')}</Label>
+                  <Description>{t('appointment.types.visitDescription')}</Description>
                 </Radio.Content>
               </Radio>
               <Radio value="1">
@@ -181,8 +181,8 @@ function AppView({
                   <Radio.Indicator />
                 </Radio.Control>
                 <Radio.Content>
-                  <Label>Поездка</Label>
-                  <Description>Транспортная поездка</Description>
+                  <Label>{t('appointment.types.trip')}</Label>
+                  <Description>{t('appointment.types.tripDescription')}</Description>
                 </Radio.Content>
               </Radio>
             </RadioGroup>
@@ -328,7 +328,7 @@ function AppView({
                 isDisabled={isReadOnly}
                 hourCycle={24}
               >
-                <Label>von</Label>
+                <Label>{t('appointment.time.from')}</Label>
                 <TimeField.Group onFocus={() => handleTimeFieldFocus(startTimeRef)}>
                   <TimeField.Input>{segment => <TimeField.Segment segment={segment} />}</TimeField.Input>
                 </TimeField.Group>
@@ -355,7 +355,7 @@ function AppView({
                 isDisabled={isReadOnly || !formData.startTime}
                 hourCycle={24}
               >
-                <Label>bis</Label>
+                <Label>{t('appointment.time.to')}</Label>
                 <TimeField.Group onFocus={() => handleTimeFieldFocus(endTimeRef)}>
                   <TimeField.Input>{segment => <TimeField.Segment segment={segment} />}</TimeField.Input>
                 </TimeField.Group>
@@ -368,7 +368,7 @@ function AppView({
       {/* Route Editor - Only for Transport type */}
       {isTransportType && (
         <>
-          <div className="text-sm font-medium mb-2">Маршрут поездки</div>
+          <div className="text-sm font-medium mb-2">{t('appointment.route.title')}</div>
           <RouteEditor
             points={formData.routes || []}
             onChange={(newRoutes: RoutePoint[]) => {

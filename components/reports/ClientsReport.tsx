@@ -7,6 +7,7 @@ import {
   Card,
   DateField,
   DateRangePicker,
+  Drawer,
   Dropdown,
   DropdownItem,
   DropdownItemIndicator,
@@ -71,7 +72,7 @@ export default function ClientsReport() {
   const [error, setError] = useState<string | null>(null)
 
   // Фильтры
-  const [dateRange, setDateRange] = useState<DateRange | null>(null)
+  const [dateRange, setDateRange] = useState<DateRange | null | undefined>(undefined)
   const [searchTerm, setSearchTerm] = useState('')
   const [clientFilter, setClientFilter] = useState<Selection>('all')
 
@@ -249,125 +250,133 @@ export default function ClientsReport() {
         </Button>
       </div>
 
-      {/* Filters */}
-      <Card className="p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Filter className="w-5 h-5" />
-          <h2 className="text-lg font-semibold">Filter</h2>
-        </div>
+      {/* Filters - Drawer */}
+      <Drawer>
+        <Button variant="outline" size="sm">
+          <Filter className="w-4 h-4" />
+          <span className="hidden sm:inline">Filter</span>
+        </Button>
+        <Drawer.Backdrop>
+          <Drawer.Content placement="right">
+            <Drawer.Dialog className="w-full sm:w-[400px]">
+              <Drawer.CloseTrigger />
+              <Drawer.Header>
+                <Drawer.Heading>Filter</Drawer.Heading>
+              </Drawer.Header>
+              <Drawer.Body>
+                <div className="flex flex-col gap-4">
+                  {/* Date Range */}
+                  <DateRangePicker
+                    className="w-full"
+                    startName="dateFrom"
+                    endName="dateTo"
+                    value={dateRange}
+                    onChange={setDateRange}
+                  >
+                    <Label>Zeitraum</Label>
+                    <DateField.Group fullWidth>
+                      <DateField.Input slot="start">
+                        {(segment) => <DateField.Segment segment={segment} />}
+                      </DateField.Input>
+                      <DateRangePicker.RangeSeparator />
+                      <DateField.Input slot="end">
+                        {(segment) => <DateField.Segment segment={segment} />}
+                      </DateField.Input>
+                      <DateField.Suffix>
+                        <DateRangePicker.Trigger>
+                          <DateRangePicker.TriggerIndicator />
+                        </DateRangePicker.Trigger>
+                      </DateField.Suffix>
+                    </DateField.Group>
+                    <DateRangePicker.Popover>
+                      <RangeCalendar aria-label="Zeitraum wählen">
+                        <RangeCalendar.Header>
+                          <RangeCalendar.YearPickerTrigger>
+                            <RangeCalendar.YearPickerTriggerHeading />
+                            <RangeCalendar.YearPickerTriggerIndicator />
+                          </RangeCalendar.YearPickerTrigger>
+                          <RangeCalendar.NavButton slot="previous" />
+                          <RangeCalendar.NavButton slot="next" />
+                        </RangeCalendar.Header>
+                        <RangeCalendar.Grid>
+                          <RangeCalendar.GridHeader>
+                            {(day) => <RangeCalendar.HeaderCell>{day}</RangeCalendar.HeaderCell>}
+                          </RangeCalendar.GridHeader>
+                          <RangeCalendar.GridBody>
+                            {(date) => <RangeCalendar.Cell date={date} />}
+                          </RangeCalendar.GridBody>
+                        </RangeCalendar.Grid>
+                        <RangeCalendar.YearPickerGrid>
+                          <RangeCalendar.YearPickerGridBody>
+                            {({year}) => <RangeCalendar.YearPickerCell year={year} />}
+                          </RangeCalendar.YearPickerGridBody>
+                        </RangeCalendar.YearPickerGrid>
+                      </RangeCalendar>
+                    </DateRangePicker.Popover>
+                  </DateRangePicker>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Date Range */}
-          <DateRangePicker
-            className="w-full"
-            startName="dateFrom"
-            endName="dateTo"
-            value={dateRange}
-            onChange={setDateRange}
-          >
-            <Label>Zeitraum</Label>
-            <DateField.Group fullWidth>
-              <DateField.Input slot="start">
-                {(segment) => <DateField.Segment segment={segment} />}
-              </DateField.Input>
-              <DateRangePicker.RangeSeparator />
-              <DateField.Input slot="end">
-                {(segment) => <DateField.Segment segment={segment} />}
-              </DateField.Input>
-              <DateField.Suffix>
-                <DateRangePicker.Trigger>
-                  <DateRangePicker.TriggerIndicator />
-                </DateRangePicker.Trigger>
-              </DateField.Suffix>
-            </DateField.Group>
-            <DateRangePicker.Popover>
-              <RangeCalendar aria-label="Zeitraum wählen">
-                <RangeCalendar.Header>
-                  <RangeCalendar.YearPickerTrigger>
-                    <RangeCalendar.YearPickerTriggerHeading />
-                    <RangeCalendar.YearPickerTriggerIndicator />
-                  </RangeCalendar.YearPickerTrigger>
-                  <RangeCalendar.NavButton slot="previous" />
-                  <RangeCalendar.NavButton slot="next" />
-                </RangeCalendar.Header>
-                <RangeCalendar.Grid>
-                  <RangeCalendar.GridHeader>
-                    {(day) => <RangeCalendar.HeaderCell>{day}</RangeCalendar.HeaderCell>}
-                  </RangeCalendar.GridHeader>
-                  <RangeCalendar.GridBody>
-                    {(date) => <RangeCalendar.Cell date={date} />}
-                  </RangeCalendar.GridBody>
-                </RangeCalendar.Grid>
-                <RangeCalendar.YearPickerGrid>
-                  <RangeCalendar.YearPickerGridBody>
-                    {({year}) => <RangeCalendar.YearPickerCell year={year} />}
-                  </RangeCalendar.YearPickerGridBody>
-                </RangeCalendar.YearPickerGrid>
-              </RangeCalendar>
-            </DateRangePicker.Popover>
-          </DateRangePicker>
+                  {/* Client Filter */}
+                  <div className="w-full">
+                    <Label className="mb-2 block">{labels.client}</Label>
+                    <Dropdown>
+                      <Button variant="tertiary" className="w-full justify-between">
+                        {clientFilter === 'all' || Array.from(clientFilter).length === 0
+                          ? `Alle ${labels.client}`
+                          : Array.from(clientFilter).length === 1
+                          ? clients.find(c => c.id === Array.from(clientFilter)[0])?.fullName
+                          : `${Array.from(clientFilter).length} ausgewählt`}
+                        <ChevronDownIcon className="w-4 h-4" />
+                      </Button>
+                      <Dropdown.Popover>
+                        <Dropdown.Menu
+                          disallowEmptySelection
+                          aria-label="Client Filter"
+                          selectedKeys={clientFilter}
+                          selectionMode="single"
+                          onSelectionChange={setClientFilter}
+                          items={clients.map(c => ({ id: c.id, name: c.fullName }))}
+                        >
+                          {clients.map(client => (
+                            <DropdownItem key={client.id} id={client.id}>
+                              {client.fullName}
+                              <DropdownItemIndicator />
+                            </DropdownItem>
+                          ))}
+                        </Dropdown.Menu>
+                      </Dropdown.Popover>
+                    </Dropdown>
+                  </div>
 
-          {/* Client Filter */}
-          <div className="w-full">
-            <Label className="mb-2 block">{labels.client}</Label>
-            <Dropdown>
-              <Button variant="tertiary" className="w-full justify-between">
-                {clientFilter === 'all' || Array.from(clientFilter).length === 0
-                  ? `Alle ${labels.client}`
-                  : Array.from(clientFilter).length === 1
-                  ? clients.find(c => c.id === Array.from(clientFilter)[0])?.fullName
-                  : `${Array.from(clientFilter).length} ausgewählt`}
-                <ChevronDownIcon className="w-4 h-4" />
-              </Button>
-              <Dropdown.Popover>
-                <Dropdown.Menu
-                  disallowEmptySelection
-                  aria-label="Client Filter"
-                  selectedKeys={clientFilter}
-                  selectionMode="single"
-                  onSelectionChange={setClientFilter}
-                  items={clients.map(c => ({ id: c.id, name: c.fullName }))}
+                  {/* Search */}
+                  <TextField className="w-full">
+                    <Label>Suche</Label>
+                    <Input
+                      placeholder={`${labels.worker}, ${labels.service}...`}
+                      value={searchTerm}
+                      onChange={e => setSearchTerm(e.target.value)}
+                    />
+                  </TextField>
+                </div>
+              </Drawer.Body>
+              <Drawer.Footer>
+                <Button
+                  variant="secondary"
+                  onPress={() => {
+                    setDateRange(null)
+                    setClientFilter('all')
+                    setSearchTerm('')
+                  }}
                 >
-                  {clients.map(client => (
-                    <DropdownItem key={client.id} id={client.id}>
-                      {client.fullName}
-                      <DropdownItemIndicator />
-                    </DropdownItem>
-                  ))}
-                </Dropdown.Menu>
-              </Dropdown.Popover>
-            </Dropdown>
-          </div>
-
-          {/* Search */}
-          <TextField className="w-full">
-            <Label>Suche</Label>
-            <Input
-              placeholder={`${labels.worker}, ${labels.service}...`}
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-            />
-          </TextField>
-        </div>
-
-        <div className="flex gap-2 mt-4">
-          <Button variant="primary" onPress={fetchReports} isDisabled={isLoading}>
-            Anwenden
-          </Button>
-          <Button
-            variant="outline"
-            onPress={() => {
-              setDateRange(null)
-              setClientFilter('all')
-              setSearchTerm('')
-              // Перезагрузка без фильтров
-              setTimeout(fetchReports, 100)
-            }}
-          >
-            Zurücksetzen
-          </Button>
-        </div>
-      </Card>
+                  Zurücksetzen
+                </Button>
+                <Button slot="close" onPress={fetchReports} isDisabled={isLoading}>
+                  Anwenden
+                </Button>
+              </Drawer.Footer>
+            </Drawer.Dialog>
+          </Drawer.Content>
+        </Drawer.Backdrop>
+      </Drawer>
 
       {/* Results */}
       <Card className="flex-1 overflow-auto">

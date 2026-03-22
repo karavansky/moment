@@ -606,6 +606,25 @@
     }
   },
   "appointment": {
+    "types": {
+      "trip": "Fahrt",
+      "meeting": "Termin",
+      "visit": "Besuch",
+      "visitDescription": "Termin mit Kunde",
+      "tripDescription": "Transportfahrt"
+    },
+    "tabs": {
+      "report": "Bericht",
+      "notes": "Kommentar"
+    },
+    "status": "Status",
+    "time": {
+      "from": "von",
+      "to": "bis"
+    },
+    "route": {
+      "title": "Routenplanung"
+    },
     "edit": {
       "viewTitle": "Termin ansehen",
       "editTitle": "Termin bearbeiten",

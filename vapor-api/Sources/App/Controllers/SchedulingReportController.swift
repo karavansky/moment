@@ -70,7 +70,10 @@ struct SchedulingReportController: RouteCollection {
     // POST /api/scheduling/reports — create a new report
     func create(req: Request) async throws -> Response {
         let user = try req.auth.require(AuthenticatedUser.self)
-        guard user.status == nil || user.status == 0 else { throw Abort(.forbidden) }
+        // Allow: status=0 (Director), status=7 (Sport- und Bäderamt), or nil (pre-migration)
+        guard user.status == nil || user.status == 0 || user.status == 7 else {
+            throw Abort(.forbidden, reason: "NO_PERMISSION: Sie haben keine Berechtigung, Berichte zu erstellen.")
+        }
         guard let firmaID = user.firmaID else { throw Abort(.forbidden) }
 
         struct Body: Content {

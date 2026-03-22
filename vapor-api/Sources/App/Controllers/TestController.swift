@@ -123,9 +123,9 @@ struct TestController: RouteCollection {
         }
         let servicesDTO = services.map { s in
             ServiceOutDTO(id: s.id ?? "", firmaID: s.firmaID, name: s.name,
-                         description: s.description, duration: s.duration,
+                         description: s.description, duration: s.duration.map(Int.init),
                          price: s.price, parentId: s.parentId,
-                         isGroup: s.isGroup, order: s.order)
+                         isGroup: s.isGroup, order: s.order.map(Int.init))
         }
 
         // Map workers

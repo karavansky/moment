@@ -30,7 +30,9 @@
       "Bash(curl -s \"https://photon.komoot.io/api/?q=Burgstrasse%20156%2053177%20Bonn&limit=1\")",
       "Bash(curl -s \"https://photon.komoot.io/api/?q=Burgstrasse%2069%2053177%20Bonn&limit=1\")",
       "Bash(curl -s \"http://localhost:5000/route/v1/driving/7.1467959,50.6802196;7.1499507,50.6829828?overview=full&geometries=geojson&steps=true\")",
-      "Bash(curl -s \"http://localhost:3002/api/photon?q=Burgs&limit=5&country=DE\")"
+      "Bash(curl -s \"http://localhost:3002/api/photon?q=Burgs&limit=5&country=DE\")",
+      "Bash(docker logs --tail=10 vapor-api)",
+      "Bash(sudo tail -50 /var/log/nginx/access.log)"
     ]
   }
 }

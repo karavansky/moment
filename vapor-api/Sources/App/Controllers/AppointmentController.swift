@@ -215,7 +215,10 @@ struct AppointmentController: RouteCollection {
     // MARK: - POST /api/scheduling/appointments
     func create(req: Request) async throws -> Response {
         let user = try req.auth.require(AuthenticatedUser.self)
-        guard user.status == nil || user.status == 0 else { throw Abort(.forbidden) }
+        // Allow: status=0 (Director), status=7 (Sport- und Bäderamt), or nil (pre-migration)
+        guard user.status == nil || user.status == 0 || user.status == 7 else {
+            throw Abort(.forbidden, reason: "NO_PERMISSION: Sie haben keine Berechtigung, Termine zu erstellen.")
+        }
         guard let firmaID = user.firmaID else { throw Abort(.forbidden) }
 
         struct Body: Content {
@@ -223,13 +226,23 @@ struct AppointmentController: RouteCollection {
             var workerIds: [String]
             var date: String
             var isFixedTime: Bool?
-            var startTime: String
-            var endTime: String
+            var startTime: String?
+            var endTime: String?
             var duration: Int
             var fahrzeit: Int?
             var latitude: Double?
             var longitude: Double?
             var serviceIds: [String]?
+            var type: Int?
+            var routes: [RoutePoint]?
+        }
+
+        struct RoutePoint: Content {
+            var id: String?
+            var address: String?
+            var latitude: Double?
+            var longitude: Double?
+            var order: Int?
         }
         let body = try req.content.decode(Body.self)
 
@@ -243,19 +256,24 @@ struct AppointmentController: RouteCollection {
 
             let createdAt = Date()
 
+            // Parse optional start/end times
+            let startTime = body.startTime.flatMap { isoDate($0) }
+            let endTime = body.endTime.flatMap { isoDate($0) }
+
             try await sqlDB.raw("""
                 INSERT INTO appointments (
                     "appointmentID", "firmaID", "userID", "clientID", "workerId",
                     "date", "isFixedTime", "startTime", "endTime", "duration", "fahrzeit",
-                    "latitude", "longitude", "createdAt"
+                    "latitude", "longitude", "type", "createdAt"
                 )
                 VALUES (
                     \(bind: appointmentID), \(bind: firmaID), \(bind: user.userId),
                     \(bind: body.clientID), \(bind: primaryWorkerId),
                     \(bind: body.date)::timestamptz, \(bind: body.isFixedTime ?? false),
-                    \(bind: body.startTime)::timestamptz, \(bind: body.endTime)::timestamptz,
-                    \(bind: body.duration), \(bind: body.fahrzeit ?? 0),
-                    \(bind: body.latitude), \(bind: body.longitude), \(bind: createdAt)
+                    \(bind: startTime), \(bind: endTime),
+                    \(bind: Int32(clamping: body.duration)), \(bind: Int32(clamping: body.fahrzeit ?? 0)),
+                    \(bind: body.latitude), \(bind: body.longitude),
+                    \(bind: Int32(clamping: body.type ?? 0)), \(bind: createdAt)
                 )
                 """).run()
 
@@ -273,6 +291,28 @@ struct AppointmentController: RouteCollection {
                     INSERT INTO appointment_services ("appointmentID", "serviceID")
                     VALUES (\(bind: appointmentID), \(bind: serviceID))
                     """).run()
+            }
+
+            // Insert routes if type=1 (transport)
+            if body.type == 1, let routes = body.routes {
+                for (index, route) in routes.enumerated() {
+                    let routeID = route.id ?? generateId()
+                    // For routes, address is used as both pickup and dropoff
+                    let address = route.address ?? ""
+                    try await sqlDB.raw("""
+                        INSERT INTO routes (
+                            "routeID", "firmaID", "appointmentID", "sequence",
+                            "pickupAddress", "dropoffAddress",
+                            "pickupLat", "pickupLng", "dropoffLat", "dropoffLng"
+                        )
+                        VALUES (
+                            \(bind: routeID), \(bind: firmaID), \(bind: appointmentID), \(bind: index),
+                            \(bind: address), \(bind: address),
+                            \(bind: route.latitude), \(bind: route.longitude),
+                            \(bind: route.latitude), \(bind: route.longitude)
+                        )
+                        """).run()
+                }
             }
         }
 
@@ -423,7 +463,7 @@ struct AppointmentController: RouteCollection {
                 throw Abort(.notFound, reason: "Appointment not found in transaction")
             }
 
-            req.logger.info("Before Save -> Appt date: \(appt.date), startTime: \(appt.startTime)")
+            req.logger.info("Before Save -> Appt date: \(appt.date), startTime: \(String(describing: appt.startTime))")
 
             if let v = body.date {
                 if let parsed = isoDate(v) {
@@ -449,8 +489,8 @@ struct AppointmentController: RouteCollection {
                     req.logger.warning("isoDate failed to parse endTime string: \(v)")
                 }
             }
-            if let v = body.duration { appt.duration = v }
-            if let v = body.fahrzeit { appt.fahrzeit = v }
+            if let v = body.duration { appt.duration = Int32(clamping: v) }
+            if let v = body.fahrzeit { appt.fahrzeit = Int32(clamping: v) }
             if let v = body.clientID { appt.clientID = v }
             if let v = body.isOpen { appt.isOpen = v }
             if let v = body.openedAt { appt.openedAt = isoDate(v) }
@@ -464,7 +504,7 @@ struct AppointmentController: RouteCollection {
             // Set editedAt timestamp
             appt.editedAt = Date()
 
-            req.logger.info("After modifications -> Appt date: \(appt.date), startTime: \(appt.startTime)")
+            req.logger.info("After modifications -> Appt date: \(appt.date), startTime: \(String(describing: appt.startTime))")
             req.logger.info("Appt hasChanges: \(appt.hasChanges)")
 
             try await appt.save(on: database)
@@ -604,6 +644,47 @@ struct AppointmentController: RouteCollection {
 
 // MARK: - DTO for appointment rows from complex SQL
 
+struct ClientDTO: Content {
+    var id: String
+    var firmaID: String
+    var name: String
+    var surname: String
+    var status: Int?
+    var email: String?
+    var phone: String?
+    var phone2: String?
+    var country: String?
+    var street: String?
+    var postalCode: String?
+    var city: String?
+    var houseNumber: String?
+    var apartment: String?
+    var district: String?
+    var latitude: Double?
+    var longitude: Double?
+}
+
+struct WorkerDTO: Content {
+    var id: String
+    var firmaID: String
+    var name: String
+    var surname: String?  // Optional because database allows NULL
+    var email: String?
+    var teamId: String?
+    var status: Int?
+}
+
+struct ServiceDTO: Content {
+    var id: String
+    var firmaID: String
+    var name: String
+    var duration: Int?
+    var price: Double?
+    var parentId: String?
+    var isGroup: Bool?
+    var order: Int?
+}
+
 struct AppointmentDTO: Content {
     var id: String
     var firmaID: String
@@ -624,9 +705,9 @@ struct AppointmentDTO: Content {
     var longitude: Double?
     var createdAt: Date
     var editedAt: Date?
-    var services: AnyCodable?
-    var worker: AnyCodable?
-    var client: AnyCodable?
+    var services: [ServiceDTO]?
+    var worker: [WorkerDTO]?
+    var client: ClientDTO?
 }
 
 /// Decode a raw SQL row into AppointmentDTO
@@ -642,6 +723,38 @@ func decodeAppointmentRow(_ row: any SQLRow) throws -> AppointmentDTO {
         dateStr = nil
     }
 
+    // Decode services with error logging
+    let services: [ServiceDTO]?
+    do {
+        // First, try to get raw string to see what's in the column
+        if let rawServices = try? row.decode(column: "services", as: String?.self) {
+            print("[AppointmentController] Raw services column: \(rawServices)")
+        }
+        services = try row.decode(column: "services", as: [ServiceDTO]?.self)
+        print("[AppointmentController] Successfully decoded services: \(services?.count ?? 0) items")
+    } catch {
+        print("[AppointmentController] Failed to decode services: \(error)")
+        services = nil
+    }
+
+    // Decode workers with error logging
+    let workers: [WorkerDTO]?
+    do {
+        workers = try row.decode(column: "workers_data", as: [WorkerDTO]?.self)
+    } catch {
+        print("[AppointmentController] Failed to decode workers: \(error)")
+        workers = nil
+    }
+
+    // Decode client with error logging
+    let client: ClientDTO?
+    do {
+        client = try row.decode(column: "client", as: ClientDTO?.self)
+    } catch {
+        print("[AppointmentController] Failed to decode client: \(error)")
+        client = nil
+    }
+
     return AppointmentDTO(
         id: try row.decode(column: "appointmentID", as: String.self),
         firmaID: try row.decode(column: "firmaID", as: String.self),
@@ -653,8 +766,8 @@ func decodeAppointmentRow(_ row: any SQLRow) throws -> AppointmentDTO {
         isFixedTime: try? row.decode(column: "isFixedTime", as: Bool?.self),
         startTime: try? row.decode(column: "startTime", as: Date?.self),
         endTime: try? row.decode(column: "endTime", as: Date?.self),
-        duration: (try? row.decode(column: "duration", as: Int.self)) ?? 0,
-        fahrzeit: try? row.decode(column: "fahrzeit", as: Int?.self),
+        duration: Int((try? row.decode(column: "duration", as: Int32.self)) ?? 0),
+        fahrzeit: (try? row.decode(column: "fahrzeit", as: Int32?.self)).flatMap { $0.map(Int.init) },
         isOpen: try? row.decode(column: "isOpen", as: Bool?.self),
         openedAt: try? row.decode(column: "openedAt", as: Date?.self),
         closedAt: try? row.decode(column: "closedAt", as: Date?.self),
@@ -662,9 +775,9 @@ func decodeAppointmentRow(_ row: any SQLRow) throws -> AppointmentDTO {
         longitude: try? row.decode(column: "longitude", as: Double?.self),
         createdAt: (try? row.decode(column: "createdAt", as: Date.self)) ?? Date(),
         editedAt: try? row.decode(column: "editedAt", as: Date?.self),
-        services: try? row.decode(column: "services", as: AnyCodable?.self),
-        worker: try? row.decode(column: "workers_data", as: AnyCodable?.self),
-        client: try? row.decode(column: "client", as: AnyCodable?.self)
+        services: services,
+        worker: workers,
+        client: client
     )
 }
 

@@ -74,7 +74,10 @@ struct ClientController: RouteCollection {
     // POST
     func create(req: Request) async throws -> Response {
         let user = try req.auth.require(AuthenticatedUser.self)
-        guard user.status == nil || user.status == 0 else { throw Abort(.forbidden) }
+        // Allow: status=0 (Director), status=7 (Sport- und Bäderamt), or nil (pre-migration)
+        guard user.status == nil || user.status == 0 || user.status == 7 else {
+            throw Abort(.forbidden, reason: "NO_PERMISSION: Sie haben keine Berechtigung, Objekte zu erstellen.")
+        }
         guard let firmaID = user.firmaID else { throw Abort(.forbidden) }
 
         struct Body: Content {
@@ -96,7 +99,8 @@ struct ClientController: RouteCollection {
         client.phone = body.phone
         client.phone2 = body.phone2
         client.status = body.status ?? 0
-        client.groupeID = body.groupeID
+        // Set groupeID only if it's not empty string
+        client.groupeID = (body.groupeID?.isEmpty == false) ? body.groupeID : nil
         client.country = body.country
         client.street = body.street
         client.postalCode = body.postalCode
@@ -115,7 +119,10 @@ struct ClientController: RouteCollection {
     // PUT
     func update(req: Request) async throws -> Response {
         let user = try req.auth.require(AuthenticatedUser.self)
-        guard user.status == nil || user.status == 0 else { throw Abort(.forbidden) }
+        // Allow: status=0 (Director), status=7 (Sport- und Bäderamt), or nil (pre-migration)
+        guard user.status == nil || user.status == 0 || user.status == 7 else {
+            throw Abort(.forbidden, reason: "NO_PERMISSION: Sie haben keine Berechtigung, Objekte zu bearbeiten.")
+        }
         guard let firmaID = user.firmaID else { throw Abort(.forbidden) }
 
         struct Body: Content {
@@ -141,7 +148,10 @@ struct ClientController: RouteCollection {
         if let v = body.phone { client.phone = v }
         if let v = body.phone2 { client.phone2 = v }
         if let v = body.status { client.status = v }
-        if body.groupeID != nil { client.groupeID = body.groupeID }
+        // Set groupeID only if it's not empty string, otherwise set to nil
+        if body.groupeID != nil {
+            client.groupeID = (body.groupeID?.isEmpty == false) ? body.groupeID : nil
+        }
         if let v = body.country { client.country = v }
         if let v = body.street { client.street = v }
         if let v = body.postalCode { client.postalCode = v }
@@ -160,7 +170,10 @@ struct ClientController: RouteCollection {
     // DELETE
     func remove(req: Request) async throws -> Response {
         let user = try req.auth.require(AuthenticatedUser.self)
-        guard user.status == nil || user.status == 0 else { throw Abort(.forbidden) }
+        // Allow: status=0 (Director), status=7 (Sport- und Bäderamt), or nil (pre-migration)
+        guard user.status == nil || user.status == 0 || user.status == 7 else {
+            throw Abort(.forbidden, reason: "NO_PERMISSION: Sie haben keine Berechtigung, Objekte zu löschen.")
+        }
         guard let firmaID = user.firmaID else { throw Abort(.forbidden) }
 
         struct Body: Content { var id: String }

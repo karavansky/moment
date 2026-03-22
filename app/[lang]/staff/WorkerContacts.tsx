@@ -153,27 +153,7 @@ export const WorkerContacts = memo(function WorkerContacts({
                 />
               </InputGroup>
             </TextField>
-            <div className="flex flex-col w-full max-w-64">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Date
-              </label>
-              <input
-                type="date"
-                className="w-full h-10 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                value={date}
-                min="2026-01-15"
-                max="2027-01-13"
-                onChange={e => {
-                  // Manual validation check for iOS/Safari
-                  if (e.target.value && e.target.value < '2026-01-15') {
-                    alert('Selected date: ' + e.target.value)
-                    return
-                  }
-                  setDate(e.target.value)
-                }}
-              />
-            
-            </div>
+
           </div>
         </Card.Content>
         <Card.Footer className="mt-4 flex flex-col gap-2">

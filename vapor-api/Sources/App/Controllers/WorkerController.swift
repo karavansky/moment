@@ -108,7 +108,10 @@ struct WorkerController: RouteCollection {
     // POST
     func create(req: Request) async throws -> Response {
         let user = try req.auth.require(AuthenticatedUser.self)
-        guard user.status == nil || user.status == 0 else { throw Abort(.forbidden) }
+        // Allow: status=0 (Director), status=7 (Sport- und Bäderamt), or nil (pre-migration)
+        guard user.status == nil || user.status == 0 || user.status == 7 else {
+            throw Abort(.forbidden, reason: "NO_PERMISSION: Sie haben keine Berechtigung, Teilnehmer zu erstellen.")
+        }
         guard let firmaID = user.firmaID else { throw Abort(.forbidden) }
 
         struct Body: Content {
@@ -129,7 +132,8 @@ struct WorkerController: RouteCollection {
         worker.email = body.email
         worker.phone = body.phone
         worker.phone2 = body.phone2
-        worker.teamId = body.teamId
+        // Set teamId only if it's not empty string
+        worker.teamId = (body.teamId?.isEmpty == false) ? body.teamId : nil
         worker.isAdress = body.isAdress ?? false
         worker.status = body.status ?? 0
         worker.country = body.country
@@ -141,6 +145,9 @@ struct WorkerController: RouteCollection {
         worker.district = body.district
         worker.latitude = body.latitude
         worker.longitude = body.longitude
+        // Initialize transport-related fields
+        worker.hasVehicle = false
+        worker.isOnline = false
         try await worker.save(on: req.db)
 
         pgNotify(req: req, firmaID: firmaID, type: "worker_created")
@@ -150,7 +157,10 @@ struct WorkerController: RouteCollection {
     // PUT
     func update(req: Request) async throws -> Response {
         let user = try req.auth.require(AuthenticatedUser.self)
-        guard user.status == nil || user.status == 0 else { throw Abort(.forbidden) }
+        // Allow: status=0 (Director), status=7 (Sport- und Bäderamt), or nil (pre-migration)
+        guard user.status == nil || user.status == 0 || user.status == 7 else {
+            throw Abort(.forbidden, reason: "NO_PERMISSION: Sie haben keine Berechtigung, Teilnehmer zu bearbeiten.")
+        }
         guard let firmaID = user.firmaID else { throw Abort(.forbidden) }
 
         struct Body: Content, Sendable {
@@ -175,7 +185,10 @@ struct WorkerController: RouteCollection {
         if let v = body.email { worker.email = v }
         if let v = body.phone { worker.phone = v }
         if let v = body.phone2 { worker.phone2 = v }
-        if body.teamId != nil { worker.teamId = body.teamId }
+        // Set teamId only if it's not empty string, otherwise set to nil
+        if body.teamId != nil {
+            worker.teamId = (body.teamId?.isEmpty == false) ? body.teamId : nil
+        }
         if let v = body.isAdress { worker.isAdress = v }
         if let v = body.status { worker.status = v }
         if let v = body.country { worker.country = v }
@@ -196,7 +209,10 @@ struct WorkerController: RouteCollection {
     // DELETE
     func remove(req: Request) async throws -> Response {
         let user = try req.auth.require(AuthenticatedUser.self)
-        guard user.status == nil || user.status == 0 else { throw Abort(.forbidden) }
+        // Allow: status=0 (Director), status=7 (Sport- und Bäderamt), or nil (pre-migration)
+        guard user.status == nil || user.status == 0 || user.status == 7 else {
+            throw Abort(.forbidden, reason: "NO_PERMISSION: Sie haben keine Berechtigung, Teilnehmer zu löschen.")
+        }
         guard let firmaID = user.firmaID else { throw Abort(.forbidden) }
 
         struct Body: Content { var id: String }

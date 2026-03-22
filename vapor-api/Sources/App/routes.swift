@@ -36,6 +36,7 @@ func routes(_ app: Application) throws {
     try protected.register(collection: GroupeController())            // CRUD /api/scheduling/groupes
     try protected.register(collection: ServiceController())           // CRUD /api/scheduling/services
     try protected.register(collection: SchedulingReportController())  // GET/POST /api/scheduling/reports
+    try protected.register(collection: SchedulingReportsClientsController()) // GET /api/scheduling/reports/clients
 
     // Transport routes (all under /api/transport/*)
     try protected.register(collection: OrdersController())            // CRUD /api/transport/orders

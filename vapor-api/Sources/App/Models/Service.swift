@@ -19,7 +19,7 @@ final class Service: Model, @unchecked Sendable, Content {
     var description: String?
 
     @OptionalField(key: "duration")
-    var duration: Int?
+    var duration: Int32?
 
     @OptionalField(key: "price")
     var price: Double?
@@ -31,7 +31,7 @@ final class Service: Model, @unchecked Sendable, Content {
     var isGroup: Bool?
 
     @OptionalField(key: "order")
-    var order: Int?
+    var order: Int32?
 
     init() {}
 }

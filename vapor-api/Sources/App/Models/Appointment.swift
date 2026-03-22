@@ -27,17 +27,17 @@ final class Appointment: Model, @unchecked Sendable, Content {
     @OptionalField(key: "isFixedTime")
     var isFixedTime: Bool?
 
-    @Field(key: "startTime")
-    var startTime: Date
+    @OptionalField(key: "startTime")
+    var startTime: Date?
 
-    @Field(key: "endTime")
-    var endTime: Date
+    @OptionalField(key: "endTime")
+    var endTime: Date?
 
     @Field(key: "duration")
-    var duration: Int
+    var duration: Int32
 
     @OptionalField(key: "fahrzeit")
-    var fahrzeit: Int?
+    var fahrzeit: Int32?
 
     @OptionalField(key: "isOpen")
     var isOpen: Bool?
@@ -53,6 +53,9 @@ final class Appointment: Model, @unchecked Sendable, Content {
 
     @OptionalField(key: "longitude")
     var longitude: Double?
+
+    @Field(key: "type")
+    var type: Int32
 
     @Field(key: "createdAt")
     var createdAt: Date

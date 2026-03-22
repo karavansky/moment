@@ -1556,7 +1556,8 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
     }
 
     const processGroup = (parentId: string | null) => {
-      const children = state.services.filter(s => s.parentId === parentId)
+      // Use loose equality to match both null and undefined
+      const children = state.services.filter(s => s.parentId == parentId)
 
       const services = children.filter((s): s is Service => !s.isGroup)
       const serviceOptions: ServiceOption[] = services.map(service => ({

@@ -4,11 +4,17 @@ import { createService, updateService, deleteService, getServicesByFirmaID } fro
 
 export async function GET() {
   try {
+    console.log('[Services API] GET /api/scheduling/services called')
     const session = await getAnySchedulingSession()
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!session) {
+      console.log('[Services API] No session found')
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const firmaID = session.user.firmaID!
+    console.log('[Services API] FirmaID:', firmaID)
     const servicesRaw = await getServicesByFirmaID(firmaID)
+    console.log('[Services API] Services count:', servicesRaw.length)
     const services = servicesRaw.map(s => ({
       id: s.serviceID,
       firmaID: s.firmaID,

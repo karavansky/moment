@@ -290,7 +290,7 @@ function AppointmentCard({
     <div className="space-y-1 min-w-50">
       <div className="font-semibold text-sm border-b border-gray-700 pb-1">
         {appointment.client
-          ? appointment.client.surname + ' ' + appointment.client.name
+          ? [appointment.client.surname, appointment.client.name].filter(Boolean).join(' ') || 'Unknown Client'
           : 'Unknown Client'}
       </div>
 
@@ -408,7 +408,7 @@ function AppointmentCard({
           <div className="flex items-start justify-between gap-2">
             <h4 className="text-sm font-semibold text-foreground truncate flex-1">
               {appointment.client
-                ? appointment.client.surname + ' ' + appointment.client.name
+                ? [appointment.client.surname, appointment.client.name].filter(Boolean).join(' ') || 'Unknown Client'
                 : 'Unknown Client'}
             </h4>
             {hasReport && <CheckCircle className="w-4 h-4 text-success shrink-0" />}
@@ -439,7 +439,9 @@ function AppointmentCard({
       >
         <TruncatedChip size="sm" color={chipColor} variant="primary">
           <span className="truncate block min-w-0">
-            {appointment.client ? appointment.client.surname : 'Unknown Client'}
+            {appointment.client
+              ? (appointment.client.surname || appointment.client.name || 'Unknown Client')
+              : 'Unknown Client'}
           </span>
         </TruncatedChip>
       </div>

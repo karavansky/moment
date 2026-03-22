@@ -28,9 +28,9 @@ struct ServiceController: RouteCollection {
         let services = servicesRaw.map { s in
             ServiceDTO(
                 id: s.id ?? "", firmaID: s.firmaID, name: s.name,
-                description: s.description, duration: s.duration,
+                description: s.description, duration: s.duration.map(Int.init),
                 price: s.price, parentId: s.parentId,
-                isGroup: s.isGroup, order: s.order
+                isGroup: s.isGroup, order: s.order.map(Int.init)
             )
         }
         return try await ["services": services].encodeResponse(for: req)
@@ -38,7 +38,10 @@ struct ServiceController: RouteCollection {
 
     func create(req: Request) async throws -> Response {
         let user = try req.auth.require(AuthenticatedUser.self)
-        guard user.status == nil || user.status == 0 else { throw Abort(.forbidden) }
+        // Allow: status=0 (Director), status=7 (Sport- und Bäderamt), or nil (pre-migration)
+        guard user.status == nil || user.status == 0 || user.status == 7 else {
+            throw Abort(.forbidden, reason: "NO_PERMISSION: Sie haben keine Berechtigung, Ziele zu erstellen.")
+        }
         guard let firmaID = user.firmaID else { throw Abort(.forbidden) }
 
         struct Body: Content {
@@ -53,11 +56,12 @@ struct ServiceController: RouteCollection {
         service.firmaID = firmaID
         service.name = body.name
         service.description = body.description
-        service.duration = body.duration
+        service.duration = body.duration.map { Int32(clamping: $0) }
         service.price = body.price
-        service.parentId = body.parentId
+        // Set parentId only if it's not empty string
+        service.parentId = (body.parentId?.isEmpty == false) ? body.parentId : nil
         service.isGroup = body.isGroup
-        service.order = body.order
+        service.order = body.order.map { Int32(clamping: $0) }
         try await service.save(on: req.db)
 
         return try await service.encodeResponse(status: .ok, for: req)
@@ -65,7 +69,10 @@ struct ServiceController: RouteCollection {
 
     func update(req: Request) async throws -> Response {
         let user = try req.auth.require(AuthenticatedUser.self)
-        guard user.status == nil || user.status == 0 else { throw Abort(.forbidden) }
+        // Allow: status=0 (Director), status=7 (Sport- und Bäderamt), or nil (pre-migration)
+        guard user.status == nil || user.status == 0 || user.status == 7 else {
+            throw Abort(.forbidden, reason: "NO_PERMISSION: Sie haben keine Berechtigung, Ziele zu bearbeiten.")
+        }
         guard let firmaID = user.firmaID else { throw Abort(.forbidden) }
 
         struct Body: Content {
@@ -84,11 +91,14 @@ struct ServiceController: RouteCollection {
 
         if let name = body.name { service.name = name }
         if let desc = body.description { service.description = desc }
-        if let dur = body.duration { service.duration = dur }
+        if let dur = body.duration { service.duration = Int32(clamping: dur) }
         if let price = body.price { service.price = price }
-        if let pid = body.parentId { service.parentId = pid }
+        // Set parentId only if it's not empty string, otherwise set to nil
+        if let pid = body.parentId {
+            service.parentId = (pid.isEmpty == false) ? pid : nil
+        }
         if let ig = body.isGroup { service.isGroup = ig }
-        if let ord = body.order { service.order = ord }
+        if let ord = body.order { service.order = Int32(clamping: ord) }
         try await service.save(on: req.db)
 
         return try await service.encodeResponse(for: req)
@@ -96,7 +106,10 @@ struct ServiceController: RouteCollection {
 
     func remove(req: Request) async throws -> Response {
         let user = try req.auth.require(AuthenticatedUser.self)
-        guard user.status == nil || user.status == 0 else { throw Abort(.forbidden) }
+        // Allow: status=0 (Director), status=7 (Sport- und Bäderamt), or nil (pre-migration)
+        guard user.status == nil || user.status == 0 || user.status == 7 else {
+            throw Abort(.forbidden, reason: "NO_PERMISSION: Sie haben keine Berechtigung, Ziele zu löschen.")
+        }
         guard let firmaID = user.firmaID else { throw Abort(.forbidden) }
 
         struct Body: Content { var id: String }

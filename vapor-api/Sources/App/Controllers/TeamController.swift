@@ -31,8 +31,9 @@ struct TeamController: RouteCollection {
     // POST /api/scheduling/teams
     func create(req: Request) async throws -> Response {
         let user = try req.auth.require(AuthenticatedUser.self)
-        guard user.status == nil || user.status == 0 else {
-            throw Abort(.forbidden)
+        // Allow: status=0 (Director), status=7 (Sport- und Bäderamt), or nil (pre-migration)
+        guard user.status == nil || user.status == 0 || user.status == 7 else {
+            throw Abort(.forbidden, reason: "NO_PERMISSION: Sie haben keine Berechtigung, Teams zu erstellen.")
         }
         guard let firmaID = user.firmaID else {
             throw Abort(.forbidden, reason: "No firmaID")
@@ -53,8 +54,9 @@ struct TeamController: RouteCollection {
     // PUT /api/scheduling/teams
     func update(req: Request) async throws -> Response {
         let user = try req.auth.require(AuthenticatedUser.self)
-        guard user.status == nil || user.status == 0 else {
-            throw Abort(.forbidden)
+        // Allow: status=0 (Director), status=7 (Sport- und Bäderamt), or nil (pre-migration)
+        guard user.status == nil || user.status == 0 || user.status == 7 else {
+            throw Abort(.forbidden, reason: "NO_PERMISSION: Sie haben keine Berechtigung, Teams zu bearbeiten.")
         }
         guard let firmaID = user.firmaID else {
             throw Abort(.forbidden, reason: "No firmaID")
@@ -79,8 +81,9 @@ struct TeamController: RouteCollection {
     // DELETE /api/scheduling/teams
     func remove(req: Request) async throws -> Response {
         let user = try req.auth.require(AuthenticatedUser.self)
-        guard user.status == nil || user.status == 0 else {
-            throw Abort(.forbidden)
+        // Allow: status=0 (Director), status=7 (Sport- und Bäderamt), or nil (pre-migration)
+        guard user.status == nil || user.status == 0 || user.status == 7 else {
+            throw Abort(.forbidden, reason: "NO_PERMISSION: Sie haben keine Berechtigung, Teams zu löschen.")
         }
         guard let firmaID = user.firmaID else {
             throw Abort(.forbidden, reason: "No firmaID")

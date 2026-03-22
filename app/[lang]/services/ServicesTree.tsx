@@ -11,6 +11,11 @@ import { SimpleTooltip } from '@/components/SimpleTooltip'
 
 export default function ServicesTree() {
   const { services, isLoading, addService, updateService, deleteService } = useScheduling()
+
+  // Debug logging
+  console.log('[ServicesTree] Services count:', services.length, 'isLoading:', isLoading)
+  console.log('[ServicesTree] Services:', services)
+
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
   const [editItem, setEditItem] = useState<ServiceTreeItem | null>(null)
@@ -18,9 +23,9 @@ export default function ServicesTree() {
   const [deleteConfirmItem, setDeleteConfirmItem] = useState<ServiceTreeItem | null>(null)
   const [openSwipeId, setOpenSwipeId] = useState<string | null>(null)
 
-  // Root items (parentId === null)
+  // Root items (parentId === null or undefined)
   const rootItems = useMemo(
-    () => services.filter(s => s.parentId === null).sort((a, b) => a.order - b.order),
+    () => services.filter(s => !s.parentId).sort((a, b) => a.order - b.order),
     [services]
   )
 

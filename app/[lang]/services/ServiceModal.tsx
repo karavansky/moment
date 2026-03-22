@@ -63,7 +63,7 @@ const ServiceModal = ({
       name,
       description: description || undefined,
       parentId: editItem?.parentId ?? parentId,
-      order: editItem?.order ?? Date.now(),
+      order: editItem?.order ?? 0, // Default to 0 for new items
     }
 
     if (isGroup) {
