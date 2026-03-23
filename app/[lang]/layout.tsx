@@ -10,6 +10,7 @@ import { GoogleAnalytics } from '@next/third-parties/google'
 import { getSidebarState } from '@/lib/sidebar-actions'
 import { PushNotificationBanner } from '@/components/PushNotificationBanner'
 import { GeolocationBanner } from '@/components/GeolocationBanner'
+import { BlockingScript } from '@/components/BlockingScript'
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
@@ -168,19 +169,12 @@ export default async function RootLayout({
 
         {/* Google Analytics */}
         {isProduction && <GoogleAnalytics gaId="G-HB6BYNFW9F" />}
-
-        {/* Inline script to prevent flash - will be rendered as string in SSR */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{const theme=localStorage.getItem('theme')||'dark';document.documentElement.classList.add(theme);const sidebarExpanded=localStorage.getItem('sidebar-expanded');const initialExpanded=${JSON.stringify(initialSidebarExpanded)};const isExpanded=sidebarExpanded!==null?sidebarExpanded==='true':initialExpanded;if(!isExpanded){document.documentElement.classList.add('sidebar-collapsed');}}catch(e){}})();`,
-          }}
-          suppressHydrationWarning
-        />
       </head>
       <body
         suppressHydrationWarning
         className="h-dvh overflow-hidden antialiased md:subpixel-antialiased"
       >
+        <BlockingScript initialSidebarExpanded={initialSidebarExpanded} />
         <WebVitals />
         <Providers
           themeProps={{

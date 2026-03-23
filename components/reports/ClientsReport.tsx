@@ -272,10 +272,8 @@ export default function ClientsReport() {
         </div>
 
         <div className="flex gap-2">
-          <ButtonGroup>
+          <ButtonGroup variant="primary" size="md">
             <Button
-              variant="outline"
-              size="md"
               onPress={handleExportExcel}
               isDisabled={isLoading || clientSummaries.length === 0}
             >
@@ -283,8 +281,6 @@ export default function ClientsReport() {
             </Button>
 
             <Button
-              variant="outline"
-              size="md"
               onPress={handleExportPDF}
               isDisabled={isLoading || clientSummaries.length === 0}
             >
@@ -294,7 +290,7 @@ export default function ClientsReport() {
 
             {/* Filters - Drawer */}
             <Drawer>
-              <Button variant="outline" size="md">
+              <Button>
                 <ButtonGroup.Separator />
                 <Filter className="w-4 h-4" />
                 <span className="hidden sm:inline">Filter</span>
