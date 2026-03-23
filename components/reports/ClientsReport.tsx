@@ -288,12 +288,14 @@ export default function ClientsReport() {
               onPress={handleExportPDF}
               isDisabled={isLoading || clientSummaries.length === 0}
             >
+              <ButtonGroup.Separator />
               PDF
             </Button>
 
             {/* Filters - Drawer */}
             <Drawer>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="md">
+                <ButtonGroup.Separator />
                 <Filter className="w-4 h-4" />
                 <span className="hidden sm:inline">Filter</span>
               </Button>
