@@ -248,11 +248,11 @@ export default function ClientsReport() {
   }, [groupedByClient])
 
   // Export handlers
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     if (clientSummaries.length === 0) {
       return
     }
-    exportToExcel(clientSummaries, labels)
+    await exportToExcel(clientSummaries, labels)
   }
 
   const handleExportPDF = () => {

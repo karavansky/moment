@@ -2,7 +2,7 @@
  * Utilities for exporting data to Excel and PDF
  */
 
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 
@@ -72,9 +72,9 @@ const formatTimeRange = (apt: AppointmentData): string => {
 }
 
 /**
- * Export appointments to Excel (XLSX)
+ * Export appointments to Excel (XLSX) using ExcelJS
  */
-export function exportToExcel(
+export async function exportToExcel(
   clientSummaries: ClientSummary[],
   labels: {
     title: string
@@ -84,49 +84,75 @@ export function exportToExcel(
   }
 ) {
   // Create workbook
-  const wb = XLSX.utils.book_new()
+  const workbook = new ExcelJS.Workbook()
+  const worksheet = workbook.addWorksheet('Berichte')
 
-  // Prepare data for Excel
-  const data: any[] = []
+  // Add header row with styling
+  worksheet.columns = [
+    { header: labels.client, key: 'client', width: 25 },
+    { header: 'Datum', key: 'date', width: 12 },
+    { header: 'Uhrzeit', key: 'time', width: 15 },
+    { header: labels.worker, key: 'worker', width: 25 },
+    { header: labels.service, key: 'service', width: 30 },
+  ]
 
-  // Add header row
-  data.push([labels.client, 'Datum', 'Uhrzeit', labels.worker, labels.service])
+  // Style header row
+  const headerRow = worksheet.getRow(1)
+  headerRow.font = { bold: true, size: 12 }
+  headerRow.fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FF4472C4' }, // Blue background
+  }
+  headerRow.font = { ...headerRow.font, color: { argb: 'FFFFFFFF' } } // White text
+  headerRow.alignment = { vertical: 'middle', horizontal: 'left' }
+  headerRow.height = 20
 
   // Add data rows
   clientSummaries.forEach((summary) => {
     summary.appointments.forEach((apt) => {
-      data.push([
-        summary.client.fullName,
-        formatDate(apt.date),
-        formatTimeRange(apt),
-        apt.workers.map((w) => w.fullName).join(', ') || '—',
-        apt.services.map((s) => s.name).join(', ') || '—',
-      ])
+      worksheet.addRow({
+        client: summary.client.fullName,
+        date: formatDate(apt.date),
+        time: formatTimeRange(apt),
+        worker: apt.workers.map((w) => w.fullName).join(', ') || '—',
+        service: apt.services.map((s) => s.name).join(', ') || '—',
+      })
     })
   })
 
-  // Create worksheet
-  const ws = XLSX.utils.aoa_to_sheet(data)
-
-  // Set column widths
-  ws['!cols'] = [
-    { wch: 25 }, // Client
-    { wch: 12 }, // Date
-    { wch: 15 }, // Time
-    { wch: 25 }, // Workers
-    { wch: 30 }, // Services
-  ]
-
-  // Add worksheet to workbook
-  XLSX.utils.book_append_sheet(wb, ws, 'Berichte')
+  // Add borders to all cells
+  worksheet.eachRow((row, rowNumber) => {
+    row.eachCell((cell) => {
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FFD3D3D3' } },
+        left: { style: 'thin', color: { argb: 'FFD3D3D3' } },
+        bottom: { style: 'thin', color: { argb: 'FFD3D3D3' } },
+        right: { style: 'thin', color: { argb: 'FFD3D3D3' } },
+      }
+    })
+  })
 
   // Generate file name with current date
   const now = new Date()
   const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   const fileName = `${labels.title.replace(/\s+/g, '_')}_${dateStr}.xlsx`
 
-  // Download file
-  XLSX.writeFile(wb, fileName)
+  // Generate buffer and download file
+  const buffer = await workbook.xlsx.writeBuffer()
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  })
+
+  // Create download link
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName
+  link.click()
+
+  // Cleanup
+  window.URL.revokeObjectURL(url)
 }
 
 /**

@@ -326,11 +326,17 @@ function AppModal({
   const handleSave = useCallback(() => {
     if (!validateForm() || !user) return
 
-    const isEditMode = !!appointment && appointment.id === formData.id
+    // Check if this is a new appointment:
+    // 1. isNewAppointment prop is true, OR
+    // 2. appointment.id is a temporary ID (starts with 'new-')
+    const isEditMode = !isNewAppointment &&
+                       !!appointment &&
+                       appointment.id === formData.id &&
+                       !appointment.id.startsWith('new-')
 
     const appointmentData: Appointment = {
       ...formData,
-      id: formData.id || generateId(),
+      id: isEditMode ? formData.id : generateId(), // Generate new ID for new appointments
       userID: user.id,
       firmaID: appointment?.firmaID || user.firmaID || '',
       // Use formData.endTime directly (set by TimeField), don't calculate
@@ -340,6 +346,8 @@ function AppModal({
       client: selectedClient,
       isClosed: appointment?.isClosed || false,
     }
+
+    console.log('[AppModal] handleSave:', { isEditMode, isNewAppointment, appointmentId: appointment?.id, formDataId: formData.id })
 
     if (isEditMode) {
       updateAppointment(appointmentData)
@@ -351,6 +359,7 @@ function AppModal({
   }, [
     validateForm,
     user,
+    isNewAppointment,
     appointment,
     formData,
     selectedClient,

@@ -1,6 +1,6 @@
 {
   "name": "moment",
-  "version": "0.1.48",
+  "version": "0.1.49",
   "private": true,
   "scripts": {
     "dev": "PORT=3007 NEXT_TELEMETRY_DISABLED=1 next dev",
@@ -18,8 +18,8 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1014.0",
-    "@heroui/react": "^3.0.0-rc.1",
-    "@heroui/styles": "^3.0.0-rc.1",
+    "@heroui/react": "^3.0.1",
+    "@heroui/styles": "^3.0.1",
     "@marsidev/react-turnstile": "^1.4.2",
     "@next/third-parties": "^16.2.1",
     "@tailwindcss/postcss": "^4.2.2",
@@ -62,7 +62,7 @@
     "react-window": "^2.2.7",
     "scroll-into-view-if-needed": "^3.1.0",
     "web-push": "^3.6.7",
-    "xlsx": "^0.18.5"
+    "exceljs": "^4.4.0"
   },
   "overrides": {
     "@auth/core": {
@@ -73,6 +73,7 @@
         "semver": "^5.7.2"
       }
     },
+    "flatted": "^3.4.0",
     "fast-xml-parser": "^5.3.4",
     "minimatch": "^10.2.3",
     "glob": "^11.0.0",

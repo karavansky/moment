@@ -17,6 +17,7 @@ import { useAuth } from '@/components/AuthProvider'
 import FooterDienst from './FooterDienst'
 import TodayDienst from './TodayDienst'
 import { useVisibilityRefresh } from '@/hooks/useVisibilityRefresh'
+import type { Appointment } from '@/types/scheduling'
 
 type ViewMode = 'month' | 'week'
 
@@ -32,6 +33,7 @@ function DienstplanView() {
     setSelectedAppointment,
     setSelectedDate,
     user,
+    workers,
   } = useScheduling()
 
   // Check if user can create appointments (Director or Sport- und Bäderamt)
@@ -190,26 +192,45 @@ function DienstplanView() {
   // Обработчик внешнего drop (из FooterDienst)
   const handleExternalDrop = useCallback(
     (date: Date, type: 'client' | 'worker', id: string) => {
-      const template: any = {
-        id: 'new-from-drop',
-        date: date,
-        startTime: date,
-        endTime: new Date(date.getTime() + 60 * 60000),
-        clientID: type === 'client' ? id : '',
-        workerId: type === 'worker' ? id : '',
-        duration: 60,
-        fahrzeit: 0,
-        isFixedTime: false,
-        services: [],
-        reports: [],
-        worker: [],
+      if (!user) {
+        console.error('handleExternalDrop: user is not available')
+        return
       }
+
+      // Найти worker или client объект по ID
+      const workerObj = type === 'worker' ? workers.find(w => w.id === id) : undefined
+      const clientId = type === 'client' ? id : ''
+
+      // Создать шаблон с правильной структурой
+      const template: Appointment = {
+        id: 'new-from-drop',
+        firmaID: user.firmaID || '',
+        userID: user.id,
+        clientID: clientId,
+        type: 0, // 0 = визит (встреча)
+        services: [],
+        routes: [],
+        date: date,
+        isFixedTime: false,
+        startTime: undefined,
+        duration: 60,
+        endTime: undefined,
+        fahrzeit: 0,
+        workerId: workerObj?.id || '',
+        workerIds: workerObj ? [workerObj.id] : [],
+        worker: workerObj ? [workerObj] : [], // ✅ Массив с Worker объектом!
+        reports: [],
+        isOpen: false,
+        isClosed: false,
+        createdAt: new Date(),
+      }
+
       setSelectedDate(date)
       setSelectedAppointment(template)
       setIsNewAppointment(true)
       setIsModalOpen(true)
     },
-    [setSelectedDate, setSelectedAppointment, setIsNewAppointment, setIsModalOpen]
+    [user, workers, setSelectedDate, setSelectedAppointment, setIsNewAppointment, setIsModalOpen]
   )
 
   // Close modal handler
