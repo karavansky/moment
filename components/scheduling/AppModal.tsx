@@ -144,14 +144,8 @@ function AppModal({
           ...common,
           clientID: appointment.clientID,
           date: new Date(appointment.date),
-          startHour:
-            appointment.isFixedTime && appointment.startTime
-              ? new Date(appointment.startTime).getHours()
-              : 0,
-          startMinute:
-            appointment.isFixedTime && appointment.startTime
-              ? new Date(appointment.startTime).getMinutes()
-              : 0,
+          startTime: appointment.startTime ? new Date(appointment.startTime) : undefined,
+          endTime: appointment.endTime ? new Date(appointment.endTime) : undefined,
           duration: appointment.duration,
           fahrzeit: appointment.fahrzeit,
           isFixedTime: appointment.isFixedTime,
@@ -181,14 +175,8 @@ function AppModal({
             ...common,
             clientID: appointment.clientID,
             date: new Date(appointment.date),
-            startHour:
-              appointment.isFixedTime && appointment.startTime
-                ? new Date(appointment.startTime).getHours()
-                : 0,
-            startMinute:
-              appointment.isFixedTime && appointment.startTime
-                ? new Date(appointment.startTime).getMinutes()
-                : 0,
+            startTime: appointment.startTime ? new Date(appointment.startTime) : undefined,
+            endTime: appointment.endTime ? new Date(appointment.endTime) : undefined,
             duration: appointment.duration,
             fahrzeit: appointment.fahrzeit,
             isFixedTime: appointment.isFixedTime,
@@ -334,14 +322,6 @@ function AppModal({
     return Object.keys(newErrors).length === 0
   }, [formData, t])
 
-  // Calculate end time
-  const endTime = useMemo(() => {
-    if (!formData.startTime) return undefined
-    const start = new Date(formData.startTime)
-    const end = new Date(start.getTime() + formData.duration * 60000)
-    return end
-  }, [formData.startTime, formData.duration])
-
   // Handle save
   const handleSave = useCallback(() => {
     if (!validateForm() || !user) return
@@ -353,7 +333,8 @@ function AppModal({
       id: formData.id || generateId(),
       userID: user.id,
       firmaID: appointment?.firmaID || user.firmaID || '',
-      endTime,
+      // Use formData.endTime directly (set by TimeField), don't calculate
+      endTime: formData.endTime,
       workerId: formData.worker[0]?.id || '',
       workerIds: formData.worker.map(w => w.id),
       client: selectedClient,
@@ -372,7 +353,6 @@ function AppModal({
     user,
     appointment,
     formData,
-    endTime,
     selectedClient,
     updateAppointment,
     addAppointment,
@@ -462,19 +442,20 @@ function AppModal({
             </Modal.Header>
             <Modal.Body className="p-0 overflow-y-auto max-h-[80vh]">
               <motion.div
+                style={{ height: height > 0 ? height : 'auto' }}
                 animate={{ height: height > 0 ? height : 'auto' }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="overflow-hidden relative"
+                transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+                className="relative"
               >
                 <div ref={ref} className="p-1">
-                  <AnimatePresence mode="popLayout" initial={false}>
+                  <AnimatePresence mode="wait" initial={false}>
                     {viewTab === 'view' || viewTab === 'edit' || viewTab === 'new' ? (
                       <motion.div
                         key="overview"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20 }}
-                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
                         className="w-full"
                       >
                         <AppView
@@ -497,10 +478,10 @@ function AppModal({
                     ) : viewTab === 'report' ? (
                       <motion.div
                         key="report"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20 }}
-                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
                         className="h-full"
                       >
                         {/* Only render AppReport when formData has valid ID */}
@@ -521,10 +502,10 @@ function AppModal({
                     ) : viewTab === 'notes' ? (
                       <motion.div
                         key="notes"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20 }}
-                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
                         className="w-full"
                       >
                         <AppNotes

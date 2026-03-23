@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '@/components/AuthProvider'
 import {
   Button,
+  ButtonGroup,
   Card,
   DateField,
   DateRangePicker,
@@ -19,10 +20,11 @@ import {
   Table,
   TextField,
 } from '@heroui/react'
-import { Calendar, Filter, RefreshCw } from 'lucide-react'
+import { Calendar, Download, FileSpreadsheet, FileText, Filter, RefreshCw } from 'lucide-react'
 import { ChevronDownIcon } from '@/components/icons'
 import { parseDate, today, getLocalTimeZone } from '@internationalized/date'
 import type { DateValue } from '@internationalized/date'
+import { exportToExcel, exportToPDF } from '@/lib/export-utils'
 
 type DateRange = {
   start: DateValue
@@ -123,12 +125,18 @@ export default function ClientsReport() {
 
       if (dateRange?.start) {
         const start = dateRange.start
-        params.append('dateFrom', `${start.year}-${String(start.month).padStart(2, '0')}-${String(start.day).padStart(2, '0')}`)
+        params.append(
+          'dateFrom',
+          `${start.year}-${String(start.month).padStart(2, '0')}-${String(start.day).padStart(2, '0')}`
+        )
       }
 
       if (dateRange?.end) {
         const end = dateRange.end
-        params.append('dateTo', `${end.year}-${String(end.month).padStart(2, '0')}-${String(end.day).padStart(2, '0')}`)
+        params.append(
+          'dateTo',
+          `${end.year}-${String(end.month).padStart(2, '0')}-${String(end.day).padStart(2, '0')}`
+        )
       }
 
       // Добавляем clientFilter если он выбран
@@ -230,6 +238,30 @@ export default function ClientsReport() {
     return `${start} - ${end}`
   }
 
+  // Prepare data for export
+  const clientSummaries = useMemo(() => {
+    return groupedByClient.map(group => ({
+      client: group.client,
+      appointmentCount: group.appointments.length,
+      appointments: group.appointments,
+    }))
+  }, [groupedByClient])
+
+  // Export handlers
+  const handleExportExcel = () => {
+    if (clientSummaries.length === 0) {
+      return
+    }
+    exportToExcel(clientSummaries, labels)
+  }
+
+  const handleExportPDF = () => {
+    if (clientSummaries.length === 0) {
+      return
+    }
+    exportToPDF(clientSummaries, labels)
+  }
+
   return (
     <div className="w-full h-full flex flex-col gap-4 px-4 sm:px-6 py-4">
       {/* Header */}
@@ -239,144 +271,159 @@ export default function ClientsReport() {
           <h1 className="text-2xl font-bold">{labels.title}</h1>
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onPress={fetchReports}
-          isDisabled={isLoading}
-        >
-          <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-          <span className="hidden sm:inline">Aktualisieren</span>
-        </Button>
-      </div>
+        <div className="flex gap-2">
+          <ButtonGroup>
+            <Button
+              variant="outline"
+              size="md"
+              onPress={handleExportExcel}
+              isDisabled={isLoading || clientSummaries.length === 0}
+            >
+              Excel
+            </Button>
 
-      {/* Filters - Drawer */}
-      <Drawer>
-        <Button variant="outline" size="sm">
-          <Filter className="w-4 h-4" />
-          <span className="hidden sm:inline">Filter</span>
-        </Button>
-        <Drawer.Backdrop>
-          <Drawer.Content placement="right">
-            <Drawer.Dialog className="w-full sm:w-[400px]">
-              <Drawer.CloseTrigger />
-              <Drawer.Header>
-                <Drawer.Heading>Filter</Drawer.Heading>
-              </Drawer.Header>
-              <Drawer.Body>
-                <div className="flex flex-col gap-4">
-                  {/* Date Range */}
-                  <DateRangePicker
-                    className="w-full"
-                    startName="dateFrom"
-                    endName="dateTo"
-                    value={dateRange}
-                    onChange={setDateRange}
-                  >
-                    <Label>Zeitraum</Label>
-                    <DateField.Group fullWidth>
-                      <DateField.Input slot="start">
-                        {(segment) => <DateField.Segment segment={segment} />}
-                      </DateField.Input>
-                      <DateRangePicker.RangeSeparator />
-                      <DateField.Input slot="end">
-                        {(segment) => <DateField.Segment segment={segment} />}
-                      </DateField.Input>
-                      <DateField.Suffix>
-                        <DateRangePicker.Trigger>
-                          <DateRangePicker.TriggerIndicator />
-                        </DateRangePicker.Trigger>
-                      </DateField.Suffix>
-                    </DateField.Group>
-                    <DateRangePicker.Popover>
-                      <RangeCalendar aria-label="Zeitraum wählen">
-                        <RangeCalendar.Header>
-                          <RangeCalendar.YearPickerTrigger>
-                            <RangeCalendar.YearPickerTriggerHeading />
-                            <RangeCalendar.YearPickerTriggerIndicator />
-                          </RangeCalendar.YearPickerTrigger>
-                          <RangeCalendar.NavButton slot="previous" />
-                          <RangeCalendar.NavButton slot="next" />
-                        </RangeCalendar.Header>
-                        <RangeCalendar.Grid>
-                          <RangeCalendar.GridHeader>
-                            {(day) => <RangeCalendar.HeaderCell>{day}</RangeCalendar.HeaderCell>}
-                          </RangeCalendar.GridHeader>
-                          <RangeCalendar.GridBody>
-                            {(date) => <RangeCalendar.Cell date={date} />}
-                          </RangeCalendar.GridBody>
-                        </RangeCalendar.Grid>
-                        <RangeCalendar.YearPickerGrid>
-                          <RangeCalendar.YearPickerGridBody>
-                            {({year}) => <RangeCalendar.YearPickerCell year={year} />}
-                          </RangeCalendar.YearPickerGridBody>
-                        </RangeCalendar.YearPickerGrid>
-                      </RangeCalendar>
-                    </DateRangePicker.Popover>
-                  </DateRangePicker>
+            <Button
+              variant="outline"
+              size="md"
+              onPress={handleExportPDF}
+              isDisabled={isLoading || clientSummaries.length === 0}
+            >
+              PDF
+            </Button>
 
-                  {/* Client Filter */}
-                  <div className="w-full">
-                    <Label className="mb-2 block">{labels.client}</Label>
-                    <Dropdown>
-                      <Button variant="tertiary" className="w-full justify-between">
-                        {clientFilter === 'all' || Array.from(clientFilter).length === 0
-                          ? `Alle ${labels.client}`
-                          : Array.from(clientFilter).length === 1
-                          ? clients.find(c => c.id === Array.from(clientFilter)[0])?.fullName
-                          : `${Array.from(clientFilter).length} ausgewählt`}
-                        <ChevronDownIcon className="w-4 h-4" />
-                      </Button>
-                      <Dropdown.Popover>
-                        <Dropdown.Menu
-                          disallowEmptySelection
-                          aria-label="Client Filter"
-                          selectedKeys={clientFilter}
-                          selectionMode="single"
-                          onSelectionChange={setClientFilter}
-                          items={clients.map(c => ({ id: c.id, name: c.fullName }))}
+            {/* Filters - Drawer */}
+            <Drawer>
+              <Button variant="outline" size="sm">
+                <Filter className="w-4 h-4" />
+                <span className="hidden sm:inline">Filter</span>
+              </Button>
+              <Drawer.Backdrop>
+                <Drawer.Content placement="right">
+                  <Drawer.Dialog className="w-full sm:w-[400px]">
+                    <Drawer.CloseTrigger />
+                    <Drawer.Header>
+                      <Drawer.Heading>Filter</Drawer.Heading>
+                    </Drawer.Header>
+                    <Drawer.Body>
+                      <div className="flex flex-col gap-4">
+                        {/* Date Range */}
+                        <DateRangePicker
+                          className="w-full"
+                          startName="dateFrom"
+                          endName="dateTo"
+                          value={dateRange}
+                          onChange={setDateRange}
                         >
-                          {clients.map(client => (
-                            <DropdownItem key={client.id} id={client.id}>
-                              {client.fullName}
-                              <DropdownItemIndicator />
-                            </DropdownItem>
-                          ))}
-                        </Dropdown.Menu>
-                      </Dropdown.Popover>
-                    </Dropdown>
-                  </div>
+                          <Label>Zeitraum</Label>
+                          <DateField.Group fullWidth>
+                            <DateField.Input slot="start">
+                              {segment => <DateField.Segment segment={segment} />}
+                            </DateField.Input>
+                            <DateRangePicker.RangeSeparator />
+                            <DateField.Input slot="end">
+                              {segment => <DateField.Segment segment={segment} />}
+                            </DateField.Input>
+                            <DateField.Suffix>
+                              <DateRangePicker.Trigger>
+                                <DateRangePicker.TriggerIndicator />
+                              </DateRangePicker.Trigger>
+                            </DateField.Suffix>
+                          </DateField.Group>
+                          <DateRangePicker.Popover>
+                            <RangeCalendar aria-label="Zeitraum wählen">
+                              <RangeCalendar.Header>
+                                <RangeCalendar.YearPickerTrigger>
+                                  <RangeCalendar.YearPickerTriggerHeading />
+                                  <RangeCalendar.YearPickerTriggerIndicator />
+                                </RangeCalendar.YearPickerTrigger>
+                                <RangeCalendar.NavButton slot="previous" />
+                                <RangeCalendar.NavButton slot="next" />
+                              </RangeCalendar.Header>
+                              <RangeCalendar.Grid>
+                                <RangeCalendar.GridHeader>
+                                  {day => (
+                                    <RangeCalendar.HeaderCell>{day}</RangeCalendar.HeaderCell>
+                                  )}
+                                </RangeCalendar.GridHeader>
+                                <RangeCalendar.GridBody>
+                                  {date => <RangeCalendar.Cell date={date} />}
+                                </RangeCalendar.GridBody>
+                              </RangeCalendar.Grid>
+                              <RangeCalendar.YearPickerGrid>
+                                <RangeCalendar.YearPickerGridBody>
+                                  {({ year }) => <RangeCalendar.YearPickerCell year={year} />}
+                                </RangeCalendar.YearPickerGridBody>
+                              </RangeCalendar.YearPickerGrid>
+                            </RangeCalendar>
+                          </DateRangePicker.Popover>
+                        </DateRangePicker>
 
-                  {/* Search */}
-                  <TextField className="w-full">
-                    <Label>Suche</Label>
-                    <Input
-                      placeholder={`${labels.worker}, ${labels.service}...`}
-                      value={searchTerm}
-                      onChange={e => setSearchTerm(e.target.value)}
-                    />
-                  </TextField>
-                </div>
-              </Drawer.Body>
-              <Drawer.Footer>
-                <Button
-                  variant="secondary"
-                  onPress={() => {
-                    setDateRange(null)
-                    setClientFilter('all')
-                    setSearchTerm('')
-                  }}
-                >
-                  Zurücksetzen
-                </Button>
-                <Button slot="close" onPress={fetchReports} isDisabled={isLoading}>
-                  Anwenden
-                </Button>
-              </Drawer.Footer>
-            </Drawer.Dialog>
-          </Drawer.Content>
-        </Drawer.Backdrop>
-      </Drawer>
+                        {/* Client Filter */}
+                        <div className="w-full">
+                          <Label className="mb-2 block">{labels.client}</Label>
+                          <Dropdown>
+                            <Button variant="tertiary" className="w-full justify-between">
+                              {clientFilter === 'all' || Array.from(clientFilter).length === 0
+                                ? `Alle ${labels.client}`
+                                : Array.from(clientFilter).length === 1
+                                  ? clients.find(c => c.id === Array.from(clientFilter)[0])
+                                      ?.fullName
+                                  : `${Array.from(clientFilter).length} ausgewählt`}
+                              <ChevronDownIcon className="w-4 h-4" />
+                            </Button>
+                            <Dropdown.Popover>
+                              <Dropdown.Menu
+                                disallowEmptySelection
+                                aria-label="Client Filter"
+                                selectedKeys={clientFilter}
+                                selectionMode="single"
+                                onSelectionChange={setClientFilter}
+                                items={clients.map(c => ({ id: c.id, name: c.fullName }))}
+                              >
+                                {clients.map(client => (
+                                  <DropdownItem key={client.id} id={client.id}>
+                                    {client.fullName}
+                                    <DropdownItemIndicator />
+                                  </DropdownItem>
+                                ))}
+                              </Dropdown.Menu>
+                            </Dropdown.Popover>
+                          </Dropdown>
+                        </div>
+
+                        {/* Search */}
+                        <TextField className="w-full">
+                          <Label>Suche</Label>
+                          <Input
+                            placeholder={`${labels.worker}, ${labels.service}...`}
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                          />
+                        </TextField>
+                      </div>
+                    </Drawer.Body>
+                    <Drawer.Footer>
+                      <Button
+                        variant="secondary"
+                        onPress={() => {
+                          setDateRange(null)
+                          setClientFilter('all')
+                          setSearchTerm('')
+                        }}
+                      >
+                        Zurücksetzen
+                      </Button>
+                      <Button slot="close" onPress={fetchReports} isDisabled={isLoading}>
+                        Anwenden
+                      </Button>
+                    </Drawer.Footer>
+                  </Drawer.Dialog>
+                </Drawer.Content>
+              </Drawer.Backdrop>
+            </Drawer>
+          </ButtonGroup>
+        </div>
+      </div>
 
       {/* Results */}
       <Card className="flex-1 overflow-auto">
@@ -425,7 +472,9 @@ export default function ClientsReport() {
                               {item.workers.length > 0 ? (
                                 <div className="flex flex-col gap-1">
                                   {item.workers.map(w => (
-                                    <span key={w.id} className="text-sm">{w.fullName}</span>
+                                    <span key={w.id} className="text-sm">
+                                      {w.fullName}
+                                    </span>
                                   ))}
                                 </div>
                               ) : (
@@ -436,7 +485,9 @@ export default function ClientsReport() {
                               {item.services.length > 0 ? (
                                 <div className="flex flex-col gap-1">
                                   {item.services.map(s => (
-                                    <span key={s.id} className="text-sm">{s.name}</span>
+                                    <span key={s.id} className="text-sm">
+                                      {s.name}
+                                    </span>
                                   ))}
                                 </div>
                               ) : (
@@ -453,7 +504,8 @@ export default function ClientsReport() {
                 {/* Подсчет записей для группы */}
                 <div className="mt-2 text-right">
                   <p className="text-xs text-default-500">
-                    {group.appointments.length} {group.appointments.length === 1 ? 'Eintrag' : 'Einträge'}
+                    {group.appointments.length}{' '}
+                    {group.appointments.length === 1 ? 'Eintrag' : 'Einträge'}
                   </p>
                 </div>
               </div>
@@ -462,7 +514,9 @@ export default function ClientsReport() {
             {/* Общий подсчет */}
             <div className="mt-6 pt-4 border-t-2 border-default-200">
               <p className="text-sm text-default-600 font-medium">
-                Gesamt: <strong>{filteredAppointments.length}</strong> Einträge für <strong>{groupedByClient.length}</strong> {groupedByClient.length === 1 ? labels.client : `${labels.client}n`}
+                Gesamt: <strong>{filteredAppointments.length}</strong> Einträge für{' '}
+                <strong>{groupedByClient.length}</strong>{' '}
+                {groupedByClient.length === 1 ? labels.client : `${labels.client}n`}
               </p>
             </div>
           </div>

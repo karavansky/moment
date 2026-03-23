@@ -214,8 +214,8 @@ function DienstplanView() {
 
   // Close modal handler
   const handleCloseModal = useCallback(() => {
-    console.log('[DienstplanView] handleCloseModal called')
-    console.trace('[DienstplanView] handleCloseModal stack trace')
+  //  console.log('[DienstplanView] handleCloseModal called')
+  //  console.trace('[DienstplanView] handleCloseModal stack trace')
     setIsModalOpen(false)
     setSelectedAppointment(null)
     setIsNewAppointment(false)

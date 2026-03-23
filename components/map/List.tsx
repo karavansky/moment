@@ -294,9 +294,9 @@ export default function List({
       initial={false}
       animate={{
         width: isPortrait ? '100%' : isCollapsed ? '4rem' : '24rem', // w-14 = 3.5rem for collapsed, w-96 = 24rem for expanded
-        height: isPortrait ? (isCollapsed ? '4rem' : '50vh') : isCollapsed ? '50vh' : '100%', // Always set explicit height
+        height: isPortrait ? (isCollapsed ? '4rem' : 'auto') : isCollapsed ? '50vh' : '100%', // Auto height in portrait when expanded
         minHeight: isPortrait ? (isCollapsed ? '4rem' : undefined) : undefined,
-        maxHeight: isPortrait ? (isCollapsed ? '4rem' : '40vh') : '100vh',
+        maxHeight: isPortrait ? (isCollapsed ? '4rem' : undefined) : '100vh',
       }}
       transition={{
         duration: 0.3,
@@ -590,7 +590,17 @@ export default function List({
               hideScrollBar
               size={60}
             >
-              <div className={isPortrait ? 'h-full pl-4' : 'px-4 pb-4'}>
+              <div
+                className={isPortrait ? 'h-full pl-4' : 'px-4 pb-4'}
+                onWheel={isPortrait ? (e) => {
+                  // Enable mouse wheel scrolling for horizontal scroll in portrait mode
+                  const container = e.currentTarget.querySelector('.flex-row') as HTMLElement
+                  if (container) {
+                    container.scrollLeft += e.deltaY
+                    e.preventDefault()
+                  }
+                } : undefined}
+              >
                   <AnimatePresence mode="wait">
                     {(activeTab === 'appointments' && !isDriverMode) ? (
                       // Appointments List
@@ -600,7 +610,7 @@ export default function List({
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
                         transition={{ duration: 0.3, ease: 'easeInOut' }}
-                        className={isPortrait ? 'flex flex-row gap-3 h-full pr-4' : 'space-y-3'}
+                        className={isPortrait ? 'flex flex-row gap-3 h-full pr-4 overflow-x-auto' : 'space-y-3'}
                       >
                     {filteredAppointments.length === 0 ? (
                       <div className="text-center py-12 text-default-400">
@@ -666,7 +676,7 @@ export default function List({
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.3, ease: 'easeInOut' }}
-                    className={isPortrait ? 'flex flex-row gap-3 h-full pr-4 p-1' : 'pt-1 space-y-3'}
+                    className={isPortrait ? 'flex flex-row gap-3 h-full pr-4 p-1 overflow-x-auto' : 'pt-1 space-y-3'}
                   >
                     {sortedOrders.length === 0 ? (
                       <div className="text-center py-12 text-default-400">
