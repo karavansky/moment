@@ -267,19 +267,29 @@ function FooterDienst({ className }: FooterDienstProps) {
   const staffRef = useRef<HTMLButtonElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 })
   const { isMobile, isReady } = usePlatformContext()
-  const { clients, groups, workers, teams, groupedClients, teamsWithWorkers } = useScheduling()
+  const { clients, groups, workers, teams, groupedClients, teamsWithWorkers, user } = useScheduling()
 
-  const [selectedGroups, setSelectedGroups] = useState('All Kunden')
-  const [selectedTeams, setSelectedTeams] = useState('All Teams')
+  // Labels based on user status
+  const allClientsLabel = user?.status === 7 ? 'Alle Objekte' : 'All Kunden'
+  const allTeamsLabel = user?.status === 7 ? 'Alle Teilnehmer' : 'All Teams'
+
+  const [selectedGroups, setSelectedGroups] = useState(allClientsLabel)
+  const [selectedTeams, setSelectedTeams] = useState(allTeamsLabel)
 
   const listGroups = () => {
-    let listGroups = ['All Kunden']
+    let listGroups = [allClientsLabel]
     return listGroups.concat(groups.map(group => group.groupeName))
   }
   const listTeams = () => {
-    let listTeams = ['All Teams']
+    let listTeams = [allTeamsLabel]
     return listTeams.concat(teams.map(team => team.teamName))
   }
+
+  // Update selected labels when user status changes
+  useEffect(() => {
+    setSelectedGroups(allClientsLabel)
+    setSelectedTeams(allTeamsLabel)
+  }, [allClientsLabel, allTeamsLabel])
 
   useEffect(() => {
     const updateIndicator = () => {
@@ -317,12 +327,12 @@ function FooterDienst({ className }: FooterDienstProps) {
     e.dataTransfer.setData('text/plain', data)
     e.dataTransfer.effectAllowed = 'copyMove'
   }
-  const filteredClients = selectedGroups === 'All Kunden'
+  const filteredClients = selectedGroups === allClientsLabel
     ? clients
     : groupedClients.find(g => g.group.groupeName === selectedGroups)?.clients || []
 
   const filteredWorkers =
-    selectedTeams === 'All Teams'
+    selectedTeams === allTeamsLabel
       ? workers
       : teamsWithWorkers.find(t => t.team.teamName === selectedTeams)?.workers || []
 

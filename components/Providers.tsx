@@ -35,6 +35,7 @@ import { DemoNotificationWorker } from './DemoNotificationWorker'
 import { ServiceWorkerRegistrar } from './ServiceWorkerRegistrar'
 import { GeolocationTracker } from './GeolocationTracker'
 import { useAppVersion } from '@/hooks/useAppVersion'
+import { DemoProvider } from '@/contexts/DemoContext'
 
 export interface ProvidersProps {
   children: React.ReactNode
@@ -183,16 +184,18 @@ export function Providers({
                   <DictionaryContext.Provider value={memoizedDictionary}>
                     <NotificationProvider>
                       <SchedulingProvider>
-                        <ServiceWorkerRegistrar />
-                        <GeolocationTracker />
-                        <NotificationObserver />
-                        <DeviceSyncObserver />
-                        <DemoNotificationWorker />
-                        <AppVersionCheck />
-                        <PWAInstallProvider>
-                          <PWAInstallPrompt />
-                          <div className="min-h-screen flex flex-col">{children}</div>
-                        </PWAInstallProvider>
+                        <DemoProvider>
+                          <ServiceWorkerRegistrar />
+                          <GeolocationTracker />
+                          <NotificationObserver />
+                          <DeviceSyncObserver />
+                          <DemoNotificationWorker />
+                          <AppVersionCheck />
+                          <PWAInstallProvider>
+                            <PWAInstallPrompt />
+                            <div className="min-h-screen flex flex-col">{children}</div>
+                          </PWAInstallProvider>
+                        </DemoProvider>
                       </SchedulingProvider>
                     </NotificationProvider>
                   </DictionaryContext.Provider>

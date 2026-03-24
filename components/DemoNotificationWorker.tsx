@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { Notif } from '@/types/scheduling';
 import { useScheduling } from '@/contexts/SchedulingContext';
+import { useDemo } from '@/contexts/DemoContext';
 import { Router } from 'next/router';
 
 const simpleId = () => Math.random().toString(36).substr(2, 9);
@@ -95,21 +96,27 @@ const DEMO_NOTIFICATIONS: Omit<Notif, 'id' | 'date' | 'isRead'>[] = [
 
 export const DemoNotificationWorker = () => {
   const { openAppointment, isLiveMode } = useScheduling()
-
+  const { isDemoActive } = useDemo()
   const { addNotification } = useNotifications();
   const currentIndexRef = useRef(0);
 
   useEffect(() => {
     // Не запускать для авторизованных пользователей
     if (isLiveMode) return;
-    console.log(`🔔 [Demo Worker] Mounting... timestamp=${Date.now()}, pathname=${window.location.pathname}`);
+
+    // Не запускать автоматически - только по кнопке
+    if (!isDemoActive) {
+      console.log('🔔 [Demo Worker] Demo not active, waiting for user to click button...');
+      return;
+    }
+
+    console.log(`🔔 [Demo Worker] Starting demo! timestamp=${Date.now()}, pathname=${window.location.pathname}`);
 
     const showNextNotification = () => {
       const index = currentIndexRef.current;
 
       if (index >= DEMO_NOTIFICATIONS.length) {
-        console.log('🔔 [Demo Worker] All notifications shown, restarting from beginning');
-     //   currentIndexRef.current = 0;
+        console.log('🔔 [Demo Worker] All notifications shown, stopping demo');
         return;
       }
 
@@ -127,30 +134,25 @@ export const DemoNotificationWorker = () => {
       currentIndexRef.current = index + 1;
     };
 
-    // Show first notification after 30 seconds, then every 60 seconds
-    let intervalId: NodeJS.Timeout | null = null;
+    // Immediately open demo appointment and show first notification
+    console.log(`🔔 [Demo Worker] Opening demo appointment...`);
+    openAppointment('1HtTFzn7NJ7viLFBvJFN9','3Eoxlmzdr4uEJggFueFnB');
 
+    // Show first notification after 3 seconds, then every 10 seconds for demo
     const initialTimeoutId = setTimeout(() => {
-      console.log(`🔔 [Demo Worker] Timeout fired! timestamp=${Date.now()}, pathname=${window.location.pathname}`);
-      // openAppointment сам проверяет isOpen — если appointment уже восстановлен
-      // из sessionStorage, повторный вызов будет no-op (без notification)
-      openAppointment('1HtTFzn7NJ7viLFBvJFN9','3Eoxlmzdr4uEJggFueFnB');
+      showNextNotification();
+    }, 3000);
 
-      // Start interval for subsequent notifications
-      intervalId = setInterval(showNextNotification, 60000);
-      console.log('🔔 [Demo Worker] Interval started (60s):', intervalId);
-    }, 30000);
-
-    console.log('🔔 [Demo Worker] Initial timeout started (30s):', initialTimeoutId);
+    // Show subsequent notifications every 10 seconds
+    const intervalId = setInterval(showNextNotification, 10000);
+    console.log('🔔 [Demo Worker] Demo started - notifications every 10s');
 
     return () => {
       console.log(`🔔 [Demo Worker] Cleaning up timers, timestamp=${Date.now()}`);
       clearTimeout(initialTimeoutId);
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
+      clearInterval(intervalId);
     };
-  }, [addNotification, openAppointment, isLiveMode]);
+  }, [addNotification, openAppointment, isLiveMode, isDemoActive]);
 
   return null;
 };

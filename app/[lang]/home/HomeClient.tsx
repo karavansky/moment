@@ -2,14 +2,25 @@
 
 import { useTranslation } from '@/components/Providers'
 import { useLanguage } from '@/hooks/useLanguage'
+import { useDemo } from '@/contexts/DemoContext'
 import { Button, Card } from '@heroui/react'
-import { CheckCircle2, Map, Star, Smartphone, CalendarDays, ArrowRight } from 'lucide-react'
+import { CheckCircle2, Map, Star, Smartphone, CalendarDays, ArrowRight, Play } from 'lucide-react'
 import Link from 'next/link'
 import { FAQ } from './FAQ'
+import { useRouter } from 'next/navigation'
 
 export default function HomeClient() {
   const { t } = useTranslation()
   const lang = useLanguage()
+  const { startDemo } = useDemo()
+  const router = useRouter()
+
+  const handleStartDemo = () => {
+    console.log('🎬 [HomeClient] Starting demo...')
+    startDemo()
+    // Navigate to dispatcher page to show the demo
+    router.push(`/${lang}/dispatcher`)
+  }
 
   return (
     <div className="min-h-screen bg-default-50 font-sans selection:bg-primary/30">
@@ -49,7 +60,9 @@ export default function HomeClient() {
               size="lg"
               variant="ghost"
               className="h-14 px-8 font-semibold text-lg border-2 border-default-200"
+              onPress={handleStartDemo}
             >
+              <Play className="w-5 h-5 mr-2" />
               {t('landing.hero.ctaHow')}
             </Button>
           </div>

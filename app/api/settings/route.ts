@@ -9,8 +9,85 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const userStatus = session.user.status
+    const firmaID = session.user.firmaID
+
+    if (!firmaID) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    // Admin/Director settings (status = 0 or null)
+    if (userStatus === null || userStatus === 0) {
+      const result = await pool.query(
+        `SELECT
+          u."pushNotificationsEnabled",
+          u."geolocationEnabled",
+          u."name",
+          u."email",
+          u."lang",
+          u."country",
+          u."citiesID",
+          o."name" AS "organisationName",
+          o."firmaID"
+        FROM users u
+        LEFT JOIN organisations o ON u."firmaID" = o."firmaID"
+        WHERE u."userID" = $1`,
+        [session.user.id]
+      )
+
+      if (result.rows.length === 0) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      }
+
+      return NextResponse.json(result.rows[0])
+    }
+
+    // Worker settings (status = 1)
+    if (userStatus === 1) {
+      const result = await pool.query(
+        `SELECT
+          u."pushNotificationsEnabled",
+          u."geolocationEnabled",
+          u."name",
+          u."email",
+          u."lang",
+          u."country",
+          u."citiesID",
+          o."name" AS "organisationName",
+          o."firmaID",
+          w."name" AS "workerName",
+          w."surname" AS "workerSurname",
+          w."email" AS "workerEmail"
+        FROM users u
+        LEFT JOIN organisations o ON u."firmaID" = o."firmaID"
+        LEFT JOIN workers w ON u."userID" = w."userID" AND w."firmaID" = $1
+        WHERE u."userID" = $2`,
+        [firmaID, session.user.id]
+      )
+
+      if (result.rows.length === 0) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      }
+
+      return NextResponse.json(result.rows[0])
+    }
+
+    // Sport Booking System (status = 7) and other statuses
+    // Return basic user settings + organisation info
     const result = await pool.query(
-      `SELECT "pushNotificationsEnabled", "geolocationEnabled", "lang", "country", "citiesID" FROM users WHERE "userID" = $1`,
+      `SELECT
+        u."pushNotificationsEnabled",
+        u."geolocationEnabled",
+        u."name",
+        u."email",
+        u."lang",
+        u."country",
+        u."citiesID",
+        o."name" AS "organisationName",
+        o."firmaID"
+      FROM users u
+      LEFT JOIN organisations o ON u."firmaID" = o."firmaID"
+      WHERE u."userID" = $1`,
       [session.user.id]
     )
 
@@ -75,6 +152,26 @@ export async function PATCH(request: Request) {
 
     if (result.rows.length === 0) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Notify clients if this is a worker update
+    const firmaID = session.user.firmaID
+    if (firmaID) {
+      try {
+        const workerCheck = await pool.query(
+          `SELECT "workerID" FROM workers WHERE "userID" = $1 LIMIT 1`,
+          [session.user.id]
+        )
+        if (workerCheck.rows.length > 0) {
+          await pool.query(
+            `SELECT pg_notify($1, $2)`,
+            [`scheduling_${firmaID}`, JSON.stringify({ type: 'worker_updated' })]
+          )
+        }
+      } catch (notifyError) {
+        console.error('[settings/PATCH] pgNotify error:', notifyError)
+        // Don't fail the request if notification fails
+      }
     }
 
     return NextResponse.json(result.rows[0])

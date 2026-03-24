@@ -122,7 +122,7 @@ export function LoginLogout() {
         <Dropdown.Trigger className="rounded-full">
           <Avatar>
             <Avatar.Image alt={session.user.name || 'User'} src={session.user.image || ''} />
-            <Avatar.Fallback delayMs={6}>JD</Avatar.Fallback>
+            <Avatar.Fallback delayMs={6}>{session.user.name || 'User'}</Avatar.Fallback>
           </Avatar>
         </Dropdown.Trigger>
         <Dropdown.Popover>
@@ -130,7 +130,7 @@ export function LoginLogout() {
             <div className="flex items-center gap-2">
               <Avatar size="sm">
                 <Avatar.Image alt={session.user.name || 'User'} src={session.user.image || ''} />
-                <Avatar.Fallback delayMs={600}>JD</Avatar.Fallback>
+                <Avatar.Fallback delayMs={6}>{session.user.name || 'User'}</Avatar.Fallback>
               </Avatar>
               <div className="flex flex-col gap-0">
                 <p className="text-sm leading-5 font-medium">{session.user.name || 'User'}</p>
@@ -178,15 +178,15 @@ export function LoginLogout() {
         <Dropdown.Trigger className="rounded-full">
           <Avatar>
             <Avatar.Image alt={session.user.name || 'User'} src={session.user.image || ''} />
-            <Avatar.Fallback delayMs={600}>JD</Avatar.Fallback>
+            <Avatar.Fallback delayMs={6}>{session.user.name || 'User'}</Avatar.Fallback>
           </Avatar>
-        </Dropdown.Trigger>
+        </Dropdown.Trigger> 
         <Dropdown.Popover>
           <div className="px-3 pt-3 pb-1">
             <div className="flex items-center gap-2">
               <Avatar size="sm">
                 <Avatar.Image alt={session.user.name || 'User'} src={session.user.image || ''} />
-                <Avatar.Fallback delayMs={600}>JD</Avatar.Fallback>
+                <Avatar.Fallback delayMs={6}>{session.user.name || 'User'}</Avatar.Fallback>
               </Avatar>
               <div className="flex flex-col gap-0">
                 <p className="text-sm leading-5 font-medium">{session.user.name || 'User'}</p>
@@ -229,20 +229,34 @@ export function LoginLogout() {
     )
   }
   if (status === 'authenticated' && session?.user) {
+    // Get first letter of name for button display
+    const getInitials = (name: string | null | undefined) => {
+      if (!name) return 'U'
+      return name.charAt(0).toUpperCase()
+    }
+
     return (
       <Dropdown>
-        <Dropdown.Trigger className="rounded-full">
-          <Avatar>
-            <Avatar.Image alt={session.user.name || 'User'} src={session.user.image || ''} />
-            <Avatar.Fallback delayMs={600}>JD</Avatar.Fallback>
-          </Avatar>
+        <Dropdown.Trigger>
+          {session.user.image ? (
+            <Avatar>
+              <Avatar.Image alt={session.user.name || 'User'} src={session.user.image} />
+              <Avatar.Fallback delayMs={6}>{getInitials(session.user.name)}</Avatar.Fallback>
+            </Avatar>
+          ) : (
+            <div className="inline-flex items-center justify-center gap-2 px-4 py-2 h-10 rounded-2xl bg-blue-900/30 hover:bg-default-100 dark:hover:bg-default-200 border border-default-200 dark:border-default-300 transition-all duration-200 cursor-pointer select-none font-medium text-sm text-default-900 dark:text-default-50">
+              {session.user.name || 'User'}
+            </div>
+          )}
         </Dropdown.Trigger>
         <Dropdown.Popover>
           <div className="px-3 pt-3 pb-1">
             <div className="flex items-center gap-2">
               <Avatar size="sm">
-                <Avatar.Image alt={session.user.name || 'User'} src={session.user.image || ''} />
-                <Avatar.Fallback delayMs={600}>JD</Avatar.Fallback>
+                {session.user.image && (
+                  <Avatar.Image alt={session.user.name || 'User'} src={session.user.image} />
+                )}
+                <Avatar.Fallback delayMs={6}>{getInitials(session.user.name)}</Avatar.Fallback>
               </Avatar>
               <div className="flex flex-col gap-0">
                 <p className="text-sm leading-5 font-medium">{session.user.name || 'User'}</p>

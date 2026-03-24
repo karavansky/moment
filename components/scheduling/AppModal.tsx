@@ -408,6 +408,7 @@ function AppModal({
                     {appointmentTypeLabel}
                   </Button>
                   {!isNewAppointment &&
+                    user?.status !== 7 &&
                     (formData.reports && formData.reports.length > 0 ? (
                       <Badge.Anchor ref={appReportRef}>
                         <Button

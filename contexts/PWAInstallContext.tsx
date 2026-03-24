@@ -42,7 +42,9 @@ export function PWAInstallProvider({ children }: { children: ReactNode }) {
     const handleBeforeInstallPrompt = (e: Event) => {
       // Prevent the mini-infobar from appearing on mobile
       e.preventDefault()
-      console.log('👍 [PWAInstallContext] beforeinstallprompt event fired')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('👍 [PWAInstallContext] beforeinstallprompt event fired')
+      }
 
       // Stash the event so it can be triggered later.
       const promptEvent = e as BeforeInstallPromptEvent
@@ -51,7 +53,9 @@ export function PWAInstallProvider({ children }: { children: ReactNode }) {
     }
 
     const handleAppInstalled = () => {
-      console.log('🚀 [PWAInstallContext] App was successfully installed')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🚀 [PWAInstallContext] App was successfully installed')
+      }
       // Clear the deferredPrompt so it can be garbage collected
       setDeferredPrompt(null)
       setIsInstallable(false)
@@ -68,7 +72,9 @@ export function PWAInstallProvider({ children }: { children: ReactNode }) {
 
   const installPWA = useCallback(async () => {
     if (!deferredPrompt) {
-      console.warn('No deferred prompt available')
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('No deferred prompt available')
+      }
       return
     }
 
@@ -77,7 +83,9 @@ export function PWAInstallProvider({ children }: { children: ReactNode }) {
 
     // Wait for the user to respond to the prompt
     const { outcome } = await deferredPrompt.userChoice
-    console.log(`[PWAInstallContext] User choice outcome: ${outcome}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[PWAInstallContext] User choice outcome: ${outcome}`)
+    }
 
     // We've used the prompt, and can't use it again, clear it up
     setDeferredPrompt(null)

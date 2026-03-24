@@ -9,8 +9,10 @@ const nextConfig = {
 
   // Compiler optimizations
   compiler: {
-    // Keep all console logs in production for debugging during development
-    removeConsole: false,
+    // Remove console.log in production, keep error/warn for monitoring
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
   },
 
   env: {

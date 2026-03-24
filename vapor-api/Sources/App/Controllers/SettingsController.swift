@@ -114,7 +114,51 @@ struct SettingsController: RouteCollection {
                 return try await resp.encodeResponse(for: req)
             }
         }
-        
+
+        // Sport Booking System (status = 7) and other statuses (2, 8, etc.)
+        // Return basic user settings + organisation info
+        let row = try await (req.db as! any SQLDatabase).raw("""
+            SELECT
+                u."pushNotificationsEnabled",
+                u."geolocationEnabled",
+                u."name",
+                u."email",
+                u."lang",
+                u."country",
+                u."citiesID",
+                o."name" AS "organisationName",
+                o."firmaID"
+            FROM users u
+            LEFT JOIN organisations o ON u."firmaID" = o."firmaID"
+            WHERE u."userID" = \(bind: user.userId)
+            """).first()
+
+        if let row = row {
+            struct SettingsOut: Content {
+                var pushNotificationsEnabled: Bool?
+                var geolocationEnabled: Bool?
+                var name: String?
+                var email: String?
+                var lang: String?
+                var country: String?
+                var citiesID: [Int]?
+                var organisationName: String?
+                var firmaID: String?
+            }
+            let resp = SettingsOut(
+                pushNotificationsEnabled: try? row.decode(column: "pushNotificationsEnabled", as: Bool?.self),
+                geolocationEnabled: try? row.decode(column: "geolocationEnabled", as: Bool?.self),
+                name: try? row.decode(column: "name", as: String?.self),
+                email: try? row.decode(column: "email", as: String?.self),
+                lang: try? row.decode(column: "lang", as: String?.self),
+                country: try? row.decode(column: "country", as: String?.self),
+                citiesID: try? row.decode(column: "citiesID", as: [Int]?.self),
+                organisationName: try? row.decode(column: "organisationName", as: String?.self),
+                firmaID: try? row.decode(column: "firmaID", as: String?.self)
+            )
+            return try await resp.encodeResponse(for: req)
+        }
+
         return try await ["error": "User settings not found"].encodeResponse(status: .notFound, for: req)
     }
 
