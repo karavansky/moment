@@ -251,14 +251,14 @@ function AppView({
                   worker: selectedWorkers,
                 }
               })
-              setErrors(prev => ({ ...prev, workers: '' }))
+              setErrors(prev => ({ ...prev, worker: '' }))
             }}
             onWorkerCreated={newWorker => {
               // Добавляем напрямую — без поиска в контексте (контекст ещё не обновился)
               setFormData(prev => ({ ...prev, worker: [...prev.worker, newWorker] }))
-              setErrors(prev => ({ ...prev, workers: '' }))
+              setErrors(prev => ({ ...prev, worker: '' }))
             }}
-            error={errors.workers}
+            error={errors.worker}
             isReadOnly={isReadOnly}
             isRequired={true}
           />
@@ -266,7 +266,7 @@ function AppView({
           {/* Date and Time Fields in one row */}
           <div className="flex items-center gap-4 w-full pt-2 ">
             {/* Date */}
-            <TextField isRequired name="date" type="date" isInvalid={isDateInvalid} className="flex-1">
+            <TextField isRequired name="date" type="date" isInvalid={isDateInvalid} className="flex-none">
               <Label className="text-base font-medium flex items-center ">
                 {t('appointment.edit.date')}
               </Label>

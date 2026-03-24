@@ -335,7 +335,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
     return (
       <div
         className={`inline-flex flex-col gap-1.5 ${className}`}
-        style={{ width: showTime ? '24ch' : '18ch' }}
+        style={{ width: showTime ? '26ch' : '18ch' }}
       >
         {label && <label className="text-sm font-medium text-foreground">{label}</label>}
         <div
@@ -349,7 +349,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
             min={getNativeConstraint(minValue)}
             max={getNativeConstraint(maxValue)}
             disabled={isDisabled}
-            className="h-full w-full bg-transparent border-none outline-none text-foreground text-lg md:text-base ring-0 appearance-none pl-4 pr-10 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden z-10 relative focus:outline-none focus:ring-0 focus:border-none"
+            className="h-full w-full bg-transparent border-none outline-none text-foreground text-lg md:text-base ring-0 appearance-none pl-4 pr-12 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden z-10 relative focus:outline-none focus:ring-0 focus:border-none"
             style={{
               // Ensure consistent height and appearance on iOS
               WebkitAppearance: 'none',
@@ -365,7 +365,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
               {placeholderText}
             </div>
           )}
-          <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-default-500 pointer-events-none z-0" />
+          <CalendarIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-default-500 pointer-events-none z-0" />
         </div>
       </div>
     )
@@ -374,7 +374,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
   return (
     <div
       className={`inline-flex flex-col gap-1.5 ${className}`}
-      style={{ width: showTime ? '20ch' : '15ch' }} // Match desktop width to mobile width for consistency
+      style={{ width: showTime ? '26ch' : '18ch' }}
     >
       {label && <label className="text-sm font-medium text-foreground">{label}</label>}
 
@@ -388,7 +388,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
             placeholder={placeholderText}
             disabled={isDisabled}
             readOnly={isTouchDevice}
-            className="w-full px-3 py-2 pr-10 border border-divider rounded-lg bg-default-50 text-foreground focus:outline-none focus:ring-0 focus:border-divider focus:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-3 py-2 pr-12 border border-divider rounded-lg bg-default-50 text-foreground focus:outline-none focus:ring-0 focus:border-divider focus:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               outline: 'none',
               boxShadow: 'none',

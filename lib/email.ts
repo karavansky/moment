@@ -585,6 +585,478 @@ Moment LBS
   }
 }
 
+export interface LoginNotificationData {
+  userEmail: string
+  userName: string
+  provider: string
+  date: Date
+  ip?: string
+  userAgent?: string
+}
+
+export async function sendLoginNotification(data: LoginNotificationData): Promise<void> {
+  const { userEmail, userName, provider, date, ip, userAgent } = data
+
+  const formattedDate = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'UTC',
+  }).format(date)
+
+  // Parse browser info from User-Agent
+  let browserInfo = 'Unknown'
+  if (userAgent) {
+    if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
+      browserInfo = 'Chrome'
+    } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+      browserInfo = 'Safari'
+    } else if (userAgent.includes('Firefox')) {
+      browserInfo = 'Firefox'
+    } else if (userAgent.includes('Edg')) {
+      browserInfo = 'Edge'
+    } else if (userAgent.includes('Opera') || userAgent.includes('OPR')) {
+      browserInfo = 'Opera'
+    }
+
+    // Add OS info
+    if (userAgent.includes('Windows')) {
+      browserInfo += ' (Windows)'
+    } else if (userAgent.includes('Mac OS X')) {
+      browserInfo += ' (macOS)'
+    } else if (userAgent.includes('Linux')) {
+      browserInfo += ' (Linux)'
+    } else if (userAgent.includes('Android')) {
+      browserInfo += ' (Android)'
+    } else if (userAgent.includes('iOS') || userAgent.includes('iPhone') || userAgent.includes('iPad')) {
+      browserInfo += ' (iOS)'
+    }
+  }
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>User Login Notification</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+        }
+        .header {
+          background-color: #3b82f6;
+          color: white;
+          padding: 20px;
+          text-align: center;
+          border-radius: 5px 5px 0 0;
+        }
+        .content {
+          background-color: #f9fafb;
+          padding: 30px;
+          border: 1px solid #e5e7eb;
+          border-top: none;
+        }
+        .login-info {
+          background-color: white;
+          padding: 20px;
+          border-radius: 5px;
+          margin: 20px 0;
+          border-left: 4px solid #3b82f6;
+        }
+        .info-row {
+          margin: 10px 0;
+          padding: 8px 0;
+          border-bottom: 1px solid #e5e7eb;
+        }
+        .info-row:last-child {
+          border-bottom: none;
+        }
+        .label {
+          font-weight: bold;
+          color: #3b82f6;
+          display: inline-block;
+          min-width: 120px;
+        }
+        .value {
+          color: #333;
+        }
+        .provider-badge {
+          display: inline-block;
+          padding: 4px 12px;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: bold;
+          text-transform: uppercase;
+        }
+        .provider-google {
+          background-color: #fef3c7;
+          color: #92400e;
+        }
+        .provider-apple {
+          background-color: #dbeafe;
+          color: #1e3a8a;
+        }
+        .provider-credentials {
+          background-color: #dcfce7;
+          color: #166534;
+        }
+        .ip-badge {
+          background-color: #f3f4f6;
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-family: monospace;
+          font-size: 13px;
+        }
+        .footer {
+          text-align: center;
+          padding: 20px;
+          color: #6b7280;
+          font-size: 14px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>🔐 User Login</h1>
+      </div>
+      <div class="content">
+        <p>A user has successfully logged in to Moment LBS platform.</p>
+
+        <div class="login-info">
+          <h2 style="margin-top: 0; color: #3b82f6;">Login Details</h2>
+
+          <div class="info-row">
+            <span class="label">Name:</span>
+            <span class="value">${userName}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="label">Email:</span>
+            <span class="value">${userEmail}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="label">Provider:</span>
+            <span class="provider-badge provider-${provider.toLowerCase()}">${provider}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="label">Login Time:</span>
+            <span class="value">${formattedDate} UTC</span>
+          </div>
+
+          <div class="info-row">
+            <span class="label">IP Address:</span>
+            <span class="ip-badge">${ip || 'Not available'}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="label">Browser:</span>
+            <span class="value">${browserInfo}</span>
+          </div>
+
+          ${userAgent ? `
+          <div class="info-row">
+            <span class="label">User-Agent:</span>
+            <span class="value" style="font-size: 11px; color: #6b7280; word-break: break-all;">${userAgent}</span>
+          </div>
+          ` : ''}
+        </div>
+
+        <p style="color: #6b7280; font-size: 14px;">
+          This is an automated notification from the Moment LBS authentication system.
+        </p>
+      </div>
+      <div class="footer">
+        <p>Moment LBS Admin Notifications</p>
+        <p>This is an automated email.</p>
+      </div>
+    </body>
+    </html>
+  `
+
+  const textContent = `
+User Login Notification
+
+A user has successfully logged in to Moment LBS platform.
+
+Login Details:
+-------------
+Name: ${userName}
+Email: ${userEmail}
+Provider: ${provider}
+Login Time: ${formattedDate} UTC
+IP Address: ${ip || 'Not available'}
+Browser: ${browserInfo}
+${userAgent ? `User-Agent: ${userAgent}` : ''}
+
+This is an automated notification from the Moment LBS authentication system.
+
+Moment LBS Admin Notifications
+  `
+
+  const adminMailOptions = {
+    from: process.env.SMTP_FROM || 'info@moment-lbs.app',
+    to: 'info@moment-lbs.app',
+    subject: `[Login] ${userName} - ${provider}`,
+    text: textContent,
+    html: htmlContent,
+  }
+
+  try {
+    await sendMailAndSaveToSent(adminMailOptions)
+    console.log('[sendLoginNotification] Email sent successfully for user:', userEmail)
+  } catch (error) {
+    console.error('[sendLoginNotification] Error sending email:', error)
+    // Don't throw error to prevent login failure if email fails
+  }
+}
+
+export interface FailedLoginNotificationData {
+  email: string
+  reason: 'invalid_password' | 'user_not_found' | 'no_password' | 'email_not_verified'
+  date: Date
+  ip?: string
+  userAgent?: string
+}
+
+export async function sendFailedLoginNotification(
+  data: FailedLoginNotificationData
+): Promise<void> {
+  const { email, reason, date, ip, userAgent } = data
+
+  const formattedDate = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'UTC',
+  }).format(date)
+
+  const reasonLabels: Record<typeof reason, string> = {
+    invalid_password: '❌ Invalid Password',
+    user_not_found: '❌ User Not Found',
+    no_password: '⚠️ OAuth-only Account (no password set)',
+    email_not_verified: '⚠️ Email Not Verified',
+  }
+
+  const reasonLabel = reasonLabels[reason]
+
+  // Parse browser info from User-Agent
+  let browserInfo = 'Unknown'
+  if (userAgent) {
+    if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
+      browserInfo = 'Chrome'
+    } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+      browserInfo = 'Safari'
+    } else if (userAgent.includes('Firefox')) {
+      browserInfo = 'Firefox'
+    } else if (userAgent.includes('Edg')) {
+      browserInfo = 'Edge'
+    } else if (userAgent.includes('Opera') || userAgent.includes('OPR')) {
+      browserInfo = 'Opera'
+    }
+
+    // Add OS info
+    if (userAgent.includes('Windows')) {
+      browserInfo += ' (Windows)'
+    } else if (userAgent.includes('Mac OS X')) {
+      browserInfo += ' (macOS)'
+    } else if (userAgent.includes('Linux')) {
+      browserInfo += ' (Linux)'
+    } else if (userAgent.includes('Android')) {
+      browserInfo += ' (Android)'
+    } else if (userAgent.includes('iOS') || userAgent.includes('iPhone') || userAgent.includes('iPad')) {
+      browserInfo += ' (iOS)'
+    }
+  }
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Failed Login Attempt</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+        }
+        .header {
+          background-color: #dc2626;
+          color: white;
+          padding: 20px;
+          text-align: center;
+          border-radius: 5px 5px 0 0;
+        }
+        .content {
+          background-color: #f9fafb;
+          padding: 30px;
+          border: 1px solid #e5e7eb;
+          border-top: none;
+        }
+        .login-info {
+          background-color: white;
+          padding: 20px;
+          border-radius: 5px;
+          margin: 20px 0;
+          border-left: 4px solid #dc2626;
+        }
+        .info-row {
+          margin: 10px 0;
+          padding: 8px 0;
+          border-bottom: 1px solid #e5e7eb;
+        }
+        .info-row:last-child {
+          border-bottom: none;
+        }
+        .label {
+          font-weight: bold;
+          color: #dc2626;
+          display: inline-block;
+          min-width: 120px;
+        }
+        .value {
+          color: #333;
+        }
+        .reason-badge {
+          display: inline-block;
+          padding: 6px 14px;
+          border-radius: 12px;
+          font-size: 13px;
+          font-weight: bold;
+          background-color: #fee2e2;
+          color: #991b1b;
+        }
+        .ip-badge {
+          background-color: #f3f4f6;
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-family: monospace;
+          font-size: 13px;
+        }
+        .warning-box {
+          background-color: #fef3c7;
+          border-left: 4px solid #f59e0b;
+          padding: 15px;
+          margin: 20px 0;
+          border-radius: 4px;
+        }
+        .footer {
+          text-align: center;
+          padding: 20px;
+          color: #6b7280;
+          font-size: 14px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>⚠️ Failed Login Attempt</h1>
+      </div>
+      <div class="content">
+        <div class="warning-box">
+          <strong>⚠️ Security Alert:</strong> Someone attempted to log in with an incorrect password or credentials.
+        </div>
+
+        <div class="login-info">
+          <h2 style="margin-top: 0; color: #dc2626;">Attempt Details</h2>
+
+          <div class="info-row">
+            <span class="label">Email:</span>
+            <span class="value">${email}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="label">Reason:</span>
+            <span class="reason-badge">${reasonLabel}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="label">Attempt Time:</span>
+            <span class="value">${formattedDate} UTC</span>
+          </div>
+
+          <div class="info-row">
+            <span class="label">IP Address:</span>
+            <span class="ip-badge">${ip || 'Not available'}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="label">Browser:</span>
+            <span class="value">${browserInfo}</span>
+          </div>
+
+          ${userAgent ? `
+          <div class="info-row">
+            <span class="label">User-Agent:</span>
+            <span class="value" style="font-size: 11px; color: #6b7280; word-break: break-all;">${userAgent}</span>
+          </div>
+          ` : ''}
+        </div>
+
+        <p style="color: #6b7280; font-size: 14px;">
+          This is an automated security notification from the Moment LBS authentication system.
+        </p>
+      </div>
+      <div class="footer">
+        <p>Moment LBS Security Notifications</p>
+        <p>This is an automated email.</p>
+      </div>
+    </body>
+    </html>
+  `
+
+  const textContent = `
+Failed Login Attempt
+
+⚠️ Security Alert: Someone attempted to log in with incorrect credentials.
+
+Attempt Details:
+-------------
+Email: ${email}
+Reason: ${reasonLabel}
+Attempt Time: ${formattedDate} UTC
+IP Address: ${ip || 'Not available'}
+Browser: ${browserInfo}
+${userAgent ? `User-Agent: ${userAgent}` : ''}
+
+This is an automated security notification from the Moment LBS authentication system.
+
+Moment LBS Security Notifications
+  `
+
+  const adminMailOptions = {
+    from: process.env.SMTP_FROM || 'info@moment-lbs.app',
+    to: 'info@moment-lbs.app',
+    subject: `[Failed Login] ${email} - ${reasonLabel}`,
+    text: textContent,
+    html: htmlContent,
+  }
+
+  try {
+    await sendMailAndSaveToSent(adminMailOptions)
+    console.log('[sendFailedLoginNotification] Email sent for failed attempt:', email)
+  } catch (error) {
+    console.error('[sendFailedLoginNotification] Error sending email:', error)
+    // Don't throw error to prevent blocking the authentication flow
+  }
+}
+
 export async function verifyEmailConnection(): Promise<boolean> {
   try {
     await transporter.verify()

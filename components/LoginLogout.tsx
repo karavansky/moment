@@ -122,7 +122,7 @@ export function LoginLogout() {
         <Dropdown.Trigger className="rounded-full">
           <Avatar>
             <Avatar.Image alt={session.user.name || 'User'} src={session.user.image || ''} />
-            <Avatar.Fallback delayMs={600}>JD</Avatar.Fallback>
+            <Avatar.Fallback delayMs={6}>JD</Avatar.Fallback>
           </Avatar>
         </Dropdown.Trigger>
         <Dropdown.Popover>

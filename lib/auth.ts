@@ -4,7 +4,7 @@ import Apple from 'next-auth/providers/apple'
 import Credentials from 'next-auth/providers/credentials'
 import { headers, cookies } from 'next/headers'
 import { createUser, getUserByEmail, updateUserToken, updateLastLogin } from './users'
-import { sendNewUserNotification } from './email'
+import { sendNewUserNotification, sendLoginNotification, sendFailedLoginNotification } from './email'
 import { verifyPassword } from './password'
 import { createSession, getSession, deleteSession } from './sessions'
 import { getOrganisationById } from './organisations'
@@ -39,21 +39,76 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (!email || !password) return null
 
+        // Helper function to get IP and User-Agent for failed login notifications
+        const getRequestInfo = async () => {
+          try {
+            const headersList = await headers()
+            const ip =
+              headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+              headersList.get('x-real-ip') ||
+              undefined
+            const userAgent = headersList.get('user-agent') || undefined
+            return { ip, userAgent }
+          } catch {
+            return { ip: undefined, userAgent: undefined }
+          }
+        }
+
         const user = await getUserByEmail(email)
-        if (!user) return null
+        if (!user) {
+          // Send notification for non-existent user
+          const { ip, userAgent } = await getRequestInfo()
+          await sendFailedLoginNotification({
+            email,
+            reason: 'user_not_found',
+            date: new Date(),
+            ip,
+            userAgent,
+          }).catch((err) => console.error('[Credentials] Failed to send notification:', err))
+          return null
+        }
 
         if (!user.passwordHash) {
           console.log('[Credentials] User has no password (OAuth-only account):', email)
+          // Send notification for OAuth-only account
+          const { ip, userAgent } = await getRequestInfo()
+          await sendFailedLoginNotification({
+            email,
+            reason: 'no_password',
+            date: new Date(),
+            ip,
+            userAgent,
+          }).catch((err) => console.error('[Credentials] Failed to send notification:', err))
           return null
         }
 
         if (!user.emailVerified) {
           console.log('[Credentials] Email not verified:', email)
+          // Send notification for unverified email
+          const { ip, userAgent } = await getRequestInfo()
+          await sendFailedLoginNotification({
+            email,
+            reason: 'email_not_verified',
+            date: new Date(),
+            ip,
+            userAgent,
+          }).catch((err) => console.error('[Credentials] Failed to send notification:', err))
           throw new Error('EMAIL_NOT_VERIFIED')
         }
 
         const isValid = await verifyPassword(password, user.passwordHash)
-        if (!isValid) return null
+        if (!isValid) {
+          // Send notification for invalid password
+          const { ip, userAgent } = await getRequestInfo()
+          await sendFailedLoginNotification({
+            email,
+            reason: 'invalid_password',
+            date: new Date(),
+            ip,
+            userAgent,
+          }).catch((err) => console.error('[Credentials] Failed to send notification:', err))
+          return null
+        }
 
         return {
           id: user.userID,
@@ -125,6 +180,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           } catch (error) {
             console.error('[JWT Callback] Failed to set language cookie:', error)
           }
+
+          // Send login notification for credentials login
+          try {
+            const headersList = await headers()
+            const ip =
+              headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+              headersList.get('x-real-ip') ||
+              undefined
+            const userAgent = headersList.get('user-agent') || undefined
+
+            await sendLoginNotification({
+              userEmail: user.email as string,
+              userName: user.name as string,
+              provider: 'credentials',
+              date: new Date(),
+              ip,
+              userAgent,
+            })
+            console.log('[JWT Callback] Login notification email sent for credentials login')
+          } catch (emailError) {
+            console.error('[JWT Callback] Failed to send login notification:', emailError)
+          }
         } else {
           // OAuth: создаем/обновляем пользователя в БД
           try {
@@ -164,6 +241,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                   console.log('[JWT Callback] Set language cookie from DB:', existingUser.lang)
                 } catch (error) {
                   console.error('[JWT Callback] Failed to set language cookie:', error)
+                }
+
+                // Send login notification for existing user (OAuth)
+                try {
+                  const headersList = await headers()
+                  const ip =
+                    headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+                    headersList.get('x-real-ip') ||
+                    undefined
+                  const userAgent = headersList.get('user-agent') || undefined
+
+                  await sendLoginNotification({
+                    userEmail: existingUser.email,
+                    userName: existingUser.name,
+                    provider: account.provider,
+                    date: new Date(),
+                    ip,
+                    userAgent,
+                  })
+                  console.log('[JWT Callback] Login notification email sent for existing user')
+                } catch (emailError) {
+                  console.error('[JWT Callback] Failed to send login notification:', emailError)
                 }
               } else {
                 console.log('[JWT Callback] User does not exist, creating new user...')
