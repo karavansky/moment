@@ -67,7 +67,7 @@ const allReportsItems: MenuItem[] = [
 ]
 
 const settingsItems: MenuItem[] = [
-  { icon: UserCog, label: 'sidebar.settings.personal', href: '/settings' },
+  { icon: UserCog, label: 'sidebar.settings.title', href: '/settings' },
 ]
 
 // Функции для фильтрации меню в зависимости от userStatus

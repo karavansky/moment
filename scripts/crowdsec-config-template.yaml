@@ -1,0 +1,78 @@
+# CrowdSec Configuration Template
+# After installation, you can adjust these settings in /etc/crowdsec/config.yaml
+
+# API Settings
+api:
+  server:
+    listen_uri: 127.0.0.1:8080
+    # Enable this for metrics monitoring
+    use_forwarded_for_headers: false
+    # Trusted IPs that can query the API
+    trusted_ips:
+      - 127.0.0.1
+
+# Central API (crowd-sourced intelligence)
+# Sign up at https://app.crowdsec.net to get API key
+capi:
+  online_client:
+    # Enable to share and receive threat intelligence
+    enabled: true
+
+# Console (optional web dashboard)
+console:
+  # Enable to use CrowdSec Console
+  enabled: false
+
+# Prometheus metrics (optional)
+prometheus:
+  enabled: false
+  level: full
+
+# Decisions (banning configuration)
+decisions:
+  # Default ban duration
+  default_duration: 4h
+  # Cleanup old decisions
+  cleanup:
+    # Run cleanup every 30 minutes
+    interval: 30m
+    # Remove decisions older than this
+    max_age: 24h
+
+# Profiles define what action to take
+profiles:
+  - name: default_ip_remediation
+    # Actions: ban, captcha, throttle
+    remediation: ban
+    # Duration
+    duration: 4h
+    # Apply to these decisions
+    decisions:
+      - type: ban
+        duration: 4h
+
+  - name: slow_ip_remediation
+    # For repeated offenders
+    remediation: ban
+    duration: 24h
+    decisions:
+      - type: ban
+        duration: 24h
+    # Trigger after 3 alerts in 1 hour
+    filters:
+      - Alert.GetScenario() startsWith "crowdsecurity/"
+      - Alert.GetEventsCount() > 3
+
+# Scenario Configuration Examples:
+# Edit in /etc/crowdsec/scenarios/
+
+# SSH Brute Force Detection:
+# - 5 failed attempts in 2 minutes = 4 hour ban
+# - 10 failed attempts in 5 minutes = 24 hour ban
+# - Known IPs from CrowdSec community = instant ban
+
+# Nginx Protection:
+# - Detect bots, scanners, exploits
+# - CVE exploitation attempts
+# - Path traversal attempts
+# - SQL injection attempts

@@ -25,13 +25,7 @@ export default function HomeClient() {
   return (
     <div className="min-h-screen bg-default-50 font-sans selection:bg-primary/30">
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-16 pb-32 lg:pt-32 lg:pb-40">
-        <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 max-w-full overflow-hidden">
-          <div className="w-[300px] h-[300px] md:w-[600px] md:h-[600px] rounded-full bg-primary/20 blur-[100px] opacity-60" />
-        </div>
-        <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 max-w-full overflow-hidden">
-          <div className="w-[250px] h-[250px] md:w-[500px] md:h-[500px] rounded-full bg-blue-400/20 blur-[100px] opacity-60" />
-        </div>
+      <section className="relative overflow-hidden pt-16 pb-32 lg:pt-32 lg:pb-40 bg-linear-to-tr from-blue-400/20 via-transparent via-50% to-transparent">
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary mb-8 border border-primary/20">

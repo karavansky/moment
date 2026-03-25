@@ -34,12 +34,12 @@ export function LoginLogout() {
     [signIn]
   )
   const handleSignIn = async (provider: 'google' | 'apple') => {
-    await signIn(provider, `/${lang}/tickets`)
+    await signIn(provider, `/${lang}/home`)
   }
 
   const handleCredentialsSignIn = async (email: string, password: string) => {
     console.log('[LoginLogout] handleCredentialsSignIn called with lang:', lang)
-    return signInWithCredentials(email, password, `/${lang}/tickets`)
+    return signInWithCredentials(email, password, `/${lang}/home`)
   }
   const handleAdmin = useCallback(
     (keys: Selection) => {
