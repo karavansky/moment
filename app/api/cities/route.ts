@@ -1,63 +1,46 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
-import pool from '@/lib/db'
+import { NextRequest } from 'next/server'
 
+// Proxy to Vapor API
+// In production, nginx routes /api/cities to Vapor directly
+// In dev mode, we proxy through Next.js
 export async function GET(req: NextRequest) {
-  try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  const vaporUrl = process.env.VAPOR_API_URL || 'http://localhost:8080'
 
-    const firmaID = session.user.firmaID
-    if (!firmaID) {
-      return NextResponse.json({ error: 'No firmaID' }, { status: 403 })
-    }
-
-    const result = await pool.query(
-      `SELECT id, city, "firmaID", "createdAt", "updatedAt" FROM cities WHERE "firmaID" = $1 ORDER BY city ASC`,
-      [firmaID]
-    )
-
-    return NextResponse.json(result.rows)
-  } catch (error) {
-    console.error('[GET /api/cities] Error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  const headers = new Headers()
+  // Forward authentication cookie
+  const cookie = req.headers.get('cookie')
+  if (cookie) {
+    headers.set('cookie', cookie)
   }
+
+  const response = await fetch(`${vaporUrl}/api/cities`, {
+    method: 'GET',
+    headers,
+  })
+
+  const data = await response.json()
+  return Response.json(data, { status: response.status })
 }
 
 export async function POST(req: NextRequest) {
-  try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  const vaporUrl = process.env.VAPOR_API_URL || 'http://localhost:8080'
 
-    // Only Director can create cities
-    if (session.user.status !== 0 && session.user.status !== null && session.user.status !== undefined) {
-      return NextResponse.json({ error: 'Forbidden: Only directors can manage cities' }, { status: 403 })
-    }
-
-    const firmaID = session.user.firmaID
-    if (!firmaID) {
-      return NextResponse.json({ error: 'No firmaID' }, { status: 403 })
-    }
-
-    const body = await req.json()
-    const { city } = body
-
-    if (!city || typeof city !== 'string') {
-      return NextResponse.json({ error: 'Invalid city name' }, { status: 400 })
-    }
-
-    const result = await pool.query(
-      `INSERT INTO cities (city, "firmaID") VALUES ($1, $2) RETURNING id, city, "firmaID", "createdAt", "updatedAt"`,
-      [city.trim(), firmaID]
-    )
-
-    return NextResponse.json(result.rows[0], { status: 201 })
-  } catch (error) {
-    console.error('[POST /api/cities] Error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  const headers = new Headers()
+  headers.set('content-type', 'application/json')
+  // Forward authentication cookie
+  const cookie = req.headers.get('cookie')
+  if (cookie) {
+    headers.set('cookie', cookie)
   }
+
+  const body = await req.json()
+
+  const response = await fetch(`${vaporUrl}/api/cities`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body),
+  })
+
+  const data = await response.json()
+  return Response.json(data, { status: response.status })
 }

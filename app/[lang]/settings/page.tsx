@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Switch, Spinner, Select, Button, Label, ListBox } from '@heroui/react'
-import { Bell, MapPin, ShieldAlert, Share, Plus, Download, Globe, Trash2 } from 'lucide-react'
+import { Switch, Spinner, Select, Button, Label, ListBox, AlertDialog, TextField, Input, toastQueue } from '@heroui/react'
+import { Bell, MapPin, ShieldAlert, Share, Plus, Download, Globe, Trash2, User } from 'lucide-react'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { useAuth } from '@/components/AuthProvider'
+import { useSession } from 'next-auth/react'
 import { usePWAInstall } from '@/contexts/PWAInstallContext'
 import { useTranslation } from '@/components/Providers'
 import { CountriesHelper } from '@/lib/countries'
@@ -28,6 +29,7 @@ interface City {
 
 export default function SettingsPage() {
   const { session, status: authStatus } = useAuth()
+  const { update: updateSession } = useSession()
   const push = usePushNotifications()
   const geo = useGeolocation()
   const { isInstallable, installPWA } = usePWAInstall()
@@ -44,7 +46,95 @@ export default function SettingsPage() {
   const [newCityName, setNewCityName] = useState('')
   const [addingCity, setAddingCity] = useState(false)
 
+  // Profile fields state
+  const [userName, setUserName] = useState('')
+  const [organizationName, setOrganizationName] = useState('')
+  const [savingProfile, setSavingProfile] = useState(false)
+  const [profileChanged, setProfileChanged] = useState(false)
+
   const isDirector = session?.user?.status === 0 || session?.user?.status === null
+
+  // Initialize profile fields from session
+  useEffect(() => {
+    if (session?.user) {
+      console.log('[Settings] Session user data:', {
+        name: session.user.name,
+        email: session.user.email,
+        organisationName: session.user.organisationName,
+        firmaID: session.user.firmaID,
+        status: session.user.status,
+      })
+      setUserName(session.user.name || '')
+      setOrganizationName(session.user.organisationName || '')
+      setProfileChanged(false)
+    }
+  }, [session])
+
+  // Track profile changes
+  useEffect(() => {
+    if (!session?.user) return
+    const nameChanged = userName !== (session.user.name || '')
+    const orgChanged = isDirector && organizationName !== (session.user.organisationName || '')
+    setProfileChanged(nameChanged || orgChanged)
+  }, [userName, organizationName, session, isDirector])
+
+  const handleSaveProfile = async () => {
+    if (!profileChanged) return
+
+    setSavingProfile(true)
+    try {
+      const body: { name: string; organisationName?: string } = { name: userName }
+      if (isDirector) {
+        body.organisationName = organizationName
+      }
+
+      const res = await fetch('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+      if (res.ok) {
+        console.log('[Settings] Profile saved successfully, updating session...')
+
+        // Update session with new data
+        // NextAuth will merge these updates into the session
+        await updateSession({
+          user: {
+            name: userName,
+            organisationName: isDirector ? organizationName : undefined,
+          }
+        })
+
+        console.log('[Settings] Session updated with new data')
+
+        toastQueue.add({
+          title: 'Profile Updated',
+          description: 'Your profile has been saved successfully',
+          variant: 'success',
+        })
+
+        // Reset profileChanged flag
+        setProfileChanged(false)
+      } else {
+        toastQueue.add({
+          title: 'Save Failed',
+          description: 'Failed to update profile. Please try again.',
+          variant: 'danger',
+        })
+        console.error('[Settings] Failed to save profile')
+      }
+    } catch (err) {
+      toastQueue.add({
+        title: 'Error',
+        description: 'An error occurred while saving your profile',
+        variant: 'danger',
+      })
+      console.error('[Settings] Save profile error:', err)
+    } finally {
+      setSavingProfile(false)
+    }
+  }
 
   // Fetch settings from server
   useEffect(() => {
@@ -179,6 +269,116 @@ export default function SettingsPage() {
   return (
     <div className="max-w-2xl mx-auto p-4 sm:p-6 space-y-6">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
+
+      {/* Profile Section */}
+      <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 space-y-4">
+        <div className="flex items-center gap-3">
+          <User className="w-5 h-5 text-blue-500" />
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Profile</h2>
+        </div>
+
+        {settings && session?.user && (
+          <div className="space-y-4">
+            {/* User Name */}
+            <TextField name="userName" className="w-full" onChange={setUserName}>
+              <Label>Your Name</Label>
+              <Input
+                type="text"
+                value={userName}
+                placeholder="Enter your name"
+              />
+            </TextField>
+
+            {/* Organization Name - Director only */}
+            {isDirector && (
+              <TextField name="organizationName" className="w-full" onChange={setOrganizationName}>
+                <Label>
+                  Organization Name
+                  <span className="ml-2 text-xs font-normal text-purple-600 dark:text-purple-400">
+                    (Director only)
+                  </span>
+                </Label>
+                <Input
+                  type="text"
+                  value={organizationName}
+                  placeholder="Enter organization name"
+                />
+              </TextField>
+            )}
+
+            {/* Email (read-only) */}
+            <TextField name="email" className="w-full" isDisabled>
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={session.user.email || ''}
+                readOnly
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Email cannot be changed
+              </p>
+            </TextField>
+
+            {/* Save Changes Button */}
+            <div className="flex gap-2 items-center">
+              <Button
+                variant="primary"
+                onPress={handleSaveProfile}
+                isDisabled={!profileChanged || savingProfile}
+                className="flex-1"
+              >
+                {savingProfile ? 'Saving...' : 'Save Changes'}
+              </Button>
+              {profileChanged && !savingProfile && (
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  Unsaved changes
+                </span>
+              )}
+            </div>
+
+            {/* Delete Account Button */}
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <AlertDialog>
+                <Button variant="danger" fullWidth>
+                  Delete Account
+                </Button>
+                <AlertDialog.Backdrop>
+                  <AlertDialog.Container>
+                    <AlertDialog.Dialog className="sm:max-w-[400px]">
+                      <AlertDialog.CloseTrigger />
+                      <AlertDialog.Header>
+                        <AlertDialog.Icon status="danger" />
+                        <AlertDialog.Heading>Delete Account Permanently?</AlertDialog.Heading>
+                      </AlertDialog.Header>
+                      <AlertDialog.Body>
+                        <p>
+                          This action cannot be undone. This will permanently delete your account and remove all associated data including:
+                        </p>
+                        <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
+                          <li>All workers</li>
+                          <li>All clients</li>
+                          <li>All appointments</li>
+                          <li>All routes</li>
+                          <li>All reports</li>
+                          <li>Organization settings</li>
+                        </ul>
+                      </AlertDialog.Body>
+                      <AlertDialog.Footer>
+                        <Button slot="close" variant="tertiary">
+                          Cancel
+                        </Button>
+                        <Button slot="close" variant="danger">
+                          Delete Forever
+                        </Button>
+                      </AlertDialog.Footer>
+                    </AlertDialog.Dialog>
+                  </AlertDialog.Container>
+                </AlertDialog.Backdrop>
+              </AlertDialog>
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* Regional Settings Section */}
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 space-y-4">

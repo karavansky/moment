@@ -32,7 +32,8 @@
       "Bash(curl -s \"http://localhost:5000/route/v1/driving/7.1467959,50.6802196;7.1499507,50.6829828?overview=full&geometries=geojson&steps=true\")",
       "Bash(curl -s \"http://localhost:3002/api/photon?q=Burgs&limit=5&country=DE\")",
       "Bash(docker logs --tail=10 vapor-api)",
-      "Bash(sudo tail -50 /var/log/nginx/access.log)"
+      "Bash(sudo tail -50 /var/log/nginx/access.log)",
+      "Bash(docker compose exec -T postgres psql -U hronop -d moment -c \"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = ''organisations'' ORDER BY ordinal_position;\")"
     ]
   }
 }

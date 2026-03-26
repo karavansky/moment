@@ -173,6 +173,8 @@ struct SettingsController: RouteCollection {
             var lang: String?
             var country: String?
             var citiesID: [Int]?
+            var name: String?
+            var organisationName: String?
         }
         let body = try req.content.decode(Body.self)
 
@@ -193,7 +195,14 @@ struct SettingsController: RouteCollection {
                 UPDATE users SET "lang" = \(bind: lang) WHERE "userID" = \(bind: user.userId)
                 """).run()
         }
-        // Only Director (status 0 or null) can update country and citiesID
+        // User name - available for all users
+        if let name = body.name, !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+            try await db.raw("""
+                UPDATE users SET "name" = \(bind: trimmedName) WHERE "userID" = \(bind: user.userId)
+                """).run()
+        }
+        // Only Director (status 0 or null) can update country, citiesID, and organisationName
         if user.status == nil || user.status == 0 {
             if let country = body.country {
                 try await db.raw("""
@@ -205,6 +214,13 @@ struct SettingsController: RouteCollection {
                 let citiesArray = citiesID.isEmpty ? nil : citiesID
                 try await db.raw("""
                     UPDATE users SET "citiesID" = \(bind: citiesArray) WHERE "userID" = \(bind: user.userId)
+                    """).run()
+            }
+            // Update organisation name
+            if let orgName = body.organisationName, !orgName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                let trimmedOrgName = orgName.trimmingCharacters(in: .whitespacesAndNewlines)
+                try await db.raw("""
+                    UPDATE organisations SET "name" = \(bind: trimmedOrgName) WHERE "firmaID" = \(bind: firmaID)
                     """).run()
             }
         }

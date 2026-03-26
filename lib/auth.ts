@@ -137,7 +137,53 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     error: '/en/auth/signin',
   },
   callbacks: {
-    async jwt({ token, account, user }) {
+    async jwt({ token, account, user, trigger, session }) {
+      // If trigger is 'update', merge session data OR refetch from database
+      if (trigger === 'update') {
+        console.log('[JWT Callback] Update triggered')
+
+        // If session data provided (from updateSession({...})), merge it
+        if (session?.user) {
+          console.log('[JWT Callback] Merging provided session data:', session.user)
+          if (session.user.name !== undefined) {
+            token.name = session.user.name
+          }
+          if (session.user.organisationName !== undefined) {
+            token.organisationName = session.user.organisationName
+          }
+          console.log('[JWT Callback] Token updated with provided data:', {
+            name: token.name,
+            organisationName: token.organisationName,
+          })
+          return token
+        }
+
+        // Otherwise, refetch from database
+        if (token.userId) {
+          console.log('[JWT Callback] No session data provided, refetching from DB')
+          try {
+            const refreshedUser = await getUserByEmail(token.email as string)
+            if (refreshedUser) {
+              token.name = refreshedUser.name
+              token.lang = refreshedUser.lang
+              token.country = refreshedUser.country
+              token.citiesID = refreshedUser.citiesID ?? undefined
+              if (refreshedUser.firmaID) {
+                const org = await getOrganisationById(refreshedUser.firmaID)
+                token.organisationName = org?.name
+              }
+              console.log('[JWT Callback] Token updated with fresh data from DB:', {
+                name: token.name,
+                organisationName: token.organisationName,
+              })
+            }
+          } catch (error) {
+            console.error('[JWT Callback] Failed to refresh user data:', error)
+          }
+        }
+        return token
+      }
+
       // При первом входе добавляем информацию в токен и создаем/обновляем пользователя
       if (account && user) {
         console.log('[JWT Callback] User signing in:', {

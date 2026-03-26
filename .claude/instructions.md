@@ -38,7 +38,6 @@ Full-stack logistics management system with GPS tracking, routing, and schedulin
   - SSE events (`/api/scheduling/events`, `/api/admin/sse-stats`)
   - Version endpoint (`/api/version`)
   - Photon geocoding proxy (`/api/photon`) with country filtering
-  - Settings API (`/api/settings`)
   - Support tickets (`/api/support/tickets`)
   - Push notifications (`/api/staff/verify-push`)
 
@@ -51,6 +50,7 @@ Full-stack logistics management system with GPS tracking, routing, and schedulin
   - Routing calculations (`/api/routing`)
   - GPS tracking (`/api/vehicle-locations/*`)
   - Cities management (`/api/cities/*`)
+  - User settings (`/api/settings`) - profile, preferences, regional settings
   - Most business logic
 
 ### Database
