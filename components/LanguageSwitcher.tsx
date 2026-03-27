@@ -46,9 +46,10 @@ const flagComponents: Record<SupportedLocale, React.ComponentType<{ className?: 
 
 interface LanguageSwitcherProps {
   currentLang: string
+  variant?: 'compact' | 'full' // compact: flag + code (DE), full: flag + name (Deutsch)
 }
 
-export default function LanguageSwitcher({ currentLang }: LanguageSwitcherProps) {
+export default function LanguageSwitcher({ currentLang, variant = 'compact' }: LanguageSwitcherProps) {
   const pathname = usePathname()
   const { session } = useAuth()
   const effectiveLang = currentLang as SupportedLocale
@@ -159,7 +160,7 @@ export default function LanguageSwitcher({ currentLang }: LanguageSwitcherProps)
       <Dropdown>
         <Button aria-label="Language Switcher" variant="tertiary" size="md">
           <CurrentFlagIcon className="rounded-sm" />
-          {effectiveLang.toUpperCase()}
+          {variant === 'compact' ? effectiveLang.toUpperCase() : languageNames[effectiveLang]}
         </Button>
         <Dropdown.Popover>
         <Dropdown.Menu

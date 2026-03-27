@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Switch, Spinner, Select, Button, Label, ListBox, AlertDialog, TextField, Input, toastQueue } from '@heroui/react'
+import { useState, useEffect, use } from 'react'
+import { Switch, Spinner, Dropdown, Autocomplete, Button, Label, ListBox, AlertDialog, TextField, Input, toastQueue, Tag, TagGroup, EmptyState, SearchField, useFilter } from '@heroui/react'
 import { Bell, MapPin, ShieldAlert, Share, Plus, Download, Globe, Trash2, User } from 'lucide-react'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useGeolocation } from '@/hooks/useGeolocation'
@@ -10,8 +10,8 @@ import { useSession } from 'next-auth/react'
 import { usePWAInstall } from '@/contexts/PWAInstallContext'
 import { useTranslation } from '@/components/Providers'
 import { CountriesHelper } from '@/lib/countries'
-import { supportedLocales } from '@/config/locales'
 import CityAutocomplete from '@/components/settings/CityAutocomplete'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 
 interface UserSettings {
   pushNotificationsEnabled: boolean
@@ -27,12 +27,14 @@ interface City {
   firmaID: number
 }
 
-export default function SettingsPage() {
+export default function SettingsPage({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang } = use(params)
   const { session, status: authStatus } = useAuth()
   const { update: updateSession } = useSession()
   const push = usePushNotifications()
   const geo = useGeolocation()
   const { isInstallable, installPWA } = usePWAInstall()
+  const { contains } = useFilter({ sensitivity: 'base' })
 
   const [settings, setSettings] = useState<UserSettings | null>(null)
   const [loading, setLoading] = useState(true)
@@ -46,6 +48,83 @@ export default function SettingsPage() {
   const [newCityName, setNewCityName] = useState('')
   const [addingCity, setAddingCity] = useState(false)
 
+  // State for tracking popover open state
+  const [isCountryOpen, setIsCountryOpen] = useState(false)
+  const [isCitiesOpen, setIsCitiesOpen] = useState(false)
+
+  // Scroll to selected item when popover opens
+  useEffect(() => {
+    if (isCountryOpen && settings?.country) {
+      setTimeout(() => {
+        console.log('[Auto-scroll] Looking for country:', settings.country)
+
+        // Try different selectors
+        let selectedItem = document.querySelector(`[data-key="${settings.country}"]`)
+        console.log('[Auto-scroll] Found with data-key:', selectedItem)
+
+        if (!selectedItem) {
+          selectedItem = document.querySelector(`[id="${settings.country}"]`)
+          console.log('[Auto-scroll] Found with id:', selectedItem)
+        }
+
+        if (!selectedItem) {
+          selectedItem = document.querySelector(`[aria-selected="true"]`)
+          console.log('[Auto-scroll] Found with aria-selected:', selectedItem)
+        }
+
+        // Log all ListBox items to see their attributes
+        const allItems = document.querySelectorAll('[role="option"]')
+        console.log('[Auto-scroll] All options:', allItems.length)
+        allItems.forEach((item, i) => {
+          console.log(`  Item ${i}:`, {
+            id: item.getAttribute('id'),
+            dataKey: item.getAttribute('data-key'),
+            ariaSelected: item.getAttribute('aria-selected'),
+            textContent: item.textContent?.slice(0, 30)
+          })
+        })
+
+        if (selectedItem) {
+          console.log('[Auto-scroll] Scrolling to:', selectedItem)
+          selectedItem.scrollIntoView({ block: 'center', behavior: 'smooth' })
+        } else {
+          console.log('[Auto-scroll] No selected item found')
+        }
+      }, 300) // Увеличил timeout до 300ms
+    }
+  }, [isCountryOpen, settings?.country])
+
+  useEffect(() => {
+    if (isCitiesOpen && settings?.citiesID && settings.citiesID.length > 0) {
+      setTimeout(() => {
+        const firstCityId = settings.citiesID?.[0]?.toString()
+        if (!firstCityId) return
+        console.log('[Auto-scroll Cities] Looking for city:', firstCityId)
+
+        // Try different selectors
+        let selectedItem = document.querySelector(`[data-key="${firstCityId}"]`)
+        console.log('[Auto-scroll Cities] Found with data-key:', selectedItem)
+
+        if (!selectedItem) {
+          selectedItem = document.querySelector(`[id="${firstCityId}"]`)
+          console.log('[Auto-scroll Cities] Found with id:', selectedItem)
+        }
+
+        if (!selectedItem) {
+          selectedItem = document.querySelector(`[aria-selected="true"]`)
+          console.log('[Auto-scroll Cities] Found with aria-selected:', selectedItem)
+        }
+
+        if (selectedItem) {
+          console.log('[Auto-scroll Cities] Scrolling to:', selectedItem)
+          selectedItem.scrollIntoView({ block: 'center', behavior: 'smooth' })
+        } else {
+          console.log('[Auto-scroll Cities] No selected item found')
+        }
+      }, 300)
+    }
+  }, [isCitiesOpen, settings?.citiesID])
+
   // Profile fields state
   const [userName, setUserName] = useState('')
   const [organizationName, setOrganizationName] = useState('')
@@ -53,6 +132,11 @@ export default function SettingsPage() {
   const [profileChanged, setProfileChanged] = useState(false)
 
   const isDirector = session?.user?.status === 0 || session?.user?.status === null
+
+  // Debug: Watch settings.country changes
+  useEffect(() => {
+    console.log('[Settings] Country value changed:', settings?.country)
+  }, [settings?.country])
 
   // Initialize profile fields from session
   useEffect(() => {
@@ -196,6 +280,7 @@ export default function SettingsPage() {
   }, [push.isReady, push.isSubscribed, push.syncSubscription])
 
   const updateSetting = async (key: keyof UserSettings, value: boolean | string | number[]) => {
+    console.log('[updateSetting] Updating:', key, '=', value)
     setSaving(true)
     try {
       const res = await fetch('/api/settings', {
@@ -205,7 +290,11 @@ export default function SettingsPage() {
       })
       if (res.ok) {
         const updated = await res.json()
+        console.log('[updateSetting] Response:', updated)
         setSettings(updated)
+        console.log('[updateSetting] State updated, new country:', updated.country)
+      } else {
+        console.error('[updateSetting] Response not ok:', res.status, res.statusText)
       }
     } catch (err) {
       console.error('[Settings] Update error:', err)
@@ -391,46 +480,32 @@ export default function SettingsPage() {
           <div className="space-y-4">
             {/* Language Selection - All users */}
             <div>
-              <Select
-                value={settings.lang || null}
-                onChange={(value) => {
-                  if (value) updateSetting('lang', value as string)
-                }}
-                isDisabled={saving}
-                className="max-w-xs"
-                placeholder="Select language"
-              >
-                <Label>Interface Language</Label>
-                <Select.Trigger>
-                  <Select.Value />
-                  <Select.Indicator />
-                </Select.Trigger>
-                <Select.Popover>
-                  <ListBox>
-                    {supportedLocales.map(locale => (
-                      <ListBox.Item key={locale} id={locale} textValue={locale.toUpperCase()}>
-                        {locale.toUpperCase()}
-                        <ListBox.ItemIndicator />
-                      </ListBox.Item>
-                    ))}
-                  </ListBox>
-                </Select.Popover>
-              </Select>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Choose your preferred interface language
+              <Label className="text-sm font-medium text-gray-900 dark:text-white block mb-2">
+                Interface Language
+              </Label>
+              <LanguageSwitcher currentLang={lang} variant="full" />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                Choose your preferred interface language. Your selection is automatically saved.
               </p>
             </div>
 
             {/* Country Selection - Director only */}
             {isDirector && (
               <div>
-                <Select
-                  value={settings.country || null}
-                  onChange={(value) => {
-                    if (value) updateSetting('country', value as string)
-                  }}
-                  isDisabled={saving}
+                <Autocomplete
+                  fullWidth
                   className="max-w-xs"
+                  name="country"
+                  value={settings.country || null}
+                  onChange={(key: React.Key | React.Key[] | null) => {
+                    console.log('[Country Autocomplete] onChange called with key:', key)
+                    if (key && !Array.isArray(key)) {
+                      console.log('[Country Autocomplete] Calling updateSetting with:', key)
+                      updateSetting('country', key as string)
+                    }
+                  }}
+                  onOpenChange={setIsCountryOpen}
+                  isDisabled={saving}
                   placeholder="Select country"
                 >
                   <Label>
@@ -439,27 +514,39 @@ export default function SettingsPage() {
                       (Director only)
                     </span>
                   </Label>
-                  <Select.Trigger>
-                    <Select.Value />
-                    <Select.Indicator />
-                  </Select.Trigger>
-                  <Select.Popover>
-                    <ListBox>
-                      {CountriesHelper.getAllCountries().map(({ code, data }) => {
-                        const FlagIcon = data.flag
-                        return (
-                          <ListBox.Item key={code} id={code} textValue={data.name}>
-                            <div className="flex items-center gap-2">
-                              <FlagIcon className="w-4 h-3 rounded-sm" />
-                              {data.name}
-                            </div>
-                            <ListBox.ItemIndicator />
-                          </ListBox.Item>
-                        )
-                      })}
-                    </ListBox>
-                  </Select.Popover>
-                </Select>
+                  <Autocomplete.Trigger>
+                    <Autocomplete.Value />
+                    <Autocomplete.ClearButton />
+                    <Autocomplete.Indicator />
+                  </Autocomplete.Trigger>
+                  <Autocomplete.Popover>
+                    <Autocomplete.Filter filter={contains}>
+                      <SearchField autoFocus name="search">
+                        <SearchField.Group>
+                          <SearchField.SearchIcon />
+                          <SearchField.Input placeholder="Search country..." />
+                        </SearchField.Group>
+                      </SearchField>
+                      <ListBox
+                        className="max-h-60 overflow-y-auto"
+                        renderEmptyState={() => <EmptyState>No countries found</EmptyState>}
+                      >
+                        {CountriesHelper.getAllCountries().map(({ code, data }) => {
+                          const FlagIcon = data.flag
+                          return (
+                            <ListBox.Item key={code} id={code} textValue={data.name}>
+                              <div className="flex items-center gap-2">
+                                <FlagIcon className="w-4 h-3 rounded-sm" />
+                                {data.name}
+                              </div>
+                              <ListBox.ItemIndicator />
+                            </ListBox.Item>
+                          )
+                        })}
+                      </ListBox>
+                    </Autocomplete.Filter>
+                  </Autocomplete.Popover>
+                </Autocomplete>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Select your country for better address suggestions
                 </p>
@@ -506,33 +593,80 @@ export default function SettingsPage() {
 
                         {/* Cities Selection */}
                         <div className="mt-3">
-                          <Select
-                            selectionMode="multiple"
+                          <Autocomplete
+                            fullWidth
+                            className="max-w-xs"
+                            name="cities"
                             value={settings.citiesID?.map(id => id.toString()) || []}
-                            onChange={(keys) => {
-                              const citiesID = Array.from(keys as Iterable<string>).map(k => parseInt(k))
+                            onChange={(keys: React.Key | React.Key[] | null) => {
+                              const keysArray = Array.isArray(keys) ? keys : (keys ? [keys] : [])
+                              const citiesID = keysArray.map(k => parseInt(String(k)))
                               updateSetting('citiesID', citiesID)
                             }}
+                            onOpenChange={setIsCitiesOpen}
                             isDisabled={saving || cities.length === 0}
-                            className="max-w-xs"
                             placeholder="Select cities to filter"
+                            selectionMode="multiple"
                           >
                             <Label>Filter addresses by cities</Label>
-                            <Select.Trigger>
-                              <Select.Value />
-                              <Select.Indicator />
-                            </Select.Trigger>
-                            <Select.Popover>
-                              <ListBox selectionMode="multiple">
-                                {cities.map(city => (
-                                  <ListBox.Item key={city.id.toString()} id={city.id.toString()} textValue={city.city}>
-                                    {city.city}
-                                    <ListBox.ItemIndicator />
-                                  </ListBox.Item>
-                                ))}
-                              </ListBox>
-                            </Select.Popover>
-                          </Select>
+                            <Autocomplete.Trigger>
+                              <Autocomplete.Value>
+                                {({ defaultChildren, isPlaceholder, state }: any) => {
+                                  if (isPlaceholder || state.selectedItems.length === 0) {
+                                    return defaultChildren
+                                  }
+
+                                  const selectedItemsKeys = state.selectedItems.map((item: any) => item.key)
+
+                                  return (
+                                    <TagGroup
+                                      size="sm"
+                                      onRemove={(keys: Set<React.Key>) => {
+                                        const newSelection = settings.citiesID?.filter(id => !keys.has(id.toString())) || []
+                                        updateSetting('citiesID', newSelection)
+                                      }}
+                                    >
+                                      <TagGroup.List>
+                                        {selectedItemsKeys.map((selectedItemKey: React.Key) => {
+                                          const city = cities.find(c => c.id.toString() === selectedItemKey)
+                                          if (!city) return null
+
+                                          return (
+                                            <Tag key={city.id.toString()} id={city.id.toString()}>
+                                              {city.city}
+                                            </Tag>
+                                          )
+                                        })}
+                                      </TagGroup.List>
+                                    </TagGroup>
+                                  )
+                                }}
+                              </Autocomplete.Value>
+                              <Autocomplete.ClearButton />
+                              <Autocomplete.Indicator />
+                            </Autocomplete.Trigger>
+                            <Autocomplete.Popover>
+                              <Autocomplete.Filter filter={contains}>
+                                <SearchField autoFocus name="search">
+                                  <SearchField.Group>
+                                    <SearchField.SearchIcon />
+                                    <SearchField.Input placeholder="Search city..." />
+                                  </SearchField.Group>
+                                </SearchField>
+                                <ListBox
+                                  className="max-h-60 overflow-y-auto"
+                                  renderEmptyState={() => <EmptyState>No cities found</EmptyState>}
+                                >
+                                  {cities.map(city => (
+                                    <ListBox.Item key={city.id.toString()} id={city.id.toString()} textValue={city.city}>
+                                      {city.city}
+                                      <ListBox.ItemIndicator />
+                                    </ListBox.Item>
+                                  ))}
+                                </ListBox>
+                              </Autocomplete.Filter>
+                            </Autocomplete.Popover>
+                          </Autocomplete>
                         </div>
                       </>
                     ) : (

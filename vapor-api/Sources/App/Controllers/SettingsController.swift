@@ -230,6 +230,7 @@ struct SettingsController: RouteCollection {
             pgNotify(req: req, firmaID: firmaID, type: "worker_updated")
         }
 
-        return try await ["success": true].encodeResponse(for: req)
+        // Return full settings after update (same logic as GET)
+        return try await getSettings(req: req)
     }
 }
