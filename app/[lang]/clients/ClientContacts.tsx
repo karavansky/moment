@@ -14,7 +14,7 @@ import {
 import { Client } from '@/types/scheduling'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { Mail } from 'lucide-react'
-import React, { useState, useEffect, useCallback, memo } from 'react'
+import React, { useState, useEffect, useCallback, memo, useRef } from 'react'
 import { useTranslation } from '@/components/Providers'
 
 interface ClientContactsProps {
@@ -30,6 +30,7 @@ export const ClientContacts = memo(function ClientContacts({
 }: ClientContactsProps) {
   const { updateClient, addClient } = useScheduling()
   const { t } = useTranslation()
+  const nameInputRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
     name: client.name || '',
     surname: client.surname || '',
@@ -45,6 +46,12 @@ export const ClientContacts = memo(function ClientContacts({
       phone: client.phone || '',
     })
   }, [client])
+
+  useEffect(() => {
+    if (isCreateNew && nameInputRef.current) {
+      nameInputRef.current.focus()
+    }
+  }, [isCreateNew])
 
   const handleChange = useCallback((field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -111,6 +118,7 @@ export const ClientContacts = memo(function ClientContacts({
               <TextField className="w-full min-w-0" name="name" type="text">
                 <Label>{t('clients.contacts.firstName')}</Label>
                 <Input
+                  ref={nameInputRef}
                   placeholder={t('clients.contacts.firstName')}
                   value={formData.name}
                   onChange={e => handleChange('name', e.target.value)}
@@ -155,52 +163,7 @@ export const ClientContacts = memo(function ClientContacts({
                 />
               </InputGroup>
             </TextField>
-            <div className="flex flex-col w-full max-w-64">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('clients.contacts.date')}
-              </label>
-              <input
-                type="date"
-                className="w-full h-10 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                value={date}
-                min="2026-01-15"
-                max="2027-01-13"
-                onChange={e => {
-                  // Manual validation check for iOS/Safari
-                  if (e.target.value && e.target.value < '2026-01-15') {
-                    alert('Selected date: ' + e.target.value)
-                    return
-                  }
-                  setDate(e.target.value)
-                }}
-              />
-              {date && <p className="mt-1 text-sm text-gray-500">{t('clients.contacts.selected')} {date}</p>}
-              <select>
-                <optgroup label="Недоступно">
-                  <option>Вариант A</option>
-                  <option>Вариант B</option>
-                </optgroup>
 
-                <optgroup label="Доступно">
-                  <option>Вариант C</option>
-                  <option>Вариант D</option>
-                </optgroup>
-              </select>
-              <div className="relative">
-                <button className="absolute inset-0 opacity-0 btn">Open Dropdown</button>
-                <select>
-                  <optgroup label="Недоступно" disabled>
-                    <option>Вариант A</option>
-                    <option>Вариант B</option>
-                  </optgroup>
-
-                  <optgroup label="Доступно">
-                    <option>Вариант C</option>
-                    <option>Вариант D</option>
-                  </optgroup>
-                </select>
-              </div>
-            </div>
           </div>
         </Card.Content>
         <Card.Footer className="mt-4 flex flex-col gap-2">
@@ -218,9 +181,10 @@ export const ClientContacts = memo(function ClientContacts({
                     {t('clients.contacts.reset')}
                   </Button>
                 )}
-                <Button className="w-full max-w-50" type="submit">
+                {(formData.name.length > 0 || formData.surname.length > 0) && <Button className="w-full max-w-50" type="submit">
+
                   {isCreateNew ? t('clients.contacts.create') : t('clients.contacts.save')}
-                </Button>
+                </Button>}
               </div>
             </>
           )}
