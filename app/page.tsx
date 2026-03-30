@@ -159,38 +159,13 @@ export default async function RootPage() {
   const initialSidebarExpanded = await getSidebarState()
 
   return (
-    <html lang={detectedLang} suppressHydrationWarning>
+    <html lang={detectedLang} className={initialSidebarExpanded ? '' : 'sidebar-collapsed'} suppressHydrationWarning>
       <head>
         {/* Content-Language meta tag */}
         <meta httpEquiv="content-language" content={detectedLang} />
 
         {/* Google Analytics */}
         {isProduction && <GoogleAnalytics gaId="G-HB6BYNFW9F" />}
-
-        {/* Blocking script to prevent flash - executes BEFORE any rendering */}
-        <script
-          // Без defer/async - блокирующий скрипт, выполнится немедленно
-          dangerouslySetInnerHTML={{
-            __html: `
-              const theme = localStorage.getItem('theme') || 'dark';
-              document.documentElement.classList.add(theme);
-
-              // Читаем состояние из localStorage (приоритет) или используем SSR значение
-              const sidebarExpanded = localStorage.getItem('sidebar-expanded');
-              const initialExpanded = ${JSON.stringify(initialSidebarExpanded)};
-
-              // Если в localStorage нет значения, используем SSR cookie
-              const isExpanded = sidebarExpanded !== null
-                ? sidebarExpanded === 'true'
-                : initialExpanded;
-
-              // Применяем класс если sidebar свернут
-              if (!isExpanded) {
-                document.documentElement.classList.add('sidebar-collapsed');
-              }
-            `,
-          }}
-        />
       </head>
       <body suppressHydrationWarning className="h-dvh overflow-hidden">
         <WebVitals />

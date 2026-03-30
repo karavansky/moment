@@ -2,17 +2,18 @@ import { auth } from '@/lib/auth'
 import { getUserByEmail } from '@/lib/users'
 import { redirect } from 'next/navigation'
 
-export default async function SeaweedAdminPage() {
+export default async function SeaweedAdminPage({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang } = await params
   const session = await auth()
 
   if (!session?.user?.email) {
-    redirect('/login')
+    redirect(`/${lang}/login`)
   }
 
   const user = await getUserByEmail(session.user.email)
 
   if (!user?.isAdmin) {
-    redirect('/')
+    redirect(`/${lang}`)
   }
 
   return (

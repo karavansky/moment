@@ -4,17 +4,18 @@ import { redirect } from 'next/navigation'
 import AdminTicketsList from '../AdminTicketsList'
 import Dictionary from '../Dictionary'
 
-export default async function AdminTicketsPage() {
+export default async function AdminTicketsPage({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang } = await params
   const session = await auth()
 
   if (!session?.user?.email) {
-    redirect('/login')
+    redirect(`/${lang}/login`)
   }
 
   const user = await getUserByEmail(session.user.email)
 
   if (!user?.isAdmin) {
-    redirect('/')
+    redirect(`/${lang}`)
   }
 
   return (

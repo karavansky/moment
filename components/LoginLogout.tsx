@@ -245,7 +245,7 @@ export function LoginLogout() {
             </Avatar>
           ) : (
             <div className="inline-flex items-center justify-center gap-2 px-4 py-2 h-10 rounded-2xl bg-blue-900/30 hover:bg-default-100 dark:hover:bg-default-200 border border-default-200 dark:border-default-300 transition-all duration-200 cursor-pointer select-none font-medium text-sm text-default-900 dark:text-default-50">
-              {session.user.name || 'User'}
+              {session.user.organisationName || 'User'}
             </div>
           )}
         </Dropdown.Trigger>

@@ -10,7 +10,6 @@ import { GoogleAnalytics } from '@next/third-parties/google'
 import { getSidebarState } from '@/lib/sidebar-actions'
 import { PushNotificationBanner } from '@/components/PushNotificationBanner'
 import { GeolocationBanner } from '@/components/GeolocationBanner'
-import { BlockingScript } from '@/components/BlockingScript'
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
@@ -162,7 +161,7 @@ export default async function RootLayout({
   const initialSidebarExpanded = await getSidebarState()
 
   return (
-    <html lang={lang} suppressHydrationWarning>
+    <html lang={lang} className={initialSidebarExpanded ? '' : 'sidebar-collapsed'} suppressHydrationWarning>
       <head>
         {/* Content-Language meta tag */}
         <meta httpEquiv="content-language" content={lang} />
@@ -174,7 +173,6 @@ export default async function RootLayout({
         suppressHydrationWarning
         className="h-dvh overflow-hidden antialiased md:subpixel-antialiased"
       >
-        <BlockingScript initialSidebarExpanded={initialSidebarExpanded} />
         <WebVitals />
         <Providers
           themeProps={{
