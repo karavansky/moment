@@ -911,5 +911,22 @@
     "updateAvailable": "Pembaruan tersedia",
     "updateDescription": "Versi baru tersedia. Silakan muat ulang halaman.",
     "updateButton": "Perbarui"
+  },
+  "mockData": {
+    "rejectReasons": {
+      "busy": "Sibuk dengan pesanan lain",
+      "wrongVehicle": "Jenis kendaraan tidak sesuai",
+      "tooFar": "Terlalu jauh dari lokasi saat ini",
+      "noTime": "Tidak bisa tepat waktu",
+      "shiftEnding": "Shift berakhir",
+      "technicalIssue": "Masalah teknis dengan kendaraan"
+    },
+    "notes": {
+      "boardingHelp": "Butuh bantuan naik",
+      "wheelchair": "Perlu kursi roda",
+      "importantMeeting": "Pertemuan penting, jangan terlambat",
+      "wheelchairComplex": "Penumpang kursi roda, rute kompleks dengan pemberhentian",
+      "largeLuggage": "Dengan bagasi besar"
+    }
   }
 }

@@ -911,5 +911,22 @@
     "updateAvailable": "Güncelleme mevcut",
     "updateDescription": "Yeni bir sürüm mevcut. Lütfen sayfayı yenileyin.",
     "updateButton": "Güncelle"
+  },
+  "mockData": {
+    "rejectReasons": {
+      "busy": "Başka bir siparişle meşgul",
+      "wrongVehicle": "Yanlış araç tipi",
+      "tooFar": "Mevcut konumdan çok uzak",
+      "noTime": "Zamanında yetişemiyorum",
+      "shiftEnding": "Vardiya bitiyor",
+      "technicalIssue": "Araçla teknik sorunlar"
+    },
+    "notes": {
+      "boardingHelp": "Biniş yardımı gerekli",
+      "wheelchair": "Tekerlekli sandalye gerekli",
+      "importantMeeting": "Önemli toplantı, geç kalmayın",
+      "wheelchairComplex": "Tekerlekli sandalye yolcusu, duraklı karmaşık güzergah",
+      "largeLuggage": "Büyük bagajla"
+    }
   }
 }

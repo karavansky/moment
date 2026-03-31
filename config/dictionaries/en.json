@@ -894,5 +894,22 @@
     "updateAvailable": "Update available",
     "updateDescription": "A new version is available. Please refresh the page.",
     "updateButton": "Update"
+  },
+  "mockData": {
+    "rejectReasons": {
+      "busy": "Busy with another order",
+      "wrongVehicle": "Wrong vehicle type",
+      "tooFar": "Too far from current location",
+      "noTime": "Cannot make it on time",
+      "shiftEnding": "Shift ending",
+      "technicalIssue": "Technical issues with vehicle"
+    },
+    "notes": {
+      "boardingHelp": "Boarding assistance needed",
+      "wheelchair": "Wheelchair required",
+      "importantMeeting": "Important meeting, do not be late",
+      "wheelchairComplex": "Wheelchair passenger, complex route with stops",
+      "largeLuggage": "With large luggage"
+    }
   }
 }

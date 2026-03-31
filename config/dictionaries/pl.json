@@ -911,5 +911,22 @@
     "updateAvailable": "Dostępna aktualizacja",
     "updateDescription": "Dostępna jest nowa wersja. Proszę odświeżyć stronę.",
     "updateButton": "Aktualizuj"
+  },
+  "mockData": {
+    "rejectReasons": {
+      "busy": "Zajęty innym zamówieniem",
+      "wrongVehicle": "Nieodpowiedni typ pojazdu",
+      "tooFar": "Za daleko od aktualnej lokalizacji",
+      "noTime": "Nie zdążę na czas",
+      "shiftEnding": "Koniec zmiany",
+      "technicalIssue": "Problemy techniczne z pojazdem"
+    },
+    "notes": {
+      "boardingHelp": "Potrzebna pomoc przy wsiadaniu",
+      "wheelchair": "Wymagany wózek inwalidzki",
+      "importantMeeting": "Ważne spotkanie, nie spóźnić się",
+      "wheelchairComplex": "Pasażer na wózku, złożona trasa z przystankami",
+      "largeLuggage": "Z dużym bagażem"
+    }
   }
 }

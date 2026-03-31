@@ -911,5 +911,22 @@
     "updateAvailable": "Actualización disponible",
     "updateDescription": "Hay una nueva versión disponible. Por favor, actualice la página.",
     "updateButton": "Actualizar"
+  },
+  "mockData": {
+    "rejectReasons": {
+      "busy": "Ocupado con otro pedido",
+      "wrongVehicle": "Tipo de vehículo incorrecto",
+      "tooFar": "Demasiado lejos de la ubicación actual",
+      "noTime": "No llego a tiempo",
+      "shiftEnding": "Fin de turno",
+      "technicalIssue": "Problemas técnicos con el vehículo"
+    },
+    "notes": {
+      "boardingHelp": "Se necesita asistencia para abordar",
+      "wheelchair": "Se requiere silla de ruedas",
+      "importantMeeting": "Reunión importante, no llegar tarde",
+      "wheelchairComplex": "Pasajero en silla de ruedas, ruta compleja con paradas",
+      "largeLuggage": "Con equipaje grande"
+    }
   }
 }

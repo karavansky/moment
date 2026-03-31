@@ -926,5 +926,22 @@
     "updateAvailable": "Update verfügbar",
     "updateDescription": "Eine neue Version ist verfügbar. Bitte aktualisieren Sie die Seite.",
     "updateButton": "Aktualisieren"
+  },
+  "mockData": {
+    "rejectReasons": {
+      "busy": "Beschäftigt mit einem anderen Auftrag",
+      "wrongVehicle": "Falscher Fahrzeugtyp",
+      "tooFar": "Zu weit vom aktuellen Standort",
+      "noTime": "Kann die Zeit nicht einhalten",
+      "shiftEnding": "Schichtende",
+      "technicalIssue": "Technische Probleme mit dem Fahrzeug"
+    },
+    "notes": {
+      "boardingHelp": "Einstiegshilfe benötigt",
+      "wheelchair": "Rollstuhl erforderlich",
+      "importantMeeting": "Wichtiges Meeting, bitte pünktlich",
+      "wheelchairComplex": "Rollstuhlfahrer, komplexe Route mit Haltestellen",
+      "largeLuggage": "Mit großem Gepäck"
+    }
   }
 }

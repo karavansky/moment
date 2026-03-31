@@ -48,8 +48,11 @@ const createRoute = (
   createdAt: new Date(),
 })
 
+type TranslateFn = (key: string, fallback?: string) => string
+
 // Функция генерации всех mock данных для транспортной системы
-export const getAllTransportMockData = () => {
+export const getAllTransportMockData = (t?: TranslateFn) => {
+  const tr = (key: string, fallback: string) => t ? t(key, fallback) : fallback
   const currentDate = new Date()
   const firmaID = '3Eoxlmzdr4uEJggFueFnB'
 
@@ -125,7 +128,7 @@ export const getAllTransportMockData = () => {
   const reason1: RejectReason = {
     id: generateId(),
     firmaID: firmaID,
-    reasonText: 'Занят другим заказом',
+    reasonText: tr('mockData.rejectReasons.busy', 'Busy with another order'),
     isActive: true,
     createdAt: addDays(currentDate, -60),
   }
@@ -133,7 +136,7 @@ export const getAllTransportMockData = () => {
   const reason2: RejectReason = {
     id: generateId(),
     firmaID: firmaID,
-    reasonText: 'Не подходящий тип транспорта',
+    reasonText: tr('mockData.rejectReasons.wrongVehicle', 'Wrong vehicle type'),
     isActive: true,
     createdAt: addDays(currentDate, -60),
   }
@@ -141,7 +144,7 @@ export const getAllTransportMockData = () => {
   const reason3: RejectReason = {
     id: generateId(),
     firmaID: firmaID,
-    reasonText: 'Слишком далеко от текущего местоположения',
+    reasonText: tr('mockData.rejectReasons.tooFar', 'Too far from current location'),
     isActive: true,
     createdAt: addDays(currentDate, -60),
   }
@@ -149,7 +152,7 @@ export const getAllTransportMockData = () => {
   const reason4: RejectReason = {
     id: generateId(),
     firmaID: firmaID,
-    reasonText: 'Не успеваю в указанное время',
+    reasonText: tr('mockData.rejectReasons.noTime', 'Cannot make it on time'),
     isActive: true,
     createdAt: addDays(currentDate, -60),
   }
@@ -157,7 +160,7 @@ export const getAllTransportMockData = () => {
   const reason5: RejectReason = {
     id: generateId(),
     firmaID: firmaID,
-    reasonText: 'Завершаю смену',
+    reasonText: tr('mockData.rejectReasons.shiftEnding', 'Shift ending'),
     isActive: true,
     createdAt: addDays(currentDate, -60),
   }
@@ -165,7 +168,7 @@ export const getAllTransportMockData = () => {
   const reason6: RejectReason = {
     id: generateId(),
     firmaID: firmaID,
-    reasonText: 'Технические проблемы с автомобилем',
+    reasonText: tr('mockData.rejectReasons.technicalIssue', 'Technical issues with vehicle'),
     isActive: false,
     createdAt: addDays(currentDate, -60),
   }
@@ -187,7 +190,7 @@ export const getAllTransportMockData = () => {
     scheduledTime: addHours(currentDate, 2),
     passengerName: 'Tom Hanks',
     passengerPhone: '+49 221 123-4567',
-    notes: 'Требуется помощь с посадкой',
+    notes: tr('mockData.notes.boardingHelp', 'Boarding assistance needed'),
     createdAt: addHours(currentDate, -1),
     assignedAt: null,
     acceptedAt: null,
@@ -273,7 +276,7 @@ export const getAllTransportMockData = () => {
     scheduledTime: addHours(currentDate, -3),
     passengerName: 'Brad Pitt',
     passengerPhone: '+49 221 345-6789',
-    notes: 'Коляска для инвалидов',
+    notes: tr('mockData.notes.wheelchair', 'Wheelchair required'),
     createdAt: addHours(currentDate, -5),
     assignedAt: addHours(currentDate, -4.5),
     acceptedAt: addHours(currentDate, -4),
@@ -315,7 +318,7 @@ export const getAllTransportMockData = () => {
     scheduledTime: addHours(currentDate, 3),
     passengerName: 'George Clooney',
     passengerPhone: '+49 221 456-7890',
-    notes: 'Важная встреча, не опаздывать',
+    notes: tr('mockData.notes.importantMeeting', 'Important meeting, do not be late'),
     createdAt: addHours(currentDate, -0.5),
     assignedAt: null,
     acceptedAt: null,
@@ -357,7 +360,7 @@ export const getAllTransportMockData = () => {
     scheduledTime: addHours(currentDate, 0.5),
     passengerName: 'Angelina Jolie',
     passengerPhone: '+49 221 567-8901',
-    notes: 'Пассажир на коляске, сложный маршрут с остановками',
+    notes: tr('mockData.notes.wheelchairComplex', 'Wheelchair passenger, complex route with stops'),
     createdAt: addHours(currentDate, -3),
     assignedAt: addHours(currentDate, -2.5),
     acceptedAt: addHours(currentDate, -2),
@@ -468,7 +471,7 @@ export const getAllTransportMockData = () => {
     scheduledTime: addHours(currentDate, 0.2),
     passengerName: 'Jennifer Lawrence',
     passengerPhone: '+49 221 789-0123',
-    notes: 'С большим багажом',
+    notes: tr('mockData.notes.largeLuggage', 'With large luggage'),
     createdAt: addHours(currentDate, -1.5),
     assignedAt: addHours(currentDate, -1.2),
     acceptedAt: addHours(currentDate, -0.8),

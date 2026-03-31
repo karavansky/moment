@@ -911,5 +911,22 @@
     "updateAvailable": "アップデートがあります",
     "updateDescription": "新しいバージョンが利用可能です。ページを更新してください。",
     "updateButton": "更新"
+  },
+  "mockData": {
+    "rejectReasons": {
+      "busy": "他の注文で忙しい",
+      "wrongVehicle": "車両タイプが合わない",
+      "tooFar": "現在地から遠すぎる",
+      "noTime": "時間に間に合わない",
+      "shiftEnding": "シフト終了",
+      "technicalIssue": "車両の技術的問題"
+    },
+    "notes": {
+      "boardingHelp": "乗車の補助が必要",
+      "wheelchair": "車椅子が必要",
+      "importantMeeting": "重要な会議、遅刻厳禁",
+      "wheelchairComplex": "車椅子の乗客、停車地のある複雑なルート",
+      "largeLuggage": "大きな荷物あり"
+    }
   }
 }

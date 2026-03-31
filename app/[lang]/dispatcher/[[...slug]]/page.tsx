@@ -34,6 +34,7 @@ interface MapPageProps {
 
 export default function MapPage({ params }: MapPageProps) {
   const { slug } = use(params)
+  const { t } = useTranslation()
   // Get slug parameter (appointment ID or order ID)
   const slugId = slug?.[0]
 
@@ -41,7 +42,7 @@ export default function MapPage({ params }: MapPageProps) {
   const { todayAppointments } = useScheduling()
 
   // Orders data - initialize once
-  const [mockData] = useState(() => getAllTransportMockData())
+  const [mockData] = useState(() => getAllTransportMockData(t))
   const [orders, setOrders] = useState<Order[]>(mockData.orders)
 
   // Active tab state
