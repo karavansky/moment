@@ -622,6 +622,59 @@
     "min": "min.",
     "current": "Atual:"
   },
+  "dispatcher": {
+    "tabs": {
+      "appointments": "Visitas",
+      "orders": "Viagens"
+    },
+    "search": {
+      "appointments": "Pesquisar por nome, morada...",
+      "orders": "Pesquisar por nome, telefone, morada..."
+    },
+    "status": {
+      "all": "Todos os estados",
+      "filterLabel": "Filtrar por estado",
+      "PENDING": "Pendente",
+      "CREATED": "Criado",
+      "ASSIGNED": "Atribuído",
+      "ACCEPTED": "Aceite",
+      "ARRIVED": "Chegou",
+      "IN_PROGRESS": "Em curso",
+      "COMPLETED": "Concluído",
+      "CANCELLED": "Cancelado"
+    },
+    "empty": {
+      "appointments": "Nenhuma visita encontrada",
+      "orders": "Nenhuma encomenda encontrada"
+    },
+    "appointmentOpen": "Visita aberta",
+    "assign": {
+      "title": "Atribuir motorista",
+      "tripInfo": "Informações da viagem:",
+      "passenger": "Passageiro:",
+      "from": "De:",
+      "to": "Para:",
+      "selectDriver": "Selecionar motorista:",
+      "noDrivers": "Nenhum motorista disponível",
+      "cancel": "Cancelar",
+      "button": "Atribuir motorista"
+    },
+    "order": {
+      "tab": "Encomenda",
+      "route": "Rota"
+    },
+    "map": {
+      "updated": "Atualizado:",
+      "pickup": "Recolha",
+      "dropoff": "Destino",
+      "stop": "Paragem",
+      "kmh": "km/h",
+      "legend": "Legenda",
+      "legendPickup": "Ponto de recolha",
+      "legendIntermediate": "Paragem intermédia",
+      "legendDropoff": "Ponto de destino"
+    }
+  },
   "clients": {
     "title": "Clientes",
     "table": {

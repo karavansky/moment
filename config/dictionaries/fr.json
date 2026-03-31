@@ -622,6 +622,59 @@
     "min": "min.",
     "current": "Actuel :"
   },
+  "dispatcher": {
+    "tabs": {
+      "appointments": "Visites",
+      "orders": "Trajets"
+    },
+    "search": {
+      "appointments": "Rechercher par nom, adresse...",
+      "orders": "Rechercher par nom, téléphone, adresse..."
+    },
+    "status": {
+      "all": "Tous les statuts",
+      "filterLabel": "Filtrer par statut",
+      "PENDING": "En attente",
+      "CREATED": "Créé",
+      "ASSIGNED": "Assigné",
+      "ACCEPTED": "Accepté",
+      "ARRIVED": "Arrivé",
+      "IN_PROGRESS": "En cours",
+      "COMPLETED": "Terminé",
+      "CANCELLED": "Annulé"
+    },
+    "empty": {
+      "appointments": "Aucune visite trouvée",
+      "orders": "Aucune commande trouvée"
+    },
+    "appointmentOpen": "Visite ouverte",
+    "assign": {
+      "title": "Assigner un chauffeur",
+      "tripInfo": "Informations sur le trajet :",
+      "passenger": "Passager :",
+      "from": "Départ :",
+      "to": "Arrivée :",
+      "selectDriver": "Sélectionner un chauffeur :",
+      "noDrivers": "Aucun chauffeur disponible",
+      "cancel": "Annuler",
+      "button": "Assigner un chauffeur"
+    },
+    "order": {
+      "tab": "Commande",
+      "route": "Itinéraire"
+    },
+    "map": {
+      "updated": "Mis à jour :",
+      "pickup": "Prise en charge",
+      "dropoff": "Destination",
+      "stop": "Arrêt",
+      "kmh": "km/h",
+      "legend": "Légende",
+      "legendPickup": "Point de prise en charge",
+      "legendIntermediate": "Arrêt intermédiaire",
+      "legendDropoff": "Point de destination"
+    }
+  },
   "clients": {
     "title": "Clients",
     "table": {

@@ -7,6 +7,7 @@ import { LayoutClient } from '@/components/LayoutClient'
 import { supportedLocales } from '@/config/locales'
 import { WebVitals } from '@/components/WebVitals'
 import { GoogleAnalytics } from '@next/third-parties/google'
+import Script from 'next/script'
 import { getSidebarState } from '@/lib/sidebar-actions'
 import { PushNotificationBanner } from '@/components/PushNotificationBanner'
 import { GeolocationBanner } from '@/components/GeolocationBanner'
@@ -166,11 +167,9 @@ export default async function RootLayout({
         {/* Content-Language meta tag */}
         <meta httpEquiv="content-language" content={lang} />
         {/* Inline script to set sidebar class before paint — avoids className conflict with next-themes */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var c=document.cookie.match(/sidebar-expanded=([^;]+)/);if(c&&c[1]==='false'){document.documentElement.classList.add('sidebar-collapsed')}}catch(e){}})()`,
-          }}
-        />
+        <Script id="sidebar-init" strategy="beforeInteractive">
+          {`(function(){try{var c=document.cookie.match(/sidebar-expanded=([^;]+)/);if(c&&c[1]==='false'){document.documentElement.classList.add('sidebar-collapsed')}}catch(e){}})()`}
+        </Script>
 
         {/* Google Analytics */}
         {isProduction && <GoogleAnalytics gaId="G-HB6BYNFW9F" />}

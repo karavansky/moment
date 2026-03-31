@@ -622,6 +622,59 @@
     "min": "dk.",
     "current": "Mevcut:"
   },
+  "dispatcher": {
+    "tabs": {
+      "appointments": "Ziyaretler",
+      "orders": "Seferler"
+    },
+    "search": {
+      "appointments": "Ada, adrese göre ara...",
+      "orders": "Ada, telefona, adrese göre ara..."
+    },
+    "status": {
+      "all": "Tüm durumlar",
+      "filterLabel": "Duruma göre filtrele",
+      "PENDING": "Beklemede",
+      "CREATED": "Oluşturuldu",
+      "ASSIGNED": "Atandı",
+      "ACCEPTED": "Kabul edildi",
+      "ARRIVED": "Vardı",
+      "IN_PROGRESS": "Devam ediyor",
+      "COMPLETED": "Tamamlandı",
+      "CANCELLED": "İptal edildi"
+    },
+    "empty": {
+      "appointments": "Ziyaret bulunamadı",
+      "orders": "Sipariş bulunamadı"
+    },
+    "appointmentOpen": "Ziyaret açıldı",
+    "assign": {
+      "title": "Sürücü ata",
+      "tripInfo": "Sefer bilgileri:",
+      "passenger": "Yolcu:",
+      "from": "Nereden:",
+      "to": "Nereye:",
+      "selectDriver": "Sürücü seçin:",
+      "noDrivers": "Uygun sürücü yok",
+      "cancel": "İptal",
+      "button": "Sürücü ata"
+    },
+    "order": {
+      "tab": "Sipariş",
+      "route": "Güzergah"
+    },
+    "map": {
+      "updated": "Güncellendi:",
+      "pickup": "Alış noktası",
+      "dropoff": "Varış noktası",
+      "stop": "Durak",
+      "kmh": "km/sa",
+      "legend": "Gösterge",
+      "legendPickup": "Alış noktası",
+      "legendIntermediate": "Ara durak",
+      "legendDropoff": "Varış noktası"
+    }
+  },
   "clients": {
     "title": "Müşteriler",
     "table": {

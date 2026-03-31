@@ -622,6 +622,59 @@
     "min": "分",
     "current": "現在："
   },
+  "dispatcher": {
+    "tabs": {
+      "appointments": "訪問",
+      "orders": "配車"
+    },
+    "search": {
+      "appointments": "名前、住所で検索...",
+      "orders": "名前、電話番号、住所で検索..."
+    },
+    "status": {
+      "all": "すべてのステータス",
+      "filterLabel": "ステータスで絞り込む",
+      "PENDING": "保留中",
+      "CREATED": "作成済み",
+      "ASSIGNED": "割り当て済み",
+      "ACCEPTED": "承認済み",
+      "ARRIVED": "到着済み",
+      "IN_PROGRESS": "進行中",
+      "COMPLETED": "完了",
+      "CANCELLED": "キャンセル済み"
+    },
+    "empty": {
+      "appointments": "訪問が見つかりません",
+      "orders": "注文が見つかりません"
+    },
+    "appointmentOpen": "訪問を開きました",
+    "assign": {
+      "title": "ドライバーを割り当てる",
+      "tripInfo": "配車情報：",
+      "passenger": "乗客：",
+      "from": "出発地：",
+      "to": "目的地：",
+      "selectDriver": "ドライバーを選択：",
+      "noDrivers": "利用可能なドライバーがいません",
+      "cancel": "キャンセル",
+      "button": "ドライバーを割り当てる"
+    },
+    "order": {
+      "tab": "注文",
+      "route": "ルート"
+    },
+    "map": {
+      "updated": "更新：",
+      "pickup": "乗車地点",
+      "dropoff": "目的地",
+      "stop": "停車",
+      "kmh": "km/h",
+      "legend": "凡例",
+      "legendPickup": "乗車地点",
+      "legendIntermediate": "中間停車地点",
+      "legendDropoff": "目的地点"
+    }
+  },
   "clients": {
     "title": "クライアント",
     "table": {

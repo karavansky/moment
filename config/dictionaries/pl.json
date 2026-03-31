@@ -622,6 +622,59 @@
     "min": "min.",
     "current": "Aktualna:"
   },
+  "dispatcher": {
+    "tabs": {
+      "appointments": "Wizyty",
+      "orders": "Przejazdy"
+    },
+    "search": {
+      "appointments": "Szukaj po nazwie, adresie...",
+      "orders": "Szukaj po nazwie, telefonie, adresie..."
+    },
+    "status": {
+      "all": "Wszystkie statusy",
+      "filterLabel": "Filtruj według statusu",
+      "PENDING": "Oczekujący",
+      "CREATED": "Utworzony",
+      "ASSIGNED": "Przypisany",
+      "ACCEPTED": "Zaakceptowany",
+      "ARRIVED": "Przybył",
+      "IN_PROGRESS": "W trakcie",
+      "COMPLETED": "Zakończony",
+      "CANCELLED": "Anulowany"
+    },
+    "empty": {
+      "appointments": "Nie znaleziono wizyt",
+      "orders": "Nie znaleziono zamówień"
+    },
+    "appointmentOpen": "Wizyta otwarta",
+    "assign": {
+      "title": "Przypisz kierowcę",
+      "tripInfo": "Informacje o przejeździe:",
+      "passenger": "Pasażer:",
+      "from": "Z:",
+      "to": "Do:",
+      "selectDriver": "Wybierz kierowcę:",
+      "noDrivers": "Brak dostępnych kierowców",
+      "cancel": "Anuluj",
+      "button": "Przypisz kierowcę"
+    },
+    "order": {
+      "tab": "Zamówienie",
+      "route": "Trasa"
+    },
+    "map": {
+      "updated": "Zaktualizowano:",
+      "pickup": "Odbiór",
+      "dropoff": "Cel",
+      "stop": "Przystanek",
+      "kmh": "km/h",
+      "legend": "Legenda",
+      "legendPickup": "Punkt odbioru",
+      "legendIntermediate": "Przystanek pośredni",
+      "legendDropoff": "Punkt docelowy"
+    }
+  },
   "clients": {
     "title": "Klienci",
     "table": {

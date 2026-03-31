@@ -622,6 +622,59 @@
     "min": "min.",
     "current": "Attuale:"
   },
+  "dispatcher": {
+    "tabs": {
+      "appointments": "Visite",
+      "orders": "Viaggi"
+    },
+    "search": {
+      "appointments": "Cerca per nome, indirizzo...",
+      "orders": "Cerca per nome, telefono, indirizzo..."
+    },
+    "status": {
+      "all": "Tutti gli stati",
+      "filterLabel": "Filtra per stato",
+      "PENDING": "In attesa",
+      "CREATED": "Creato",
+      "ASSIGNED": "Assegnato",
+      "ACCEPTED": "Accettato",
+      "ARRIVED": "Arrivato",
+      "IN_PROGRESS": "In corso",
+      "COMPLETED": "Completato",
+      "CANCELLED": "Annullato"
+    },
+    "empty": {
+      "appointments": "Nessuna visita trovata",
+      "orders": "Nessun ordine trovato"
+    },
+    "appointmentOpen": "Visita aperta",
+    "assign": {
+      "title": "Assegna autista",
+      "tripInfo": "Informazioni sul viaggio:",
+      "passenger": "Passeggero:",
+      "from": "Da:",
+      "to": "A:",
+      "selectDriver": "Seleziona autista:",
+      "noDrivers": "Nessun autista disponibile",
+      "cancel": "Annulla",
+      "button": "Assegna autista"
+    },
+    "order": {
+      "tab": "Ordine",
+      "route": "Percorso"
+    },
+    "map": {
+      "updated": "Aggiornato:",
+      "pickup": "Ritiro",
+      "dropoff": "Destinazione",
+      "stop": "Fermata",
+      "kmh": "km/h",
+      "legend": "Legenda",
+      "legendPickup": "Punto di ritiro",
+      "legendIntermediate": "Fermata intermedia",
+      "legendDropoff": "Punto di destinazione"
+    }
+  },
   "clients": {
     "title": "Clienti",
     "table": {

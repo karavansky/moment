@@ -622,6 +622,59 @@
     "min": "mnt.",
     "current": "Saat ini:"
   },
+  "dispatcher": {
+    "tabs": {
+      "appointments": "Kunjungan",
+      "orders": "Perjalanan"
+    },
+    "search": {
+      "appointments": "Cari berdasarkan nama, alamat...",
+      "orders": "Cari berdasarkan nama, telepon, alamat..."
+    },
+    "status": {
+      "all": "Semua status",
+      "filterLabel": "Filter berdasarkan status",
+      "PENDING": "Tertunda",
+      "CREATED": "Dibuat",
+      "ASSIGNED": "Ditugaskan",
+      "ACCEPTED": "Diterima",
+      "ARRIVED": "Tiba",
+      "IN_PROGRESS": "Sedang berlangsung",
+      "COMPLETED": "Selesai",
+      "CANCELLED": "Dibatalkan"
+    },
+    "empty": {
+      "appointments": "Tidak ada kunjungan ditemukan",
+      "orders": "Tidak ada pesanan ditemukan"
+    },
+    "appointmentOpen": "Kunjungan dibuka",
+    "assign": {
+      "title": "Tugaskan pengemudi",
+      "tripInfo": "Informasi perjalanan:",
+      "passenger": "Penumpang:",
+      "from": "Dari:",
+      "to": "Ke:",
+      "selectDriver": "Pilih pengemudi:",
+      "noDrivers": "Tidak ada pengemudi tersedia",
+      "cancel": "Batal",
+      "button": "Tugaskan pengemudi"
+    },
+    "order": {
+      "tab": "Pesanan",
+      "route": "Rute"
+    },
+    "map": {
+      "updated": "Diperbarui:",
+      "pickup": "Penjemputan",
+      "dropoff": "Tujuan",
+      "stop": "Perhentian",
+      "kmh": "km/j",
+      "legend": "Legenda",
+      "legendPickup": "Titik penjemputan",
+      "legendIntermediate": "Perhentian antara",
+      "legendDropoff": "Titik tujuan"
+    }
+  },
   "clients": {
     "title": "Klien",
     "table": {
