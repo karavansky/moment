@@ -65,7 +65,8 @@ function AddressAutocomplete({
   'aria-label': ariaLabel,
   isDisabled = false,
 }: AddressAutocompleteProps) {
-  const { session } = useAuth()
+  const { session, status: authStatus } = useAuth()
+  const isDemo = authStatus !== 'authenticated' && authStatus !== 'loading'
   const [inputValue, setInputValue] = useState(value)
   const [suggestions, setSuggestions] = useState<PhotonFeature[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -85,7 +86,7 @@ function AddressAutocomplete({
     }, 300) // Delay to allow keyboard animation to complete
   }, [])
 
-  // Fetch suggestions from Photon API
+  // Fetch suggestions from Photon API (or filter mock data in demo mode)
   const fetchSuggestions = useCallback(async (query: string) => {
     if (!query || query.length < 3) {
       setSuggestions([])
@@ -95,10 +96,8 @@ function AddressAutocomplete({
     setIsLoading(true)
 
     try {
-      // Get user's language preference from session (Photon supports: de, en, fr)
-      const userLang = session?.user?.lang || 'en'
-      // Map user language to Photon-supported languages
-      const photonLang = ['de', 'en', 'fr'].includes(userLang) ? userLang : 'en'
+      const userLang = session?.user?.lang || 'de'
+      const photonLang = ['de', 'en', 'fr'].includes(userLang) ? userLang : 'de'
 
       const params = new URLSearchParams({
         q: query,
@@ -106,9 +105,10 @@ function AddressAutocomplete({
         lang: photonLang,
       })
 
-      // Add country filter if available
-      if (session?.user?.country) {
-        params.append('country', session.user.country.toUpperCase())
+      // Use session country or fallback to DE in demo mode
+      const country = session?.user?.country || (isDemo ? 'de' : '')
+      if (country) {
+        params.append('country', country.toUpperCase())
       }
 
       const response = await fetch(`/api/photon?${params}`)
@@ -126,7 +126,7 @@ function AddressAutocomplete({
     } finally {
       setIsLoading(false)
     }
-  }, [session?.user?.lang, session?.user?.country])
+  }, [isDemo, session?.user?.lang, session?.user?.country])
 
   // Trigger fetch when debounced input changes
   useEffect(() => {
