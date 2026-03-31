@@ -239,11 +239,8 @@
     }
   },
   "navbar": {
-    "about": "Meine Geschichte",
-    "get_started": "Jetzt starten",
-    "terms": "Nutzungsbedingungen",
-    "privacy": "Datenschutz",
-    "support": "Hilfe"
+    "notification_tooltip": "Benachrichtigungen",
+    "support_tooltip": "Support"
   },
   "praesentation": {
     "intro": "Das Projekt ist ein Dashboard für Management und Monitoring von Studiendaten.",
@@ -678,7 +675,8 @@
         "selectPlaceholder": "Mitarbeiter auswählen...",
         "searchPlaceholder": "Mitarbeiter suchen...",
         "noResults": "Keine Ergebnisse"
-      }
+      },
+      "deleteTitle": "Termin löschen?"
     },
     "report": {
       "title": "Terminbericht",
@@ -704,7 +702,9 @@
       "startError": "Sitzung konnte nicht gestartet werden",
       "finishError": "Sitzung konnte nicht beendet werden",
       "hour": "Stunde",
-      "noSessions": "Keine Sitzungen"
+      "noSessions": "Keine Sitzungen",
+      "clientReview": "Kundenbewertung",
+      "showQR": "QR-Code anzeigen"
     }
   },
   "map": {
@@ -961,5 +961,17 @@
     "hintAdd": "Drücken Sie",
     "hintAddBetween": "zwischen Punkten, um Zwischenstopps hinzuzufügen",
     "hintMin": "Mindestens 2 Punkte (Abholung und Ziel)"
+  },
+  "addressAutocomplete": {
+    "placeholder": "Adresse eingeben...",
+    "searching": "Adressen werden gesucht...",
+    "minChars": "Mindestens 3 Zeichen eingeben",
+    "noResults": "Keine Adressen gefunden"
+  },
+  "common": {
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "save": "Speichern",
+    "selectDate": "Datum wählen"
   }
 }

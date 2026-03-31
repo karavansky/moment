@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo, useRef } from 'react'
-import { Modal, Button, Separator, Label, Switch, TextField, FieldError } from '@heroui/react'
+import { Modal, Button, Separator, Label, Switch, TextField, FieldError, AlertDialog } from '@heroui/react'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { Appointment, Service, Worker } from '@/types/scheduling'
 import { Clock, Save, Trash2, Car, Plus } from 'lucide-react'
@@ -49,6 +49,8 @@ export default function AppointmentModal({
   } = useScheduling()
 
   const isEditMode = !!appointment
+
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
 
   // Form state - lazy initializer to avoid creating object on every render
   // isFixedTime включён в formData как единый источник истины
@@ -260,8 +262,13 @@ export default function AppointmentModal({
 
   // Handle delete
   const handleDelete = () => {
-    if (appointment && confirm(t('appointment.edit.confirmDelete'))) {
+    setDeleteConfirmOpen(true)
+  }
+
+  const confirmDelete = () => {
+    if (appointment) {
       deleteAppointment(appointment.id)
+      setDeleteConfirmOpen(false)
       handleClose()
     }
   }
@@ -300,6 +307,7 @@ export default function AppointmentModal({
 
   console.log('Rendering AppointmentModal with servicesForSelect:', servicesForSelect)
   return (
+    <>
     <Modal>
       <Modal.Backdrop
         isOpen={isOpen}
@@ -647,5 +655,31 @@ export default function AppointmentModal({
         </Modal.Container>
       </Modal.Backdrop>
     </Modal>
+
+    {/* Delete Confirmation */}
+    <AlertDialog.Backdrop isOpen={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen} isDismissable>
+      <AlertDialog.Container>
+        <AlertDialog.Dialog className="sm:max-w-[400px]">
+          <AlertDialog.CloseTrigger />
+          <AlertDialog.Header>
+            <AlertDialog.Icon status="danger" />
+            <AlertDialog.Heading>{t('appointment.edit.deleteTitle', 'Delete appointment?')}</AlertDialog.Heading>
+          </AlertDialog.Header>
+          <AlertDialog.Body>
+            <p>{t('appointment.edit.confirmDelete', 'This appointment will be permanently deleted.')}</p>
+          </AlertDialog.Body>
+          <AlertDialog.Footer>
+            <Button slot="close" variant="tertiary">
+              {t('common.cancel', 'Cancel')}
+            </Button>
+            <Button variant="danger" onPress={confirmDelete}>
+              <Trash2 className="w-4 h-4" />
+              {t('common.delete', 'Delete')}
+            </Button>
+          </AlertDialog.Footer>
+        </AlertDialog.Dialog>
+      </AlertDialog.Container>
+    </AlertDialog.Backdrop>
+    </>
   )
 }

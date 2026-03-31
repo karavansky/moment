@@ -239,11 +239,8 @@
     }
   },
   "navbar": {
-    "about": "Mi historia",
-    "get_started": "Primeros Pasos",
-    "terms": "Términos de Uso",
-    "privacy": "Política de Privacidad",
-    "support": "Ayuda"
+    "notification_tooltip": "Notificaciones",
+    "support_tooltip": "Soporte"
   },
   "praesentation": {
     "intro": "El proyecto es un panel de control para la gestión y seguimiento de datos de estudio.",
@@ -803,7 +800,11 @@
         "selectPlaceholder": "Seleccionar miembro del personal...",
         "searchPlaceholder": "Buscar miembro del personal...",
         "noResults": "Sin resultados"
-      }
+      },
+      "deleteTitle": "¿Eliminar cita?",
+      "start": "Iniciar",
+      "pause": "Pausa",
+      "finish": "Finalizar"
     },
     "report": {
       "title": "Informe de Cita",
@@ -829,7 +830,25 @@
       "startError": "Error al iniciar la sesión",
       "finishError": "Error al cerrar la sesión",
       "hour": "hora",
-      "noSessions": "Sin sesiones"
+      "noSessions": "Sin sesiones",
+      "clientReview": "Reseña del cliente",
+      "showQR": "Mostrar código QR"
+    },
+    "types": {
+      "trip": "Viaje",
+      "meeting": "Reunión",
+      "visit": "Visita",
+      "visitDescription": "Cita con cliente",
+      "tripDescription": "Viaje de transporte"
+    },
+    "tabs": {
+      "report": "Informe",
+      "notes": "Notas"
+    },
+    "status": "Estado",
+    "time": {
+      "from": "desde",
+      "to": "hasta"
     }
   },
   "sla": {
@@ -938,5 +957,17 @@
     "hintAdd": "Pulsa",
     "hintAddBetween": "entre puntos para añadir paradas intermedias",
     "hintMin": "Mínimo 2 puntos (recogida y destino)"
+  },
+  "addressAutocomplete": {
+    "placeholder": "Ingrese dirección...",
+    "searching": "Buscando direcciones...",
+    "minChars": "Ingrese al menos 3 caracteres",
+    "noResults": "No se encontraron direcciones"
+  },
+  "common": {
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "save": "Guardar",
+    "selectDate": "Seleccionar fecha"
   }
 }

@@ -239,11 +239,8 @@
     }
   },
   "navbar": {
-    "about": "Moja historia",
-    "get_started": "Rozpocznij",
-    "terms": "Warunki Użytkowania",
-    "privacy": "Polityka Prywatności",
-    "support": "Wsparcie"
+    "notification_tooltip": "Powiadomienia",
+    "support_tooltip": "Wsparcie"
   },
   "praesentation": {
     "intro": "Projekt to pulpit nawigacyjny do zarządzania i monitorowania danych badawczych.",
@@ -803,7 +800,11 @@
         "selectPlaceholder": "Wybierz członka personelu...",
         "searchPlaceholder": "Wyszukaj członka personelu...",
         "noResults": "Brak wyników"
-      }
+      },
+      "deleteTitle": "Usunąć wizytę?",
+      "start": "Rozpocznij",
+      "pause": "Pauza",
+      "finish": "Zakończ"
     },
     "report": {
       "title": "Raport wizyty",
@@ -829,7 +830,25 @@
       "startError": "Nie udało się rozpocząć sesji",
       "finishError": "Nie udało się zakończyć sesji",
       "hour": "godzina",
-      "noSessions": "Brak sesji"
+      "noSessions": "Brak sesji",
+      "clientReview": "Opinia klienta",
+      "showQR": "Pokaż kod QR"
+    },
+    "types": {
+      "trip": "Przejazd",
+      "meeting": "Spotkanie",
+      "visit": "Wizyta",
+      "visitDescription": "Wizyta u klienta",
+      "tripDescription": "Przejazd transportowy"
+    },
+    "tabs": {
+      "report": "Raport",
+      "notes": "Notatki"
+    },
+    "status": "Status",
+    "time": {
+      "from": "od",
+      "to": "do"
     }
   },
   "sla": {
@@ -938,5 +957,17 @@
     "hintAdd": "Naciśnij",
     "hintAddBetween": "między punktami, aby dodać przystanki pośrednie",
     "hintMin": "Minimum 2 punkty (odbiór i cel)"
+  },
+  "addressAutocomplete": {
+    "placeholder": "Wpisz adres...",
+    "searching": "Wyszukiwanie adresów...",
+    "minChars": "Wpisz co najmniej 3 znaki",
+    "noResults": "Nie znaleziono adresów"
+  },
+  "common": {
+    "cancel": "Anuluj",
+    "delete": "Usuń",
+    "save": "Zapisz",
+    "selectDate": "Wybierz datę"
   }
 }

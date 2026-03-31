@@ -239,11 +239,8 @@
     }
   },
   "navbar": {
-    "about": "Minha história",
-    "get_started": "Primeiros Passos",
-    "terms": "Termos de Utilização",
-    "privacy": "Política de Privacidade",
-    "support": "Suporte"
+    "notification_tooltip": "Notificações",
+    "support_tooltip": "Suporte"
   },
   "praesentation": {
     "intro": "O projeto é um painel de controlo para a gestão e monitorização de dados de estudo.",
@@ -803,7 +800,11 @@
         "selectPlaceholder": "Selecionar membro da equipa...",
         "searchPlaceholder": "Pesquisar membro da equipa...",
         "noResults": "Sem resultados"
-      }
+      },
+      "deleteTitle": "Excluir compromisso?",
+      "start": "Iniciar",
+      "pause": "Pausa",
+      "finish": "Finalizar"
     },
     "report": {
       "title": "Relatório de Compromisso",
@@ -829,7 +830,25 @@
       "startError": "Falha ao iniciar a sessão",
       "finishError": "Falha ao fechar a sessão",
       "hour": "hora",
-      "noSessions": "Sem sessões"
+      "noSessions": "Sem sessões",
+      "clientReview": "Avaliação do cliente",
+      "showQR": "Mostrar código QR"
+    },
+    "types": {
+      "trip": "Viagem",
+      "meeting": "Reunião",
+      "visit": "Visita",
+      "visitDescription": "Compromisso com cliente",
+      "tripDescription": "Viagem de transporte"
+    },
+    "tabs": {
+      "report": "Relatório",
+      "notes": "Notas"
+    },
+    "status": "Estado",
+    "time": {
+      "from": "de",
+      "to": "até"
     }
   },
   "sla": {
@@ -938,5 +957,17 @@
     "hintAdd": "Pressione",
     "hintAddBetween": "entre pontos para adicionar paradas intermediárias",
     "hintMin": "Mínimo 2 pontos (partida e destino)"
+  },
+  "addressAutocomplete": {
+    "placeholder": "Digite o endereço...",
+    "searching": "Pesquisando endereços...",
+    "minChars": "Digite pelo menos 3 caracteres",
+    "noResults": "Nenhum endereço encontrado"
+  },
+  "common": {
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "save": "Salvar",
+    "selectDate": "Selecionar data"
   }
 }

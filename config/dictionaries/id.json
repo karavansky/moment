@@ -239,11 +239,8 @@
     }
   },
   "navbar": {
-    "about": "Kisah saya",
-    "get_started": "Memulai",
-    "terms": "Ketentuan Penggunaan",
-    "privacy": "Kebijakan Privasi",
-    "support": "Dukungan"
+    "notification_tooltip": "Notifikasi",
+    "support_tooltip": "Dukungan"
   },
   "praesentation": {
     "intro": "Proyek ini adalah dasbor untuk manajemen dan pemantauan data studi.",
@@ -803,7 +800,11 @@
         "selectPlaceholder": "Pilih anggota staf...",
         "searchPlaceholder": "Cari anggota staf...",
         "noResults": "Tidak ada hasil"
-      }
+      },
+      "deleteTitle": "Hapus janji?",
+      "start": "Mulai",
+      "pause": "Jeda",
+      "finish": "Selesai"
     },
     "report": {
       "title": "Laporan Janji Temu",
@@ -829,7 +830,25 @@
       "startError": "Gagal memulai sesi",
       "finishError": "Gagal menutup sesi",
       "hour": "jam",
-      "noSessions": "Tidak ada sesi"
+      "noSessions": "Tidak ada sesi",
+      "clientReview": "Ulasan klien",
+      "showQR": "Tampilkan kode QR"
+    },
+    "types": {
+      "trip": "Perjalanan",
+      "meeting": "Pertemuan",
+      "visit": "Kunjungan",
+      "visitDescription": "Janji dengan klien",
+      "tripDescription": "Perjalanan transportasi"
+    },
+    "tabs": {
+      "report": "Laporan",
+      "notes": "Catatan"
+    },
+    "status": "Status",
+    "time": {
+      "from": "dari",
+      "to": "sampai"
     }
   },
   "sla": {
@@ -938,5 +957,17 @@
     "hintAdd": "Tekan",
     "hintAddBetween": "di antara titik untuk menambahkan perhentian",
     "hintMin": "Minimal 2 titik (penjemputan dan tujuan)"
+  },
+  "addressAutocomplete": {
+    "placeholder": "Masukkan alamat...",
+    "searching": "Mencari alamat...",
+    "minChars": "Masukkan minimal 3 karakter",
+    "noResults": "Alamat tidak ditemukan"
+  },
+  "common": {
+    "cancel": "Batal",
+    "delete": "Hapus",
+    "save": "Simpan",
+    "selectDate": "Pilih tanggal"
   }
 }

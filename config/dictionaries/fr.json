@@ -239,11 +239,8 @@
     }
   },
   "navbar": {
-    "about": "Mon histoire",
-    "get_started": "Démarrer",
-    "terms": "Conditions d'Utilisation",
-    "privacy": "Politique de Confidentialité",
-    "support": "Aide"
+    "notification_tooltip": "Notifications",
+    "support_tooltip": "Support"
   },
   "praesentation": {
     "intro": "Le projet est un tableau de bord pour la gestion et la surveillance des données d'étude.",
@@ -803,7 +800,11 @@
         "selectPlaceholder": "Sélectionner un membre du personnel...",
         "searchPlaceholder": "Rechercher un membre du personnel...",
         "noResults": "Aucun résultat"
-      }
+      },
+      "deleteTitle": "Supprimer le rendez-vous ?",
+      "start": "Démarrer",
+      "pause": "Pause",
+      "finish": "Terminer"
     },
     "report": {
       "title": "Rapport de Rendez-vous",
@@ -829,7 +830,25 @@
       "startError": "Impossible de démarrer la séance",
       "finishError": "Impossible de fermer la séance",
       "hour": "heure",
-      "noSessions": "Aucune session"
+      "noSessions": "Aucune session",
+      "clientReview": "Avis client",
+      "showQR": "Afficher le code QR"
+    },
+    "types": {
+      "trip": "Trajet",
+      "meeting": "Réunion",
+      "visit": "Visite",
+      "visitDescription": "Rendez-vous avec client",
+      "tripDescription": "Trajet de transport"
+    },
+    "tabs": {
+      "report": "Rapport",
+      "notes": "Notes"
+    },
+    "status": "Statut",
+    "time": {
+      "from": "de",
+      "to": "à"
     }
   },
   "sla": {
@@ -938,5 +957,17 @@
     "hintAdd": "Appuyez sur",
     "hintAddBetween": "entre les points pour ajouter des arrêts intermédiaires",
     "hintMin": "Minimum 2 points (départ et arrivée)"
+  },
+  "addressAutocomplete": {
+    "placeholder": "Saisir l'adresse...",
+    "searching": "Recherche d'adresses...",
+    "minChars": "Saisissez au moins 3 caractères",
+    "noResults": "Aucune adresse trouvée"
+  },
+  "common": {
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "save": "Enregistrer",
+    "selectDate": "Sélectionner la date"
   }
 }

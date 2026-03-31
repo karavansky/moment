@@ -239,11 +239,8 @@
     }
   },
   "navbar": {
-    "about": "La mia storia",
-    "get_started": "Inizia",
-    "terms": "Termini di Utilizzo",
-    "privacy": "Politica sulla Privacy",
-    "support": "Supporto"
+    "notification_tooltip": "Notifiche",
+    "support_tooltip": "Supporto"
   },
   "praesentation": {
     "intro": "Il progetto è una dashboard per la gestione e il monitoraggio dei dati di studio.",
@@ -803,7 +800,11 @@
         "selectPlaceholder": "Seleziona membro del personale...",
         "searchPlaceholder": "Cerca membro del personale...",
         "noResults": "Nessun risultato"
-      }
+      },
+      "deleteTitle": "Eliminare appuntamento?",
+      "start": "Avvia",
+      "pause": "Pausa",
+      "finish": "Termina"
     },
     "report": {
       "title": "Report Appuntamento",
@@ -829,7 +830,25 @@
       "startError": "Impossibile avviare la sessione",
       "finishError": "Impossibile chiudere la sessione",
       "hour": "ora",
-      "noSessions": "Nessuna sessione"
+      "noSessions": "Nessuna sessione",
+      "clientReview": "Recensione cliente",
+      "showQR": "Mostra codice QR"
+    },
+    "types": {
+      "trip": "Viaggio",
+      "meeting": "Riunione",
+      "visit": "Visita",
+      "visitDescription": "Appuntamento con cliente",
+      "tripDescription": "Viaggio di trasporto"
+    },
+    "tabs": {
+      "report": "Rapporto",
+      "notes": "Note"
+    },
+    "status": "Stato",
+    "time": {
+      "from": "dalle",
+      "to": "alle"
     }
   },
   "sla": {
@@ -938,5 +957,17 @@
     "hintAdd": "Premi",
     "hintAddBetween": "tra i punti per aggiungere fermate intermedie",
     "hintMin": "Minimo 2 punti (partenza e arrivo)"
+  },
+  "addressAutocomplete": {
+    "placeholder": "Inserire indirizzo...",
+    "searching": "Ricerca indirizzi...",
+    "minChars": "Inserire almeno 3 caratteri",
+    "noResults": "Nessun indirizzo trovato"
+  },
+  "common": {
+    "cancel": "Annulla",
+    "delete": "Elimina",
+    "save": "Salva",
+    "selectDate": "Seleziona data"
   }
 }

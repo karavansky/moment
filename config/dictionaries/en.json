@@ -239,11 +239,8 @@
     }
   },
   "navbar": {
-    "about": "My Story",
-    "get_started": "Get Started",
-    "terms": "Terms of Use",
-    "privacy": "Privacy Policy",
-    "support": "Support"
+    "notification_tooltip": "Notifications",
+    "support_tooltip": "Support"
   },
   "seo": {
     "home": {
@@ -647,7 +644,24 @@
         "selectPlaceholder": "Select staff member...",
         "searchPlaceholder": "Search staff member...",
         "noResults": "No results"
-      }
+      },
+      "deleteTitle": "Delete appointment?"
+    },
+    "types": {
+      "trip": "Trip",
+      "meeting": "Meeting",
+      "visit": "Visit",
+      "visitDescription": "Appointment with client",
+      "tripDescription": "Transport trip"
+    },
+    "tabs": {
+      "report": "Report",
+      "notes": "Notes"
+    },
+    "status": "Status",
+    "time": {
+      "from": "from",
+      "to": "to"
     },
     "report": {
       "title": "Appointment Report",
@@ -673,7 +687,9 @@
       "startError": "Failed to start session",
       "finishError": "Failed to close session",
       "hour": "hour",
-      "noSessions": "No sessions"
+      "noSessions": "No sessions",
+      "clientReview": "Client review",
+      "showQR": "Show QR code"
     }
   },
   "map": {
@@ -929,5 +945,17 @@
     "hintAdd": "Press",
     "hintAddBetween": "between points to add intermediate stops",
     "hintMin": "Minimum 2 points (pickup and destination)"
+  },
+  "addressAutocomplete": {
+    "placeholder": "Enter address...",
+    "searching": "Searching addresses...",
+    "minChars": "Enter at least 3 characters to search",
+    "noResults": "No addresses found"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "save": "Save",
+    "selectDate": "Select date"
   }
 }

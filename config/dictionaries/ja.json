@@ -239,11 +239,8 @@
     }
   },
   "navbar": {
-    "about": "私の物語",
-    "get_started": "始める",
-    "terms": "利用規約",
-    "privacy": "プライバシーポリシー",
-    "support": "サポート"
+    "notification_tooltip": "通知",
+    "support_tooltip": "サポート"
   },
   "praesentation": {
     "intro": "このプロジェクトは、調査データの管理と監視のためのダッシュボードです。",
@@ -803,7 +800,11 @@
         "selectPlaceholder": "スタッフを選択...",
         "searchPlaceholder": "スタッフを検索...",
         "noResults": "結果なし"
-      }
+      },
+      "deleteTitle": "予約を削除しますか？",
+      "start": "開始",
+      "pause": "一時停止",
+      "finish": "終了"
     },
     "report": {
       "title": "予約レポート",
@@ -829,7 +830,25 @@
       "startError": "セッションの開始に失敗しました",
       "finishError": "セッションの終了に失敗しました",
       "hour": "時間",
-      "noSessions": "セッションなし"
+      "noSessions": "セッションなし",
+      "clientReview": "クライアントレビュー",
+      "showQR": "QRコードを表示"
+    },
+    "types": {
+      "trip": "移動",
+      "meeting": "会議",
+      "visit": "訪問",
+      "visitDescription": "クライアントとの予約",
+      "tripDescription": "輸送移動"
+    },
+    "tabs": {
+      "report": "レポート",
+      "notes": "メモ"
+    },
+    "status": "ステータス",
+    "time": {
+      "from": "から",
+      "to": "まで"
     }
   },
   "sla": {
@@ -938,5 +957,17 @@
     "hintAdd": "押す",
     "hintAddBetween": "地点間で中間停車地を追加",
     "hintMin": "最低2地点（出発と到着）"
+  },
+  "addressAutocomplete": {
+    "placeholder": "住所を入力...",
+    "searching": "住所を検索中...",
+    "minChars": "3文字以上入力してください",
+    "noResults": "住所が見つかりません"
+  },
+  "common": {
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "save": "保存",
+    "selectDate": "日付を選択"
   }
 }

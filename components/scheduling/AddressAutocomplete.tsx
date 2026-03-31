@@ -5,6 +5,7 @@ import { ComboBox, Input, ListBox, Spinner, EmptyState, Label, Collection } from
 import { MapPin } from 'lucide-react'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useAuth } from '@/components/AuthProvider'
+import { useTranslation } from '@/components/Providers'
 
 interface PhotonFeature {
   properties: {
@@ -60,13 +61,15 @@ function AddressAutocomplete({
   value,
   onChange,
   onAddressSelect,
-  placeholder = 'Введите адрес...',
+  placeholder: placeholderProp,
   fullWidth,
   'aria-label': ariaLabel,
   isDisabled = false,
 }: AddressAutocompleteProps) {
   const { session, status: authStatus } = useAuth()
+  const { t } = useTranslation()
   const isDemo = authStatus !== 'authenticated' && authStatus !== 'loading'
+  const placeholder = placeholderProp || t('addressAutocomplete.placeholder', 'Enter address...')
   const [inputValue, setInputValue] = useState(value)
   const [suggestions, setSuggestions] = useState<PhotonFeature[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -228,15 +231,15 @@ function AddressAutocomplete({
               {isLoading ? (
                 <div className="flex items-center justify-center gap-2 py-4">
                   <Spinner size="sm" />
-                  <span className="text-sm text-default-400">Поиск адресов...</span>
+                  <span className="text-sm text-default-400">{t('addressAutocomplete.searching', 'Searching addresses...')}</span>
                 </div>
               ) : inputValue.length < 3 ? (
                 <div className="py-4 text-center text-sm text-default-400">
-                  Введите минимум 3 символа для поиска
+                  {t('addressAutocomplete.minChars', 'Enter at least 3 characters to search')}
                 </div>
               ) : (
                 <div className="py-4 text-center text-sm text-default-400">
-                  Адреса не найдены
+                  {t('addressAutocomplete.noResults', 'No addresses found')}
                 </div>
               )}
             </EmptyState>

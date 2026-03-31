@@ -239,11 +239,8 @@
     }
   },
   "navbar": {
-    "about": "Hikayem",
-    "get_started": "Başlayın",
-    "terms": "Kullanım Şartları",
-    "privacy": "Gizlilik Politikası",
-    "support": "Destek"
+    "notification_tooltip": "Bildirimler",
+    "support_tooltip": "Destek"
   },
   "praesentation": {
     "intro": "Proje, çalışma verilerinin yönetimi ve izlenmesi için bir kontrol panelidir.",
@@ -803,7 +800,11 @@
         "selectPlaceholder": "Personel üyesi seç...",
         "searchPlaceholder": "Personel üyesi ara...",
         "noResults": "Sonuç yok"
-      }
+      },
+      "deleteTitle": "Randevuyu sil?",
+      "start": "Başlat",
+      "pause": "Duraklat",
+      "finish": "Bitir"
     },
     "report": {
       "title": "Randevu Raporu",
@@ -829,7 +830,25 @@
       "startError": "Oturum başlatılamadı",
       "finishError": "Oturum kapatılamadı",
       "hour": "saat",
-      "noSessions": "Oturum yok"
+      "noSessions": "Oturum yok",
+      "clientReview": "Müşteri değerlendirmesi",
+      "showQR": "QR kodu göster"
+    },
+    "types": {
+      "trip": "Yolculuk",
+      "meeting": "Toplantı",
+      "visit": "Ziyaret",
+      "visitDescription": "Müşteriyle randevu",
+      "tripDescription": "Nakliye yolculuğu"
+    },
+    "tabs": {
+      "report": "Rapor",
+      "notes": "Notlar"
+    },
+    "status": "Durum",
+    "time": {
+      "from": "dan",
+      "to": "e"
     }
   },
   "sla": {
@@ -938,5 +957,17 @@
     "hintAdd": "Basın",
     "hintAddBetween": "noktalar arasında ara durak eklemek için",
     "hintMin": "En az 2 nokta (kalkış ve varış)"
+  },
+  "addressAutocomplete": {
+    "placeholder": "Adres girin...",
+    "searching": "Adresler aranıyor...",
+    "minChars": "En az 3 karakter girin",
+    "noResults": "Adres bulunamadı"
+  },
+  "common": {
+    "cancel": "İptal",
+    "delete": "Sil",
+    "save": "Kaydet",
+    "selectDate": "Tarih seçin"
   }
 }
