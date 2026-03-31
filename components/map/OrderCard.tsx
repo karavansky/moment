@@ -6,6 +6,7 @@ import { Clock, User, Phone, Car, Package, Route as RouteIcon } from 'lucide-rea
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Order, Vehicle, OrderStatus } from '@/types/transport'
 import { RouteMarkerIcon } from './RouteMarkers'
+import { useTranslation } from '@/components/Providers'
 
 interface OrderCardProps {
   order: Order
@@ -37,6 +38,7 @@ const OrderCard = React.memo(function OrderCard({
   getStatusLabel,
   getStatusIcon,
 }: OrderCardProps) {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<TabType>('order')
   const orderTabRef = useRef<HTMLDivElement>(null)
   const routeTabRef = useRef<HTMLDivElement>(null)
@@ -99,7 +101,7 @@ const OrderCard = React.memo(function OrderCard({
                 onClick={() => setActiveTab('order')}
               >
                 <Package size={12} />
-                <Chip.Label>Заказ</Chip.Label>
+                <Chip.Label>{t('dispatcher.order.tab')}</Chip.Label>
               </Chip>
             </div>
             <div ref={routeTabRef}>
@@ -110,7 +112,7 @@ const OrderCard = React.memo(function OrderCard({
                 onClick={() => setActiveTab('route')}
               >
                 <RouteIcon size={12} />
-                <Chip.Label>Маршрут</Chip.Label>
+                <Chip.Label>{t('dispatcher.order.route')}</Chip.Label>
               </Chip>
             </div>
           </div>
@@ -185,7 +187,7 @@ const OrderCard = React.memo(function OrderCard({
                       className="w-full"
                       onPress={() => onAssignDriver(order)}
                     >
-                      Назначить водителя
+                      {t('dispatcher.assign.button')}
                     </Button>
                   </div>
                 )}

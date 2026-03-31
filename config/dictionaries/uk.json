@@ -614,13 +614,66 @@
     }
   },
   "map": {
-    "loading": "Завантаження...",
+    "loading": "Завантаження карти...",
     "title": "Зустрічі",
     "noAppointments": "На сьогодні зустрічей не заплановано",
     "time": "Час:",
     "duration": "Тривалість:",
     "min": "хв.",
     "current": "Поточна:"
+  },
+  "dispatcher": {
+    "tabs": {
+      "appointments": "Візити",
+      "orders": "Поїздки"
+    },
+    "search": {
+      "appointments": "Пошук за ім'ям, адресою...",
+      "orders": "Пошук за ім'ям, телефоном, адресою..."
+    },
+    "status": {
+      "all": "Усі статуси",
+      "filterLabel": "Фільтр за статусом",
+      "PENDING": "Очікує",
+      "CREATED": "Створено",
+      "ASSIGNED": "Призначено",
+      "ACCEPTED": "Прийнято",
+      "ARRIVED": "На місці",
+      "IN_PROGRESS": "У дорозі",
+      "COMPLETED": "Завершено",
+      "CANCELLED": "Скасовано"
+    },
+    "empty": {
+      "appointments": "Візитів не знайдено",
+      "orders": "Замовлень не знайдено"
+    },
+    "appointmentOpen": "Візит відкрито",
+    "assign": {
+      "title": "Призначити водія",
+      "tripInfo": "Інформація про поїздку:",
+      "passenger": "Пасажир:",
+      "from": "Звідки:",
+      "to": "Куди:",
+      "selectDriver": "Оберіть водія:",
+      "noDrivers": "Немає доступних водіїв",
+      "cancel": "Скасувати",
+      "button": "Призначити водія"
+    },
+    "order": {
+      "tab": "Замовлення",
+      "route": "Маршрут"
+    },
+    "map": {
+      "updated": "Оновлено:",
+      "pickup": "Звідки",
+      "dropoff": "Куди",
+      "stop": "Зупинка",
+      "kmh": "км/год",
+      "legend": "Легенда",
+      "legendPickup": "Пункт відправлення",
+      "legendIntermediate": "Проміжна зупинка",
+      "legendDropoff": "Пункт прибуття"
+    }
   },
   "clients": {
     "title": "Клієнти",

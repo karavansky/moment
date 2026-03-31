@@ -614,13 +614,66 @@
     }
   },
   "map": {
-    "loading": "Загрузка...",
+    "loading": "Загрузка карты...",
     "title": "Встречи",
     "noAppointments": "На сегодня встреч не запланировано",
     "time": "Время:",
     "duration": "Продолжительность:",
     "min": "мин.",
     "current": "Текущая:"
+  },
+  "dispatcher": {
+    "tabs": {
+      "appointments": "Визиты",
+      "orders": "Поездки"
+    },
+    "search": {
+      "appointments": "Поиск по имени, адресу...",
+      "orders": "Поиск по имени, телефону, адресу..."
+    },
+    "status": {
+      "all": "Все статусы",
+      "filterLabel": "Фильтр по статусу",
+      "PENDING": "Ожидает",
+      "CREATED": "Создан",
+      "ASSIGNED": "Назначен",
+      "ACCEPTED": "Принят",
+      "ARRIVED": "На месте",
+      "IN_PROGRESS": "В пути",
+      "COMPLETED": "Завершён",
+      "CANCELLED": "Отменён"
+    },
+    "empty": {
+      "appointments": "Визиты не найдены",
+      "orders": "Заказы не найдены"
+    },
+    "appointmentOpen": "Визит открыт",
+    "assign": {
+      "title": "Назначить водителя",
+      "tripInfo": "Информация о поездке:",
+      "passenger": "Пассажир:",
+      "from": "Откуда:",
+      "to": "Куда:",
+      "selectDriver": "Выберите водителя:",
+      "noDrivers": "Нет доступных водителей",
+      "cancel": "Отмена",
+      "button": "Назначить водителя"
+    },
+    "order": {
+      "tab": "Заказ",
+      "route": "Маршрут"
+    },
+    "map": {
+      "updated": "Обновлено:",
+      "pickup": "Откуда",
+      "dropoff": "Куда",
+      "stop": "Остановка",
+      "kmh": "км/ч",
+      "legend": "Легенда",
+      "legendPickup": "Пункт отправления",
+      "legendIntermediate": "Промежуточная остановка",
+      "legendDropoff": "Пункт прибытия"
+    }
   },
   "clients": {
     "title": "Клиенты",

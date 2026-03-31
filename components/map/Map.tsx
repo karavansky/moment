@@ -128,7 +128,7 @@ const createDriverArrowIcon = (speed?: number) => {
           marginTop: '-8px',
           whiteSpace: 'nowrap',
         }}>
-          {Math.round(speed)} км/ч
+          {Math.round(speed)} km/h
         </div>
       )}
     </div>
@@ -708,24 +708,7 @@ const Map = React.memo(function Map({
   }
 
   const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'CREATED':
-        return 'Создан'
-      case 'ASSIGNED':
-        return 'Назначен'
-      case 'ACCEPTED':
-        return 'Принят'
-      case 'ARRIVED':
-        return 'На месте'
-      case 'IN_PROGRESS':
-        return 'В пути'
-      case 'COMPLETED':
-        return 'Завершен'
-      case 'CANCELLED':
-        return 'Отменен'
-      default:
-        return status
-    }
+    return t(`dispatcher.status.${status}`, status)
   }
 
   // Default center (Cologne, Germany)
@@ -799,7 +782,7 @@ const Map = React.memo(function Map({
                     <p className="text-xs text-default-500">{vehicle.type}</p>
                     {vehicle.lastLocationUpdate && (
                       <p className="text-xs text-default-400 mt-1">
-                        Обновлено: {new Date(vehicle.lastLocationUpdate).toLocaleTimeString('ru-RU')}
+                        {t('dispatcher.map.updated')} {new Date(vehicle.lastLocationUpdate).toLocaleTimeString()}
                       </p>
                     )}
                   </div>
@@ -880,7 +863,7 @@ const Map = React.memo(function Map({
                           <div className="text-sm">
                             <p className="font-semibold flex items-center gap-1">
                               <MapPin size={14} />
-                              Откуда
+                              {t('dispatcher.map.pickup')}
                             </p>
                             <p className="text-xs mt-1">{route.pickupAddress}</p>
                             <p className="text-xs text-default-500 mt-1">{order.passengerName}</p>
@@ -909,7 +892,7 @@ const Map = React.memo(function Map({
                         <div className="text-sm">
                           <p className="font-semibold flex items-center gap-1">
                             {isLastRoute ? <CheckCircle2 size={14} /> : <MapPin size={14} />}
-                            {isLastRoute ? 'Куда' : `Остановка ${route.sequence}`}
+                            {isLastRoute ? t('dispatcher.map.dropoff') : `${t('dispatcher.map.stop')} ${route.sequence}`}
                           </p>
                           <p className="text-xs mt-1">{route.dropoffAddress}</p>
                           <p className="text-xs text-default-500 mt-1">{order.passengerName}</p>
@@ -939,11 +922,11 @@ const Map = React.memo(function Map({
       {/* Legend - показываем только если есть orders */}
       {orders.length > 0 && (
         <div className="absolute bottom-4 left-4 bg-white dark:bg-blue-900/70 rounded-lg shadow-lg p-3 text-xs z-1000">
-          <p className="font-semibold mb-2">Легенда</p>
+          <p className="font-semibold mb-2">{t('dispatcher.map.legend')}</p>
           <div className="space-y-1.5">
-            <MarkerLegendItem type="pickup" label="Пункт отправления" />
-            <MarkerLegendItem type="intermediate" label="Промежуточная остановка" />
-            <MarkerLegendItem type="dropoff" label="Пункт прибытия" />
+            <MarkerLegendItem type="pickup" label={t('dispatcher.map.legendPickup')} />
+            <MarkerLegendItem type="intermediate" label={t('dispatcher.map.legendIntermediate')} />
+            <MarkerLegendItem type="dropoff" label={t('dispatcher.map.legendDropoff')} />
           </div>
         </div>
       )}

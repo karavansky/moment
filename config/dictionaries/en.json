@@ -669,13 +669,66 @@
     }
   },
   "map": {
-    "loading": "Loading...",
+    "loading": "Loading map...",
     "title": "Appointments",
     "noAppointments": "No appointments planned for today",
     "time": "Time:",
     "duration": "Duration:",
     "min": "min.",
     "current": "Current:"
+  },
+  "dispatcher": {
+    "tabs": {
+      "appointments": "Visits",
+      "orders": "Trips"
+    },
+    "search": {
+      "appointments": "Search by name, address...",
+      "orders": "Search by name, phone, address..."
+    },
+    "status": {
+      "all": "All statuses",
+      "filterLabel": "Filter by status",
+      "PENDING": "Pending",
+      "CREATED": "Created",
+      "ASSIGNED": "Assigned",
+      "ACCEPTED": "Accepted",
+      "ARRIVED": "Arrived",
+      "IN_PROGRESS": "In progress",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled"
+    },
+    "empty": {
+      "appointments": "No visits found",
+      "orders": "No orders found"
+    },
+    "appointmentOpen": "Visit opened",
+    "assign": {
+      "title": "Assign driver",
+      "tripInfo": "Trip information:",
+      "passenger": "Passenger:",
+      "from": "From:",
+      "to": "To:",
+      "selectDriver": "Select driver:",
+      "noDrivers": "No available drivers",
+      "cancel": "Cancel",
+      "button": "Assign driver"
+    },
+    "order": {
+      "tab": "Order",
+      "route": "Route"
+    },
+    "map": {
+      "updated": "Updated:",
+      "pickup": "Pickup",
+      "dropoff": "Destination",
+      "stop": "Stop",
+      "kmh": "km/h",
+      "legend": "Legend",
+      "legendPickup": "Pickup point",
+      "legendIntermediate": "Intermediate stop",
+      "legendDropoff": "Destination point"
+    }
   },
   "clients": {
     "title": "Clients",

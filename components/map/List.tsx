@@ -219,17 +219,7 @@ export default function List({
   }
 
   const getStatusLabel = (status: OrderStatus) => {
-    const labels: Record<OrderStatus, string> = {
-      PENDING: 'Ожидает',
-      CREATED: 'Создан',
-      ASSIGNED: 'Назначен',
-      ACCEPTED: 'Принят',
-      ARRIVED: 'На месте',
-      IN_PROGRESS: 'В пути',
-      COMPLETED: 'Завершен',
-      CANCELLED: 'Отменен',
-    }
-    return labels[status] || status
+    return t(`dispatcher.status.${status}`, status)
   }
 
   const getStatusIcon = (status: OrderStatus) => {
@@ -345,7 +335,7 @@ export default function List({
                       }}
                     >
                       <Calendar className="w-5 h-5 mr-2" />
-                      Визиты
+                      {t('dispatcher.tabs.appointments')}
                     </Button>
                     {appointments.length > 0 && (
                       <Badge color="warning" size="sm" placement="top-right">
@@ -375,7 +365,7 @@ export default function List({
                         })
                       }}
                     >
-                      <Package className="w-5 h-5 mr-2" /> Поездки
+                      <Package className="w-5 h-5 mr-2" /> {t('dispatcher.tabs.orders')}
                     </Button>
                     {orders.length > 0 && (
                       <Badge color="warning" size="sm" placement="top-right">
@@ -410,7 +400,7 @@ export default function List({
                       })
                     }}
                   >
-                    <Calendar className="w-5 h-5 mr-2" /> Визиты
+                    <Calendar className="w-5 h-5 mr-2" /> {t('dispatcher.tabs.appointments')}
                   </Button>
                   {appointments.length > 0 && (
                     <Badge color="warning" size="sm" placement="top-right">
@@ -435,7 +425,7 @@ export default function List({
                       })
                     }}
                   >
-                    <Package className="w-5 h-5 mr-2" /> Поездки
+                    <Package className="w-5 h-5 mr-2" /> {t('dispatcher.tabs.orders')}
                   </Button>
                   {orders.length > 0 && (
                     <Badge color="warning" size="sm" placement="top-right">
@@ -501,8 +491,8 @@ export default function List({
                     type="text"
                     placeholder={
                       activeTab === 'appointments'
-                        ? 'Поиск по имени, адресу...'
-                        : 'Поиск по имени, телефону, адресу...'
+                        ? t('dispatcher.search.appointments')
+                        : t('dispatcher.search.orders')
                     }
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
@@ -516,7 +506,7 @@ export default function List({
                     <Dropdown>
                       <Button variant="tertiary" className="w-full justify-between h-full">
                         {statusFilter === 'ALL' ? (
-                          'Все статусы'
+                          t('dispatcher.status.all')
                         ) : (
                           <Chip size="sm" {...getStatusStyle(statusFilter)}>
                             {getStatusIcon(statusFilter)}
@@ -528,7 +518,7 @@ export default function List({
                       <Dropdown.Popover>
                         <Dropdown.Menu
                           disallowEmptySelection
-                          aria-label="Фильтр по статусу"
+                          aria-label={t('dispatcher.status.filterLabel')}
                           selectedKeys={[statusFilter]}
                           selectionMode="single"
                           onSelectionChange={(keys) => {
@@ -537,7 +527,7 @@ export default function List({
                           }}
                         >
                           <DropdownItem key="ALL" id="ALL">
-                            Все статусы
+                            {t('dispatcher.status.all')}
                             <Dropdown.ItemIndicator />
                           </DropdownItem>
                           <DropdownItem key="CREATED" id="CREATED">
@@ -615,7 +605,7 @@ export default function List({
                     {filteredAppointments.length === 0 ? (
                       <div className="text-center py-12 text-default-400">
                         <Calendar size={48} className="mx-auto mb-3 opacity-50" />
-                        <p className="text-sm">Визиты не найдены</p>
+                        <p className="text-sm">{t('dispatcher.empty.appointments')}</p>
                       </div>
                     ) : (
                       filteredAppointments.map(apt => (
@@ -653,13 +643,13 @@ export default function List({
                                   <Clock size={12} />
                                   <span>
                                     {formatTime(apt.startTime)} - {formatTime(apt.endTime)} (
-                                    {apt.duration} мин)
+                                    {apt.duration} {t('map.min')})
                                   </span>
                                 </div>
                               )}
                               {apt.isOpen && apt.openedAt && (
                                 <div className="bg-green-50 border border-green-200 rounded-lg px-2 py-1">
-                                  <p className="text-xs text-green-700 font-medium">Визит открыт</p>
+                                  <p className="text-xs text-green-700 font-medium">{t('dispatcher.appointmentOpen')}</p>
                                 </div>
                               )}
                             </div>
@@ -681,7 +671,7 @@ export default function List({
                     {sortedOrders.length === 0 ? (
                       <div className="text-center py-12 text-default-400">
                         <Package size={48} className="mx-auto mb-3 opacity-50" />
-                        <p className="text-sm">Заказы не найдены</p>
+                        <p className="text-sm">{t('dispatcher.empty.orders')}</p>
                       </div>
                     ) : (
                       sortedOrders.map(order => (
@@ -715,32 +705,32 @@ export default function List({
           <Modal.Dialog>
             <Modal.CloseTrigger />
             <Modal.Header>
-              <Modal.Heading>Назначить водителя</Modal.Heading>
+              <Modal.Heading>{t('dispatcher.assign.title')}</Modal.Heading>
             </Modal.Header>
             <Modal.Body>
               {orderToAssign && (
                 <div className="space-y-4">
                   <div className="bg-default-100 rounded-lg p-3">
-                    <p className="text-sm font-medium mb-2">Информация о поездке:</p>
+                    <p className="text-sm font-medium mb-2">{t('dispatcher.assign.tripInfo')}</p>
                     <div className="space-y-1 text-xs text-default-600">
                       <p>
-                        <strong>Пассажир:</strong> {orderToAssign.passengerName}
+                        <strong>{t('dispatcher.assign.passenger')}</strong> {orderToAssign.passengerName}
                       </p>
                       <p>
-                        <strong>Откуда:</strong> {orderToAssign.pickupAddress}
+                        <strong>{t('dispatcher.assign.from')}</strong> {orderToAssign.pickupAddress}
                       </p>
                       <p>
-                        <strong>Куда:</strong> {orderToAssign.dropoffAddress}
+                        <strong>{t('dispatcher.assign.to')}</strong> {orderToAssign.dropoffAddress}
                       </p>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <p className="text-sm font-medium">Выберите водителя:</p>
+                    <p className="text-sm font-medium">{t('dispatcher.assign.selectDriver')}</p>
                     <div className="space-y-2 max-h-60 overflow-y-auto">
                       {vehicles.filter(v => v.status === 'ACTIVE').length === 0 ? (
                         <p className="text-sm text-default-400 text-center py-4">
-                          Нет доступных водителей
+                          {t('dispatcher.assign.noDrivers')}
                         </p>
                       ) : (
                         vehicles
@@ -770,7 +760,7 @@ export default function List({
             </Modal.Body>
             <Modal.Footer>
               <Button variant="outline" onPress={() => setAssignModalOpen(false)}>
-                Отмена
+                {t('dispatcher.assign.cancel')}
               </Button>
             </Modal.Footer>
           </Modal.Dialog>

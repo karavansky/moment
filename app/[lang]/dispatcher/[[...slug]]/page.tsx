@@ -8,16 +8,22 @@ import { getAllTransportMockData } from '@/lib/transport-mock-data'
 import type { Order, OrderStatus } from '@/types/transport'
 import List from '@/components/map/List'
 import { useIsPortrait } from '@/hooks/useMediaQuery'
+import { useTranslation } from '@/components/Providers'
 
 // Динамический импорт Map без SSR (Leaflet требует window)
 const Map = dynamic(() => import('@/components/map/Map'), {
   ssr: false,
-  loading: () => (
-    <div className="h-full w-full flex items-center justify-center bg-default-100">
-      <p className="text-default-500">Загрузка карты...</p>
-    </div>
-  ),
+  loading: () => <MapLoadingFallback />,
 })
+
+function MapLoadingFallback() {
+  const { t } = useTranslation()
+  return (
+    <div className="h-full w-full flex items-center justify-center bg-default-100">
+      <p className="text-default-500">{t('map.loading')}</p>
+    </div>
+  )
+}
 
 interface MapPageProps {
   params: Promise<{

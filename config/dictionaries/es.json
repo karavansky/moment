@@ -606,6 +606,59 @@
     "min": "min.",
     "current": "Actual:"
   },
+  "dispatcher": {
+    "tabs": {
+      "appointments": "Visitas",
+      "orders": "Viajes"
+    },
+    "search": {
+      "appointments": "Buscar por nombre, dirección...",
+      "orders": "Buscar por nombre, teléfono, dirección..."
+    },
+    "status": {
+      "all": "Todos los estados",
+      "filterLabel": "Filtrar por estado",
+      "PENDING": "Pendiente",
+      "CREATED": "Creado",
+      "ASSIGNED": "Asignado",
+      "ACCEPTED": "Aceptado",
+      "ARRIVED": "Llegado",
+      "IN_PROGRESS": "En curso",
+      "COMPLETED": "Completado",
+      "CANCELLED": "Cancelado"
+    },
+    "empty": {
+      "appointments": "No se encontraron visitas",
+      "orders": "No se encontraron pedidos"
+    },
+    "appointmentOpen": "Visita abierta",
+    "assign": {
+      "title": "Asignar conductor",
+      "tripInfo": "Información del viaje:",
+      "passenger": "Pasajero:",
+      "from": "Desde:",
+      "to": "Hasta:",
+      "selectDriver": "Seleccionar conductor:",
+      "noDrivers": "No hay conductores disponibles",
+      "cancel": "Cancelar",
+      "button": "Asignar conductor"
+    },
+    "order": {
+      "tab": "Pedido",
+      "route": "Ruta"
+    },
+    "map": {
+      "updated": "Actualizado:",
+      "pickup": "Recogida",
+      "dropoff": "Destino",
+      "stop": "Parada",
+      "kmh": "km/h",
+      "legend": "Leyenda",
+      "legendPickup": "Punto de recogida",
+      "legendIntermediate": "Parada intermedia",
+      "legendDropoff": "Punto de destino"
+    }
+  },
   "clients": {
     "title": "Clientes",
     "table": {

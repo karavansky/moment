@@ -700,13 +700,66 @@
     }
   },
   "map": {
-    "loading": "Wird geladen...",
+    "loading": "Karte wird geladen...",
     "title": "Termine",
     "noAppointments": "Keine Termine für heute geplant",
     "time": "Uhrzeit:",
     "duration": "Dauer:",
-    "min": "min.",
+    "min": "Min.",
     "current": "Aktuell:"
+  },
+  "dispatcher": {
+    "tabs": {
+      "appointments": "Termine",
+      "orders": "Fahrten"
+    },
+    "search": {
+      "appointments": "Suche nach Name, Adresse...",
+      "orders": "Suche nach Name, Telefon, Adresse..."
+    },
+    "status": {
+      "all": "Alle Status",
+      "filterLabel": "Nach Status filtern",
+      "PENDING": "Ausstehend",
+      "CREATED": "Erstellt",
+      "ASSIGNED": "Zugewiesen",
+      "ACCEPTED": "Angenommen",
+      "ARRIVED": "Angekommen",
+      "IN_PROGRESS": "Unterwegs",
+      "COMPLETED": "Abgeschlossen",
+      "CANCELLED": "Storniert"
+    },
+    "empty": {
+      "appointments": "Keine Termine gefunden",
+      "orders": "Keine Aufträge gefunden"
+    },
+    "appointmentOpen": "Termin geöffnet",
+    "assign": {
+      "title": "Fahrer zuweisen",
+      "tripInfo": "Fahrtinformationen:",
+      "passenger": "Fahrgast:",
+      "from": "Von:",
+      "to": "Nach:",
+      "selectDriver": "Fahrer auswählen:",
+      "noDrivers": "Keine verfügbaren Fahrer",
+      "cancel": "Abbrechen",
+      "button": "Fahrer zuweisen"
+    },
+    "order": {
+      "tab": "Auftrag",
+      "route": "Route"
+    },
+    "map": {
+      "updated": "Aktualisiert:",
+      "pickup": "Abholung",
+      "dropoff": "Ziel",
+      "stop": "Halt",
+      "kmh": "km/h",
+      "legend": "Legende",
+      "legendPickup": "Abholpunkt",
+      "legendIntermediate": "Zwischenhalt",
+      "legendDropoff": "Zielpunkt"
+    }
   },
   "clients": {
     "title": "Kunden",
