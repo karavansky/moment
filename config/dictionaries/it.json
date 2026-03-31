@@ -928,5 +928,15 @@
       "wheelchairComplex": "Passeggero in sedia a rotelle, percorso complesso con fermate",
       "largeLuggage": "Con bagaglio grande"
     }
+  },
+  "routeEditor": {
+    "pickup": "Punto di partenza",
+    "dropoff": "Punto di arrivo",
+    "intermediate": "Punto intermedio",
+    "addPoint": "Aggiungi punto",
+    "hintDrag": "Trascina i punti per riordinare",
+    "hintAdd": "Premi",
+    "hintAddBetween": "tra i punti per aggiungere fermate intermedie",
+    "hintMin": "Minimo 2 punti (partenza e arrivo)"
   }
 }

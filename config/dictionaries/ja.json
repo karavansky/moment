@@ -928,5 +928,15 @@
       "wheelchairComplex": "車椅子の乗客、停車地のある複雑なルート",
       "largeLuggage": "大きな荷物あり"
     }
+  },
+  "routeEditor": {
+    "pickup": "出発地点",
+    "dropoff": "到着地点",
+    "intermediate": "中間地点",
+    "addPoint": "地点を追加",
+    "hintDrag": "ドラッグして順序を変更",
+    "hintAdd": "押す",
+    "hintAddBetween": "地点間で中間停車地を追加",
+    "hintMin": "最低2地点（出発と到着）"
   }
 }

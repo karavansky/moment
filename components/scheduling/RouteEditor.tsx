@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { Button } from '@heroui/react'
 import { Plus, Trash2, GripVertical } from 'lucide-react'
 import AddressAutocomplete from './AddressAutocomplete'
+import { useTranslation } from '@/components/Providers'
 
 export interface RoutePoint {
   id: string
@@ -20,6 +21,7 @@ interface RouteEditorProps {
 }
 
 function RouteEditor({ points, onChange, error, isReadOnly = false }: RouteEditorProps) {
+  const { t } = useTranslation()
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
 
   // Добавить новый пункт
@@ -119,10 +121,10 @@ function RouteEditor({ points, onChange, error, isReadOnly = false }: RouteEdito
             <AddressAutocomplete
               placeholder={
                 index === 0
-                  ? 'Пункт отправления'
+                  ? t('routeEditor.pickup', 'Pickup point')
                   : index === points.length - 1
-                    ? 'Пункт прибытия'
-                    : `Промежуточный пункт ${index}`
+                    ? t('routeEditor.dropoff', 'Destination point')
+                    : `${t('routeEditor.intermediate', 'Intermediate point')} ${index}`
               }
               value={point.address}
               onChange={(address, lat, lng) => updatePoint(index, address, lat, lng)}
@@ -169,7 +171,7 @@ function RouteEditor({ points, onChange, error, isReadOnly = false }: RouteEdito
           className="w-full"
         >
           <Plus size={16} />
-          Добавить пункт в конец
+          {t('routeEditor.addPoint', 'Add point')}
         </Button>
       )}
 
@@ -178,9 +180,9 @@ function RouteEditor({ points, onChange, error, isReadOnly = false }: RouteEdito
       {/* Info Text */}
       {!isReadOnly && (
         <div className="text-xs text-default-400 mt-2">
-          <p>• Перетаскивайте пункты для изменения порядка</p>
-          <p>• Нажмите <Plus size={12} className="inline" /> между пунктами для добавления промежуточных</p>
-          <p>• Минимум 2 пункта (отправление и прибытие)</p>
+          <p>• {t('routeEditor.hintDrag', 'Drag points to reorder')}</p>
+          <p>• {t('routeEditor.hintAdd', 'Press')} <Plus size={12} className="inline" /> {t('routeEditor.hintAddBetween', 'between points to add intermediate stops')}</p>
+          <p>• {t('routeEditor.hintMin', 'Minimum 2 points (pickup and destination)')}</p>
         </div>
       )}
     </div>

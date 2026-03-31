@@ -544,7 +544,7 @@
     "menu": {
       "home": "Startseite",
       "schedule": "Terminplan",
-      "dispatcher": "Kontrollraum"  
+      "dispatcher": "Kontrollraum"
     },
     "crm": {
       "title": "CRM",
@@ -588,7 +588,15 @@
         "Samstag",
         "Sonntag"
       ],
-      "weekdaysShort": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
+      "weekdaysShort": [
+        "Mo",
+        "Di",
+        "Mi",
+        "Do",
+        "Fr",
+        "Sa",
+        "So"
+      ],
       "months": [
         "Januar",
         "Februar",
@@ -943,5 +951,15 @@
       "wheelchairComplex": "Rollstuhlfahrer, komplexe Route mit Haltestellen",
       "largeLuggage": "Mit großem Gepäck"
     }
+  },
+  "routeEditor": {
+    "pickup": "Abholpunkt",
+    "dropoff": "Zielpunkt",
+    "intermediate": "Zwischenhalt",
+    "addPoint": "Punkt hinzufügen",
+    "hintDrag": "Punkte ziehen, um die Reihenfolge zu ändern",
+    "hintAdd": "Drücken Sie",
+    "hintAddBetween": "zwischen Punkten, um Zwischenstopps hinzuzufügen",
+    "hintMin": "Mindestens 2 Punkte (Abholung und Ziel)"
   }
 }

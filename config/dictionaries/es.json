@@ -928,5 +928,15 @@
       "wheelchairComplex": "Pasajero en silla de ruedas, ruta compleja con paradas",
       "largeLuggage": "Con equipaje grande"
     }
+  },
+  "routeEditor": {
+    "pickup": "Punto de recogida",
+    "dropoff": "Punto de destino",
+    "intermediate": "Punto intermedio",
+    "addPoint": "Añadir punto",
+    "hintDrag": "Arrastra los puntos para reordenar",
+    "hintAdd": "Pulsa",
+    "hintAddBetween": "entre puntos para añadir paradas intermedias",
+    "hintMin": "Mínimo 2 puntos (recogida y destino)"
   }
 }

@@ -928,5 +928,15 @@
       "wheelchairComplex": "Pasażer na wózku, złożona trasa z przystankami",
       "largeLuggage": "Z dużym bagażem"
     }
+  },
+  "routeEditor": {
+    "pickup": "Punkt odbioru",
+    "dropoff": "Punkt docelowy",
+    "intermediate": "Punkt pośredni",
+    "addPoint": "Dodaj punkt",
+    "hintDrag": "Przeciągnij punkty, aby zmienić kolejność",
+    "hintAdd": "Naciśnij",
+    "hintAddBetween": "między punktami, aby dodać przystanki pośrednie",
+    "hintMin": "Minimum 2 punkty (odbiór i cel)"
   }
 }

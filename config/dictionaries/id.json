@@ -928,5 +928,15 @@
       "wheelchairComplex": "Penumpang kursi roda, rute kompleks dengan pemberhentian",
       "largeLuggage": "Dengan bagasi besar"
     }
+  },
+  "routeEditor": {
+    "pickup": "Titik penjemputan",
+    "dropoff": "Titik tujuan",
+    "intermediate": "Titik perantara",
+    "addPoint": "Tambah titik",
+    "hintDrag": "Seret titik untuk mengatur ulang",
+    "hintAdd": "Tekan",
+    "hintAddBetween": "di antara titik untuk menambahkan perhentian",
+    "hintMin": "Minimal 2 titik (penjemputan dan tujuan)"
   }
 }

@@ -576,7 +576,15 @@
         "Saturday",
         "Sunday"
       ],
-      "weekdaysShort": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      "weekdaysShort": [
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat",
+        "Sun"
+      ],
       "months": [
         "January",
         "February",
@@ -911,5 +919,15 @@
       "wheelchairComplex": "Wheelchair passenger, complex route with stops",
       "largeLuggage": "With large luggage"
     }
+  },
+  "routeEditor": {
+    "pickup": "Pickup point",
+    "dropoff": "Destination point",
+    "intermediate": "Intermediate point",
+    "addPoint": "Add point",
+    "hintDrag": "Drag points to reorder",
+    "hintAdd": "Press",
+    "hintAddBetween": "between points to add intermediate stops",
+    "hintMin": "Minimum 2 points (pickup and destination)"
   }
 }

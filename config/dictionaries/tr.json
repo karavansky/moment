@@ -928,5 +928,15 @@
       "wheelchairComplex": "Tekerlekli sandalye yolcusu, duraklı karmaşık güzergah",
       "largeLuggage": "Büyük bagajla"
     }
+  },
+  "routeEditor": {
+    "pickup": "Kalkış noktası",
+    "dropoff": "Varış noktası",
+    "intermediate": "Ara nokta",
+    "addPoint": "Nokta ekle",
+    "hintDrag": "Sıralamayı değiştirmek için sürükleyin",
+    "hintAdd": "Basın",
+    "hintAddBetween": "noktalar arasında ara durak eklemek için",
+    "hintMin": "En az 2 nokta (kalkış ve varış)"
   }
 }

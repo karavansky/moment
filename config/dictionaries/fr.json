@@ -928,5 +928,15 @@
       "wheelchairComplex": "Passager en fauteuil roulant, itinéraire complexe avec arrêts",
       "largeLuggage": "Avec gros bagages"
     }
+  },
+  "routeEditor": {
+    "pickup": "Point de départ",
+    "dropoff": "Point d'arrivée",
+    "intermediate": "Point intermédiaire",
+    "addPoint": "Ajouter un point",
+    "hintDrag": "Glissez les points pour réorganiser",
+    "hintAdd": "Appuyez sur",
+    "hintAddBetween": "entre les points pour ajouter des arrêts intermédiaires",
+    "hintMin": "Minimum 2 points (départ et arrivée)"
   }
 }
