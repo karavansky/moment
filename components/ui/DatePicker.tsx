@@ -339,33 +339,34 @@ const DatePicker: React.FC<DatePickerProps> = ({
       >
         {label && <label className="text-sm font-medium text-foreground">{label}</label>}
         <div
-          className="relative surface surface--tertiary h-11 md:h-10 flex items-center rounded-xl w-full focus-within:outline-none focus-within:ring-0"
+          className="surface surface--tertiary h-11 md:h-10 flex items-center rounded-xl w-full focus-within:outline-none focus-within:ring-0 overflow-hidden"
           style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
         >
-          <input
-            type={showTime ? 'datetime-local' : 'date'}
-            value={getNativeValue()}
-            onChange={handleNativeChange}
-            min={getNativeConstraint(minValue)}
-            max={getNativeConstraint(maxValue)}
-            disabled={isDisabled}
-            className="h-full w-full bg-transparent border-none outline-none text-foreground text-lg md:text-base ring-0 appearance-none pl-4 pr-12 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden z-10 relative focus:outline-none focus:ring-0 focus:border-none"
-            style={{
-              // Ensure consistent height and appearance on iOS
-              WebkitAppearance: 'none',
-              minHeight: '100%',
-              lineHeight: 'normal',
-              outline: 'none',
-              boxShadow: 'none',
-              WebkitTapHighlightColor: 'transparent',
-            }}
-          />
-          {!getNativeValue() && (
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-default-500 text-sm z-0">
-              {placeholderText}
-            </div>
-          )}
-          <CalendarIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-default-500 pointer-events-none z-0" />
+          <div className="relative flex-1 min-w-0 h-full">
+            <input
+              type={showTime ? 'datetime-local' : 'date'}
+              value={getNativeValue()}
+              onChange={handleNativeChange}
+              min={getNativeConstraint(minValue)}
+              max={getNativeConstraint(maxValue)}
+              disabled={isDisabled}
+              className="h-full w-full bg-transparent border-none outline-none text-foreground text-lg md:text-base ring-0 appearance-none pl-4 pr-2 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden focus:outline-none focus:ring-0 focus:border-none"
+              style={{
+                WebkitAppearance: 'none',
+                minHeight: '100%',
+                lineHeight: 'normal',
+                outline: 'none',
+                boxShadow: 'none',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            />
+            {!getNativeValue() && (
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-default-500 text-sm">
+                {placeholderText}
+              </div>
+            )}
+          </div>
+          <CalendarIcon className="shrink-0 w-5 h-5 mr-3 md:mr-4 text-default-500 pointer-events-none" />
         </div>
       </div>
     )

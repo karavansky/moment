@@ -102,6 +102,11 @@ export function usePushNotifications() {
   }, [authStatus])
 
   const subscribe = useCallback(async (): Promise<boolean> => {
+    if (authStatus !== 'authenticated') {
+      console.warn('[usePushNotifications] Cannot subscribe: user not authenticated')
+      return false
+    }
+
     try {
       const result = await Notification.requestPermission()
       setPermission(result as PushPermissionState)
@@ -141,9 +146,14 @@ export function usePushNotifications() {
       console.error('[usePushNotifications] Subscribe error:', err)
       return false
     }
-  }, [])
+  }, [authStatus])
 
   const syncSubscription = useCallback(async () => {
+    if (authStatus !== 'authenticated') {
+      console.warn('[usePushNotifications] Cannot sync: user not authenticated')
+      return
+    }
+
     try {
       const registration = await navigator.serviceWorker.ready
       const sub = await registration.pushManager.getSubscription()
@@ -158,7 +168,7 @@ export function usePushNotifications() {
     } catch (err) {
       console.error('[usePushNotifications] Sync manual error:', err)
     }
-  }, [])
+  }, [authStatus])
 
   const unsubscribe = useCallback(async (): Promise<void> => {
     try {

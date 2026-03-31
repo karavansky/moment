@@ -1,8 +1,36 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
-import { Switch, Spinner, Dropdown, Autocomplete, Button, Label, ListBox, AlertDialog, TextField, Input, toastQueue, Tag, TagGroup, EmptyState, SearchField, useFilter } from '@heroui/react'
-import { Bell, MapPin, ShieldAlert, Share, Plus, Download, Globe, Trash2, User } from 'lucide-react'
+import { useState, useEffect, useCallback, use } from 'react'
+import {
+  Switch,
+  Spinner,
+  Dropdown,
+  Autocomplete,
+  Button,
+  Label,
+  ListBox,
+  AlertDialog,
+  TextField,
+  Input,
+  toastQueue,
+  Tag,
+  TagGroup,
+  EmptyState,
+  SearchField,
+  useFilter,
+} from '@heroui/react'
+import {
+  Bell,
+  MapPin,
+  ShieldAlert,
+  Share,
+  Plus,
+  Download,
+  Globe,
+  Trash2,
+  User,
+  LogIn,
+} from 'lucide-react'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { useAuth } from '@/components/AuthProvider'
@@ -12,6 +40,7 @@ import { useTranslation } from '@/components/Providers'
 import { CountriesHelper } from '@/lib/countries'
 import CityAutocomplete from '@/components/settings/CityAutocomplete'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
+import { useRouter } from 'next/navigation'
 
 interface UserSettings {
   pushNotificationsEnabled: boolean
@@ -27,6 +56,20 @@ interface City {
   firmaID: number
 }
 
+const MOCK_SETTINGS: UserSettings = {
+  pushNotificationsEnabled: true,
+  geolocationEnabled: true,
+  lang: 'de',
+  country: 'de',
+  citiesID: [1, 2],
+}
+
+const MOCK_CITIES: City[] = [
+  { id: 1, city: 'Köln', firmaID: 1 },
+  { id: 2, city: 'Bonn', firmaID: 1 },
+  { id: 3, city: 'Siegburg', firmaID: 1 },
+]
+
 export default function SettingsPage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = use(params)
   const { session, status: authStatus } = useAuth()
@@ -35,6 +78,23 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
   const geo = useGeolocation()
   const { isInstallable, installPWA } = usePWAInstall()
   const { contains } = useFilter({ sensitivity: 'base' })
+  const router = useRouter()
+
+  const isDemo = authStatus !== 'authenticated' && authStatus !== 'loading'
+  const [authModalOpen, setAuthModalOpen] = useState(false)
+
+  const requireAuth = useCallback(
+    <T extends unknown[]>(fn: (...args: T) => void) => {
+      return (...args: T) => {
+        if (isDemo) {
+          setAuthModalOpen(true)
+          return
+        }
+        fn(...args)
+      }
+    },
+    [isDemo]
+  )
 
   const [settings, setSettings] = useState<UserSettings | null>(null)
   const [loading, setLoading] = useState(true)
@@ -80,7 +140,7 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
             id: item.getAttribute('id'),
             dataKey: item.getAttribute('data-key'),
             ariaSelected: item.getAttribute('aria-selected'),
-            textContent: item.textContent?.slice(0, 30)
+            textContent: item.textContent?.slice(0, 30),
           })
         })
 
@@ -187,7 +247,7 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
           user: {
             name: userName,
             organisationName: isDirector ? organizationName : undefined,
-          }
+          },
         })
 
         console.log('[Settings] Session updated with new data')
@@ -220,9 +280,18 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
     }
   }
 
-  // Fetch settings from server
+  // Fetch settings from server or load mock data for demo
   useEffect(() => {
-    if (authStatus !== 'authenticated') return
+    if (authStatus === 'loading') return
+
+    if (isDemo) {
+      setSettings(MOCK_SETTINGS)
+      setCities(MOCK_CITIES)
+      setUserName('Max Mustermann')
+      setOrganizationName('Demo GmbH')
+      setLoading(false)
+      return
+    }
 
     fetch('/api/settings')
       .then(res => (res.ok ? res.json() : null))
@@ -231,7 +300,7 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
       })
       .catch(err => console.error('[Settings] Fetch error:', err))
       .finally(() => setLoading(false))
-  }, [authStatus])
+  }, [authStatus, isDemo])
 
   // Fetch cities list if Director
   useEffect(() => {
@@ -351,14 +420,15 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
     )
   }
 
-  if (authStatus !== 'authenticated') {
-    return null
-  }
+  // In demo mode, simulate director role to show all sections
+  const effectiveIsDirector = isDemo ? true : isDirector
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6 space-y-6">
+    <div className="max-w-5xl mx-auto p-4 sm:p-6 space-y-6">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
 
+      {/* Row 1: Profile + Regional Settings */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
       {/* Profile Section */}
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 space-y-4">
         <div className="flex items-center gap-3">
@@ -366,20 +436,16 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Profile</h2>
         </div>
 
-        {settings && session?.user && (
+        {settings && (session?.user || isDemo) && (
           <div className="space-y-4">
             {/* User Name */}
             <TextField name="userName" className="w-full" onChange={setUserName}>
               <Label>Your Name</Label>
-              <Input
-                type="text"
-                value={userName}
-                placeholder="Enter your name"
-              />
+              <Input type="text" value={userName} placeholder="Enter your name" />
             </TextField>
 
             {/* Organization Name - Director only */}
-            {isDirector && (
+            {effectiveIsDirector && (
               <TextField name="organizationName" className="w-full" onChange={setOrganizationName}>
                 <Label>
                   Organization Name
@@ -387,11 +453,7 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
                     (Director only)
                   </span>
                 </Label>
-                <Input
-                  type="text"
-                  value={organizationName}
-                  placeholder="Enter organization name"
-                />
+                <Input type="text" value={organizationName} placeholder="Enter organization name" />
               </TextField>
             )}
 
@@ -400,7 +462,7 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
               <Label>Email</Label>
               <Input
                 type="email"
-                value={session.user.email || ''}
+                value={session?.user?.email || (isDemo ? 'demo@moment-lbs.app' : '')}
                 readOnly
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -412,16 +474,14 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
             <div className="flex gap-2 items-center">
               <Button
                 variant="primary"
-                onPress={handleSaveProfile}
+                onPress={requireAuth(handleSaveProfile)}
                 isDisabled={!profileChanged || savingProfile}
                 className="flex-1"
               >
                 {savingProfile ? 'Saving...' : 'Save Changes'}
               </Button>
               {profileChanged && !savingProfile && (
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  Unsaved changes
-                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Unsaved changes</span>
               )}
             </div>
 
@@ -441,7 +501,8 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
                       </AlertDialog.Header>
                       <AlertDialog.Body>
                         <p>
-                          This action cannot be undone. This will permanently delete your account and remove all associated data including:
+                          This action cannot be undone. This will permanently delete your account
+                          and remove all associated data including:
                         </p>
                         <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
                           <li>All workers</li>
@@ -490,7 +551,7 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
             </div>
 
             {/* Country Selection - Director only */}
-            {isDirector && (
+            {effectiveIsDirector && (
               <div>
                 <Autocomplete
                   fullWidth
@@ -498,6 +559,10 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
                   name="country"
                   value={settings.country || null}
                   onChange={(key: React.Key | React.Key[] | null) => {
+                    if (isDemo) {
+                      setAuthModalOpen(true)
+                      return
+                    }
                     console.log('[Country Autocomplete] onChange called with key:', key)
                     if (key && !Array.isArray(key)) {
                       console.log('[Country Autocomplete] Calling updateSetting with:', key)
@@ -554,121 +619,113 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
             )}
 
             {/* Cities Management - Director only */}
-            {isDirector && (
+            {effectiveIsDirector && (
               <div>
-                <label className="text-sm font-medium text-gray-900 dark:text-white block mb-2">
-                  City Filtering
-                  <span className="ml-2 text-xs font-normal text-purple-600 dark:text-purple-400">
-                    (Director only)
-                  </span>
-                </label>
-
                 {/* City List */}
                 {loadingCities ? (
                   <Spinner size="sm" />
                 ) : (
                   <div className="space-y-2">
                     {cities.length > 0 ? (
-                      <>
-                        <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto">
-                          {cities.map(city => (
-                            <div
-                              key={city.id}
-                              className="flex items-center justify-between bg-gray-50 dark:bg-gray-700/50 p-2 rounded-lg"
-                            >
-                              <span className="text-sm text-gray-700 dark:text-gray-300">
-                                {city.city}
-                              </span>
-                              <Button
-                                variant="tertiary"
-                                size="sm"
-                                onPress={() => handleDeleteCity(city.id)}
-                                aria-label={`Delete ${city.city}`}
+                      <div className="mt-3">
+                        <Autocomplete
+                          fullWidth
+                          className="max-w-xs"
+                          name="cities"
+                          value={settings.citiesID?.map(id => id.toString()) || []}
+                          onChange={(keys: React.Key | React.Key[] | null) => {
+                            if (isDemo) {
+                              setAuthModalOpen(true)
+                              return
+                            }
+                            const keysArray = Array.isArray(keys) ? keys : keys ? [keys] : []
+                            const citiesID = keysArray.map(k => parseInt(String(k)))
+                            updateSetting('citiesID', citiesID)
+                          }}
+                          onOpenChange={setIsCitiesOpen}
+                          isDisabled={saving || cities.length === 0}
+                          placeholder="Select cities to filter"
+                          selectionMode="multiple"
+                        >
+                          <Label>
+                            Filter addresses by cities{' '}
+                            <span className="ml-2 text-xs font-normal text-purple-600 dark:text-purple-400">
+                              (Director only)
+                            </span>
+                          </Label>
+                          <Autocomplete.Trigger>
+                            <Autocomplete.Value>
+                              {({ defaultChildren, isPlaceholder, state }: any) => {
+                                if (isPlaceholder || state.selectedItems.length === 0) {
+                                  return defaultChildren
+                                }
+
+                                const selectedItemsKeys = state.selectedItems.map(
+                                  (item: any) => item.key
+                                )
+
+                                return (
+                                  <TagGroup
+                                    size="sm"
+                                    onRemove={(keys: Set<React.Key>) => {
+                                      if (isDemo) {
+                                        setAuthModalOpen(true)
+                                        return
+                                      }
+                                      const newSelection =
+                                        settings.citiesID?.filter(id => !keys.has(id.toString())) ||
+                                        []
+                                      updateSetting('citiesID', newSelection)
+                                    }}
+                                  >
+                                    <TagGroup.List>
+                                      {selectedItemsKeys.map((selectedItemKey: React.Key) => {
+                                        const city = cities.find(
+                                          c => c.id.toString() === selectedItemKey
+                                        )
+                                        if (!city) return null
+
+                                        return (
+                                          <Tag key={city.id.toString()} id={city.id.toString()}>
+                                            {city.city}
+                                          </Tag>
+                                        )
+                                      })}
+                                    </TagGroup.List>
+                                  </TagGroup>
+                                )
+                              }}
+                            </Autocomplete.Value>
+                            <Autocomplete.ClearButton />
+                            <Autocomplete.Indicator />
+                          </Autocomplete.Trigger>
+                          <Autocomplete.Popover>
+                            <Autocomplete.Filter filter={contains}>
+                              <SearchField autoFocus name="search">
+                                <SearchField.Group>
+                                  <SearchField.SearchIcon />
+                                  <SearchField.Input placeholder="Search city..." />
+                                </SearchField.Group>
+                              </SearchField>
+                              <ListBox
+                                className="max-h-60 overflow-y-auto"
+                                renderEmptyState={() => <EmptyState>No cities found</EmptyState>}
                               >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Cities Selection */}
-                        <div className="mt-3">
-                          <Autocomplete
-                            fullWidth
-                            className="max-w-xs"
-                            name="cities"
-                            value={settings.citiesID?.map(id => id.toString()) || []}
-                            onChange={(keys: React.Key | React.Key[] | null) => {
-                              const keysArray = Array.isArray(keys) ? keys : (keys ? [keys] : [])
-                              const citiesID = keysArray.map(k => parseInt(String(k)))
-                              updateSetting('citiesID', citiesID)
-                            }}
-                            onOpenChange={setIsCitiesOpen}
-                            isDisabled={saving || cities.length === 0}
-                            placeholder="Select cities to filter"
-                            selectionMode="multiple"
-                          >
-                            <Label>Filter addresses by cities</Label>
-                            <Autocomplete.Trigger>
-                              <Autocomplete.Value>
-                                {({ defaultChildren, isPlaceholder, state }: any) => {
-                                  if (isPlaceholder || state.selectedItems.length === 0) {
-                                    return defaultChildren
-                                  }
-
-                                  const selectedItemsKeys = state.selectedItems.map((item: any) => item.key)
-
-                                  return (
-                                    <TagGroup
-                                      size="sm"
-                                      onRemove={(keys: Set<React.Key>) => {
-                                        const newSelection = settings.citiesID?.filter(id => !keys.has(id.toString())) || []
-                                        updateSetting('citiesID', newSelection)
-                                      }}
-                                    >
-                                      <TagGroup.List>
-                                        {selectedItemsKeys.map((selectedItemKey: React.Key) => {
-                                          const city = cities.find(c => c.id.toString() === selectedItemKey)
-                                          if (!city) return null
-
-                                          return (
-                                            <Tag key={city.id.toString()} id={city.id.toString()}>
-                                              {city.city}
-                                            </Tag>
-                                          )
-                                        })}
-                                      </TagGroup.List>
-                                    </TagGroup>
-                                  )
-                                }}
-                              </Autocomplete.Value>
-                              <Autocomplete.ClearButton />
-                              <Autocomplete.Indicator />
-                            </Autocomplete.Trigger>
-                            <Autocomplete.Popover>
-                              <Autocomplete.Filter filter={contains}>
-                                <SearchField autoFocus name="search">
-                                  <SearchField.Group>
-                                    <SearchField.SearchIcon />
-                                    <SearchField.Input placeholder="Search city..." />
-                                  </SearchField.Group>
-                                </SearchField>
-                                <ListBox
-                                  className="max-h-60 overflow-y-auto"
-                                  renderEmptyState={() => <EmptyState>No cities found</EmptyState>}
-                                >
-                                  {cities.map(city => (
-                                    <ListBox.Item key={city.id.toString()} id={city.id.toString()} textValue={city.city}>
-                                      {city.city}
-                                      <ListBox.ItemIndicator />
-                                    </ListBox.Item>
-                                  ))}
-                                </ListBox>
-                              </Autocomplete.Filter>
-                            </Autocomplete.Popover>
-                          </Autocomplete>
-                        </div>
-                      </>
+                                {cities.map(city => (
+                                  <ListBox.Item
+                                    key={city.id.toString()}
+                                    id={city.id.toString()}
+                                    textValue={city.city}
+                                  >
+                                    {city.city}
+                                    <ListBox.ItemIndicator />
+                                  </ListBox.Item>
+                                ))}
+                              </ListBox>
+                            </Autocomplete.Filter>
+                          </Autocomplete.Popover>
+                        </Autocomplete>
+                      </div>
                     ) : (
                       <p className="text-sm text-gray-500 dark:text-gray-400 italic">
                         No cities added yet
@@ -694,7 +751,7 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
                           <Button
                             variant="primary"
                             size="md"
-                            onPress={handleAddCity}
+                            onPress={requireAuth(handleAddCity)}
                             isDisabled={addingCity || !newCityName.trim()}
                           >
                             {addingCity ? 'Adding...' : 'Add'}
@@ -719,7 +776,10 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
           </div>
         )}
       </section>
+      </div>
 
+      {/* Row 2: Push Notifications + GPS Location */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
       {/* Push Notifications Section */}
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 space-y-4">
         <div className="flex items-center gap-3">
@@ -773,7 +833,13 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
                 <Switch
                   isSelected={settings.pushNotificationsEnabled}
                   isDisabled={saving}
-                  onChange={(value: boolean) => updateSetting('pushNotificationsEnabled', value)}
+                  onChange={(value: boolean) => {
+                    if (isDemo) {
+                      setAuthModalOpen(true)
+                      return
+                    }
+                    updateSetting('pushNotificationsEnabled', value)
+                  }}
                   size="sm"
                 />
               </div>
@@ -836,7 +902,13 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
             <Switch
               isSelected={settings.geolocationEnabled}
               isDisabled={saving}
-              onChange={(value: boolean) => updateSetting('geolocationEnabled', value)}
+              onChange={(value: boolean) => {
+                if (isDemo) {
+                  setAuthModalOpen(true)
+                  return
+                }
+                updateSetting('geolocationEnabled', value)
+              }}
               size="sm"
             />
           </div>
@@ -850,6 +922,7 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
           </div>
         )}
       </section>
+      </div>
 
       {/* PWA App Installation Section */}
       {isInstallable && (
@@ -880,6 +953,44 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
           </div>
         </section>
       )}
+
+      {/* Auth Required Modal for Demo Mode */}
+      <AlertDialog.Backdrop isOpen={authModalOpen} onOpenChange={setAuthModalOpen} isDismissable>
+        <AlertDialog.Container>
+          <AlertDialog.Dialog className="sm:max-w-[400px]">
+            <AlertDialog.CloseTrigger />
+            <AlertDialog.Header>
+              <AlertDialog.Icon status="warning" />
+              <AlertDialog.Heading>
+                {t('demo.authRequired.title', 'Authorization Required')}
+              </AlertDialog.Heading>
+            </AlertDialog.Header>
+            <AlertDialog.Body>
+              <p>
+                {t(
+                  'demo.authRequired.description',
+                  'To use the full functionality, please sign in to your account.'
+                )}
+              </p>
+            </AlertDialog.Body>
+            <AlertDialog.Footer>
+              <Button slot="close" variant="tertiary">
+                {t('demo.authRequired.cancel', 'Cancel')}
+              </Button>
+              <Button
+                variant="primary"
+                onPress={() => {
+                  setAuthModalOpen(false)
+                  router.push(`/${lang}/auth/signin`)
+                }}
+              >
+                <LogIn className="w-4 h-4" />
+                {t('demo.authRequired.login', 'Log In')}
+              </Button>
+            </AlertDialog.Footer>
+          </AlertDialog.Dialog>
+        </AlertDialog.Container>
+      </AlertDialog.Backdrop>
     </div>
   )
 }

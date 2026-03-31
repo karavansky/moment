@@ -418,6 +418,45 @@ Users have regional preferences stored in database:
    - OSRM road snapping
    - Interpolation for smooth movement
 
+## Demo / Mock Data Mode
+
+When user is **not authenticated**, the app loads mock data so visitors can explore a fully functional UI with pre-filled data.
+
+### How It Works
+
+1. **Detection**: `SchedulingContext` checks `authStatus` from NextAuth + user's `firmaID`/`status`
+   - Authenticated with valid firma → **Live Mode** (API: `/api/scheduling`)
+   - Otherwise → **Mock Mode** (local mock data)
+
+2. **Entry Point**: Landing page (`app/[lang]/home/HomeClient.tsx`) has a "Try Demo" button → calls `startDemo()` from `DemoContext` → navigates to `/dispatcher`
+
+3. **Data Loading** (`contexts/SchedulingContext.tsx`):
+   - `loadMockData()` — calls `getAllSampleObjects()` from `lib/scheduling-mock-data.ts`
+   - `loadLiveData()` — fetches from `/api/scheduling`
+   - Decision made in `useEffect` watching `authStatus`
+
+4. **Demo Notifications** (`components/DemoNotificationWorker.tsx`):
+   - When `isDemoActive === true` && `isLiveMode === false`
+   - Opens a demo appointment, shows 8 sequential notifications (every ~10s)
+
+### Key Files
+
+| File | Role |
+|------|------|
+| `contexts/SchedulingContext.tsx` | Central orchestrator — decides mock vs live, loads data |
+| `contexts/DemoContext.tsx` | Tracks `isDemoActive` state (`startDemo()` / `stopDemo()`) |
+| `lib/scheduling-mock-data.ts` | Scheduling mock data (workers, clients, appointments, services) |
+| `lib/transport-mock-data.ts` | Transport mock data (vehicles, orders, routes — Cologne area) |
+| `components/DemoNotificationWorker.tsx` | Shows demo notifications sequence |
+| `app/[lang]/home/HomeClient.tsx` | "Try Demo" button entry point |
+
+### Important
+
+- Mock data uses hardcoded `firmaID`: `3Eoxlmzdr4uEJggFueFnB`
+- Appointments have **dynamic dates** relative to current date
+- Appointment state overrides are persisted in `sessionStorage` (survives HMR)
+- ⚠️ Any fetch to backend APIs (e.g. `/api/push/subscribe`) must check `authStatus === 'authenticated'` first — otherwise returns 401
+
 ## Documentation Index
 
 - Architecture: `docs/BACKEND_ARCHITECTURE.md`

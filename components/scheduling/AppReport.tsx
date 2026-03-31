@@ -855,60 +855,7 @@ function AppReport({ formData, setFormData, errors, setErrors, selectedDate }: A
         </div>
       ) : null}
 
-      {/* Appointment Details (Read-only) */}
-      <div className="grid grid-cols-2 gap-4 p-4 bg-default-50 rounded-lg">
-        <div>
-          <p className="text-xs text-default-500 uppercase font-semibold">
-            {t('appointment.report.client')}
-          </p>
-          <p className="font-medium">
-            {appointment.client?.name} {appointment.client?.surname}
-          </p>
-        </div>
-        <div>
-          <p className="text-xs text-default-500 uppercase font-semibold">
-            {t('appointment.report.staff')}
-          </p>
-          <div className="flex flex-wrap gap-1">
-            {appointment.worker.map(w => (
-              <span key={w.id} className="bg-primary/10 text-primary px-2 py-0.5 rounded text-sm">
-                {w.name} {w.surname}
-              </span>
-            ))}
-          </div>
-        </div>
-        <div>
-          <p className="text-xs text-default-500 uppercase font-semibold">
-            {t('appointment.report.time')}
-          </p>
-          <p className="font-medium">
-            {appointment.date instanceof Date
-              ? appointment.date.toLocaleDateString('de-DE')
-              : new Date(appointment.date).toLocaleDateString('de-DE')}
-            {startTime && endTime
-              ? ` | ${formatTime(startTime)} - ${formatTime(endTime)}`
-              : ' | All day'}
-          </p>
-        </div>
-        <div>
-          <p className="text-xs text-default-500 uppercase font-semibold">
-            {t('appointment.report.duration')}
-          </p>
-          <p className="font-medium">
-            {appointment.duration} {t('appointment.report.min')}
-          </p>
-        </div>
-        <div className="col-span-2">
-          <p className="text-xs text-default-500 uppercase font-semibold">
-            {t('appointment.report.services')}
-          </p>
-          <ul className="list-disc list-inside text-sm">
-            {appointment.services.map(s => (
-              <li key={s.id}>{s.name}</li>
-            ))}
-          </ul>
-        </div>
-      </div>
+
 
       <Separator />
 
