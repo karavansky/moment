@@ -17,6 +17,7 @@ import { generateId } from '@/lib/generate-id'
 import { Client, Groupe } from '@/types/scheduling'
 import { Mail, UserPlus, MapPin, Plus } from 'lucide-react'
 import GroupeEdit from './GroupeEdit'
+import AddressAutocomplete, { type AddressFields } from './AddressAutocomplete'
 
 interface ClientAddProps {
   isOpen: boolean
@@ -28,6 +29,19 @@ export default function ClientAdd({ isOpen, onClose, onClientAdded }: ClientAddP
   const { addClient, groups } = useScheduling()
   const { session } = useAuth()
   const [isGroupeEditOpen, setIsGroupeEditOpen] = useState(false)
+
+  const [addressSearch, setAddressSearch] = useState('')
+
+  const handleAddressSelect = useCallback((fields: AddressFields) => {
+    setFormData(prev => ({
+      ...prev,
+      street: fields.street,
+      houseNumber: fields.houseNumber,
+      postalCode: fields.postalCode,
+      city: fields.city,
+      country: fields.country,
+    }))
+  }, [])
 
   const [formData, setFormData] = useState({
     name: '',
@@ -182,6 +196,17 @@ export default function ClientAdd({ isOpen, onClose, onClientAdded }: ClientAddP
                   <div className="flex items-center gap-2 pl-1">
                     <MapPin className="w-4 h-4 text-muted" />
                     <span className="text-sm font-medium">Adresse</span>
+                  </div>
+
+                  <div className="pl-1 pr-1">
+                    <AddressAutocomplete
+                      value={addressSearch}
+                      onChange={setAddressSearch}
+                      onAddressSelect={handleAddressSelect}
+                      placeholder="Adresse suchen..."
+                      fullWidth
+                      aria-label="Adresse suchen"
+                    />
                   </div>
 
                   <div className="flex gap-2 w-full">

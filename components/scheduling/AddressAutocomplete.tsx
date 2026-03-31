@@ -29,9 +29,20 @@ interface PhotonResponse {
   features: PhotonFeature[]
 }
 
+export interface AddressFields {
+  street: string
+  houseNumber: string
+  postalCode: string
+  city: string
+  country: string
+  latitude: number
+  longitude: number
+}
+
 interface AddressAutocompleteProps {
   value: string
   onChange: (address: string, lat?: number, lng?: number) => void
+  onAddressSelect?: (fields: AddressFields) => void
   placeholder?: string
   fullWidth?: boolean
   'aria-label'?: string
@@ -48,6 +59,7 @@ interface AddressItem {
 function AddressAutocomplete({
   value,
   onChange,
+  onAddressSelect,
   placeholder = 'Введите адрес...',
   fullWidth,
   'aria-label': ariaLabel,
@@ -157,9 +169,19 @@ function AddressAutocomplete({
     if (feature) {
       const address = formatAddress(feature)
       const [lng, lat] = feature.geometry.coordinates
+      const p = feature.properties
 
       setInputValue(address)
       onChange(address, lat, lng)
+      onAddressSelect?.({
+        street: p.street || p.name || '',
+        houseNumber: p.housenumber || '',
+        postalCode: p.postcode || '',
+        city: p.city || '',
+        country: p.countrycode?.toUpperCase() || '',
+        latitude: lat,
+        longitude: lng,
+      })
     }
   }
 
