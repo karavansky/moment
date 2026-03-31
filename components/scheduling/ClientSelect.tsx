@@ -6,10 +6,9 @@ import { Button, Modal, ComboBox, Header, Input, Label, ListBox, Separator } fro
 import { UserStar, MapPin, Plus } from 'lucide-react'
 import { Client, Groupe } from '@/types/scheduling'
 import { usePlatformContext } from '@/contexts/PlatformContext'
-import { LogoMoment } from '@/components/icons'
 import { useTranslation } from '@/components/Providers'
-import { generateId } from '@/lib/generate-id'
 import { useAuth } from '@/components/AuthProvider'
+import ClientAdd from './ClientAdd'
 
 const MapView = dynamic(() => import('./MapView'), { ssr: false })
 
@@ -75,14 +74,15 @@ function ClientSelect({
     },
     [onSelectionChange, isNew]
   )
-  const handleAddClient = () => {
-    console.log('Attempting to add new client...')
-    if (!session?.user.firmaID) return
-    const newClientId = generateId()
-    console.log('Adding new client with ID:', session.user.firmaID)
-    // Optimistically add client to context (you may want to handle this differently)
-    // For example, you could open a separate modal to enter client details
-  }
+  const [isAddOpen, setIsAddOpen] = useState(false)
+
+  const handleAddClient = useCallback(() => {
+    setIsAddOpen(true)
+  }, [])
+
+  const handleClientAdded = useCallback((client: Client) => {
+    onSelectionChange(client.id)
+  }, [onSelectionChange])
   const addClient = (
     <div className="flex flex-row w-full gap-2 mb-2">
       <Label className="text-base font-normal flex items-center gap-2">
@@ -251,6 +251,12 @@ function ClientSelect({
           </div>
         </button>
       )}
+
+      <ClientAdd
+        isOpen={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        onClientAdded={handleClientAdded}
+      />
 
       {/* Map Modal */}
       <Modal>

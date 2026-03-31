@@ -1,7 +1,19 @@
 'use client'
 
 import React, { useCallback, memo, useState } from 'react'
-import { Autocomplete, Button, EmptyState, Header, Label, ListBox, SearchField, Separator, Tag, TagGroup, useFilter } from '@heroui/react'
+import {
+  Autocomplete,
+  Button,
+  EmptyState,
+  Header,
+  Label,
+  ListBox,
+  SearchField,
+  Separator,
+  Tag,
+  TagGroup,
+  useFilter,
+} from '@heroui/react'
 import { Check, Plus, X, Users } from 'lucide-react'
 import { Team, Worker } from '@/types/scheduling'
 import { usePlatformContext } from '@/contexts/PlatformContext'
@@ -49,9 +61,8 @@ function StaffSelect({
   const [pendingWorkerOptions, setPendingWorkerOptions] = useState<WorkerOption[]>([])
 
   const handleAddWorker = useCallback(() => {
-    if (!session?.user.firmaID) return
     setIsAddOpen(true)
-  }, [session])
+  }, [])
 
   const handleWorkerAdded = useCallback(
     (worker: Worker) => {
@@ -132,9 +143,22 @@ function StaffSelect({
   if (isReady && isMobile && isIOS) {
     return (
       <div className="w-full min-w-0">
-        <Label className="text-base font-normal flex items-center gap-2" isRequired={isRequired && !isReadOnly}>
-          <Users className="w-6 h-6" />
-          {session?.user?.status === 7 ? 'Teilnehmer' : t('appointment.edit.staff.labelPlural')}</Label>
+        <div className="flex flex-row w-full gap-2">
+          <Label
+            className="text-base font-normal flex items-center gap-2"
+            isRequired={isRequired && !isReadOnly}
+          >
+            <Users className="w-6 h-6" />
+            {session?.user?.status === 7 ? 'Teilnehmer' : t('appointment.edit.staff.labelPlural')}
+          </Label>
+          {!isReadOnly && (
+            <div className="ml-auto">
+              <Button variant="primary" size="sm" isIconOnly onPress={handleAddWorker}>
+                <Plus className="w-5 h-5" />
+              </Button>
+            </div>
+          )}
+        </div>
 
         {/* Чипы с выбранными workers */}
         {selectedWorkerObjects.length > 0 && (
@@ -159,35 +183,29 @@ function StaffSelect({
           </div>
         )}
 
+        {/* Скрытый нативный select для iOS */}
         {!isReadOnly && (
-          <div className="flex items-center gap-2 w-full">
-            {/* Скрытый нативный select для iOS */}
-            <div className="relative flex-1">
-              <select
-                name="staff"
-                onChange={handleMobileChange}
-                multiple
-                value={selectedWorkerIds}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              >
-                {teamsWithWorkers.map(({ team, workers: teamWorkers }) => (
-                  <optgroup key={team.id} label={team.teamName}>
-                    {teamWorkers.map(worker => (
-                      <option key={worker.id} value={worker.id}>
-                        {worker.surname} {worker.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
-              {/* Видимая кнопка */}
-              <Button variant="secondary" size="sm" className="w-full pointer-events-none">
-                <Plus size={16} />
-                {t('appointment.edit.staff.addStaff')}
-              </Button>
-            </div>
-            <Button variant="primary" size="sm" isIconOnly onPress={handleAddWorker}>
-              <Plus className="w-4 h-4" />
+          <div className="relative w-full">
+            <select
+              name="staff"
+              onChange={handleMobileChange}
+              multiple
+              value={selectedWorkerIds}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            >
+              {teamsWithWorkers.map(({ team, workers: teamWorkers }) => (
+                <optgroup key={team.id} label={team.teamName}>
+                  {teamWorkers.map(worker => (
+                    <option key={worker.id} value={worker.id}>
+                      {worker.surname} {worker.name}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            <Button variant="secondary" size="sm" className="w-full pointer-events-none">
+              <Plus size={16} />
+              {t('appointment.edit.staff.addStaff')}
             </Button>
           </div>
         )}
@@ -206,7 +224,10 @@ function StaffSelect({
     <div className="space-y-2">
       {/* Label row with "+" button — outside Autocomplete to avoid popover z-order issues */}
       <div className="flex flex-row w-full gap-2">
-        <Label className="text-sm font-medium flex items-center gap-2" isRequired={isRequired && !isReadOnly}>
+        <Label
+          className="text-sm font-medium flex items-center gap-2"
+          isRequired={isRequired && !isReadOnly}
+        >
           <Users className="w-6 h-6" />
           {session?.user?.status === 7 ? 'Teilnehmer' : t('appointment.edit.staff.label')}
         </Label>
@@ -231,10 +252,6 @@ function StaffSelect({
         <Autocomplete.Trigger>
           <Autocomplete.Value>
             {({ defaultChildren }: any) => {
-              // Рендерим из внешнего состояния (selectedWorkerObjects), а не из
-              // внутреннего state.selectedItems — иначе программно добавленные
-              // работники не отображаются (Autocomplete не обновляет свой
-              // internal state при изменении value-пропа извне)
               if (selectedWorkerObjects.length === 0) {
                 return defaultChildren
               }
@@ -264,37 +281,48 @@ function StaffSelect({
           {!isReadOnly && <Autocomplete.ClearButton />}
           {!isReadOnly && <Autocomplete.Indicator />}
         </Autocomplete.Trigger>
-        {!isReadOnly && <Autocomplete.Popover>
-          <Autocomplete.Filter filter={contains}>
-            <SearchField autoFocus name="search">
-              <SearchField.Group>
-                <SearchField.SearchIcon />
-                <SearchField.Input placeholder={t('appointment.edit.staff.searchPlaceholder')} />
-                <SearchField.ClearButton />
-              </SearchField.Group>
-            </SearchField>
-            <ListBox renderEmptyState={() => <EmptyState>{t('appointment.edit.staff.noResults')}</EmptyState>}>
-              {teamsWithWorkers.flatMap(({ team, workers: teamWorkers }, index) => [
-                <ListBox.Section key={team.id}>
-                  <Header>{team.teamName}</Header>
-                  {teamWorkers.map(worker => (
-                    <ListBox.Item
-                      key={worker.id}
-                      textValue={`${worker.surname} ${worker.name}`}
-                      id={worker.id}
-                    >
-                      {worker.surname} {worker.name}
-                      {selectedWorkerIds.includes(worker.id)
-                        ? <Check className="w-4 h-4 shrink-0" />
-                        : <ListBox.ItemIndicator />}
-                    </ListBox.Item>
-                  ))}
-                </ListBox.Section>,
-                ...(index < teamsWithWorkers.length - 1 ? [<Separator key={`sep-${team.id}`} />] : []),
-              ])}
-            </ListBox>
-          </Autocomplete.Filter>
-        </Autocomplete.Popover>}
+        {!isReadOnly && (
+          <Autocomplete.Popover>
+            <Autocomplete.Filter filter={contains}>
+              <SearchField autoFocus name="search">
+                <SearchField.Group>
+                  <SearchField.SearchIcon />
+                  <SearchField.Input placeholder={t('appointment.edit.staff.searchPlaceholder')} />
+                  <SearchField.ClearButton />
+                </SearchField.Group>
+              </SearchField>
+              <ListBox
+                className="max-h-60 overflow-y-auto"
+                renderEmptyState={() => (
+                  <EmptyState>{t('appointment.edit.staff.noResults')}</EmptyState>
+                )}
+              >
+                {teamsWithWorkers.flatMap(({ team, workers: teamWorkers }, index) => [
+                  <ListBox.Section key={team.id}>
+                    <Header>{team.teamName}</Header>
+                    {teamWorkers.map(worker => (
+                      <ListBox.Item
+                        key={worker.id}
+                        textValue={`${worker.surname} ${worker.name}`}
+                        id={worker.id}
+                      >
+                        {worker.surname} {worker.name}
+                        {selectedWorkerIds.includes(worker.id) ? (
+                          <Check className="w-4 h-4 shrink-0" />
+                        ) : (
+                          <ListBox.ItemIndicator />
+                        )}
+                      </ListBox.Item>
+                    ))}
+                  </ListBox.Section>,
+                  ...(index < teamsWithWorkers.length - 1
+                    ? [<Separator key={`sep-${team.id}`} />]
+                    : []),
+                ])}
+              </ListBox>
+            </Autocomplete.Filter>
+          </Autocomplete.Popover>
+        )}
       </Autocomplete>
       {error && <p className="text-xs text-danger">{error}</p>}
       <StaffAdd

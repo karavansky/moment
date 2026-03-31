@@ -142,6 +142,7 @@ interface SchedulingActions {
   addClient: (client: Client) => void
   updateClient: (client: Client) => void
   deleteClient: (id: string) => Promise<void>
+  addGroupe: (groupe: Groupe) => void
   addTeam: (team: Team) => void
   addWorker: (worker: Worker) => void
   updateWorker: (worker: Worker) => void
@@ -993,6 +994,20 @@ export const SchedulingProvider: React.FC<{ children: ReactNode }> = ({ children
           clients: prev.clients.filter(client => client.id !== id),
           appointments: prev.appointments.filter(apt => apt.clientID !== id),
         }))
+      },
+
+      addGroupe: (groupe: Groupe) => {
+        setState(prev => ({ ...prev, groups: [...prev.groups, groupe] }))
+
+        if (isLiveModeRef.current) {
+          apiFetch('/api/scheduling/groupes', {
+            method: 'POST',
+            body: JSON.stringify({ id: groupe.id, groupeName: groupe.groupeName }),
+          }).catch(error => {
+            console.error('[addGroupe] API error:', error)
+            setState(prev => ({ ...prev, groups: prev.groups.filter(g => g.id !== groupe.id) }))
+          })
+        }
       },
 
       addTeam: (team: Team) => {
