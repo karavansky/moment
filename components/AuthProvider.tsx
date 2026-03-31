@@ -96,7 +96,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
       
-      routerRef.current.push(`/${locale}/auth/signout`)
+      const redirectUrl = callbackUrl || `/${locale}/auth/signin`
+      routerRef.current.push(`/${locale}/auth/signout?callbackUrl=${encodeURIComponent(redirectUrl)}`)
     } catch (error) {
       console.error('Sign out error:', error)
     }

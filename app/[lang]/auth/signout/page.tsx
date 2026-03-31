@@ -2,12 +2,15 @@
 
 import { signOut } from 'next-auth/react'
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useTranslation } from '@/components/Providers'
 import { useLanguage } from '@/hooks/useLanguage'
 
 export default function SignOutPage() {
   const { t } = useTranslation()
   const lang = useLanguage()
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get('callbackUrl') || `/${lang}/auth/signin`
   const [isSigningOut, setIsSigningOut] = useState(false)
 
   useEffect(() => {
@@ -33,9 +36,9 @@ export default function SignOutPage() {
         console.error('[SignOut] Failed to purge push token:', err)
       }
 
-      // 2. SignOut and redirect to signin page
+      // 2. SignOut and redirect
       await signOut({
-        callbackUrl: `/${lang}/auth/signin`,
+        callbackUrl,
         redirect: true,
       })
     }
@@ -46,7 +49,7 @@ export default function SignOutPage() {
     }, 500)
 
     return () => clearTimeout(timer)
-  }, [lang])
+  }, [lang, callbackUrl])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-earth-800 via-earth-900 to-earth-950 p-4">
@@ -85,7 +88,7 @@ export default function SignOutPage() {
 
               // 2. SignOut
               await signOut({
-                callbackUrl: `/${lang}/auth/signin`,
+                callbackUrl,
                 redirect: true,
               })
             }}
