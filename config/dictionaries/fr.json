@@ -1,5 +1,5 @@
 {
-    "landing": {
+  "landing": {
     "hero": {
       "badge": "Aucune installation • Prêt pour PWA",
       "title": "Gestion des services sur le terrain, simplifiée.",
@@ -92,7 +92,7 @@
       }
     }
   },
-    "PWAInstall": {
+  "PWAInstall": {
     "settings": "Installation de l'application",
     "title": "Installer Moment LBS",
     "desc": "Ajoutez Moment à votre écran d'accueil ou à votre dock pour un accès plus rapide, des capacités hors ligne et une expérience d'application native.",
@@ -906,5 +906,10 @@
       "title": "Priorité Communauté",
       "desc": "Votre abonnement nous permet de mettre en œuvre vos idées"
     }
+  },
+  "appVersion": {
+    "updateAvailable": "Mise à jour disponible",
+    "updateDescription": "Une nouvelle version est disponible. Veuillez rafraîchir la page.",
+    "updateButton": "Mettre à jour"
   }
 }

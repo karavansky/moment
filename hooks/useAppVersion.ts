@@ -2,12 +2,14 @@
 
 import { useEffect, useRef } from 'react'
 import { toast } from '@heroui/react'
+import { useTranslation } from '@/components/Providers'
 
 /**
  * Глобальный хук для проверки версии приложения при выходе из спящего режима.
  * Сравнивает вшитую при сборке константу с версией на сервере (/api/version).
  */
 export function useAppVersion() {
+  const { t } = useTranslation()
   const currentVersion = process.env.APP_VERSION || '0.1.0'
   const isChecking = useRef(false)
   const hasShownToast = useRef(false) // Track if we've already shown the update toast
@@ -56,12 +58,11 @@ export function useAppVersion() {
 
           hasShownToast.current = true
 
-          toast.info('🎉 Доступно обновление', {
-            description:
-              'Вышла новая версия приложения. Пожалуйста, обновите страницу для стабильной работы.',
-            timeout: 0, // Don't auto-dismiss - user must click the button
+          toast.info(t('appVersion.updateAvailable', 'Update available'), {
+            description: t('appVersion.updateDescription', 'A new version is available. Please refresh the page.'),
+            timeout: 0,
             actionProps: {
-              children: 'Обновить',
+              children: t('appVersion.updateButton', 'Update'),
               onPress: async () => {
                 console.log('[PWA Update] User clicked reload, clearing caches...')
 

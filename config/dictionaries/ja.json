@@ -1,5 +1,5 @@
 {
-    "landing": {
+  "landing": {
     "hero": {
       "badge": "インストール不要 • PWA対応",
       "title": "フィールドサービス管理をシンプルに。",
@@ -92,7 +92,7 @@
       }
     }
   },
-    "PWAInstall": {
+  "PWAInstall": {
     "settings": "アプリのインストール",
     "title": "Moment LBSをインストール",
     "desc": "Momentをホーム画面またはドックに追加して、より高速なアクセス、オフライン機能、ネイティブアプリ体験を実現しましょう。",
@@ -906,5 +906,10 @@
       "title": "コミュニティ優先",
       "desc": "サブスクリプションにより、皆様のアイデアを実装できます"
     }
+  },
+  "appVersion": {
+    "updateAvailable": "アップデートがあります",
+    "updateDescription": "新しいバージョンが利用可能です。ページを更新してください。",
+    "updateButton": "更新"
   }
 }

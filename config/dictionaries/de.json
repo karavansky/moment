@@ -921,5 +921,10 @@
       "title": "Community-Priorität",
       "desc": "Ihr Abonnement ermöglicht es uns, Ihre Ideen umzusetzen"
     }
+  },
+  "appVersion": {
+    "updateAvailable": "Update verfügbar",
+    "updateDescription": "Eine neue Version ist verfügbar. Bitte aktualisieren Sie die Seite.",
+    "updateButton": "Aktualisieren"
   }
 }

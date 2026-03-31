@@ -889,5 +889,10 @@
       "title": "Community Priority",
       "desc": "Subscription allows us to implement your ideas"
     }
+  },
+  "appVersion": {
+    "updateAvailable": "Update available",
+    "updateDescription": "A new version is available. Please refresh the page.",
+    "updateButton": "Update"
   }
 }

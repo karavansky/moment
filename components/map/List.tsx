@@ -581,7 +581,7 @@ export default function List({
               size={60}
             >
               <div
-                className={isPortrait ? 'h-full pl-4' : 'px-4 pb-4'}
+                className={isPortrait ? 'h-full pl-4' : 'px-4 pb-4 pt-1'}
                 onWheel={isPortrait ? (e) => {
                   // Enable mouse wheel scrolling for horizontal scroll in portrait mode
                   const container = e.currentTarget.querySelector('.flex-row') as HTMLElement

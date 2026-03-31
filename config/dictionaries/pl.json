@@ -1,5 +1,5 @@
 {
-    "landing": {
+  "landing": {
     "hero": {
       "badge": "Bez instalacji • Gotowe na PWA",
       "title": "Zarządzanie pracownikami terenowymi, uproszczone.",
@@ -92,7 +92,7 @@
       }
     }
   },
-    "PWAInstall": {
+  "PWAInstall": {
     "settings": "Instalacja aplikacji",
     "title": "Zainstaluj Moment LBS",
     "desc": "Dodaj Moment do ekranu głównego lub doku, aby uzyskać szybszy dostęp, możliwość pracy offline i doświadczenie natywnej aplikacji.",
@@ -906,5 +906,10 @@
       "title": "Priorytet społeczności",
       "desc": "Subskrypcja pozwala nam wdrażać Twoje pomysły"
     }
+  },
+  "appVersion": {
+    "updateAvailable": "Dostępna aktualizacja",
+    "updateDescription": "Dostępna jest nowa wersja. Proszę odświeżyć stronę.",
+    "updateButton": "Aktualizuj"
   }
 }

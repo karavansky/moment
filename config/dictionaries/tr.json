@@ -1,5 +1,5 @@
 {
-    "landing": {
+  "landing": {
     "hero": {
       "badge": "Kurulum Gerekmez • PWA Hazır",
       "title": "Saha Hizmetleri Yönetimi, basitleştirildi.",
@@ -92,7 +92,7 @@
       }
     }
   },
-    "PWAInstall": {
+  "PWAInstall": {
     "settings": "Uygulama Kurulumu",
     "title": "Moment LBS'yi Yükleyin",
     "desc": "Daha hızlı erişim, çevrimdışı yetenekler ve yerel uygulama deneyimi için Moment'i ana ekranınıza veya dock'unuza ekleyin.",
@@ -906,5 +906,10 @@
       "title": "Topluluk Önceliği",
       "desc": "Aboneliğiniz, fikirlerinizi hayata geçirmemizi sağlar"
     }
+  },
+  "appVersion": {
+    "updateAvailable": "Güncelleme mevcut",
+    "updateDescription": "Yeni bir sürüm mevcut. Lütfen sayfayı yenileyin.",
+    "updateButton": "Güncelle"
   }
 }

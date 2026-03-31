@@ -579,8 +579,24 @@
     "noAppointmentsHint": "Comience creando una nueva cita",
     "calendar": {
       "noAppointmentsToDisplay": "No hay citas para mostrar",
-      "weekdaysFull": ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"],
-      "weekdaysShort": ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"],
+      "weekdaysFull": [
+        "Lunes",
+        "Martes",
+        "Miércoles",
+        "Jueves",
+        "Viernes",
+        "Sábado",
+        "Domingo"
+      ],
+      "weekdaysShort": [
+        "Lun",
+        "Mar",
+        "Mié",
+        "Jue",
+        "Vie",
+        "Sáb",
+        "Dom"
+      ],
       "months": [
         "Enero",
         "Febrero",
@@ -890,5 +906,10 @@
       "title": "Prioridad de la Comunidad",
       "desc": "Tu suscripción nos permite implementar tus ideas"
     }
+  },
+  "appVersion": {
+    "updateAvailable": "Actualización disponible",
+    "updateDescription": "Hay una nueva versión disponible. Por favor, actualice la página.",
+    "updateButton": "Actualizar"
   }
 }

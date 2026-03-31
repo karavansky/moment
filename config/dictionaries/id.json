@@ -1,5 +1,5 @@
 {
-    "landing": {
+  "landing": {
     "hero": {
       "badge": "Tanpa Instalasi • Siap PWA",
       "title": "Manajemen Layanan Lapangan, yang disederhanakan.",
@@ -92,7 +92,7 @@
       }
     }
   },
-    "PWAInstall": {
+  "PWAInstall": {
     "settings": "Instalasi Aplikasi",
     "title": "Instal Moment LBS",
     "desc": "Tambahkan Moment ke layar beranda atau dock Anda untuk akses lebih cepat, kemampuan offline, dan pengalaman aplikasi native.",
@@ -906,5 +906,10 @@
       "title": "Prioritas Komunitas",
       "desc": "Langganan Anda memungkinkan kami menerapkan ide-ide Anda"
     }
+  },
+  "appVersion": {
+    "updateAvailable": "Pembaruan tersedia",
+    "updateDescription": "Versi baru tersedia. Silakan muat ulang halaman.",
+    "updateButton": "Perbarui"
   }
 }
