@@ -1061,5 +1061,73 @@
       "deniedStep2": "Find the permission and set to \"Allow\"",
       "deniedStep3": "Refresh the page"
     }
+  },
+  "vehicle": {
+    "title": "Transport",
+    "tabs": {
+      "fleet": "Fleet",
+      "rejectReasons": "Reject Reasons"
+    },
+    "fleet": {
+      "title": "Fleet",
+      "addVehicle": "Add vehicle",
+      "noVehicles": "No vehicles added",
+      "plateNumber": "Plate number",
+      "platePlaceholder": "B-AB 1234",
+      "type": "Vehicle type",
+      "status": "Status",
+      "driver": "Driver",
+      "actions": "Actions",
+      "noDriver": "—",
+      "types": {
+        "STANDARD": "Standard",
+        "MINIVAN": "Minivan",
+        "WHEELCHAIR": "Wheelchair accessible"
+      },
+      "statuses": {
+        "ACTIVE": "Active",
+        "MAINTENANCE": "Maintenance",
+        "INACTIVE": "Inactive"
+      },
+      "addTitle": "Add vehicle",
+      "editTitle": "Edit vehicle",
+      "driverLabel": "Driver",
+      "driverPlaceholder": "Select driver (optional)",
+      "driverChangeWarning": "Driver change will be logged",
+      "add": "Add",
+      "enterPlate": "Please enter plate number",
+      "added": "Vehicle added",
+      "updatedWithDriver": "Vehicle and driver updated",
+      "updatedDriverRemoved": "Vehicle updated, driver removed",
+      "updated": "Vehicle updated",
+      "saveError": "Save error",
+      "confirmDelete": "Delete vehicle",
+      "deleted": "Vehicle deleted",
+      "deleteError": "Delete error"
+    },
+    "rejectReasons": {
+      "title": "Reject Reasons",
+      "addReason": "Add reason",
+      "noReasons": "No reject reasons added",
+      "active": "Active",
+      "inactive": "Inactive",
+      "created": "Created:",
+      "addTitle": "Add reject reason",
+      "editTitle": "Edit reason",
+      "reasonText": "Reason text",
+      "reasonPlaceholder": "e.g.: Busy with another order",
+      "isActive": "Active",
+      "add": "Add",
+      "enterText": "Please enter reason text",
+      "added": "Reason added",
+      "updated": "Reason updated",
+      "saveError": "Save error",
+      "deactivated": "Reason deactivated",
+      "activated": "Reason activated",
+      "toggleError": "Status change error",
+      "confirmDelete": "Delete reason",
+      "deleted": "Reason deleted",
+      "deleteError": "Delete error"
+    }
   }
 }

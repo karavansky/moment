@@ -3,6 +3,7 @@
 import { useState, useTransition, useRef, useEffect, useCallback } from 'react'
 import { Button, Separator } from '@heroui/react'
 import { Undo2, Truck, Ban, Van } from 'lucide-react'
+import { useTranslation } from '@/components/Providers'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import VehicleOverview from './VehicleOverview'
@@ -10,6 +11,7 @@ import RejectReasonsTab from './RejectReasonsTab'
 
 export default function VehiclePage() {
   const router = useRouter()
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<'fleet' | 'reasons'>('fleet')
   const [isPending, startTransition] = useTransition()
 
@@ -49,7 +51,7 @@ export default function VehiclePage() {
     <div className="flex flex-col h-full p-4">
       <div className="flex items-center pl-2 gap-2 mb-4 shrink-0">
         <Van className="w-6 h-6 mr-2" />
-        <h2 className="text-2xl font-semibold">Транспорт</h2>
+        <h2 className="text-2xl font-semibold">{t('vehicle.title')}</h2>
       </div>
 
       <div className="flex flex-col relative mb-4 shrink-0">
@@ -59,14 +61,14 @@ export default function VehiclePage() {
             variant={activeTab === 'fleet' ? 'tertiary' : 'outline'}
             onPress={onPressFleet}
           >
-            <Truck className="w-5 h-5 mr-2" /> Автопарк
+            <Truck className="w-5 h-5 mr-2" /> {t('vehicle.tabs.fleet')}
           </Button>
           <Button
             ref={reasonsRef}
             variant={activeTab === 'reasons' ? 'tertiary' : 'outline'}
             onPress={onPressReasons}
           >
-            <Ban className="w-5 h-5 mr-2" /> Причины отказа
+            <Ban className="w-5 h-5 mr-2" /> {t('vehicle.tabs.rejectReasons')}
           </Button>
         </div>
         <div className="relative w-full">

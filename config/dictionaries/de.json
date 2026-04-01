@@ -1065,5 +1065,73 @@
       "deniedStep2": "Finden Sie die Berechtigung und setzen Sie sie auf \"Erlauben\"",
       "deniedStep3": "Aktualisieren Sie die Seite"
     }
+  },
+  "vehicle": {
+    "title": "Transport",
+    "tabs": {
+      "fleet": "Fahrzeuge",
+      "rejectReasons": "Ablehnungsgründe"
+    },
+    "fleet": {
+      "title": "Fahrzeuge",
+      "addVehicle": "Fahrzeug hinzufügen",
+      "noVehicles": "Keine Fahrzeuge hinzugefügt",
+      "plateNumber": "Kennzeichen",
+      "platePlaceholder": "B-AB 1234",
+      "type": "Fahrzeugtyp",
+      "status": "Status",
+      "driver": "Fahrer",
+      "actions": "Aktionen",
+      "noDriver": "—",
+      "types": {
+        "STANDARD": "Standard",
+        "MINIVAN": "Minivan",
+        "WHEELCHAIR": "Rollstuhltauglich"
+      },
+      "statuses": {
+        "ACTIVE": "Aktiv",
+        "MAINTENANCE": "Wartung",
+        "INACTIVE": "Inaktiv"
+      },
+      "addTitle": "Fahrzeug hinzufügen",
+      "editTitle": "Fahrzeug bearbeiten",
+      "driverLabel": "Fahrer",
+      "driverPlaceholder": "Fahrer auswählen (optional)",
+      "driverChangeWarning": "Fahrerwechsel wird protokolliert",
+      "add": "Hinzufügen",
+      "enterPlate": "Bitte Kennzeichen eingeben",
+      "added": "Fahrzeug hinzugefügt",
+      "updatedWithDriver": "Fahrzeug und Fahrer aktualisiert",
+      "updatedDriverRemoved": "Fahrzeug aktualisiert, Fahrer entfernt",
+      "updated": "Fahrzeug aktualisiert",
+      "saveError": "Fehler beim Speichern",
+      "confirmDelete": "Fahrzeug löschen",
+      "deleted": "Fahrzeug gelöscht",
+      "deleteError": "Fehler beim Löschen"
+    },
+    "rejectReasons": {
+      "title": "Ablehnungsgründe",
+      "addReason": "Grund hinzufügen",
+      "noReasons": "Keine Ablehnungsgründe hinzugefügt",
+      "active": "Aktive",
+      "inactive": "Inaktive",
+      "created": "Erstellt:",
+      "addTitle": "Ablehnungsgrund hinzufügen",
+      "editTitle": "Grund bearbeiten",
+      "reasonText": "Grund",
+      "reasonPlaceholder": "z.B.: Beschäftigt mit anderem Auftrag",
+      "isActive": "Aktiv",
+      "add": "Hinzufügen",
+      "enterText": "Bitte Grund eingeben",
+      "added": "Grund hinzugefügt",
+      "updated": "Grund aktualisiert",
+      "saveError": "Fehler beim Speichern",
+      "deactivated": "Grund deaktiviert",
+      "activated": "Grund aktiviert",
+      "toggleError": "Fehler beim Statuswechsel",
+      "confirmDelete": "Grund löschen",
+      "deleted": "Grund gelöscht",
+      "deleteError": "Fehler beim Löschen"
+    }
   }
 }

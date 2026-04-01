@@ -1061,5 +1061,73 @@
       "deniedStep2": "Найдите разрешение и установите «Разрешить»",
       "deniedStep3": "Обновите страницу"
     }
+  },
+  "vehicle": {
+    "title": "Транспорт",
+    "tabs": {
+      "fleet": "Автопарк",
+      "rejectReasons": "Причины отказа"
+    },
+    "fleet": {
+      "title": "Автопарк",
+      "addVehicle": "Добавить транспорт",
+      "noVehicles": "Транспорт не добавлен",
+      "plateNumber": "Гос. номер",
+      "platePlaceholder": "B-AB 1234",
+      "type": "Тип транспорта",
+      "status": "Статус",
+      "driver": "Водитель",
+      "actions": "Действия",
+      "noDriver": "—",
+      "types": {
+        "STANDARD": "Стандарт",
+        "MINIVAN": "Минивэн",
+        "WHEELCHAIR": "Для инвалидов"
+      },
+      "statuses": {
+        "ACTIVE": "Активный",
+        "MAINTENANCE": "Ремонт",
+        "INACTIVE": "Неактивный"
+      },
+      "addTitle": "Добавить транспорт",
+      "editTitle": "Редактировать транспорт",
+      "driverLabel": "Водитель",
+      "driverPlaceholder": "Выберите водителя (необязательно)",
+      "driverChangeWarning": "Смена водителя будет записана в историю",
+      "add": "Добавить",
+      "enterPlate": "Введите гос. номер",
+      "added": "Транспорт добавлен",
+      "updatedWithDriver": "Транспорт и водитель обновлены",
+      "updatedDriverRemoved": "Транспорт обновлён, водитель снят",
+      "updated": "Транспорт обновлён",
+      "saveError": "Ошибка сохранения",
+      "confirmDelete": "Удалить транспорт",
+      "deleted": "Транспорт удалён",
+      "deleteError": "Ошибка удаления"
+    },
+    "rejectReasons": {
+      "title": "Причины отказа",
+      "addReason": "Добавить причину",
+      "noReasons": "Причины отказа не добавлены",
+      "active": "Активные",
+      "inactive": "Неактивные",
+      "created": "Создано:",
+      "addTitle": "Добавить причину отказа",
+      "editTitle": "Редактировать причину",
+      "reasonText": "Текст причины",
+      "reasonPlaceholder": "Например: Занят другим заказом",
+      "isActive": "Активная",
+      "add": "Добавить",
+      "enterText": "Введите текст причины",
+      "added": "Причина добавлена",
+      "updated": "Причина обновлена",
+      "saveError": "Ошибка сохранения",
+      "deactivated": "Причина деактивирована",
+      "activated": "Причина активирована",
+      "toggleError": "Ошибка изменения статуса",
+      "confirmDelete": "Удалить причину",
+      "deleted": "Причина удалена",
+      "deleteError": "Ошибка удаления"
+    }
   }
 }

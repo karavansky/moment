@@ -1061,5 +1061,73 @@
       "deniedStep2": "Знайдіть дозвіл та встановіть «Дозволити»",
       "deniedStep3": "Оновіть сторінку"
     }
+  },
+  "vehicle": {
+    "title": "Транспорт",
+    "tabs": {
+      "fleet": "Автопарк",
+      "rejectReasons": "Причини відмови"
+    },
+    "fleet": {
+      "title": "Автопарк",
+      "addVehicle": "Додати транспорт",
+      "noVehicles": "Транспорт не додано",
+      "plateNumber": "Держ. номер",
+      "platePlaceholder": "B-AB 1234",
+      "type": "Тип транспорту",
+      "status": "Статус",
+      "driver": "Водій",
+      "actions": "Дії",
+      "noDriver": "—",
+      "types": {
+        "STANDARD": "Стандарт",
+        "MINIVAN": "Мінівен",
+        "WHEELCHAIR": "Для інвалідів"
+      },
+      "statuses": {
+        "ACTIVE": "Активний",
+        "MAINTENANCE": "Ремонт",
+        "INACTIVE": "Неактивний"
+      },
+      "addTitle": "Додати транспорт",
+      "editTitle": "Редагувати транспорт",
+      "driverLabel": "Водій",
+      "driverPlaceholder": "Оберіть водія (необов'язково)",
+      "driverChangeWarning": "Зміна водія буде записана в історію",
+      "add": "Додати",
+      "enterPlate": "Введіть держ. номер",
+      "added": "Транспорт додано",
+      "updatedWithDriver": "Транспорт і водій оновлені",
+      "updatedDriverRemoved": "Транспорт оновлено, водія знято",
+      "updated": "Транспорт оновлено",
+      "saveError": "Помилка збереження",
+      "confirmDelete": "Видалити транспорт",
+      "deleted": "Транспорт видалено",
+      "deleteError": "Помилка видалення"
+    },
+    "rejectReasons": {
+      "title": "Причини відмови",
+      "addReason": "Додати причину",
+      "noReasons": "Причини відмови не додано",
+      "active": "Активні",
+      "inactive": "Неактивні",
+      "created": "Створено:",
+      "addTitle": "Додати причину відмови",
+      "editTitle": "Редагувати причину",
+      "reasonText": "Текст причини",
+      "reasonPlaceholder": "Наприклад: Зайнятий іншим замовленням",
+      "isActive": "Активна",
+      "add": "Додати",
+      "enterText": "Введіть текст причини",
+      "added": "Причину додано",
+      "updated": "Причину оновлено",
+      "saveError": "Помилка збереження",
+      "deactivated": "Причину деактивовано",
+      "activated": "Причину активовано",
+      "toggleError": "Помилка зміни статусу",
+      "confirmDelete": "Видалити причину",
+      "deleted": "Причину видалено",
+      "deleteError": "Помилка видалення"
+    }
   }
 }

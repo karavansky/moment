@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, memo } from 'react'
-import { Button, Spinner, toast, Modal, Switch } from '@heroui/react'
+import { Button, Spinner, toast, Modal, Switch, AlertDialog } from '@heroui/react'
 import { Plus, Pencil, Trash2, Ban, ToggleLeft, ToggleRight } from 'lucide-react'
+import { useTranslation } from '@/components/Providers'
 import { useDisclosure } from '@/lib/useDisclosure'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { generateId } from '@/lib/generate-id'
@@ -13,6 +14,7 @@ interface RejectReasonsTabProps {
 }
 
 function RejectReasonsTab({ className }: RejectReasonsTabProps) {
+  const { t } = useTranslation()
   const { rejectReasons, isLoading, isLiveMode, addRejectReason, updateRejectReason, deleteRejectReason } = useScheduling()
   const [isSaving, setIsSaving] = useState(false)
   const [editingReason, setEditingReason] = useState<RejectReason | null>(null)
@@ -42,7 +44,7 @@ function RejectReasonsTab({ className }: RejectReasonsTabProps) {
 
   const handleSave = async () => {
     if (!reasonText.trim()) {
-      toast.danger('Введите текст причины')
+      toast.danger(t('vehicle.rejectReasons.enterText'))
       return
     }
 
@@ -57,20 +59,20 @@ function RejectReasonsTab({ className }: RejectReasonsTabProps) {
           isActive,
           createdAt: new Date(),
         })
-        toast.success('Причина добавлена')
+        toast.success(t('vehicle.rejectReasons.added'))
       } else if (editingReason) {
         updateRejectReason({
           ...editingReason,
           reasonText: reasonText.trim(),
           isActive,
         })
-        toast.success('Причина обновлена')
+        toast.success(t('vehicle.rejectReasons.updated'))
       }
 
       onClose()
     } catch (error) {
       console.error('Error saving reason:', error)
-      toast.danger('Ошибка сохранения')
+      toast.danger(t('vehicle.rejectReasons.saveError'))
     } finally {
       setIsSaving(false)
     }
@@ -82,23 +84,29 @@ function RejectReasonsTab({ className }: RejectReasonsTabProps) {
         ...reason,
         isActive: !reason.isActive,
       })
-      toast.success(reason.isActive ? 'Причина деактивирована' : 'Причина активирована')
+      toast.success(reason.isActive ? t('vehicle.rejectReasons.deactivated') : t('vehicle.rejectReasons.activated'))
     } catch (error) {
       console.error('Error toggling reason:', error)
-      toast.danger('Ошибка изменения статуса')
+      toast.danger(t('vehicle.rejectReasons.toggleError'))
     }
   }
 
-  const handleDelete = async (reason: RejectReason) => {
-    if (!confirm(`Удалить причину "${reason.reasonText}"?`)) return
+  const [deleteTarget, setDeleteTarget] = useState<RejectReason | null>(null)
 
+  const handleDelete = (reason: RejectReason) => {
+    setDeleteTarget(reason)
+  }
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return
     try {
-      deleteRejectReason(reason.id)
-      toast.success('Причина удалена')
+      deleteRejectReason(deleteTarget.id)
+      toast.success(t('vehicle.rejectReasons.deleted'))
     } catch (error) {
       console.error('Error deleting reason:', error)
-      toast.danger('Ошибка удаления')
+      toast.danger(t('vehicle.rejectReasons.deleteError'))
     }
+    setDeleteTarget(null)
   }
 
   if (isLoading) {
@@ -115,16 +123,16 @@ function RejectReasonsTab({ className }: RejectReasonsTabProps) {
   return (
     <div className={`flex flex-col gap-4 h-full overflow-y-auto ${className || ''}`}>
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Причины отказа ({rejectReasons.length})</h3>
+        <h3 className="text-lg font-semibold">{t('vehicle.rejectReasons.title')} ({rejectReasons.length})</h3>
         <Button variant="primary" size="sm" onPress={handleCreate}>
-          <Plus className="w-4 h-4 mr-1" /> Добавить причину
+          <Plus className="w-4 h-4 mr-1" /> {t('vehicle.rejectReasons.addReason')}
         </Button>
       </div>
 
       {rejectReasons.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-default-400">
           <Ban className="w-16 h-16 mb-4 opacity-50" />
-          <p>Причины отказа не добавлены</p>
+          <p>{t('vehicle.rejectReasons.noReasons')}</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -132,7 +140,7 @@ function RejectReasonsTab({ className }: RejectReasonsTabProps) {
           {activeReasons.length > 0 && (
             <div>
               <h4 className="text-sm font-medium text-default-600 mb-3">
-                Активные ({activeReasons.length})
+                {t('vehicle.rejectReasons.active')} ({activeReasons.length})
               </h4>
               <div className="space-y-2">
                 {activeReasons.map(reason => (
@@ -143,7 +151,7 @@ function RejectReasonsTab({ className }: RejectReasonsTabProps) {
                     <div className="flex-1">
                       <p className="text-sm font-medium">{reason.reasonText}</p>
                       <p className="text-xs text-default-400 mt-1">
-                        Создано: {new Date(reason.createdAt).toLocaleDateString()}
+                        {t('vehicle.rejectReasons.created')} {new Date(reason.createdAt).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="flex gap-2 ml-4">
@@ -171,7 +179,7 @@ function RejectReasonsTab({ className }: RejectReasonsTabProps) {
           {inactiveReasons.length > 0 && (
             <div>
               <h4 className="text-sm font-medium text-default-400 mb-3">
-                Неактивные ({inactiveReasons.length})
+                {t('vehicle.rejectReasons.inactive')} ({inactiveReasons.length})
               </h4>
               <div className="space-y-2">
                 {inactiveReasons.map(reason => (
@@ -182,7 +190,7 @@ function RejectReasonsTab({ className }: RejectReasonsTabProps) {
                     <div className="flex-1">
                       <p className="text-sm text-default-500">{reason.reasonText}</p>
                       <p className="text-xs text-default-400 mt-1">
-                        Создано: {new Date(reason.createdAt).toLocaleDateString()}
+                        {t('vehicle.rejectReasons.created')} {new Date(reason.createdAt).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="flex gap-2 ml-4">
@@ -215,36 +223,58 @@ function RejectReasonsTab({ className }: RejectReasonsTabProps) {
             <Modal.Dialog>
               <Modal.CloseTrigger />
               <Modal.Header>
-                <span>{isCreating ? 'Добавить причину отказа' : 'Редактировать причину'}</span>
+                <span>{isCreating ? t('vehicle.rejectReasons.addTitle') : t('vehicle.rejectReasons.editTitle')}</span>
               </Modal.Header>
               <Modal.Body className="gap-4">
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-medium">Текст причины</label>
+                  <label className="text-sm font-medium">{t('vehicle.rejectReasons.reasonText')}</label>
                   <input
                     type="text"
-                    placeholder="Например: Занят другим заказом"
+                    placeholder={t('vehicle.rejectReasons.reasonPlaceholder')}
                     value={reasonText}
                     onChange={e => setReasonText(e.target.value)}
                     className="w-full px-3 py-2 border border-default-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">Активная</label>
+                  <label className="text-sm font-medium">{t('vehicle.rejectReasons.isActive')}</label>
                   <Switch isSelected={isActive} onChange={(value: boolean) => setIsActive(value)} />
                 </div>
               </Modal.Body>
               <Modal.Footer>
                 <Button variant="outline" onPress={onClose}>
-                  Отмена
+                  {t('common.cancel')}
                 </Button>
                 <Button variant="primary" isDisabled={isSaving} onPress={handleSave}>
-                  {isSaving ? <Spinner size="sm" /> : isCreating ? 'Добавить' : 'Сохранить'}
+                  {isSaving ? <Spinner size="sm" /> : isCreating ? t('vehicle.rejectReasons.add') : t('common.save')}
                 </Button>
               </Modal.Footer>
             </Modal.Dialog>
           </Modal.Container>
         </Modal.Backdrop>
       </Modal>
+
+      {/* Delete Confirmation */}
+      <AlertDialog.Backdrop isOpen={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }} isDismissable>
+        <AlertDialog.Container>
+          <AlertDialog.Dialog className="sm:max-w-[400px]">
+            <AlertDialog.CloseTrigger />
+            <AlertDialog.Header>
+              <AlertDialog.Icon status="danger" />
+              <AlertDialog.Heading>{t('vehicle.rejectReasons.confirmDelete')}</AlertDialog.Heading>
+            </AlertDialog.Header>
+            <AlertDialog.Body>
+              <p>{deleteTarget?.reasonText}</p>
+            </AlertDialog.Body>
+            <AlertDialog.Footer>
+              <Button slot="close" variant="tertiary">{t('common.cancel')}</Button>
+              <Button variant="danger" onPress={confirmDelete}>
+                <Trash2 className="w-4 h-4" /> {t('common.delete')}
+              </Button>
+            </AlertDialog.Footer>
+          </AlertDialog.Dialog>
+        </AlertDialog.Container>
+      </AlertDialog.Backdrop>
     </div>
   )
 }

@@ -35,7 +35,8 @@
       "Bash(sudo tail -50 /var/log/nginx/access.log)",
       "Bash(docker compose exec -T postgres psql -U hronop -d moment -c \"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = ''organisations'' ORDER BY ordinal_position;\")",
       "mcp__heroui-react__get_docs",
-      "mcp__heroui-react__get_component_docs"
+      "mcp__heroui-react__get_component_docs",
+      "Bash(npm view:*)"
     ]
   }
 }

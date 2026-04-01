@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, memo, useMemo } from 'react'
-import { Button, Spinner, toast, Modal } from '@heroui/react'
+import { Button, Spinner, toast, Modal, AlertDialog } from '@heroui/react'
 import { Plus, Pencil, Trash2, Truck } from 'lucide-react'
+import { useTranslation } from '@/components/Providers'
 import { useDisclosure } from '@/lib/useDisclosure'
 import { useScheduling } from '@/contexts/SchedulingContext'
 import { generateId } from '@/lib/generate-id'
@@ -15,6 +16,7 @@ interface VehicleOverviewProps {
 }
 
 function VehicleOverview({ className }: VehicleOverviewProps) {
+  const { t } = useTranslation()
   const { vehicles, workers, teams, isLoading, isLiveMode, addVehicle, updateVehicle, deleteVehicle } = useScheduling()
   const [isSaving, setIsSaving] = useState(false)
   const [editingVehicle, setEditingVehicle] = useState<any>(null)
@@ -78,7 +80,7 @@ function VehicleOverview({ className }: VehicleOverviewProps) {
 
   const handleSave = async () => {
     if (!plateNumber.trim()) {
-      toast.danger('Введите гос. номер')
+      toast.danger(t('vehicle.fleet.enterPlate'))
       return
     }
 
@@ -98,7 +100,7 @@ function VehicleOverview({ className }: VehicleOverviewProps) {
           lastLocationUpdate: null,
           createdAt: new Date(),
         })
-        toast.success('Транспорт добавлен')
+        toast.success(t('vehicle.fleet.added'))
       } else if (editingVehicle) {
         // Detect driver change
         const driverChanged = editingVehicle.currentDriverID !== selectedDriverID
@@ -119,46 +121,43 @@ function VehicleOverview({ className }: VehicleOverviewProps) {
         })
 
         if (driverChanged && selectedDriverID) {
-          toast.success('Транспорт и водитель обновлены')
+          toast.success(t('vehicle.fleet.updatedWithDriver'))
         } else if (driverChanged && !selectedDriverID) {
-          toast.success('Транспорт обновлен, водитель снят')
+          toast.success(t('vehicle.fleet.updatedDriverRemoved'))
         } else {
-          toast.success('Транспорт обновлен')
+          toast.success(t('vehicle.fleet.updated'))
         }
       }
 
       onClose()
     } catch (error) {
       console.error('Error saving vehicle:', error)
-      toast.danger('Ошибка сохранения')
+      toast.danger(t('vehicle.fleet.saveError'))
     } finally {
       setIsSaving(false)
     }
   }
 
-  const handleDelete = async (vehicle: any) => {
-    if (!confirm(`Удалить транспорт ${vehicle.plateNumber}?`)) return
+  const [deleteTarget, setDeleteTarget] = useState<any>(null)
 
+  const handleDelete = async (vehicle: any) => {
+    setDeleteTarget(vehicle)
+  }
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return
     try {
-      deleteVehicle(vehicle.id)
-      toast.success('Транспорт удален')
+      deleteVehicle(deleteTarget.id)
+      toast.success(t('vehicle.fleet.deleted'))
     } catch (error) {
       console.error('Error deleting vehicle:', error)
-      toast.danger('Ошибка удаления')
+      toast.danger(t('vehicle.fleet.deleteError'))
     }
+    setDeleteTarget(null)
   }
 
-  const vehicleTypeLabels: Record<VehicleType, string> = {
-    STANDARD: 'Стандарт',
-    MINIVAN: 'Минивэн',
-    WHEELCHAIR: 'Для инвалидов',
-  }
-
-  const vehicleStatusLabels: Record<VehicleStatus, string> = {
-    ACTIVE: 'Активный',
-    REPAIR: 'Ремонт',
-    INACTIVE: 'Неактивный',
-  }
+  const typeLabel = (type: VehicleType) => t(`vehicle.fleet.types.${type}`, type)
+  const statusLabel = (status: VehicleStatus) => t(`vehicle.fleet.statuses.${status}`, status)
 
   if (isLoading) {
     return (
@@ -171,34 +170,34 @@ function VehicleOverview({ className }: VehicleOverviewProps) {
   return (
     <div className={`flex flex-col gap-4 h-full overflow-y-auto ${className || ''}`}>
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Автопарк ({vehicles.length})</h3>
+        <h3 className="text-lg font-semibold">{t('vehicle.fleet.title')} ({vehicles.length})</h3>
         <Button variant="primary" size="sm" onPress={handleCreate}>
-          <Plus className="w-4 h-4 mr-1" /> Добавить транспорт
+          <Plus className="w-4 h-4 mr-1" /> {t('vehicle.fleet.addVehicle')}
         </Button>
       </div>
 
       {vehicles.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-default-400">
           <Truck className="w-16 h-16 mb-4 opacity-50" />
-          <p>Транспорт не добавлен</p>
+          <p>{t('vehicle.fleet.noVehicles')}</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="border-b border-default-200">
               <tr className="text-left">
-                <th className="pb-3 pr-4 font-medium">Гос. номер</th>
-                <th className="pb-3 pr-4 font-medium">Тип</th>
-                <th className="pb-3 pr-4 font-medium">Статус</th>
-                <th className="pb-3 pr-4 font-medium">Водитель</th>
-                <th className="pb-3 font-medium text-right">Действия</th>
+                <th className="pb-3 pr-4 font-medium">{t('vehicle.fleet.plateNumber')}</th>
+                <th className="pb-3 pr-4 font-medium">{t('vehicle.fleet.type')}</th>
+                <th className="pb-3 pr-4 font-medium">{t('vehicle.fleet.status')}</th>
+                <th className="pb-3 pr-4 font-medium">{t('vehicle.fleet.driver')}</th>
+                <th className="pb-3 font-medium text-right">{t('vehicle.fleet.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {vehicles.map(vehicle => (
                 <tr key={vehicle.id} className="border-b border-default-100 last:border-0">
                   <td className="py-3 pr-4 font-medium">{vehicle.plateNumber}</td>
-                  <td className="py-3 pr-4">{vehicleTypeLabels[vehicle.type]}</td>
+                  <td className="py-3 pr-4">{typeLabel(vehicle.type)}</td>
                   <td className="py-3 pr-4">
                     <span
                       className={`px-2 py-1 rounded-full text-xs ${
@@ -209,13 +208,13 @@ function VehicleOverview({ className }: VehicleOverviewProps) {
                             : 'bg-default-100 text-default-500'
                       }`}
                     >
-                      {vehicleStatusLabels[vehicle.status]}
+                      {statusLabel(vehicle.status)}
                     </span>
                   </td>
                   <td className="py-3 pr-4 text-default-500">
                     {vehicle.currentDriverID
                       ? `${vehicle.currentDriverName || ''} ${vehicle.currentDriverSurname || ''}`.trim()
-                      : '—'}
+                      : t('vehicle.fleet.noDriver')}
                   </td>
                   <td className="py-3 text-right">
                     <div className="flex gap-2 justify-end">
@@ -241,41 +240,41 @@ function VehicleOverview({ className }: VehicleOverviewProps) {
             <Modal.Dialog>
               <Modal.CloseTrigger />
               <Modal.Header>
-                <span>{isCreating ? 'Добавить транспорт' : 'Редактировать транспорт'}</span>
+                <span>{isCreating ? t('vehicle.fleet.addTitle') : t('vehicle.fleet.editTitle')}</span>
               </Modal.Header>
               <Modal.Body className="gap-4">
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-medium">Гос. номер</label>
+                  <label className="text-sm font-medium">{t('vehicle.fleet.plateNumber')}</label>
                   <input
                     type="text"
-                    placeholder="B-AB 1234"
+                    placeholder={t('vehicle.fleet.platePlaceholder')}
                     value={plateNumber}
                     onChange={e => setPlateNumber(e.target.value)}
                     className="w-full px-3 py-2 border border-default-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-medium">Тип транспорта</label>
+                  <label className="text-sm font-medium">{t('vehicle.fleet.type')}</label>
                   <select
                     value={vehicleType}
                     onChange={e => setVehicleType(e.target.value as VehicleType)}
                     className="w-full px-3 py-2 border border-default-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
-                    <option value="STANDARD">Стандарт</option>
-                    <option value="MINIVAN">Минивэн</option>
-                    <option value="WHEELCHAIR">Для инвалидов</option>
+                    <option value="STANDARD">{t('vehicle.fleet.types.STANDARD')}</option>
+                    <option value="MINIVAN">{t('vehicle.fleet.types.MINIVAN')}</option>
+                    <option value="WHEELCHAIR">{t('vehicle.fleet.types.WHEELCHAIR')}</option>
                   </select>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-medium">Статус</label>
+                  <label className="text-sm font-medium">{t('vehicle.fleet.status')}</label>
                   <select
                     value={status}
                     onChange={e => setStatus(e.target.value as VehicleStatus)}
                     className="w-full px-3 py-2 border border-default-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
-                    <option value="ACTIVE">Активный</option>
-                    <option value="REPAIR">Ремонт</option>
-                    <option value="INACTIVE">Неактивный</option>
+                    <option value="ACTIVE">{t('vehicle.fleet.statuses.ACTIVE')}</option>
+                    <option value="REPAIR">{t('vehicle.fleet.statuses.MAINTENANCE')}</option>
+                    <option value="INACTIVE">{t('vehicle.fleet.statuses.INACTIVE')}</option>
                   </select>
                 </div>
                 <div className="flex flex-col gap-2">
@@ -283,29 +282,48 @@ function VehicleOverview({ className }: VehicleOverviewProps) {
                     workersForSelect={workersForSelect}
                     selectedWorkerID={selectedDriverID}
                     onSelectionChange={setSelectedDriverID}
-                    label="Водитель"
-                    placeholder="Выберите водителя (необязательно)"
+                    label={t('vehicle.fleet.driverLabel')}
+                    placeholder={t('vehicle.fleet.driverPlaceholder')}
                     clearable
                   />
                   {!isCreating && editingVehicle?.currentDriverID && editingVehicle.currentDriverID !== selectedDriverID && (
                     <p className="text-xs text-warning-600">
-                      ⚠️ Смена водителя будет записана в историю
+                      ⚠️ {t('vehicle.fleet.driverChangeWarning')}
                     </p>
                   )}
                 </div>
               </Modal.Body>
               <Modal.Footer>
                 <Button variant="outline" onPress={onClose}>
-                  Отмена
+                  {t('common.cancel')}
                 </Button>
                 <Button variant="primary" isDisabled={isSaving} onPress={handleSave}>
-                  {isSaving ? <Spinner size="sm" /> : isCreating ? 'Добавить' : 'Сохранить'}
+                  {isSaving ? <Spinner size="sm" /> : isCreating ? t('vehicle.fleet.add') : t('common.save')}
                 </Button>
               </Modal.Footer>
             </Modal.Dialog>
           </Modal.Container>
         </Modal.Backdrop>
       </Modal>
+
+      {/* Delete Confirmation */}
+      <AlertDialog.Backdrop isOpen={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }} isDismissable>
+        <AlertDialog.Container>
+          <AlertDialog.Dialog className="sm:max-w-[400px]">
+            <AlertDialog.CloseTrigger />
+            <AlertDialog.Header>
+              <AlertDialog.Icon status="danger" />
+              <AlertDialog.Heading>{t('vehicle.fleet.confirmDelete')} {deleteTarget?.plateNumber}?</AlertDialog.Heading>
+            </AlertDialog.Header>
+            <AlertDialog.Footer>
+              <Button slot="close" variant="tertiary">{t('common.cancel')}</Button>
+              <Button variant="danger" onPress={confirmDelete}>
+                <Trash2 className="w-4 h-4" /> {t('common.delete')}
+              </Button>
+            </AlertDialog.Footer>
+          </AlertDialog.Dialog>
+        </AlertDialog.Container>
+      </AlertDialog.Backdrop>
     </div>
   )
 }
