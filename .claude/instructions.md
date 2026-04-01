@@ -612,4 +612,109 @@ npm run dev
 
 ---
 
+## Internationalization (i18n) Guide
+
+### Architecture
+
+- **Dictionary files**: `config/dictionaries/{lang}.json` (12 languages: de, en, ru, uk, es, fr, id, it, ja, pl, pt, tr)
+- **Loader**: `config/dictionaries.ts` — uses `unstable_cache` with `revalidate: false` (permanent cache)
+- **Hook**: `useTranslation()` from `components/Providers.tsx` — returns `{ t, dict }`
+- **Usage**: `t('path.to.key', 'fallback')` — dot-notation path through JSON
+
+### Step-by-step: Internationalize a Component
+
+1. **Find hardcoded strings**:
+   ```bash
+   # Find Cyrillic strings
+   grep -n "'[А-Яа-яЁё]" components/MyComponent.tsx
+   # Find all quoted strings (manual review)
+   grep -n ">[A-Z][a-z]" components/MyComponent.tsx
+   ```
+
+2. **Add `useTranslation` hook** (if not already present):
+   ```tsx
+   import { useTranslation } from '@/components/Providers'
+   // Inside component:
+   const { t } = useTranslation()
+   ```
+
+3. **Replace strings with `t()` calls**:
+   ```tsx
+   // Before:
+   <p>Загрузка...</p>
+   // After:
+   <p>{t('myComponent.loading', 'Loading...')}</p>
+   ```
+   Always provide English fallback as second argument.
+
+4. **Add keys to ALL 12 dictionaries** using batch script:
+   ```bash
+   cd config/dictionaries
+   python3 << 'PYEOF'
+   import json
+   translations = {
+       "de": {"loading": "Wird geladen..."},
+       "en": {"loading": "Loading..."},
+       "ru": {"loading": "Загрузка..."},
+       "uk": {"loading": "Завантаження..."},
+       "es": {"loading": "Cargando..."},
+       "fr": {"loading": "Chargement..."},
+       "id": {"loading": "Memuat..."},
+       "it": {"loading": "Caricamento..."},
+       "ja": {"loading": "読み込み中..."},
+       "pl": {"loading": "Ładowanie..."},
+       "pt": {"loading": "Carregando..."},
+       "tr": {"loading": "Yükleniyor..."},
+   }
+   for lang, tr in translations.items():
+       with open(f'{lang}.json', 'r') as f:
+           data = json.load(f)
+       data['myComponent'] = tr  # or data['existing']['newKey'] = tr['newKey']
+       with open(f'{lang}.json', 'w') as f:
+           json.dump(data, f, ensure_ascii=False, indent=2)
+       print(f'{lang}: OK')
+   PYEOF
+   ```
+
+5. **Clear cache and restart dev server**:
+   ```bash
+   rm -rf .next/cache && npm run dev
+   ```
+   ⚠️ `unstable_cache` with `revalidate: false` means dictionaries are cached permanently. New keys won't appear without cache clear!
+
+### For non-React files (utilities, mock data)
+
+Pass `t` function as parameter:
+```tsx
+// In utility file:
+type TranslateFn = (key: string, fallback?: string) => string
+export function myUtil(t?: TranslateFn) {
+  const tr = (key: string, fallback: string) => t ? t(key, fallback) : fallback
+  return { label: tr('myKey', 'English fallback') }
+}
+
+// In component:
+const { t } = useTranslation()
+const data = myUtil(t)
+```
+
+### Key Naming Conventions
+
+- Top-level namespace = feature/component: `dispatcher.*`, `sidebar.*`, `appointment.*`
+- Shared strings: `common.cancel`, `common.delete`, `common.save`
+- Nested by context: `appointment.edit.deleteTitle`, `appointment.report.clientReview`
+- Status enums: `dispatcher.status.CREATED`, `dispatcher.status.COMPLETED`
+
+### Common Pitfalls
+
+❌ **Don't forget to add keys to ALL 12 dictionaries** — missing key = console warning
+❌ **Don't use `json.dump` carelessly** — it rewrites the entire file, verify structure after
+❌ **Don't forget cache clear** — `rm -rf .next/cache` after changing dictionary files
+❌ **Don't put `t()` in non-component functions** — pass `t` as parameter instead
+✅ **Always provide fallback** — `t('key', 'English fallback')` for graceful degradation
+✅ **Check existing keys first** — `grep -n "yourKey" config/dictionaries/de.json`
+✅ **Verify after batch update** — `python3 -c "import json; d=json.load(open('de.json')); print(d['yourSection'])"` 
+
+---
+
 **When starting a new session, read this file first to understand the project architecture!**

@@ -253,8 +253,8 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
         console.log('[Settings] Session updated with new data')
 
         toastQueue.add({
-          title: 'Profile Updated',
-          description: 'Your profile has been saved successfully',
+          title: t('settings.profile.profileUpdated'),
+          description: t('settings.profile.profileUpdatedDesc'),
           variant: 'success',
         })
 
@@ -262,16 +262,16 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
         setProfileChanged(false)
       } else {
         toastQueue.add({
-          title: 'Save Failed',
-          description: 'Failed to update profile. Please try again.',
+          title: t('settings.profile.saveFailed'),
+          description: t('settings.profile.saveFailedDesc'),
           variant: 'danger',
         })
         console.error('[Settings] Failed to save profile')
       }
     } catch (err) {
       toastQueue.add({
-        title: 'Error',
-        description: 'An error occurred while saving your profile',
+        title: t('common.error', 'Error'),
+        description: t('settings.profile.saveError'),
         variant: 'danger',
       })
       console.error('[Settings] Save profile error:', err)
@@ -425,7 +425,7 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
 
   return (
     <div className="max-w-5xl mx-auto p-4 sm:p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('settings.title')}</h1>
 
       {/* Row 1: Profile + Regional Settings */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
@@ -433,40 +433,40 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 space-y-4">
         <div className="flex items-center gap-3">
           <User className="w-5 h-5 text-blue-500" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Profile</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('settings.profile.title')}</h2>
         </div>
 
         {settings && (session?.user || isDemo) && (
           <div className="space-y-4">
             {/* User Name */}
             <TextField name="userName" className="w-full" onChange={setUserName}>
-              <Label>Your Name</Label>
-              <Input type="text" value={userName} placeholder="Enter your name" />
+              <Label>{t('settings.profile.name')}</Label>
+              <Input type="text" value={userName} placeholder={t('settings.profile.namePlaceholder')} />
             </TextField>
 
             {/* Organization Name - Director only */}
             {effectiveIsDirector && (
               <TextField name="organizationName" className="w-full" onChange={setOrganizationName}>
                 <Label>
-                  Organization Name
+                  {t('settings.profile.orgName')}
                   <span className="ml-2 text-xs font-normal text-purple-600 dark:text-purple-400">
-                    (Director only)
+                    {t('settings.profile.directorOnly')}
                   </span>
                 </Label>
-                <Input type="text" value={organizationName} placeholder="Enter organization name" />
+                <Input type="text" value={organizationName} placeholder={t('settings.profile.orgNamePlaceholder')} />
               </TextField>
             )}
 
             {/* Email (read-only) */}
             <TextField name="email" className="w-full" isDisabled>
-              <Label>Email</Label>
+              <Label>{t('settings.profile.email')}</Label>
               <Input
                 type="email"
                 value={session?.user?.email || (isDemo ? 'demo@moment-lbs.app' : '')}
                 readOnly
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Email cannot be changed
+                {t('settings.profile.emailReadonly')}
               </p>
             </TextField>
 
@@ -478,10 +478,10 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
                 isDisabled={!profileChanged || savingProfile}
                 className="flex-1"
               >
-                {savingProfile ? 'Saving...' : 'Save Changes'}
+                {savingProfile ? t('settings.profile.saving') : t('settings.profile.saveChanges')}
               </Button>
               {profileChanged && !savingProfile && (
-                <span className="text-xs text-gray-500 dark:text-gray-400">Unsaved changes</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{t('settings.profile.unsaved')}</span>
               )}
             </div>
 
@@ -489,7 +489,7 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
             <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
               <AlertDialog>
                 <Button variant="danger" fullWidth>
-                  Delete Account
+                  {t('settings.profile.deleteAccount')}
                 </Button>
                 <AlertDialog.Backdrop>
                   <AlertDialog.Container>
@@ -497,28 +497,25 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
                       <AlertDialog.CloseTrigger />
                       <AlertDialog.Header>
                         <AlertDialog.Icon status="danger" />
-                        <AlertDialog.Heading>Delete Account Permanently?</AlertDialog.Heading>
+                        <AlertDialog.Heading>{t('settings.profile.deleteAccountTitle')}</AlertDialog.Heading>
                       </AlertDialog.Header>
                       <AlertDialog.Body>
-                        <p>
-                          This action cannot be undone. This will permanently delete your account
-                          and remove all associated data including:
-                        </p>
+                        <p>{t('settings.profile.deleteAccountDesc')}</p>
                         <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
-                          <li>All workers</li>
-                          <li>All clients</li>
-                          <li>All appointments</li>
-                          <li>All routes</li>
-                          <li>All reports</li>
-                          <li>Organization settings</li>
+                          <li>{t('settings.profile.deleteItems.workers')}</li>
+                          <li>{t('settings.profile.deleteItems.clients')}</li>
+                          <li>{t('settings.profile.deleteItems.appointments')}</li>
+                          <li>{t('settings.profile.deleteItems.routes')}</li>
+                          <li>{t('settings.profile.deleteItems.reports')}</li>
+                          <li>{t('settings.profile.deleteItems.orgSettings')}</li>
                         </ul>
                       </AlertDialog.Body>
                       <AlertDialog.Footer>
                         <Button slot="close" variant="tertiary">
-                          Cancel
+                          {t('common.cancel')}
                         </Button>
                         <Button slot="close" variant="danger">
-                          Delete Forever
+                          {t('settings.profile.deleteForever')}
                         </Button>
                       </AlertDialog.Footer>
                     </AlertDialog.Dialog>
@@ -534,7 +531,7 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 space-y-4">
         <div className="flex items-center gap-3">
           <Globe className="w-5 h-5 text-purple-500" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Regional Settings</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('settings.regional.title')}</h2>
         </div>
 
         {settings && (
@@ -542,11 +539,11 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
             {/* Language Selection - All users */}
             <div>
               <Label className="text-sm font-medium text-gray-900 dark:text-white block mb-2">
-                Interface Language
+                {t('settings.regional.language')}
               </Label>
               <LanguageSwitcher currentLang={lang} variant="full" />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                Choose your preferred interface language. Your selection is automatically saved.
+                {t('settings.regional.languageHint')}
               </p>
             </div>
 
@@ -571,12 +568,12 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
                   }}
                   onOpenChange={setIsCountryOpen}
                   isDisabled={saving}
-                  placeholder="Select country"
+                  placeholder={t('settings.regional.countryPlaceholder')}
                 >
                   <Label>
-                    Country
+                    {t('settings.regional.country')}
                     <span className="ml-2 text-xs font-normal text-purple-600 dark:text-purple-400">
-                      (Director only)
+                      {t('settings.profile.directorOnly')}
                     </span>
                   </Label>
                   <Autocomplete.Trigger>
@@ -589,12 +586,12 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
                       <SearchField autoFocus name="search">
                         <SearchField.Group>
                           <SearchField.SearchIcon />
-                          <SearchField.Input placeholder="Search country..." />
+                          <SearchField.Input placeholder={t('settings.regional.searchCountry')} />
                         </SearchField.Group>
                       </SearchField>
                       <ListBox
                         className="max-h-60 overflow-y-auto"
-                        renderEmptyState={() => <EmptyState>No countries found</EmptyState>}
+                        renderEmptyState={() => <EmptyState>{t('settings.regional.noCountries')}</EmptyState>}
                       >
                         {CountriesHelper.getAllCountries().map(({ code, data }) => {
                           const FlagIcon = data.flag
@@ -613,7 +610,7 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
                   </Autocomplete.Popover>
                 </Autocomplete>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Select your country for better address suggestions
+                  {t('settings.regional.countryHint')}
                 </p>
               </div>
             )}
@@ -644,13 +641,13 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
                           }}
                           onOpenChange={setIsCitiesOpen}
                           isDisabled={saving || cities.length === 0}
-                          placeholder="Select cities to filter"
+                          placeholder={t('settings.regional.selectCities')}
                           selectionMode="multiple"
                         >
                           <Label>
-                            Filter addresses by cities{' '}
+                            {t('settings.regional.cityFilter')}{' '}
                             <span className="ml-2 text-xs font-normal text-purple-600 dark:text-purple-400">
-                              (Director only)
+                              {t('settings.profile.directorOnly')}
                             </span>
                           </Label>
                           <Autocomplete.Trigger>
@@ -704,12 +701,12 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
                               <SearchField autoFocus name="search">
                                 <SearchField.Group>
                                   <SearchField.SearchIcon />
-                                  <SearchField.Input placeholder="Search city..." />
+                                  <SearchField.Input placeholder={t('settings.regional.searchCity')} />
                                 </SearchField.Group>
                               </SearchField>
                               <ListBox
                                 className="max-h-60 overflow-y-auto"
-                                renderEmptyState={() => <EmptyState>No cities found</EmptyState>}
+                                renderEmptyState={() => <EmptyState>{t('settings.regional.noCities')}</EmptyState>}
                               >
                                 {cities.map(city => (
                                   <ListBox.Item
@@ -728,7 +725,7 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
                       </div>
                     ) : (
                       <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-                        No cities added yet
+                        {t('settings.regional.noCitiesYet')}
                       </p>
                     )}
 
@@ -736,14 +733,14 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
                     {settings?.country ? (
                       <div className="space-y-2 mt-3">
                         <Label className="text-sm font-medium text-gray-900 dark:text-white">
-                          Add City
+                          {t('settings.regional.addCity')}
                         </Label>
                         <div className="flex gap-2">
                           <div className="flex-1">
                             <CityAutocomplete
                               value={newCityName}
                               onChange={setNewCityName}
-                              placeholder="Search and add a city..."
+                              placeholder={t('settings.regional.searchAddCity')}
                               countryCode={settings.country}
                               aria-label="Search for a city"
                             />
@@ -754,14 +751,14 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
                             onPress={requireAuth(handleAddCity)}
                             isDisabled={addingCity || !newCityName.trim()}
                           >
-                            {addingCity ? 'Adding...' : 'Add'}
+                            {addingCity ? t('settings.regional.adding') : t('settings.regional.add')}
                           </Button>
                         </div>
                       </div>
                     ) : (
                       <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                         <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                          Please select a country first to add cities
+                          {t('settings.regional.selectCountryFirst')}
                         </p>
                       </div>
                     )}
@@ -769,7 +766,7 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
                 )}
 
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  Manage cities for address filtering
+                  {t('settings.regional.manageCities')}
                 </p>
               </div>
             )}
@@ -785,7 +782,7 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
         <div className="flex items-center gap-3">
           <Bell className="w-5 h-5 text-blue-500" />
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Push Notifications
+            {t('settings.push.title')}
           </h2>
         </div>
 
@@ -793,30 +790,30 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
         {push.needsPWAInstall ? (
           <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
             <p className="text-sm font-medium text-gray-900 dark:text-white">
-              Install app to enable notifications
+              {t('settings.push.installTitle')}
             </p>
             <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-              Push notifications require the app to be installed on your home screen:
+              {t('settings.push.installDesc')}
             </p>
             <ol className="text-xs text-gray-600 dark:text-gray-400 mt-2 space-y-1">
               <li className="flex items-center gap-1.5">
-                <span>1.</span> Tap <Share className="w-3.5 h-3.5 inline" /> Share in Safari
+                <span>1.</span> {t('settings.push.installStep1')} <Share className="w-3.5 h-3.5 inline" /> {t('settings.push.installStep1b')}
               </li>
               <li className="flex items-center gap-1.5">
-                <span>2.</span> Tap <Plus className="w-3.5 h-3.5 inline" /> Add to Home Screen
+                <span>2.</span> {t('settings.push.installStep2')} <Plus className="w-3.5 h-3.5 inline" /> {t('settings.push.installStep2b')}
               </li>
-              <li>3. Open the app from your home screen</li>
+              <li>3. {t('settings.push.installStep3')}</li>
             </ol>
           </div>
         ) : (
           <>
             {/* Browser permission status */}
             <PermissionRow
-              label="Browser permission"
+              label={t('settings.push.browserPermission')}
               permission={push.permission}
               isReady={push.isReady}
               onRequest={push.permission === 'prompt' ? push.subscribe : undefined}
-              requestLabel="Enable"
+              requestLabel={t('settings.push.enable')}
             />
 
             {/* Server toggle */}
@@ -824,10 +821,10 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
               <div className="flex items-center justify-between py-1">
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    Receive notifications
+                    {t('settings.push.receiveNotifications')}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Get notified about appointment changes
+                    {t('settings.push.receiveDesc')}
                   </p>
                 </div>
                 <Switch
@@ -849,10 +846,10 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
             {push.isReady && (
               <div className="text-xs text-gray-500 dark:text-gray-400">
                 {push.isSubscribed
-                  ? 'Active push subscription on this device'
+                  ? t('settings.push.subscriptionActive')
                   : push.permission === 'granted'
-                    ? 'Reconnecting subscription...'
-                    : 'No active subscription'}
+                    ? t('settings.push.reconnecting')
+                    : t('settings.push.noSubscription')}
               </div>
             )}
           </>
@@ -863,16 +860,16 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 space-y-4">
         <div className="flex items-center gap-3">
           <MapPin className="w-5 h-5 text-green-500" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">GPS Location</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('settings.gps.title')}</h2>
         </div>
 
         {/* Browser permission status */}
         <PermissionRow
-          label="Browser permission"
+          label={t('settings.gps.browserPermission')}
           permission={geo.permission}
           isReady={geo.isReady}
           onRequest={geo.requestPermission}
-          requestLabel="Allow"
+          requestLabel={t('settings.gps.allow')}
         />
 
         {policyError && (
@@ -880,11 +877,10 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
             <ShieldAlert className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-red-900 dark:text-red-200">
-                Server Configuration Error
+                {t('settings.gps.serverError')}
               </p>
               <p className="text-xs text-red-700 dark:text-red-300 mt-1">
-                Geolocation is blocked by the server&apos;s <code>Permissions-Policy</code> header.
-                Please check your Nginx or Next.js configuration.
+                {t('settings.gps.serverErrorDesc')}
               </p>
             </div>
           </div>
@@ -894,9 +890,9 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
         {settings && (
           <div className="flex items-center justify-between py-1">
             <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">Location tracking</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">{t('settings.gps.locationTracking')}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Share your location during open appointments
+                {t('settings.gps.locationDesc')}
               </p>
             </div>
             <Switch
@@ -917,7 +913,7 @@ export default function SettingsPage({ params }: { params: Promise<{ lang: strin
         {/* Tracking status */}
         {geo.isReady && geo.isTracking && geo.position && (
           <div className="text-xs text-gray-500 dark:text-gray-400">
-            Currently tracking: {geo.position.latitude.toFixed(4)},{' '}
+            {t('settings.gps.currentlyTracking')} {geo.position.latitude.toFixed(4)},{' '}
             {geo.position.longitude.toFixed(4)}
           </div>
         )}
@@ -1008,6 +1004,7 @@ function PermissionRow({
   onRequest?: () => Promise<boolean | void>
   requestLabel: string
 }) {
+  const { t } = useTranslation()
   const [requesting, setRequesting] = useState(false)
   const [showDeniedHelp, setShowDeniedHelp] = useState(false)
 
@@ -1050,7 +1047,7 @@ function PermissionRow({
         <div className="flex items-center gap-2">
           {permission === 'granted' && (
             <span className="text-xs font-medium text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded-full">
-              Allowed
+              {t('settings.permission.allowed')}
             </span>
           )}
           {permission === 'denied' && (
@@ -1060,7 +1057,7 @@ function PermissionRow({
               className="flex items-center gap-1 text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50"
             >
               {requesting ? <Spinner size="sm" /> : <ShieldAlert className="w-3 h-3" />}
-              {requesting ? 'Checking...' : 'Blocked'}
+              {requesting ? t('settings.permission.checking') : t('settings.permission.blocked')}
             </button>
           )}
           {permission === 'prompt' && onRequest && (
@@ -1069,23 +1066,23 @@ function PermissionRow({
               disabled={requesting}
               className="text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded-lg disabled:opacity-50 transition-colors"
             >
-              {requesting ? 'Requesting...' : requestLabel}
+              {requesting ? t('settings.permission.requesting') : requestLabel}
             </button>
           )}
           {permission === 'unsupported' && (
             <span className="text-xs font-medium text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">
-              Not supported
+              {t('settings.permission.notSupported')}
             </span>
           )}
         </div>
       </div>
       {showDeniedHelp && permission === 'denied' && (
         <div className="ml-1 p-2 bg-red-50 dark:bg-red-900/10 rounded-lg text-xs text-gray-600 dark:text-gray-400">
-          <p>Permission is blocked by your browser. To re-enable:</p>
+          <p>{t('settings.permission.deniedHelp')}</p>
           <ol className="mt-1 ml-4 list-decimal space-y-0.5">
-            <li>Click the lock/info icon in the address bar</li>
-            <li>Find the permission and set to &quot;Allow&quot;</li>
-            <li>Refresh the page</li>
+            <li>{t('settings.permission.deniedStep1')}</li>
+            <li>{t('settings.permission.deniedStep2')}</li>
+            <li>{t('settings.permission.deniedStep3')}</li>
           </ol>
         </div>
       )}
